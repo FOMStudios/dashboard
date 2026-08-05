@@ -8,5 +8,5 @@
    Yoco "Pay Deposit / Pay Full" buttons on the invoice. Leave it blank
    to show EFT-only (no card buttons).
    ===================================================================== */
-var PAY_WORKER_URL  = "https://fom-yoco.fomxstudios.workers.dev/";   // e.g. "https://fom-yoco.yourname.workers.dev"
+var PAY_WORKER_URL  = "https://fom-yoco.cold-moon-d65c.workers.dev/";   // e.g. "https://fom-yoco.yourname.workers.dev"
 var PAY_DEPOSIT_PCT = 50;   // default deposit %
