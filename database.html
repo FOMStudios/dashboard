@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOM Studios | Order Database</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/mascot.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1320px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* pill header + hamburger */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:var(--container);margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:24px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.lg-setup{text-align:left;font-size:12.5px;color:var(--ink-soft);line-height:1.65;}
+.lg-setup code{background:#eceae4;padding:1px 5px;border-radius:5px;}
+
+/* page */
+.page{padding-top:108px;}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:22px;}
+.page-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.page-head p{color:var(--ink-soft);font-size:14px;margin-top:4px;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap;}
+.btn:hover{background:var(--accent-hover);border-color:var(--accent-hover);}
+.btn.block{width:100%;padding:13px;}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink);}
+.btn.ghost:hover{background:var(--ink);color:var(--bg-pill);}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.toolbar .search{flex:1;min-width:180px;}
+.toolbar input.search{border:1px solid var(--line);border-radius:var(--radius-pill);padding:11px 18px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink);width:100%;}
+.toolbar input.search:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.count-pill{font-size:13px;color:var(--ink-soft);background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:8px 16px;font-weight:600;}
+.badge{font-size:12px;font-weight:600;border-radius:var(--radius-pill);padding:8px 14px;border:1px solid var(--line);}
+.badge.cloud{background:#e7f0ff;border-color:#bcd4f5;color:var(--accent);}
+.badge.local{background:#f3f1ea;color:var(--ink-soft);}
+
+.table-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);overflow:hidden;}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{border-collapse:collapse;width:100%;min-width:1080px;}
+thead th{background:#cfe0d3;color:var(--ink);font-size:12px;font-weight:700;text-align:left;padding:12px 10px;white-space:nowrap;position:sticky;top:0;}
+tbody td{border-bottom:1px solid var(--line);padding:4px 6px;vertical-align:middle;}
+tbody tr:hover{background:#f4f3ef;}
+td input,td select{width:100%;border:1px solid transparent;background:transparent;border-radius:8px;padding:8px 8px;font-size:13.5px;font-family:inherit;color:var(--ink);}
+td input:hover,td select:hover{border-color:var(--line);}
+td input:focus,td select:focus{outline:none;border-color:var(--accent);background:#fff;}
+td.amount input{text-align:right;font-variant-numeric:tabular-nums;}
+td.outstanding{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;padding-right:14px;color:var(--accent);white-space:nowrap;}
+td.rm-col{width:38px;text-align:center;}
+.rm{background:none;border:none;color:#b85;cursor:pointer;font-size:16px;opacity:.6;}
+.rm:hover{opacity:1;color:#d55;}
+td select.status{font-weight:600;}
+.col-id{width:70px;}.col-date{width:140px;}.col-amt{width:118px;}.col-pay{width:120px;}
+/* portal-specific columns — slightly narrower, with a tinted header to separate them visually */
+.col-portal{width:160px;}
+.col-portal-sm{width:110px;}
+thead th.portal-col{background:#dce8ff;color:var(--accent);}
+.ready-select{font-weight:700;}
+.ready-select option[value="true"]{color:#27ae60;}
+.ready-select option[value="false"]{color:var(--ink-soft);}
+.foot-row td{background:#f4f3ef;font-weight:700;border-top:2px solid var(--line);}
+.empty{padding:40px;text-align:center;color:var(--ink-soft);}
+.hintbar{font-size:12px;color:var(--ink-soft);margin-top:12px;}
+.hintbar b{color:var(--ink);}
+@media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN GATE (shown only in cloud mode until signed in) -->
+<div class="login-gate" id="loginGate" style="display:none;">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <div id="lgForm">
+            <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+            <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+            <button class="btn block" id="lgBtn">Log in</button>
+            <p class="lg-err" id="lgErr"></p>
+        </div>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close menu">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="leads.html">Leads</a></li>
+        <li><a href="content.html">Content Planner</a></li>
+        <li><a href="index.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html" class="active">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="leads.html">Leads</a></li>
+                <li><a href="content.html">Content Planner</a></li>
+                <li><a href="index.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+            </ul>
+        </div>
+    </nav>
+</div>
+
+<div class="page wrap">
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">Admin</span>
+            <h1>Order Database</h1>
+            <p>Your bookings, payments and deadlines.</p>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <button class="btn" id="addBtn">+ Add order</button>
+        <button class="btn ghost" id="csvBtn">Export CSV</button>
+        <button class="btn ghost" id="clearBtn">Clear all</button>
+        <input type="text" class="search" id="search" placeholder="Search customer, product, status…">
+        <span class="count-pill" id="countPill">0 orders</span>
+        <span class="badge local" id="syncBadge">Local only</span>
+        <button class="btn ghost" id="logoutBtn" style="display:none;">Log out</button>
+    </div>
+
+    <div class="table-card">
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-id">Order ID</th><th>Customer Name</th><th>Product</th>
+                        <th class="col-date">Shoot Date</th><th>Order Status</th>
+                        <th class="col-amt">Total Amount</th><th class="col-amt">Amount Paid</th>
+                        <th class="col-amt">Outstanding</th><th class="col-pay">Payment Method</th>
+                        <th class="col-date">Deadline</th><th>Order Notes</th>
+                        <th class="col-portal portal-col">Client Email</th>
+                        <th class="col-date portal-col">Shoot Time</th>
+                        <th class="col-portal portal-col">Contract URL</th>
+                        <th class="col-portal portal-col">Invoice URL</th>
+                        <th class="col-portal portal-col">Deliverables URL</th>
+                        <th class="col-portal-sm portal-col">Files Ready?</th>
+                        <th class="col-portal portal-col">Portal Message</th>
+                        <th class="rm-col"></th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+                <tfoot>
+                    <tr class="foot-row">
+                        <td colspan="5" style="text-align:right;">Totals:</td>
+                        <td class="outstanding" id="sumTotal" style="color:var(--ink);"></td>
+                        <td class="outstanding" id="sumPaid" style="color:var(--ink);"></td>
+                        <td class="outstanding" id="sumOut"></td>
+                        <td colspan="4"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="empty" id="emptyState" style="display:none;">No orders yet — click <b>“+ Add order”</b> to create your first one.</div>
+    </div>
+    <div class="hintbar">Outstanding balance is calculated automatically (<b>Total − Paid</b>). View the <a href="dashboard.html" style="color:var(--accent);font-weight:600;">Dashboard →</a></div>
+</div>
+
+<!-- Firebase config only (the SDK itself is loaded on demand, and only when configured) -->
+<script src="firebase-config.js"></script>
+<script>
+const STATUSES = ['Pending','Editing','Completed','Delivered','Cancelled'];
+const PAYMENTS = ['EFT','Cash','Card','Other'];
+const RZA = n => 'R' + (Math.round((+n||0)*100)/100).toLocaleString('en-ZA',{minimumFractionDigits:2});
+const esc = s => String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const $ = id => document.getElementById(id);
+const tsMillis = t => (t && typeof t.toMillis==='function') ? t.toMillis() : 0;
+function safeRender(){ try{ render(); }catch(e){ console.error('render error',e); } }
+
+/* ---- decide mode: cloud (Firebase configured) or local ---- */
+const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig &&
+              !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+async function loadFirebase(){ const b='https://www.gstatic.com/firebasejs/10.12.0/';
+  await loadScript(b+'firebase-app-compat.js');
+  await Promise.all([loadScript(b+'firebase-auth-compat.js'), loadScript(b+'firebase-firestore-compat.js')]); }
+
+let orders = [];           // [{id, orderId, customer, ...}]
+let store, auth = null;
+let editingCell = false, pendingRender = false;
+
+/* ================= STORES ================= */
+function localStore(){
+  const K='fom_orders';
+  const read=()=>{try{return JSON.parse(localStorage.getItem(K))||[];}catch(e){return[];}};
+  const writeAll=()=>localStorage.setItem(K,JSON.stringify(orders));
+  return {
+    start(){ orders=read().map(o=> o.id?o:Object.assign(o,{id:'loc_'+Math.random().toString(36).slice(2,9)})); render(); },
+    add(o){ o.id='loc_'+Date.now()+Math.random().toString(36).slice(2,6); orders.push(o); writeAll(); render(); },
+    update(){ writeAll(); },
+    remove(id){ orders=orders.filter(o=>o.id!==id); writeAll(); render(); },
+    clear(){ orders=[]; writeAll(); render(); }
+  };
+}
+function cloudStore(db){
+  const col=()=>db.collection('orders');
+  const timers={};
+  const strip=o=>{const {id,...r}=o; return r;};
+  return {
+    start(){
+      col().onSnapshot(snap=>{
+        orders = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        orders.sort((a,b)=> tsMillis(a.createdAt) - tsMillis(b.createdAt));
+        if(editingCell){ pendingRender=true; } else safeRender();
+      }, err=>console.warn('Firestore:',err));
+    },
+    add(o){ o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)); },
+    update(id){ clearTimeout(timers[id]); timers[id]=setTimeout(()=>{ const o=orders.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}); },500); },
+    remove(id){ col().doc(id).delete(); },
+    clear(){ orders.slice().forEach(o=>col().doc(o.id).delete()); }
+  };
+}
+
+/* ================= RENDER ================= */
+const tbody=$('tbody'), search=$('search');
+function blankOrder(){ return {orderId:'#'+(orders.length+1),customer:'',product:'',shootDate:'',status:'Pending',total:0,paid:0,payment:'EFT',deadline:'',notes:'',clientEmail:'',shootTime:'',contractUrl:'',invoiceUrl:'',deliverablesUrl:'',deliverablesReady:false,portalMessage:''}; }
+
+function render(){
+  const q=search.value.trim().toLowerCase();
+  tbody.innerHTML='';
+  let sumT=0,sumP=0,sumO=0;
+  orders.forEach((o,i)=>{
+    const hay=(o.orderId+' '+o.customer+' '+o.product+' '+o.status+' '+o.notes).toLowerCase();
+    if(q && !hay.includes(q)) return;
+    const out=(+o.total||0)-(+o.paid||0);
+    sumT+=+o.total||0; sumP+=+o.paid||0; sumO+=out;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="col-id"><input data-i="${i}" data-f="orderId" value="${esc(o.orderId)}"></td>
+      <td><input data-i="${i}" data-f="customer" value="${esc(o.customer)}" placeholder="Name"></td>
+      <td><input data-i="${i}" data-f="product" value="${esc(o.product)}" placeholder="e.g. Gold"></td>
+      <td class="col-date"><input type="date" data-i="${i}" data-f="shootDate" value="${esc(o.shootDate)}"></td>
+      <td><select class="status" data-i="${i}" data-f="status">${STATUSES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></td>
+      <td class="amount"><input type="number" min="0" step="50" data-i="${i}" data-f="total" value="${o.total}"></td>
+      <td class="amount"><input type="number" min="0" step="50" data-i="${i}" data-f="paid" value="${o.paid}"></td>
+      <td class="outstanding" data-out="${i}">${RZA(out)}</td>
+      <td><select data-i="${i}" data-f="payment">${PAYMENTS.map(p=>`<option ${p===o.payment?'selected':''}>${p}</option>`).join('')}</select></td>
+      <td class="col-date"><input type="date" data-i="${i}" data-f="deadline" value="${esc(o.deadline)}"></td>
+      <td><input data-i="${i}" data-f="notes" value="${esc(o.notes)}" placeholder="No add ons"></td>
+      <td class="col-portal"><input data-i="${i}" data-f="clientEmail" value="${esc(o.clientEmail||'')}" placeholder="client@email.com" type="email"></td>
+      <td class="col-date"><input data-i="${i}" data-f="shootTime" value="${esc(o.shootTime||'')}" placeholder="e.g. 10:00"></td>
+      <td class="col-portal"><input data-i="${i}" data-f="contractUrl" value="${esc(o.contractUrl||'')}" placeholder="https://drive.google.com/…"></td>
+      <td class="col-portal"><input data-i="${i}" data-f="invoiceUrl" value="${esc(o.invoiceUrl||'')}" placeholder="https://drive.google.com/…"></td>
+      <td class="col-portal"><input data-i="${i}" data-f="deliverablesUrl" value="${esc(o.deliverablesUrl||'')}" placeholder="https://drive.google.com/…"></td>
+      <td class="col-portal-sm"><select class="ready-select" data-i="${i}" data-f="deliverablesReady">
+        <option value="false" ${!o.deliverablesReady?'selected':''}>Not ready</option>
+        <option value="true" ${o.deliverablesReady?'selected':''}>✓ Ready</option>
+      </select></td>
+      <td class="col-portal"><input data-i="${i}" data-f="portalMessage" value="${esc(o.portalMessage||'')}" placeholder="Message to client…"></td>
+      <td class="rm-col"><button class="rm" data-rm="${i}" title="Delete">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+  $('sumTotal').textContent=RZA(sumT); $('sumPaid').textContent=RZA(sumP); $('sumOut').textContent=RZA(sumO);
+  $('countPill').textContent=orders.length+(orders.length===1?' order':' orders');
+  $('emptyState').style.display=orders.length?'none':'block';
+}
+
+tbody.addEventListener('focusin',()=>{editingCell=true;});
+tbody.addEventListener('focusout',()=>{ editingCell=false; if(pendingRender){pendingRender=false; render();} });
+tbody.addEventListener('input',e=>{
+  const el=e.target, i=el.dataset.i, f=el.dataset.f; if(i===undefined) return;
+  orders[i][f]=(el.type==='number')?(+el.value||0):el.value;
+  if(f==='total'||f==='paid'){ const cell=tbody.querySelector(`[data-out="${i}"]`); if(cell) cell.textContent=RZA((+orders[i].total||0)-(+orders[i].paid||0)); recalcFoot(); }
+  store.update(orders[i].id);
+});
+tbody.addEventListener('change',e=>{
+  const el=e.target; if(!el.dataset.f) return;
+  const f=el.dataset.f, i=el.dataset.i;
+  // coerce deliverablesReady select value to actual boolean for Firestore
+  orders[i][f] = (f==='deliverablesReady') ? (el.value==='true') : el.value;
+  store.update(orders[i].id);
+});
+tbody.addEventListener('click',e=>{ const rm=e.target.dataset.rm; if(rm!==undefined) store.remove(orders[+rm].id); });
+function recalcFoot(){ let t=0,p=0,o=0; orders.forEach(r=>{t+=+r.total||0;p+=+r.paid||0;o+=(+r.total||0)-(+r.paid||0);}); $('sumTotal').textContent=RZA(t);$('sumPaid').textContent=RZA(p);$('sumOut').textContent=RZA(o); }
+
+$('addBtn').onclick=()=>{ if(store) store.add(blankOrder()); };
+$('clearBtn').onclick=()=>{ if(store && confirm('Delete ALL orders? This cannot be undone.')) store.clear(); };
+search.addEventListener('input',render);
+$('csvBtn').onclick=()=>{
+  const head=['Order ID','Customer Name','Product','Shoot Date','Order Status','Total Amount','Amount Paid','Outstanding Balance','Payment Method','Deadline','Order Notes','Client Email','Shoot Time','Contract URL','Invoice URL','Deliverables URL','Files Ready','Portal Message'];
+  const rows=orders.map(o=>[o.orderId,o.customer,o.product,o.shootDate,o.status,o.total,o.paid,(+o.total||0)-(+o.paid||0),o.payment,o.deadline,o.notes,o.clientEmail||'',o.shootTime||'',o.contractUrl||'',o.invoiceUrl||'',o.deliverablesUrl||'',o.deliverablesReady?'Yes':'No',o.portalMessage||'']);
+  const csv=[head,...rows].map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='fom_orders.csv'; a.click(); URL.revokeObjectURL(a.href);
+};
+
+/* hamburger */
+const mm=$('mobileMenu'), sc=$('scrim');
+$('navToggle').onclick=()=>{mm.classList.add('open');sc.classList.add('show');};
+$('closeMenu').onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+
+/* ================= INIT ================= */
+function startLocal(){
+  $('loginGate').style.display='none';
+  const badge=$('syncBadge'); badge.textContent='💾 Local only'; badge.className='badge local';
+  $('logoutBtn').style.display='none';
+  store=localStore(); store.start();
+}
+function showConnError(){
+  const badge=$('syncBadge'); badge.textContent='⚠ Offline'; badge.className='badge local';
+  if(!$('connErr')) document.querySelector('.table-card').insertAdjacentHTML('beforebegin',
+    '<div id="connErr" style="background:#fff4f4;border:1px solid #f0c0c0;color:#a33;border-radius:14px;padding:14px 18px;margin-bottom:14px;font-size:14px;">Couldn’t reach the cloud database. Check your connection, then <a href="#" onclick="location.reload();return false;" style="color:var(--accent);font-weight:700;">refresh</a>.</div>');
+}
+/* one-time offer to move pre-cloud local orders into Firestore */
+function offerImport(db){
+  let local=[]; try{ local=JSON.parse(localStorage.getItem('fom_orders'))||[]; }catch(e){}
+  if(!local.length || orders.length>0 || $('impBar')) return;   // skip if the cloud already has orders (avoids duplicates)
+  const bar=document.createElement('div'); bar.id='impBar';
+  bar.style.cssText='background:#eaf1fb;border:1px solid #bcd4f5;color:var(--accent);border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;';
+  bar.innerHTML='<span>You have <b>'+local.length+'</b> order(s) saved on this device from before cloud sync.</span>'+
+    '<button class="btn" id="impBtn" style="padding:7px 14px;">Import to cloud</button>'+
+    '<button class="btn ghost" id="impX" style="padding:7px 14px;">Dismiss</button>';
+  document.querySelector('.toolbar').insertAdjacentElement('afterend', bar);
+  $('impBtn').onclick=async()=>{ $('impBtn').textContent='Importing…';
+    for(const o of local){ const {id,...r}=o; r.createdAt=firebase.firestore.FieldValue.serverTimestamp(); await db.collection('orders').add(r); }
+    localStorage.removeItem('fom_orders'); bar.remove();
+  };
+  $('impX').onclick=()=>bar.remove();
+}
+function initCloud(){
+  firebase.initializeApp(firebaseConfig);
+  auth=firebase.auth();
+  const db=firebase.firestore();
+  db.settings({ experimentalAutoDetectLongPolling: true });  // works through VPNs/blockers; no stale cache
+  store=cloudStore(db);
+  const badge=$('syncBadge'); badge.textContent='☁ Cloud sync'; badge.className='badge cloud';
+  $('logoutBtn').style.display='inline-block';
+  $('logoutBtn').onclick=()=>auth.signOut();
+  const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value)
+      .catch(err=>{ $('lgErr').textContent = /password|user|credential|email/i.test(err.code||'') ? 'Incorrect email or password.' : (err.message||'Login failed.'); }); };
+  $('lgBtn').onclick=login;
+  $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+  auth.onAuthStateChanged(u=>{
+    if(u){ $('loginGate').style.display='none'; store.start(); setTimeout(()=>offerImport(db),1800); }
+    else { orders=[]; safeRender(); $('loginGate').style.display='flex'; }
+  });
+}
+if(!configured){
+  startLocal();
+} else {
+  loadFirebase().then(initCloud).catch(showConnError);   // cloud only — no local fallback (avoids mixing datasets)
+}
+</script>
+</body>
+</html>

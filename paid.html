@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOM Studios | Payment Received</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/mascot.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+img{display:block;max-width:100%;}
+.card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:48px 36px;max-width:460px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.08);}
+.brand{font-weight:800;font-size:16px;letter-spacing:.06em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:24px;}
+.mascot{width:120px;margin:0 auto 20px;}
+.mascot img{width:100%;}
+.check{width:64px;height:64px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;}
+.check svg{width:32px;height:32px;stroke:#fff;stroke-width:3;fill:none;}
+h1{font-size:28px;font-weight:800;letter-spacing:-.01em;margin-bottom:10px;}
+p{color:var(--ink-soft);font-size:15px;margin-bottom:8px;}
+p.lead{color:var(--ink);font-size:16px;margin-bottom:18px;}
+.btn{display:inline-block;margin-top:24px;background:var(--accent);color:var(--ink-on-dark);text-decoration:none;border-radius:var(--radius-pill);padding:14px 28px;font-size:15px;font-weight:700;transition:.2s;}
+.btn:hover{background:var(--accent-hover);}
+.foot{margin-top:26px;font-size:12px;color:var(--ink-soft);}
+.foot a{color:var(--accent);text-decoration:none;font-weight:600;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">FOM Studios</div>
+    <div class="mascot"><img src="assets/mascot.png" alt="FOM Studios mascot" onerror="this.parentElement.style.display='none'"></div>
+    <div class="check"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h1>Payment received</h1>
+    <p class="lead">Thank you — your booking with FOM Studios is confirmed.</p>
+    <p>You'll receive a confirmation shortly. If you paid a deposit, the remaining balance is due before your shoot date.</p>
+    <a class="btn" href="https://www.fomstudios.co.za">Back to fomstudios.co.za</a>
+    <div class="foot">Questions? <a href="mailto:fomxstudios@gmail.com">fomxstudios@gmail.com</a> · <a href="https://www.fomstudios.co.za">www.fomstudios.co.za</a></div>
+  </div>
+</body>
+</html>

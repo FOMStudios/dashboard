@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOM Studios | Contract Generator</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/mascot.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1320px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;}
+img{display:block;max-width:100%;}a{color:inherit;text-decoration:none;}button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:var(--container);margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:22px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.nav-cta{border:1px solid var(--ink);border-radius:var(--radius-pill);padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;background:none;}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.login-card .btn.block{width:100%;padding:13px;}
+.page{padding-top:108px;}
+.page-head{margin-bottom:22px;}
+.page-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.page-head p{color:var(--ink-soft);font-size:14px;margin-top:4px;}
+.grid{display:grid;grid-template-columns:0.85fr 1.15fr;gap:22px;align-items:start;}
+@media(max-width:900px){.grid{grid-template-columns:1fr;}}
+.panel{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:22px;min-width:0;overflow:hidden;}
+.panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:700;margin-bottom:16px;}
+.field{margin-bottom:14px;min-width:0;overflow:hidden;}
+.field label{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+input[type=text],input[type=email],input[type=number],input[type=date],input[type=time],textarea{width:100%;min-width:0;max-width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-size:15px;font-family:inherit;color:var(--ink);background:#fff;box-sizing:border-box;}
+select{width:100%;min-width:0;max-width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:11px 40px 11px 13px;font-size:15px;font-family:inherit;color:var(--ink);background:#fff;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f6f6d' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;cursor:pointer;}
+textarea{resize:vertical;min-height:80px;}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0;}.row2>*{min-width:0;overflow:hidden;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:12px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--accent-hover);}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink);}
+.btn.ghost:hover{background:var(--ink);color:var(--bg-pill);}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+.actions .btn{flex:1;min-width:140px;text-align:center;}
+.howto{font-size:12.5px;color:var(--ink-soft);margin-top:14px;line-height:1.7;}
+.howto b{color:var(--ink);}
+.preview-wrap{background:#e9e7e1;border:1px solid var(--line);border-radius:var(--radius-card);padding:18px;overflow-x:auto;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-dark);color:#fff;padding:12px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000;}
+.toast.show{opacity:1;}
+#contractDoc{display:none;}
+@media print{
+    /* when printing from the main page (not the iframe), hide everything */
+    body > *{ display:none !important; }
+}
+@media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
+@media(max-width:560px){.row2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="login-gate" id="loginGate">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="leads.html">Leads</a></li>
+        <li><a href="content.html">Content Planner</a></li>
+        <li><a href="index.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="leads.html">Leads</a></li>
+                <li><a href="content.html">Content Planner</a></li>
+                <li><a href="index.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html" class="active">Contract</a></li>
+            </ul>
+            <button class="nav-cta" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </nav>
+</div>
+
+<div class="page wrap">
+    <div class="page-head">
+        <span class="eyebrow">Admin</span>
+        <h1>Contract Generator</h1>
+        <p>Fill in the summary details — FOM Studios is signed and dated automatically. Then save as PDF.</p>
+    </div>
+
+    <div class="grid">
+        <div class="panel">
+            <h2>Contract details</h2>
+            <div class="field"><label for="cClient">Client name</label><input type="text" id="cClient" placeholder="Jane Doe"></div>
+            <div class="field"><label for="cShootType">Shoot type</label><input type="text" id="cShootType" placeholder="e.g. Event, Sports, Content"></div>
+            <div class="row2">
+                <div class="field"><label for="cDate">Shoot date</label><input type="date" id="cDate"></div>
+                <div class="field"><label for="cTime">Start time</label><input type="text" id="cTime" placeholder="e.g. 10:00"></div>
+            </div>
+            <div class="field"><label for="cLocation">Shoot location</label><input type="text" id="cLocation" placeholder="Hyde Park, Johannesburg"></div>
+            <div class="field"><label for="cDuration">Duration of shoot</label><input type="text" id="cDuration" placeholder="e.g. 2 Hours"></div>
+            <div class="field"><label for="cPackage">Package details</label><input type="text" id="cPackage" placeholder="e.g. Gold — Photography & Videography"></div>
+            <div class="field"><label for="cAddons">Add-on deliverables</label><input type="text" id="cAddons" placeholder="e.g. 50 Edited Photos, 1 x 60-second Reel"></div>
+            <div class="field"><label for="cDelivery">Delivery timeframe</label><input type="text" id="cDelivery" placeholder="e.g. 7-10 business days"></div>
+            <div class="row2">
+                <div class="field"><label for="cTotal">Total fee (R)</label><input type="number" id="cTotal" min="0" step="50" value="0"></div>
+                <div class="field"><label for="cDeposit">Deposit required (R)</label><input type="number" id="cDeposit" min="0" step="50" value="0"></div>
+            </div>
+            <div class="field"><label for="cBalanceBy">Balance payable by</label><input type="date" id="cBalanceBy"></div>
+            <div class="field"><label for="cRevisions">Rounds of revisions</label><input type="text" id="cRevisions" placeholder="e.g. 2 rounds"></div>
+            <div class="field"><label for="cEditRate">Additional edit rate (R)</label><input type="number" id="cEditRate" min="0" step="50" value="300"></div>
+
+            <div class="actions">
+                <button class="btn" id="printBtn">Save as PDF</button>
+                <button class="btn ghost" id="previewBtn">Refresh preview</button>
+            </div>
+            <div class="howto">
+                <b>To save as PDF:</b> Click <b>Save as PDF</b> &rarr; in the print dialog set <b>Destination</b> to <b>"Save as PDF"</b> &rarr; Save.<br>
+                Chrome: change Destination dropdown. Safari: PDF button bottom-left.
+            </div>
+        </div>
+
+        <div>
+            <div class="panel" style="margin-bottom:12px;padding:14px 22px;"><h2 style="margin:0;">Contract preview</h2></div>
+            <div class="preview-wrap">
+                <iframe id="previewFrame" style="width:100%;min-height:820px;border:none;border-radius:10px;background:#fff;" scrolling="yes"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="contractDoc"></div>
+<div class="toast" id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function niceDate(iso){ if(!iso) return ''; const d=new Date(iso+'T00:00:00'); return DAYS[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear(); }
+function todayNice(){ return new Date().toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'}); }
+function RZA(n){ return 'R'+(Math.round(+n||0)).toLocaleString('en-ZA'); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function val(v,fb){ return v ? esc(v) : `<span style="color:#c0392b;font-style:italic;">${fb}</span>`; }
+
+function fields(){
+    return {
+        client:    $('cClient').value.trim(),
+        shootType: $('cShootType').value.trim(),
+        date:      $('cDate').value,
+        time:      $('cTime').value.trim(),
+        location:  $('cLocation').value.trim(),
+        duration:  $('cDuration').value.trim(),
+        package:   $('cPackage').value.trim(),
+        addons:    $('cAddons').value.trim(),
+        delivery:  $('cDelivery').value.trim(),
+        total:     +$('cTotal').value||0,
+        deposit:   +$('cDeposit').value||0,
+        balanceBy: $('cBalanceBy').value,
+        revisions: $('cRevisions').value.trim(),
+        editRate:  +$('cEditRate').value||300,
+    };
+}
+
+function buildContract(f){
+    const balance = Math.max(0, f.total - f.deposit);
+    const depositDisplay = f.deposit > 0 ? RZA(f.deposit) : RZA(f.total * 0.5);
+
+    return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#fff;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:10.5pt;line-height:1.65;color:#1a1a1a;padding:0;}
+.ci{max-width:760px;margin:0 auto;padding:28px 36px 44px;}
+.logo-row{display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #02367B;padding-bottom:14px;margin-bottom:20px;}
+.brand{font-size:18pt;font-weight:800;letter-spacing:3px;color:#02367B;}
+.tagline{font-size:8.5pt;color:#6f6f6d;text-align:right;line-height:1.5;}
+h1{font-size:14pt;font-weight:800;text-align:center;letter-spacing:1px;margin-bottom:4px;}
+.subtitle{text-align:center;font-size:9.5pt;color:#6f6f6d;margin-bottom:18px;}
+h2{font-size:9.5pt;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#02367B;margin:16px 0 5px;border-bottom:1px solid #dcdad3;padding-bottom:3px;}
+p{margin-bottom:7px;font-size:10pt;}
+ul{margin:0 0 7px 16px;}li{margin-bottom:3px;font-size:10pt;}
+table.st{width:100%;border-collapse:collapse;margin:8px 0 12px;break-inside:avoid;page-break-inside:avoid;}
+table.st th{background:#02367B;color:#fff;padding:7px 11px;text-align:left;font-size:9.5pt;}
+table.st td{padding:7px 11px;font-size:10pt;border-bottom:1px solid #e6e4dd;vertical-align:top;}
+table.st tr:nth-child(even) td{background:#f7f6f2;}
+table.st .lbl{font-weight:700;width:42%;}
+.pay-note{background:#eef2fb;border:1px solid #bcd4f5;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:10pt;line-height:1.7;break-inside:avoid;page-break-inside:avoid;}
+.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:24px;break-inside:avoid;page-break-inside:avoid;}
+.sig-party h3{font-size:9.5pt;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;color:#02367B;}
+.sig-line{border-top:1.5px solid #1a1a1a;margin:28px 0 5px;width:100%;}
+.sig-lbl{font-size:8.5pt;color:#6f6f6d;}
+.sig-val{font-size:10.5pt;font-weight:700;color:#1a1a1a;margin-top:2px;}
+.sig-written{font-family:cursive,"Comic Sans MS",Georgia,serif;font-size:17pt;color:#02367B;margin-top:3px;line-height:1.1;}
+.footer-bar{margin-top:24px;border-top:1.5px solid #dcdad3;padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;font-size:9pt;color:#4a4a4a;break-inside:avoid;page-break-inside:avoid;}
+@media print{body{padding:0;}@page{margin:14mm 12mm;size:A4;}}
+</style></head><body>
+<div class="ci">
+<div class="logo-row">
+    <div class="brand">FOM STUDIOS</div>
+    <div class="tagline">Photography &amp; Videography<br>Johannesburg, South Africa<br>fomxstudios@gmail.com &nbsp;&middot;&nbsp; 073 755 3136</div>
+</div>
+<h1>PHOTOGRAPHY &amp; VIDEOGRAPHY AGREEMENT</h1>
+<div class="subtitle">This Agreement is entered into between <strong>FOM Studios</strong> ("Service Provider") and the undersigned <strong>Client</strong>.</div>
+
+<h2>1. Services</h2>
+<p>FOM Studios agrees to provide photography and/or videography services as agreed upon with the Client, including but not limited to shooting, editing, and delivery of final media.</p>
+
+<h2>2. Booking &amp; Payment Terms</h2>
+<ul>
+<li>A <strong>50% non-refundable deposit</strong> is required to secure the booking date.</li>
+<li>The remaining <strong>50% must be paid in full prior to the shoot date</strong>.</li>
+<li><strong>No services will be rendered unless full payment has been received.</strong></li>
+<li>Payment confirms the booking and acceptance of this agreement.</li>
+</ul>
+
+<h2>3. Cancellation Policy</h2>
+<ul>
+<li>The 50% booking deposit is strictly <strong>non-refundable</strong> and secures the scheduled date and services of FOM Studios.</li>
+<li>In the event that the Client cancels the booking <strong>10 (ten) days</strong> or more prior to the scheduled shoot date, no further payment shall be due beyond the deposit already paid.</li>
+<li>In the event that the Client cancels the booking less than <strong>10 (ten) days</strong> prior to the scheduled shoot date, the Client shall remain <strong>liable</strong> for an additional fee equal to 20% of the outstanding balance (being 20% of the remaining 50% of the total fee).</li>
+<li>Any cancellation must be submitted in writing to be considered valid.</li>
+</ul>
+
+<h2>4. Rescheduling Policy</h2>
+<ul>
+<li>The Client may request to reschedule the shoot; however, no refunds will be issued under any rescheduling circumstances.</li>
+<li>Only one (1) reschedule request will be permitted per booking. Any further changes will be treated as a cancellation and Clause 3 (Cancellation Policy) will apply.</li>
+<li>Where a reschedule is approved, all payments made will be transferred to the new agreed date, subject to FOM Studios' availability.</li>
+<li>Rescheduling requests must be submitted in writing and are strictly subject to availability.</li>
+</ul>
+
+<h2>5. Weather &amp; Unforeseen Circumstances</h2>
+<ul>
+<li>In the event of adverse weather conditions or natural causes that prevent the shoot from proceeding:
+  <ul style="margin-top:4px;">
+    <li>The shoot will be rescheduled at no additional cost to the Client, subject to availability.</li>
+    <li>If rescheduling is not possible, a mutually agreed refund or credit may be issued.</li>
+  </ul>
+</li>
+<li>FOM Studios reserves the right to determine whether conditions are unsuitable for shooting.</li>
+</ul>
+
+<h2>6. Drone Operation</h2>
+<ul>
+<li>Drone services (if included in the agreed package) are strictly subject to weather conditions and legal flight restrictions.</li>
+<li>FOM Studios reserves the right to determine whether conditions are safe and suitable for drone operation, including but not limited to wind speed, rain, visibility, and airspace restrictions.</li>
+<li>If drone operations cannot be performed due to weather or safety concerns, they will either be rescheduled (subject to availability) or cancelled.</li>
+<li>In the event that drone services cannot be performed due to weather, safety concerns, or regulatory restrictions beyond the control of FOM Studios, the drone portion of the service will be refunded to the Client or alternatively excluded from the final invoice.</li>
+<li>All drone operations will be conducted in full compliance with applicable aviation laws and safety requirements.</li>
+</ul>
+
+<h2>7. Rollers</h2>
+<ul>
+<li>Safety shall take precedence over the capture of any shot at all times.</li>
+<li>The driver shall comply with all applicable road laws, regardless of any instruction or signal from the videographer or crew.</li>
+<li>The driver is solely responsible for independently determining that it is safe to perform any lane change, overtake, or repositioning maneuver; no signal from the crew shall constitute confirmation that such maneuver is safe.</li>
+<li>The driver and/or Client may delay, decline, or terminate any requested maneuver at their sole discretion.</li>
+<li>FOM Studios reserves the right to pause, refuse, or discontinue any rolling shot where conditions are deemed unsafe.</li>
+<li>The Client is responsible for ensuring that all participating vehicles are roadworthy, legally licensed, and adequately insured.</li>
+<li>FOM Studios shall not be liable for any accidents, damage, injury, fines, or other incidents arising during rolling shots, as vehicle operation remains outside its control once vehicles are in motion.</li>
+<li>All participants acknowledge and accept that they participate in rolling shots entirely at their own risk.</li>
+</ul>
+
+<h2>8. Client Non-Attendance</h2>
+<ul>
+<li>If the Client fails to attend the scheduled shoot without prior notice:
+  <ul style="margin-top:4px;">
+    <li>No refund will be issued.</li>
+    <li>The booking will be considered fulfilled.</li>
+  </ul>
+</li>
+</ul>
+
+<h2>9. Overtime Fees</h2>
+<ul>
+<li>Any time exceeding the agreed shooting duration will be charged at 1.5 times the hourly rate per hour (or part thereof).</li>
+<li>Overtime must be approved by the Client during the shoot.</li>
+</ul>
+
+<h2>10. Delivery of Content</h2>
+<ul>
+<li>Delivery timelines will be communicated prior to or at the time of booking.</li>
+<li>Should the Client request expedited editing and delivery outside of the standard turnaround time, a rush fee of 20% of the total project value will be applied.</li>
+<li>Rush delivery is subject to FOM Studios' availability and workload capacity at the time of request. Approval is not guaranteed and must be confirmed in writing by FOM Studios.</li>
+<li>Final edited photos/videos will be delivered via agreed platforms (e.g., Google Drive, WeTransfer).</li>
+<li>Raw footage/images are not included unless explicitly agreed upon in writing.</li>
+</ul>
+
+<h2>11. Travel &amp; Parking Fees</h2>
+<ul>
+<li>Where the shoot location requires paid parking, security-controlled parking, or any form of parking fees, the Client shall be responsible for covering all reasonable parking costs incurred by FOM Studios.</li>
+<li>Parking fees will be reimbursed at actual cost, unless otherwise agreed in writing prior to the shoot date.</li>
+<li>FOM Studios will, where possible, provide proof of parking expenses upon request.</li>
+</ul>
+
+<h2>12. Revisions &amp; Additional Edits</h2>
+<ul>
+<li>The Client is entitled to ${val(f.revisions,'[revisions]')} of revisions as agreed prior to booking.</li>
+<li>Any additional edits beyond this will be charged at <strong>${RZA(f.editRate)} per edit/change</strong>.</li>
+</ul>
+
+<h2>13. Creative Control</h2>
+<ul>
+<li>FOM Studios retains full creative control over the style, editing, and final output.</li>
+<li>The Client acknowledges that final results may vary based on conditions and artistic interpretation.</li>
+<li>All photographs will be edited in accordance with the established FOM Studios editing style, presets, and creative direction. The Client acknowledges and agrees that this editing style forms part of the artistic identity of FOM Studios.</li>
+<li>No revisions or re-edits will be permitted for photographs once the final images have been delivered, except where images are technically faulty or incorrect due to error by FOM Studios.</li>
+<li>Any additional or alternative editing requests will be treated as a separate service and charged accordingly, subject to availability.</li>
+</ul>
+
+<h2>14. Usage Rights &amp; Promotion</h2>
+<ul>
+<li>FOM Studios retains the right to use all produced content for portfolio, social media, and marketing purposes.</li>
+<li>This applies unless the Client specifies confidentiality in writing prior to the shoot.</li>
+</ul>
+
+<h2>15. Client Responsibilities</h2>
+<ul>
+<li>The Client is responsible for:
+  <ul style="margin-top:4px;">
+    <li>Ensuring punctuality at the agreed shoot time and location.</li>
+    <li>Providing accurate and complete shoot details prior to the booking.</li>
+    <li>Obtaining any necessary permits or permissions for the chosen shoot location.</li>
+  </ul>
+</li>
+</ul>
+
+<h2>16. Liability</h2>
+<ul>
+<li>FOM Studios will not be held liable for:
+  <ul style="margin-top:4px;">
+    <li>Missed shots due to circumstances beyond reasonable control.</li>
+    <li>Equipment failure, though all reasonable precautions are taken.</li>
+    <li>External disruptions during the shoot.</li>
+  </ul>
+</li>
+</ul>
+
+<h2>17. Force Majeure</h2>
+<p>FOM Studios shall not be liable for failure to perform due to events beyond its reasonable control, including but not limited to natural disasters, government restrictions, illness, or emergencies. In the event that FOM Studios is unable to attend or complete a scheduled shoot due to illness or emergency, the Client will be notified as soon as reasonably possible and the booking will be rescheduled to the next mutually available date. Where rescheduling is not possible, alternative arrangements will be discussed between both parties.</p>
+
+<h2>Service Summary &amp; Payment Details</h2>
+<table class="st">
+<tr><th>Item</th><th>Details</th></tr>
+<tr><td class="lbl">Client Name</td><td>${val(f.client,'[client name]')}</td></tr>
+<tr><td class="lbl">Shoot Type</td><td>${val(f.shootType,'[shoot type]')}</td></tr>
+<tr><td class="lbl">Shoot Date</td><td>${f.date ? esc(niceDate(f.date)) : '<span style="color:#c0392b;">[ date ]</span>'}</td></tr>
+${f.time ? `<tr><td class="lbl">Shoot Time</td><td>${esc(f.time)}</td></tr>` : ''}
+<tr><td class="lbl">Shoot Location</td><td>${val(f.location,'[location]')}</td></tr>
+<tr><td class="lbl">Duration</td><td>${val(f.duration,'[duration]')}</td></tr>
+<tr><td class="lbl">Package Details</td><td>${val(f.package,'[package]')}</td></tr>
+${f.addons ? `<tr><td class="lbl">Add-on Deliverables</td><td>${esc(f.addons)}</td></tr>` : ''}
+<tr><td class="lbl">Delivery Timeframe</td><td>${val(f.delivery,'[delivery timeframe]')}</td></tr>
+<tr><td class="lbl">Total Fee (ZAR)</td><td><strong>${RZA(f.total)}</strong></td></tr>
+<tr><td class="lbl">50% Deposit Required</td><td><strong>${depositDisplay}</strong></td></tr>
+<tr><td class="lbl">Remaining Balance payable by</td><td>${f.balanceBy ? esc(niceDate(f.balanceBy)) : '<span style="color:#c0392b;">[ date ]</span>'}</td></tr>
+${f.revisions ? `<tr><td class="lbl">Rounds of Revisions</td><td>${esc(f.revisions)}</td></tr>` : ''}
+</table>
+
+<div class="pay-note">
+<strong>Payment summary:</strong> Total <strong>${RZA(f.total)}</strong> &nbsp;&middot;&nbsp; Deposit <strong>${depositDisplay}</strong> due on booking &nbsp;&middot;&nbsp; Remaining <strong>${RZA(balance)}</strong> due${f.balanceBy ? ` before ${esc(niceDate(f.balanceBy))}` : ''}.
+</div>
+
+<h2>Agreement</h2>
+<p>By making payment, the Client confirms that they have read, understood, and agreed to all terms outlined in this contract.</p>
+
+<div class="sig-grid">
+    <div class="sig-party">
+        <h3>Client</h3>
+        <div class="sig-lbl">Name</div>
+        <div class="sig-val">${val(f.client,'')}</div>
+        <div class="sig-line"></div>
+        <div class="sig-lbl">Signature &amp; Date</div>
+        <div style="height:42px;"></div>
+    </div>
+    <div class="sig-party">
+        <h3>FOM Studios</h3>
+        <div class="sig-lbl">Authorised Representative</div>
+        <div class="sig-val">FOM Studios</div>
+        <div class="sig-line"></div>
+        <div class="sig-lbl">Signature</div>
+        <div class="sig-written">FOM Studios</div>
+        <div class="sig-line"></div>
+        <div class="sig-lbl">Date</div>
+        <div class="sig-val">${todayNice()}</div>
+    </div>
+</div>
+
+<div class="footer-bar">
+    <span>FOM STUDIOS &nbsp;&middot;&nbsp; Photography &amp; Videography &nbsp;&middot;&nbsp; Johannesburg, South Africa</span>
+    <span>fomxstudios@gmail.com &nbsp;&middot;&nbsp; 073 755 3136 &nbsp;&middot;&nbsp; www.fomstudios.co.za</span>
+</div>
+</div>
+</body></html>`;
+}
+
+function refreshPreview(){
+    const frame = $('previewFrame');
+    const doc = frame.contentDocument || frame.contentWindow.document;
+    doc.open();
+    doc.write(buildContract(fields()));
+    doc.close();
+}
+
+$('printBtn').onclick = () => {
+    // Always refresh preview first so iframe has latest content, then print it
+    refreshPreview();
+    setTimeout(() => {
+        const frame = $('previewFrame');
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+    }, 300);
+};
+
+$('previewBtn').onclick = refreshPreview;
+
+/* refresh on any input or change in the form */
+document.querySelector('.panel').addEventListener('input', refreshPreview);
+document.querySelector('.panel').addEventListener('change', refreshPreview);
+
+// prefill from URL params
+(function(){
+    const p=new URLSearchParams(location.search);
+    const map={client:'cClient',shootType:'cShootType',date:'cDate',time:'cTime',location:'cLocation',duration:'cDuration',package:'cPackage',addons:'cAddons',delivery:'cDelivery',total:'cTotal',deposit:'cDeposit',balanceBy:'cBalanceBy',revisions:'cRevisions'};
+    Object.keys(map).forEach(k=>{ if(p.get(k)!=null && $(map[k])) $(map[k]).value=p.get(k); });
+})();
+
+refreshPreview();
+
+// hamburger
+const mm=$('mobileMenu'),sc=$('scrim');
+$('navToggle').onclick=()=>{mm.classList.add('open');sc.classList.add('show');};
+$('closeMenu').onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+
+// Firebase auth gate (same as all admin pages)
+(function(){
+    var configured=(typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+    if(!configured) return;
+    var gate=$('loginGate');
+    function ls(src){ return new Promise(function(r,j){ var s=document.createElement('script'); s.src=src; s.onload=r; s.onerror=j; document.head.appendChild(s); }); }
+    (async function(){
+        try{
+            var b='https://www.gstatic.com/firebasejs/10.12.0/';
+            await ls(b+'firebase-app-compat.js');
+            await ls(b+'firebase-auth-compat.js');
+            firebase.initializeApp(firebaseConfig);
+            var auth=firebase.auth();
+            var login=function(){ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value)
+                .catch(function(e){ $('lgErr').textContent=/password|user|credential|email/i.test(e.code||'')?'Incorrect email or password.':(e.message||'Login failed.'); }); };
+            $('lgBtn').onclick=login;
+            $('lgPass').addEventListener('keydown',function(e){ if(e.key==='Enter') login(); });
+            var lb=$('logoutBtn'); if(lb) lb.onclick=function(){ auth.signOut(); };
+            auth.onAuthStateChanged(function(u){
+                gate.style.display=u?'none':'flex';
+                if(lb) lb.style.display=u?'inline-block':'none';
+            });
+        }catch(e){ gate.style.display='none'; }
+    })();
+})();
+</script>
+</body>
+</html>

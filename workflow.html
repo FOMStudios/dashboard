@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOM Studios | Project Workflow</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/mascot.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1000px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* pill header + hamburger */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:1320px;margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:22px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.nav-cta{border:1px solid var(--ink);border-radius:var(--radius-pill);padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;background:none;}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.auth-check{position:fixed;inset:0;background:var(--bg);z-index:5000;display:flex;align-items:center;justify-content:center;}
+.auth-check .ac-inner{text-align:center;}
+.auth-check .ac-inner .brand-mark{display:block;font-size:20px;margin-bottom:8px;}
+.auth-check .ac-inner p{color:var(--ink-soft);font-size:13px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:12px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--accent-hover);}
+.btn.block{width:100%;padding:13px;}
+
+/* page */
+.page{padding-top:108px;}
+.page-head{margin-bottom:24px;}
+.page-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.page-head p{color:var(--ink-soft);font-size:14px;margin-top:4px;max-width:60ch;}
+
+/* filter chips */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.filter-chip{
+    border:1px solid var(--line);background:var(--bg-pill);
+    border-radius:var(--radius-pill);padding:8px 16px;
+    font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.2s;
+}
+.filter-chip:hover{border-color:var(--ink);color:var(--ink);}
+.filter-chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg-pill);}
+
+/* empty state */
+.empty-state{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:48px 28px;text-align:center;}
+.empty-state h3{font-size:19px;font-weight:800;margin-bottom:6px;}
+.empty-state p{color:var(--ink-soft);max-width:40ch;margin:0 auto;font-size:14px;}
+
+/* ============================================================
+   PROJECT CARD — one per order, expandable checklist inside
+   ============================================================ */
+.project-list{display:flex;flex-direction:column;gap:16px;}
+
+.project-card{
+    background:var(--bg-pill);border:1px solid var(--line);
+    border-radius:var(--radius-card);overflow:hidden;
+}
+.project-card.complete{border-color:#b7d8c0;}
+
+.project-header{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:14px;padding:18px 22px;cursor:pointer;user-select:none;flex-wrap:wrap;
+}
+.project-header:hover{background:#f5f4f0;}
+.ph-left{min-width:0;}
+.ph-id{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;}
+.ph-title{font-size:17px;font-weight:800;letter-spacing:-.01em;margin-top:2px;}
+.ph-sub{font-size:13px;color:var(--ink-soft);margin-top:1px;}
+.ph-right{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+
+/* progress ring-style pill */
+.progress-pill{
+    display:flex;align-items:center;gap:8px;
+    background:var(--bg);border:1px solid var(--line);
+    border-radius:var(--radius-pill);padding:6px 14px;
+}
+.progress-pill .p-count{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;}
+.progress-track{width:70px;height:6px;background:var(--line);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .3s ease;}
+.project-card.complete .progress-fill{background:#27ae60;}
+.project-card.complete .progress-pill{border-color:#b7d8c0;background:#eef7f0;}
+
+.chevron{color:var(--ink-soft);font-size:13px;transition:transform .3s;}
+.project-card.open .chevron{transform:rotate(180deg);}
+
+/* checklist body */
+.project-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease;}
+.project-card.open .project-body{grid-template-rows:1fr;}
+.project-body-inner{overflow:hidden;min-height:0;}
+.checklist{padding:4px 22px 22px;border-top:1px solid var(--line);}
+
+.check-step{
+    display:flex;align-items:flex-start;gap:14px;
+    padding:13px 4px;border-bottom:1px solid #eceae4;
+    cursor:pointer;transition:background .15s;
+}
+.check-step:last-child{border-bottom:none;}
+.check-step:hover{background:#f5f4f0;}
+
+.check-box{
+    width:22px;height:22px;flex-shrink:0;margin-top:1px;
+    border:2px solid var(--line);border-radius:7px;
+    display:flex;align-items:center;justify-content:center;
+    transition:.2s;background:#fff;
+}
+.check-step.done .check-box{background:var(--accent);border-color:var(--accent);}
+.check-box svg{width:13px;height:13px;stroke:#fff;stroke-width:3;fill:none;opacity:0;transition:opacity .15s;}
+.check-step.done .check-box svg{opacity:1;}
+
+.check-text{min-width:0;}
+.check-title{font-size:14px;font-weight:600;color:var(--ink);}
+.check-step.done .check-title{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:#b9b8b5;}
+.check-note{font-size:12.5px;color:var(--ink-soft);margin-top:2px;line-height:1.55;}
+.check-step.done .check-note{opacity:.6;}
+.check-who{
+    display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;
+    text-transform:uppercase;border-radius:var(--radius-pill);
+    padding:2px 9px;margin-left:8px;vertical-align:1px;
+}
+.check-who.me{background:#e7f0ff;color:var(--accent);}
+.check-who.client{background:#efece5;color:var(--ink-soft);}
+
+/* quick links row inside checklist */
+.quick-links{display:flex;gap:8px;flex-wrap:wrap;padding:16px 4px 2px;}
+.quick-link{
+    display:inline-flex;align-items:center;gap:6px;
+    border:1px solid var(--line);border-radius:var(--radius-pill);
+    padding:7px 14px;font-size:12px;font-weight:600;color:var(--ink);
+    background:var(--bg-pill);transition:.2s;
+}
+.quick-link:hover{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-dark);color:#fff;padding:12px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000;}
+.toast.show{opacity:1;}
+
+@media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
+@media(max-width:560px){
+    .project-header{padding:15px 16px;}
+    .checklist{padding:2px 14px 18px;}
+    .ph-right{width:100%;justify-content:space-between;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN GATE -->
+<div class="auth-check" id="authCheck">
+    <div class="ac-inner">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p>Checking session…</p>
+    </div>
+</div>
+
+<div class="login-gate" id="loginGate" style="display:none;">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="leads.html">Leads</a></li>
+        <li><a href="content.html">Content Planner</a></li>
+        <li><a href="index.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html" class="active">Workflow</a></li>
+                <li><a href="leads.html">Leads</a></li>
+                <li><a href="content.html">Content Planner</a></li>
+                <li><a href="index.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+            </ul>
+            <button class="nav-cta" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </nav>
+</div>
+
+<div class="page wrap">
+    <div class="page-head">
+        <span class="eyebrow">Admin</span>
+        <h1>Project Workflow</h1>
+        <p>Every order from your database appears here with its step-by-step checklist. Tap a step to tick it off — progress saves automatically and syncs everywhere.</p>
+    </div>
+
+    <div class="filter-row" id="filterRow">
+        <button class="filter-chip on" data-filter="active">In progress</button>
+        <button class="filter-chip" data-filter="complete">Completed</button>
+        <button class="filter-chip" data-filter="all">All projects</button>
+    </div>
+
+    <div class="project-list" id="projectList"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const fmtDate = d => { if(!d) return ''; try{ const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return d; } };
+
+/* ============================================================
+   WORKFLOW STEPS — the master checklist every project follows.
+   `who` marks whether it's your action or the client's, purely
+   as a visual tag. Checkbox state is stored per-order in
+   Firestore as workflow: { s1:true, s2:false, ... }.
+   ============================================================ */
+const STEPS = [
+    { key:'s1',  who:'client', title:'Client enquiry received',
+      note:'Client viewed the website, picked a package and sent a WhatsApp.' },
+    { key:'s2',  who:'me', title:'Invoice & contract sent',
+      note:'Generate the invoice (Calculator) and contract (Contract page), send both via WhatsApp, and request their email address.' },
+    { key:'s3',  who:'client', title:'Payment received + signed contract returned',
+      note:'Client has paid (deposit or full) and sent back the signed contract.' },
+    { key:'s4',  who:'me', title:'Database updated',
+      note:'Order filled in on the Database page — amounts, dates, client email, package details.' },
+    { key:'s5',  who:'me', title:'Documents uploaded to Drive',
+      note:'Signed contract + invoice uploaded to Google Drive, share links pasted into the Contract URL and Invoice URL fields.' },
+    { key:'s6',  who:'me', title:'Firebase account created',
+      note:'Firebase Console → Authentication → Add user with the client\u2019s email.' },
+    { key:'s7',  who:'me', title:'Password reset email triggered',
+      note:'Firebase Console → three-dot menu next to the user → "Send password reset email". Client sets their own password from that email.' },
+    { key:'s8',  who:'me', title:'Confirmation email sent',
+      note:'Email page → Booking Confirmation → includes the portal link and login instructions.' },
+    { key:'s9',  who:'client', title:'Client logged into portal',
+      note:'Client can see their booking, contract and invoice. (Optional check — confirm with them or skip.)' },
+    { key:'s10', who:'me', title:'Shoot completed',
+      note:'Shoot day done. Update Order Status in the Database as you go.' },
+    { key:'s11', who:'me', title:'Edits done & uploaded to Drive',
+      note:'Final photos/videos uploaded to the client\u2019s Drive folder, deliverables link pasted into the Database, "Files Ready?" flipped to ✓ Ready.' },
+    { key:'s12', who:'me', title:'"Files Ready" email sent',
+      note:'Email page → Files Ready → includes portal link + Google review request.' },
+    { key:'s13', who:'client', title:'Client downloaded deliverables',
+      note:'Project complete. 🎉' },
+];
+
+let orders = [];
+let store = null;
+let currentFilter = 'active';
+let openCards = new Set(); // remember which cards are expanded across re-renders
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function doneCount(o){
+    const wf = o.workflow || {};
+    return STEPS.filter(s => wf[s.key]).length;
+}
+function isComplete(o){ return doneCount(o) === STEPS.length; }
+
+function render(){
+    const list = $('projectList');
+    let visible = orders;
+    if(currentFilter === 'active')   visible = orders.filter(o => !isComplete(o));
+    if(currentFilter === 'complete') visible = orders.filter(o => isComplete(o));
+
+    if(!visible.length){
+        list.innerHTML = `<div class="empty-state">
+            <h3>${currentFilter === 'complete' ? 'No completed projects yet' : 'No projects here'}</h3>
+            <p>${currentFilter === 'complete'
+                ? 'Once a project has every step ticked, it moves here.'
+                : 'Add an order on the Database page and it will appear here automatically with its checklist.'}</p>
+        </div>`;
+        return;
+    }
+
+    list.innerHTML = visible.map(o => {
+        const wf = o.workflow || {};
+        const done = doneCount(o);
+        const pct = Math.round(done / STEPS.length * 100);
+        const complete = done === STEPS.length;
+        const open = openCards.has(o.id);
+
+        const steps = STEPS.map(s => `
+            <div class="check-step ${wf[s.key] ? 'done' : ''}" data-oid="${esc(o.id)}" data-step="${s.key}">
+                <div class="check-box"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div class="check-text">
+                    <div class="check-title">${esc(s.title)}<span class="check-who ${s.who}">${s.who === 'me' ? 'You' : 'Client'}</span></div>
+                    <div class="check-note">${s.note}</div>
+                </div>
+            </div>`).join('');
+
+        return `
+        <div class="project-card ${complete ? 'complete' : ''} ${open ? 'open' : ''}" data-card="${esc(o.id)}">
+            <div class="project-header" data-toggle="${esc(o.id)}">
+                <div class="ph-left">
+                    <div class="ph-id">${esc(o.orderId || '—')}</div>
+                    <div class="ph-title">${esc(o.customer || 'Unnamed client')}</div>
+                    <div class="ph-sub">${esc(o.product || '')}${o.shootDate ? ' · ' + fmtDate(o.shootDate) : ''}</div>
+                </div>
+                <div class="ph-right">
+                    <div class="progress-pill">
+                        <span class="p-count">${complete ? '✓ Done' : done + '/' + STEPS.length}</span>
+                        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+                    </div>
+                    <span class="chevron">▾</span>
+                </div>
+            </div>
+            <div class="project-body">
+                <div class="project-body-inner">
+                    <div class="checklist">
+                        ${steps}
+                        <div class="quick-links">
+                            <a class="quick-link" href="database.html">Open Database</a>
+                            <a class="quick-link" href="email.html">Open Email</a>
+                            <a class="quick-link" href="contract.html">Open Contract</a>
+                            <a class="quick-link" href="https://console.firebase.google.com" target="_blank" rel="noopener">Firebase Console ↗</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+/* ============================================================
+   EVENTS — delegated: header toggles card, step toggles check
+   ============================================================ */
+$('projectList').addEventListener('click', e => {
+    const header = e.target.closest('[data-toggle]');
+    if(header){
+        const id = header.dataset.toggle;
+        const card = header.closest('.project-card');
+        card.classList.toggle('open');
+        if(card.classList.contains('open')) openCards.add(id); else openCards.delete(id);
+        return;
+    }
+    const step = e.target.closest('.check-step');
+    if(step && store){
+        const oid = step.dataset.oid, key = step.dataset.step;
+        const o = orders.find(x => x.id === oid);
+        if(!o) return;
+        o.workflow = o.workflow || {};
+        o.workflow[key] = !o.workflow[key];
+        // optimistic UI update, then persist
+        render();
+        store.saveWorkflow(oid, o.workflow);
+    }
+});
+
+$('filterRow').addEventListener('click', e => {
+    const chip = e.target.closest('.filter-chip');
+    if(!chip) return;
+    currentFilter = chip.dataset.filter;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('on', c === chip));
+    render();
+});
+
+/* toast */
+let toastT;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2000); }
+
+/* hamburger */
+const mm=$('mobileMenu'), sc=$('scrim');
+$('navToggle').onclick=()=>{mm.classList.add('open');sc.classList.add('show');};
+$('closeMenu').onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+
+/* ============================================================
+   FIREBASE — same compat pattern as the other admin pages.
+   Reads the same `orders` collection; workflow state is saved
+   onto each order doc as a `workflow` map (merge:true, so it
+   never touches the other fields the Database page manages).
+   ============================================================ */
+const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig &&
+    !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+
+(async function init(){
+    if(!configured){
+        $('authCheck').style.display='none';
+        $('loginGate').style.display='flex';
+        $('loginGate').innerHTML = `<div class="login-card">
+            <span class="brand-mark">FOM STUDIOS</span>
+            <p class="lg-sub" style="margin-bottom:0;">Firebase is not configured — check firebase-config.js.</p>
+        </div>`;
+        return;
+    }
+    try{
+        const b='https://www.gstatic.com/firebasejs/10.12.0/';
+        await loadScript(b+'firebase-app-compat.js');
+        await Promise.all([loadScript(b+'firebase-auth-compat.js'), loadScript(b+'firebase-firestore-compat.js')]);
+
+        try{ firebase.initializeApp(firebaseConfig); }catch(e){ /* already initialised */ }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        store = {
+            start(){
+                db.collection('orders').orderBy('createdAt','desc').onSnapshot(snap => {
+                    orders = snap.docs.map(d => ({id:d.id, ...d.data()}));
+                    render();
+                }, err => {
+                    // fall back to unordered if createdAt is missing on old docs
+                    db.collection('orders').onSnapshot(s2 => {
+                        orders = s2.docs.map(d => ({id:d.id, ...d.data()}));
+                        render();
+                    }, e2 => console.warn('Firestore:', e2));
+                });
+            },
+            saveWorkflow(id, workflow){
+                db.collection('orders').doc(id).set({ workflow }, { merge:true })
+                  .catch(e => { console.warn('Save failed:', e); toast('Could not save — check connection'); });
+            }
+        };
+
+        const login = () => {
+            $('lgErr').textContent='';
+            auth.signInWithEmailAndPassword($('lgEmail').value.trim(), $('lgPass').value)
+                .catch(err => { $('lgErr').textContent = /password|user|credential|email/i.test(err.code||'') ? 'Incorrect email or password.' : (err.message||'Login failed.'); });
+        };
+        $('lgBtn').onclick = login;
+        $('lgPass').addEventListener('keydown', e => { if(e.key==='Enter') login(); });
+        $('logoutBtn').onclick = () => auth.signOut();
+
+        auth.onAuthStateChanged(u => {
+            $('authCheck').style.display = 'none';
+            $('loginGate').style.display = u ? 'none' : 'flex';
+            $('logoutBtn').style.display = u ? 'inline-block' : 'none';
+            if(u) store.start();
+        });
+    }catch(e){
+        console.error('Workflow init failed:', e.message || e);
+        $('authCheck').style.display='none';
+    }
+})();
+</script>
+</body>
+</html>

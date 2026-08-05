@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOM Studios | Leads &amp; Outreach</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/mascot.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1320px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* pill header + hamburger (same system as every other admin page) */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:var(--container);margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:20px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.btn.block{width:100%;padding:13px;}
+
+/* page */
+.page{padding-top:108px;}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:20px;}
+.page-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.page-head p{color:var(--ink-soft);font-size:14px;margin-top:4px;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap;}
+.btn:hover{background:var(--accent-hover);border-color:var(--accent-hover);}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink);}
+.btn.ghost:hover{background:var(--ink);color:var(--bg-pill);}
+.badge{font-size:12px;font-weight:600;border-radius:var(--radius-pill);padding:8px 14px;border:1px solid var(--line);}
+.badge.cloud{background:#e7f0ff;border-color:#bcd4f5;color:var(--accent);}
+.badge.local{background:#f3f1ea;color:var(--ink-soft);}
+
+/* tabs */
+.tab-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+.tab-chip{border:1px solid var(--line);background:var(--bg-pill);border-radius:var(--radius-pill);padding:10px 20px;font-size:13.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;transition:.2s;}
+.tab-chip:hover{border-color:var(--ink);color:var(--ink);}
+.tab-chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg-pill);}
+.tab-panel{display:none;}
+.tab-panel.on{display:block;}
+
+/* ===== dashboard KPIs ===== */
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px;}
+.kpi{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:16px 18px;}
+.kpi .k-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:600;}
+.kpi .k-val{font-size:24px;font-weight:800;letter-spacing:-.01em;margin-top:5px;font-variant-numeric:tabular-nums;}
+.kpi.accent{background:var(--bg-dark);color:var(--ink-on-dark);border-color:var(--bg-dark);}
+.kpi.accent .k-lbl{color:var(--accent-on-dark);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:22px;}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:700;margin-bottom:16px;}
+.donut-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.legend{list-style:none;display:flex;flex-direction:column;gap:10px;flex:1;min-width:140px;}
+.legend li{display:flex;align-items:center;gap:10px;font-size:14px;}
+.legend .dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;}
+.legend .lv{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-soft);}
+.followup-list{display:flex;flex-direction:column;gap:10px;max-height:210px;overflow-y:auto;}
+.fu-row{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;border-bottom:1px solid var(--line);padding-bottom:8px;}
+.fu-row .fu-name{font-weight:700;}
+.fu-row .fu-sub{color:var(--ink-soft);font-size:12px;}
+.fu-empty{color:var(--ink-soft);font-size:13.5px;padding:8px 0;}
+
+/* ===== leads table ===== */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.toolbar .search{flex:1;min-width:180px;}
+.toolbar input.search{border:1px solid var(--line);border-radius:var(--radius-pill);padding:11px 18px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink);width:100%;}
+.count-pill{font-size:13px;color:var(--ink-soft);background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:8px 16px;font-weight:600;}
+.table-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);overflow:hidden;}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{border-collapse:collapse;width:100%;min-width:1300px;}
+thead th{background:#cfe0d3;color:var(--ink);font-size:12px;font-weight:700;text-align:left;padding:12px 10px;white-space:nowrap;position:sticky;top:0;}
+tbody td{border-bottom:1px solid var(--line);padding:4px 6px;vertical-align:middle;}
+tbody tr:hover{background:#f4f3ef;}
+td input,td select{width:100%;border:1px solid transparent;background:transparent;border-radius:8px;padding:8px 8px;font-size:13.5px;font-family:inherit;color:var(--ink);}
+td input:hover,td select:hover{border-color:var(--line);}
+td input:focus,td select:focus{outline:none;border-color:var(--accent);background:#fff;}
+td.rm-col{width:36px;text-align:center;}
+.rm{background:none;border:none;color:#b85;cursor:pointer;font-size:16px;opacity:.6;}
+.rm:hover{opacity:1;color:#d55;}
+.col-id{width:56px;}.col-date{width:130px;}.col-yn{width:90px;}
+select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align:center;-webkit-appearance:none;appearance:none;padding:8px 12px;cursor:pointer;}
+.st-notemailed{background:#efece5;color:#6f6f6d;}
+.st-emailed{background:#e7f0ff;color:#02367B;}
+.st-responded{background:#fff4e0;color:#a9720b;}
+.st-accepted{background:#e8f7ee;color:#1f8a4c;}
+.st-rejected{background:#fdeceb;color:#c0392b;}
+.empty{padding:40px;text-align:center;color:var(--ink-soft);}
+
+/* ===== pitch deck & email panels (form + preview) ===== */
+.builder-grid{display:grid;grid-template-columns:0.85fr 1.15fr;gap:22px;align-items:start;}
+@media(max-width:980px){.builder-grid{grid-template-columns:1fr;}}
+.panel{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:22px;min-width:0;}
+.panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:700;margin-bottom:16px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+input[type=text],input[type=email],textarea,select.form-select{width:100%;min-width:0;max-width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-size:14.5px;font-family:inherit;color:var(--ink);background:#fff;height:44px;}
+textarea{height:auto;}
+select.form-select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f6f6d' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;}
+
+/* auth-check splash — shown instantly while Firebase resolves the
+   session, so the login card never "flashes then opens" on refresh */
+.auth-check{position:fixed;inset:0;background:var(--bg);z-index:5000;display:flex;align-items:center;justify-content:center;}
+.auth-check .ac-inner{text-align:center;}
+.auth-check .ac-inner .brand-mark{display:block;font-size:20px;margin-bottom:8px;}
+.auth-check .ac-inner p{color:var(--ink-soft);font-size:13px;}
+textarea{resize:vertical;min-height:80px;line-height:1.6;}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.hint{font-size:12px;color:var(--ink-soft);margin-top:5px;line-height:1.6;}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+.actions .btn{flex:1;min-width:140px;text-align:center;}
+.chip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.chip-check{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:7px 8px;font-size:12px;cursor:pointer;background:#fff;}
+.chip-check img{width:26px;height:26px;object-fit:cover;border-radius:5px;flex-shrink:0;}
+.preview-wrap{background:#e9e7e1;border:1px solid var(--line);border-radius:var(--radius-card);padding:18px;overflow-x:auto;}
+#deckFrame{width:100%;min-height:640px;border:none;border-radius:10px;background:#fff;}
+#deckDoc{display:none;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-dark);color:#fff;padding:12px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000;}
+.toast.show{opacity:1;}
+
+.email-preview{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;font-size:14.5px;line-height:1.8;white-space:pre-wrap;color:var(--ink);}
+
+@media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
+@media(max-width:980px){.kpis{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:640px){.kpis{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}.chip-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+
+<div class="auth-check" id="authCheck">
+    <div class="ac-inner">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p>Checking session…</p>
+    </div>
+</div>
+
+<div class="login-gate" id="loginGate" style="display:none;">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close menu">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="leads.html">Leads</a></li>
+        <li><a href="content.html">Content Planner</a></li>
+        <li><a href="index.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="leads.html" class="active">Leads</a></li>
+                <li><a href="content.html">Content Planner</a></li>
+                <li><a href="index.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+            </ul>
+            <button class="btn ghost" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </nav>
+</div>
+
+<div class="page wrap">
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">Outreach</span>
+            <h1>Leads &amp; Outreach</h1>
+            <p>Track who you've emailed, generate a pitch deck PDF, and copy a ready-to-send accreditation email.</p>
+        </div>
+        <span class="badge local" id="syncBadge">Connecting…</span>
+    </div>
+
+    <div class="tab-row">
+        <button class="tab-chip on" data-tab="leads">📋 Leads Tracker</button>
+        <button class="tab-chip" data-tab="deck">🎬 Pitch Deck</button>
+        <button class="tab-chip" data-tab="email">✉️ Email Generator</button>
+    </div>
+
+    <!-- ================= TAB 1 : LEADS TRACKER ================= -->
+    <div class="tab-panel on" id="tabLeads">
+
+        <div class="kpis">
+            <div class="kpi"><div class="k-lbl">Total Leads</div><div class="k-val" id="kTotal">0</div></div>
+            <div class="kpi"><div class="k-lbl">Not Emailed</div><div class="k-val" id="kNotEmailed">0</div></div>
+            <div class="kpi"><div class="k-lbl">Awaiting Reply</div><div class="k-val" id="kEmailed">0</div></div>
+            <div class="kpi"><div class="k-lbl">Responded</div><div class="k-val" id="kResponded">0</div></div>
+            <div class="kpi accent"><div class="k-lbl">Accepted</div><div class="k-val" id="kAccepted">0</div></div>
+            <div class="kpi"><div class="k-lbl">Response Rate</div><div class="k-val" id="kRate">0%</div></div>
+        </div>
+
+        <div class="grid2">
+            <div class="card">
+                <h2>Status Breakdown</h2>
+                <div class="donut-wrap"><div id="donutHost"></div><ul class="legend" id="legendHost"></ul></div>
+            </div>
+            <div class="card">
+                <h2>Needs Follow-up (emailed 7+ days ago, no reply)</h2>
+                <div class="followup-list" id="followupList"></div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <button class="btn" id="addBtn">+ Add lead</button>
+            <button class="btn ghost" id="csvBtn">Export CSV</button>
+            <button class="btn ghost" id="clearBtn">Clear all</button>
+            <input type="text" class="search" id="search" placeholder="Search company, contact, email, status…">
+            <span class="count-pill" id="countPill">0 leads</span>
+        </div>
+
+        <div class="table-card">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-id">ID</th>
+                            <th>Company / Organisation</th>
+                            <th>Contact Name</th>
+                            <th>Email</th>
+                            <th>Website / Instagram</th>
+                            <th>Location</th>
+                            <th>Category</th>
+                            <th class="col-yn">Emailed?</th>
+                            <th class="col-date">Date Emailed</th>
+                            <th class="col-date">Follow-up By</th>
+                            <th>Status</th>
+                            <th>Comments</th>
+                            <th class="rm-col"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+            <div class="empty" id="emptyState" style="display:none;">No leads yet — click <b>“+ Add lead”</b> to start tracking, or log one straight from the Email Generator tab.</div>
+        </div>
+    </div>
+
+    <!-- ================= TAB 2 : PITCH DECK ================= -->
+    <div class="tab-panel" id="tabDeck">
+        <div class="builder-grid">
+            <div class="panel">
+                <h2>Pitch deck details</h2>
+                <div class="field"><label for="dClient">Prepared for (optional)</label><input type="text" id="dClient" placeholder="e.g. Laver Cup Media Team"></div>
+                <div class="field"><label for="dAbout">About us</label><textarea id="dAbout" rows="5"></textarea></div>
+                <div class="field"><label for="dWhat">What we do (one per line)</label><textarea id="dWhat" rows="5"></textarea></div>
+                <div class="field"><label for="dWhy">Why work with us (one per line)</label><textarea id="dWhy" rows="5"></textarea></div>
+                <div class="field"><label for="dClients">Previous clients (one per line)</label><textarea id="dClients" rows="4"></textarea></div>
+                <div class="field">
+                    <label>Portfolio images (pick up to 6)</label>
+                    <div class="chip-grid" id="portfolioPicker"></div>
+                    <div class="hint">Uses the same <code>assets/workN.jpg</code> files as your gallery.</div>
+                </div>
+                <div class="actions">
+                    <button class="btn" id="deckPrintBtn">Export as PDF</button>
+                    <button class="btn ghost" id="deckRefreshBtn">Refresh preview</button>
+                </div>
+                <div class="hint"><b>To save as PDF:</b> click <b>Export as PDF</b> → in the print dialog set <b>Destination</b> to <b>"Save as PDF"</b> and confirm <b>Layout: Landscape</b> → Save.</div>
+            </div>
+            <div>
+                <div class="panel" style="margin-bottom:12px;padding:14px 22px;"><h2 style="margin:0;">Deck preview (7 pages, landscape)</h2></div>
+                <div class="preview-wrap"><iframe id="deckFrame" scrolling="yes"></iframe></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TAB 3 : EMAIL GENERATOR ================= -->
+    <div class="tab-panel" id="tabEmail">
+        <div class="builder-grid">
+            <div class="panel">
+                <h2>Email details</h2>
+                <div class="field"><label for="eTemplate">Template</label>
+                    <select id="eTemplate" class="form-select">
+                        <option value="accreditation">Media accreditation request</option>
+                        <option value="general">General introduction / collaboration</option>
+                    </select>
+                </div>
+                <div class="field"><label for="eRecipient">Addressed to</label><input type="text" id="eRecipient" placeholder="e.g. Laver Cup Media Team"></div>
+                <div class="field"><label for="eEvent">Event / opportunity name</label><input type="text" id="eEvent" placeholder="e.g. 2026 Laver Cup"></div>
+                <div class="field"><label for="eCompany">Company / organisation (for logging as a lead)</label><input type="text" id="eCompany" placeholder="e.g. Laver Cup"></div>
+                <div class="field"><label for="eLeadEmail">Contact email (optional, for logging)</label><input type="email" id="eLeadEmail" placeholder="media@example.com"></div>
+                <div class="actions">
+                    <button class="btn" id="copyEmailBtn">Copy email</button>
+                    <button class="btn ghost" id="logLeadBtn">Log as lead</button>
+                </div>
+                <div class="hint">Copies plain text — paste straight into Gmail. Attach your exported pitch deck PDF before sending. "Log as lead" adds this company to the tracker and marks it emailed today.</div>
+            </div>
+            <div>
+                <div class="panel" style="margin-bottom:12px;padding:14px 22px;"><h2 style="margin:0;">Email preview</h2></div>
+                <div class="email-preview" id="emailPreview"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="deckDoc"></div>
+<div class="toast" id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const tsMillis = t => (t && typeof t.toMillis==='function') ? t.toMillis() : 0;
+
+/* ================================================================
+   TABS
+   ================================================================ */
+document.querySelectorAll('.tab-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab-chip').forEach(c=>c.classList.toggle('on', c===chip));
+        document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('on', p.id === 'tab'+chip.dataset.tab.charAt(0).toUpperCase()+chip.dataset.tab.slice(1)));
+    });
+});
+
+let toastT;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200); }
+
+/* hamburger */
+const mm=$('mobileMenu'), sc=$('scrim');
+$('navToggle').onclick=()=>{mm.classList.add('open');sc.classList.add('show');};
+$('closeMenu').onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+
+/* ================================================================
+   LEADS TRACKER — cloud-only (Firestore), same as database.html's
+   dedicated cloud store. No local-storage fallback, so leads always
+   match across devices (desktop + mobile).
+   ================================================================ */
+const STATUSES = ['Not Emailed','Emailed','Responded','Accepted','Rejected'];
+const CATEGORIES = ['Sports Event','Media / Press','Brand / Business','Wedding / Personal','Other'];
+const STATUS_CLASS = { 'Not Emailed':'st-notemailed','Emailed':'st-emailed','Responded':'st-responded','Accepted':'st-accepted','Rejected':'st-rejected' };
+const STATUS_DOT   = { 'Not Emailed':'#6f6f6d','Emailed':'#02367B','Responded':'#c98a1f','Accepted':'#1f8a4c','Rejected':'#c0392b' };
+
+let leads = [];
+let store, editingCell=false, pendingRender=false;
+function safeRenderLeads(){ try{ renderLeads(); }catch(e){ console.error('render error',e); } }
+
+const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig &&
+              !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+async function loadFirebase(){ const b='https://www.gstatic.com/firebasejs/10.12.0/';
+  await loadScript(b+'firebase-app-compat.js');
+  await Promise.all([loadScript(b+'firebase-auth-compat.js'), loadScript(b+'firebase-firestore-compat.js')]); }
+
+function blankLead(overrides){
+    return Object.assign({
+        leadId:'L'+String(leads.length+1).padStart(3,'0'), company:'', contact:'', email:'', web:'',
+        location:'', category:'Sports Event', emailed:'No', dateEmailed:'', followUp:'',
+        status:'Not Emailed', comments:''
+    }, overrides||{});
+}
+
+function cloudLeadStore(db){
+    const col=()=>db.collection('leads');
+    const timers={};
+    const strip=o=>{const {id,...r}=o; return r;};
+    return {
+        start(){
+            col().onSnapshot(snap=>{
+                leads = snap.docs.map(d=>({id:d.id, ...d.data()}));
+                leads.sort((a,b)=> tsMillis(a.createdAt) - tsMillis(b.createdAt));
+                if(editingCell){ pendingRender=true; } else safeRenderLeads();
+            }, err=>{ console.warn('Firestore:',err); toast('Could not load leads — ' + (err.code==='permission-denied' ? 'check your Firestore rules allow the "leads" collection.' : (err.message||'connection error'))); });
+        },
+        add(o){ o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)).catch(err=>{ console.error(err); toast('Could not save — ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "leads" collection.' : (err.message||'try again.'))); }); },
+        update(id){ clearTimeout(timers[id]); timers[id]=setTimeout(()=>{ const o=leads.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}).catch(err=>{ console.error(err); toast('Could not save changes — '+(err.message||'try again.')); }); },500); },
+        remove(id){ col().doc(id).delete().catch(err=>{ console.error(err); toast('Could not delete — '+(err.message||'try again.')); }); },
+        clear(){ leads.slice().forEach(o=>col().doc(o.id).delete()); }
+    };
+}
+
+function daysSince(dateStr){
+    if(!dateStr) return null;
+    const d = new Date(dateStr+'T00:00:00');
+    return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+
+function donutSVG(segs, size=170, stroke=26){
+  const r=(size-stroke)/2, c=2*Math.PI*r, cx=size/2;
+  const total=segs.reduce((a,s)=>a+s.value,0)||1; let off=0, arcs='';
+  segs.forEach(s=>{ if(s.value<=0) return; const len=s.value/total*c;
+    arcs+=`<circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${s.color}" stroke-width="${stroke}" stroke-dasharray="${len} ${c-len}" stroke-dashoffset="${-off}" transform="rotate(-90 ${cx} ${cx})"/>`;
+    off+=len; });
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img">
+    <circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="#e9e7e1" stroke-width="${stroke}"/>${arcs}
+    <text x="${cx}" y="${cx-2}" text-anchor="middle" font-size="30" font-weight="800" fill="#2a2b2c">${total}</text>
+    <text x="${cx}" y="${cx+18}" text-anchor="middle" font-size="11" fill="#6f6f6d" letter-spacing="1">LEADS</text></svg>`;
+}
+
+const leadTbody = ()=>$('tbody');
+const leadSearch = ()=>$('search');
+
+function renderLeads(){
+    const q = (leadSearch().value||'').trim().toLowerCase();
+    const tbody = leadTbody();
+    tbody.innerHTML = '';
+
+    leads.forEach((o,i)=>{
+        const hay = (o.company+' '+o.contact+' '+o.email+' '+o.location+' '+o.status+' '+o.category+' '+o.comments).toLowerCase();
+        if(q && !hay.includes(q)) return;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="col-id"><input data-i="${i}" data-f="leadId" value="${esc(o.leadId)}"></td>
+            <td><input data-i="${i}" data-f="company" value="${esc(o.company)}" placeholder="Company / organisation"></td>
+            <td><input data-i="${i}" data-f="contact" value="${esc(o.contact)}" placeholder="Contact name"></td>
+            <td><input data-i="${i}" data-f="email" type="email" value="${esc(o.email)}" placeholder="email@example.com"></td>
+            <td><input data-i="${i}" data-f="web" value="${esc(o.web)}" placeholder="site or @instagram"></td>
+            <td><input data-i="${i}" data-f="location" value="${esc(o.location)}" placeholder="City, Country"></td>
+            <td><select data-i="${i}" data-f="category">${CATEGORIES.map(c=>`<option ${c===o.category?'selected':''}>${c}</option>`).join('')}</select></td>
+            <td class="col-yn"><select data-i="${i}" data-f="emailed"><option ${o.emailed==='No'?'selected':''}>No</option><option ${o.emailed==='Yes'?'selected':''}>Yes</option></select></td>
+            <td class="col-date"><input type="date" data-i="${i}" data-f="dateEmailed" value="${esc(o.dateEmailed)}"></td>
+            <td class="col-date"><input type="date" data-i="${i}" data-f="followUp" value="${esc(o.followUp)}"></td>
+            <td><select class="status-select ${STATUS_CLASS[o.status]||''}" data-i="${i}" data-f="status">${STATUSES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></td>
+            <td><input data-i="${i}" data-f="comments" value="${esc(o.comments)}" placeholder="e.g. emailed again 12 Apr, follow up in 2 weeks"></td>
+            <td class="rm-col"><button class="rm" data-rm="${i}" title="Delete">✕</button></td>`;
+        tbody.appendChild(tr);
+    });
+
+    $('countPill').textContent = leads.length + (leads.length===1?' lead':' leads');
+    $('emptyState').style.display = leads.length ? 'none' : 'block';
+    renderLeadDashboard();
+}
+
+function renderLeadDashboard(){
+    const total = leads.length;
+    const byStatus = {}; STATUSES.forEach(s=>byStatus[s]=0);
+    leads.forEach(o=>{ byStatus[o.status] = (byStatus[o.status]||0)+1; });
+
+    $('kTotal').textContent = total;
+    $('kNotEmailed').textContent = byStatus['Not Emailed']||0;
+    $('kEmailed').textContent = byStatus['Emailed']||0;
+    $('kResponded').textContent = byStatus['Responded']||0;
+    $('kAccepted').textContent = byStatus['Accepted']||0;
+    const emailedTotal = total - (byStatus['Not Emailed']||0);
+    const respondedTotal = (byStatus['Responded']||0)+(byStatus['Accepted']||0)+(byStatus['Rejected']||0);
+    $('kRate').textContent = emailedTotal ? Math.round(respondedTotal/emailedTotal*100)+'%' : '0%';
+
+    const segs = STATUSES.map(s=>({label:s, value:byStatus[s]||0, color:STATUS_DOT[s]}));
+    $('donutHost').innerHTML = total ? donutSVG(segs) : `<p style="color:var(--ink-soft);font-size:13.5px;">Add leads to see the breakdown.</p>`;
+    $('legendHost').innerHTML = segs.map(s=>`<li><span class="dot" style="background:${s.color}"></span>${esc(s.label)}<span class="lv">${s.value}</span></li>`).join('');
+
+    const followups = leads.filter(o=>{
+        if(o.status!=='Emailed') return false;
+        const d = daysSince(o.dateEmailed);
+        return d!==null && d>=7;
+    }).sort((a,b)=> daysSince(b.dateEmailed) - daysSince(a.dateEmailed));
+
+    $('followupList').innerHTML = followups.length
+        ? followups.map(o=>`<div class="fu-row"><div><div class="fu-name">${esc(o.company||o.contact||'—')}</div><div class="fu-sub">${esc(o.email||'')}</div></div><div class="fu-sub">${daysSince(o.dateEmailed)} days ago</div></div>`).join('')
+        : `<div class="fu-empty">Nothing overdue — nice work staying on top of it.</div>`;
+}
+
+leadTbody().addEventListener('focusin',()=>{editingCell=true;});
+leadTbody().addEventListener('focusout',()=>{ editingCell=false; if(pendingRender){pendingRender=false; renderLeads();} });
+leadTbody().addEventListener('input', e=>{
+    const el=e.target, i=el.dataset.i, f=el.dataset.f; if(i===undefined) return;
+    leads[i][f]=el.value;
+    if(f!=='comments' && f!=='company' && f!=='contact' && f!=='email' && f!=='web' && f!=='location' && f!=='leadId'){ renderLeadDashboard(); }
+    store.update(leads[i].id);
+});
+leadTbody().addEventListener('change', e=>{
+    const el=e.target; if(!el.dataset.f) return;
+    const f=el.dataset.f, i=el.dataset.i;
+    leads[i][f]=el.value;
+    if(f==='status'){
+        el.className = 'status-select ' + (STATUS_CLASS[el.value]||'');
+        if(el.value!=='Not Emailed' && leads[i].emailed==='No') leads[i].emailed='Yes';
+        if(el.value!=='Not Emailed' && !leads[i].dateEmailed){ leads[i].dateEmailed = new Date().toISOString().slice(0,10); renderLeads(); return; }
+    }
+    store.update(leads[i].id);
+    renderLeadDashboard();
+});
+leadTbody().addEventListener('click', e=>{ const rm=e.target.dataset.rm; if(rm!==undefined) store.remove(leads[+rm].id); });
+leadSearch().addEventListener('input', renderLeads);
+
+$('addBtn').onclick = ()=>{ if(!store){ toast('Still connecting to the cloud — wait a second and try again.'); return; } store.add(blankLead()); };
+$('clearBtn').onclick = ()=>{ if(store && confirm('Delete ALL leads? This cannot be undone.')) store.clear(); };
+$('csvBtn').onclick = ()=>{
+    const head=['Lead ID','Company','Contact','Email','Website/Instagram','Location','Category','Emailed','Date Emailed','Follow-up By','Status','Comments'];
+    const rows = leads.map(o=>[o.leadId,o.company,o.contact,o.email,o.web,o.location,o.category,o.emailed,o.dateEmailed,o.followUp,o.status,o.comments]);
+    const csv=[head,...rows].map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='fom_leads.csv'; a.click(); URL.revokeObjectURL(a.href);
+};
+
+/* ================================================================
+   PITCH DECK BUILDER — 7 landscape pages, printed via hidden iframe
+   ================================================================ */
+const WORK_IMAGES = Array.from({length:18},(_,i)=>`assets/work${i+1}.jpg`);
+const DEFAULT_ABOUT = "Frames Of Motion (FOM) Studios is a creative media brand specialising in photography, videography and visual storytelling, based in Johannesburg, South Africa. We focus on capturing moments with precision, emotion and a cinematic edge — helping brands, events and individuals tell their story visually.";
+const DEFAULT_WHAT = ["Sports & Event Photography","Cinematic Videography & Reels","Aerial / Drone Coverage","Automotive & Lifestyle Content","Content Editing & Colour Grading"].join('\n');
+const DEFAULT_WHY = ["Fast turnaround on edited deliverables","Cinematic, story-driven visual style","Reliable, professional on-site presence","Flexible packages tailored to your needs","Based in Johannesburg, available to travel"].join('\n');
+const DEFAULT_CLIENTS = ["Hyde Park Falcons","Party Bubbles Events","Momsi Mather — Professional Padel Player"].join('\n');
+
+(function initDeckForm(){
+    $('dAbout').value = DEFAULT_ABOUT;
+    $('dWhat').value = DEFAULT_WHAT;
+    $('dWhy').value = DEFAULT_WHY;
+    $('dClients').value = DEFAULT_CLIENTS;
+
+    const picker = $('portfolioPicker');
+    picker.innerHTML = WORK_IMAGES.map((src,i)=>`
+        <label class="chip-check"><input type="checkbox" value="${src}" ${i<6?'checked':''}> <img src="${src}" onerror="this.style.display='none'"> Work ${i+1}</label>
+    `).join('');
+})();
+
+function selectedPortfolio(){
+    return Array.from(document.querySelectorAll('#portfolioPicker input:checked')).slice(0,6).map(el=>el.value);
+}
+function linesOf(id){ return $(id).value.split('\n').map(s=>s.trim()).filter(Boolean); }
+
+function buildDeckHTML(){
+    const client = $('dClient').value.trim();
+    const about = $('dAbout').value.trim();
+    const what = linesOf('dWhat');
+    const why = linesOf('dWhy');
+    const clients = linesOf('dClients');
+    const portfolio = selectedPortfolio();
+
+    const page = (inner, opts) => `<section class="pd-page" style="${opts&&opts.dark?'background:#1a1a18;color:#f1f0ec;':'background:#f1f0ec;color:#1a1a18;'}">${inner}</section>`;
+
+    const cover = page(`
+        <div class="pd-cover-frame">
+          <div class="pd-cover-top">
+            <span>ISHAAQ ADAM</span><span>FRAMES OF MOTION</span>
+          </div>
+          <div class="pd-cover-mid">
+            <div class="pd-script">creative</div>
+            <div class="pd-big">PORTFOLIO</div>
+            <div class="pd-pill">BY FOM STUDIOS</div>
+            ${client ? `<div class="pd-prepared">Prepared for: ${esc(client)}</div>` : ''}
+          </div>
+          <div class="pd-cover-bottom">
+            <span>www.fomstudios.co.za</span>
+            <img src="assets/mascot-head-color.png" onerror="this.style.display='none'">
+          </div>
+        </div>`, {dark:true});
+
+    const fallbackImg = 'assets/mascot-head-color.png';
+    const p0 = portfolio[0] || fallbackImg;
+    const p1 = portfolio[1] || fallbackImg;
+
+    const about_page = page(`
+        <div class="pd-split">
+          <div class="pd-inner pd-inner-half">
+            <div class="pd-kicker">01 — Who we are</div>
+            <h1 class="pd-h1">About Us</h1>
+            <p class="pd-body">${esc(about)}</p>
+          </div>
+          <div class="pd-side">
+            <div class="pd-framed pd-framed-tall">
+              <img src="${p0}" onerror="this.closest('.pd-framed').style.display='none'">
+              <div class="pd-framed-label">FOM STUDIOS</div>
+            </div>
+          </div>
+        </div>`);
+
+    const what_page = page(`
+        <div class="pd-split">
+          <div class="pd-inner pd-inner-half">
+            <div class="pd-kicker">02 — Services</div>
+            <h1 class="pd-h1">What We Do</h1>
+            <ul class="pd-list">${what.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>
+          </div>
+          <div class="pd-side pd-side-pair">
+            <div class="pd-framed">
+              <img src="${p0}" onerror="this.closest('.pd-framed').style.display='none'">
+              <div class="pd-framed-label">VIDEOGRAPHY</div>
+            </div>
+            <div class="pd-framed">
+              <img src="${p1}" onerror="this.closest('.pd-framed').style.display='none'">
+              <div class="pd-framed-label">PHOTOGRAPHY</div>
+            </div>
+          </div>
+        </div>`);
+
+    const portfolio_page = page(`
+        <div class="pd-inner">
+          <div class="pd-kicker">03 — Selected Work</div>
+          <h1 class="pd-h1">Portfolio</h1>
+          <div class="pd-grid">${portfolio.map(src=>`<div class="pd-cell"><img src="${src}" onerror="this.parentElement.style.display='none'"></div>`).join('')}</div>
+        </div>`);
+
+    const whyColors = ['#02367B','#1f8a4c','#a9720b'];
+    const whyMain = why.slice(0,3);
+    const whyRest = why.slice(3);
+    const why_page = page(`
+        <div class="pd-inner">
+          <div class="pd-kicker">04 — The FOM Difference</div>
+          <h1 class="pd-h1">Why Work With Us</h1>
+          <div class="pd-polaroid-row">
+            ${whyMain.map((reason,i)=>`
+              <div class="pd-polaroid">
+                <div class="pd-polaroid-photo"><img src="${portfolio[i]||fallbackImg}" onerror="this.closest('.pd-polaroid').querySelector('.pd-polaroid-photo').style.background='#ddd'"></div>
+                <span class="pd-polaroid-tag" style="background:${whyColors[i%3]};">${esc(reason)}</span>
+              </div>`).join('')}
+          </div>
+          ${whyRest.length ? `<ul class="pd-list pd-list-compact">${whyRest.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>` : ''}
+        </div>`);
+
+    const clients_page = page(`
+        <div class="pd-inner">
+          <div class="pd-kicker">05 — Trusted By</div>
+          <h1 class="pd-h1">Previous Clients</h1>
+          <div class="pd-client-pills">${clients.map(c=>`<span class="pd-pill2">${esc(c)}</span>`).join('')}</div>
+        </div>`);
+
+    const close_page = page(`
+        <div class="pd-close">
+          <div class="pd-close-line"></div>
+          <div class="pd-close-mid">
+            <div class="pd-script" style="color:#5B9AE0;">let's work</div>
+            <div class="pd-big">TOGETHER</div>
+          </div>
+          <div class="pd-close-line"></div>
+          <div class="pd-close-contact">
+            <span>+27 73 755 3136</span><span>fomxstudios@gmail.com</span><span>www.fomstudios.co.za</span>
+          </div>
+        </div>`, {dark:true});
+
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><base href="${esc(document.baseURI)}"><style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;}
+        .pd-page{width:297mm;height:210mm;position:relative;overflow:hidden;page-break-after:always;display:flex;align-items:stretch;}
+        .pd-page:last-child{page-break-after:auto;}
+        .pd-inner{padding:22mm 26mm;width:100%;display:flex;flex-direction:column;justify-content:center;}
+        .pd-kicker{font-size:11pt;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#02367B;margin-bottom:10mm;}
+        .pd-h1{font-size:36pt;font-weight:800;letter-spacing:-.01em;margin-bottom:12mm;}
+        .pd-body{font-size:14pt;line-height:1.8;max-width:95%;color:#3a3a38;}
+        .pd-list{list-style:none;display:flex;flex-direction:column;gap:8mm;max-width:95%;}
+        .pd-list li{font-size:15pt;font-weight:600;padding-left:14mm;position:relative;}
+        .pd-list li::before{content:"";position:absolute;left:0;top:6px;width:8mm;height:2px;background:#02367B;}
+        .pd-list-compact{margin-top:10mm;gap:4mm;}
+        .pd-list-compact li{font-size:11pt;font-weight:500;color:#5a5a57;}
+        .pd-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:6mm;height:130mm;}
+        .pd-cell{border-radius:6px;overflow:hidden;background:#ddd;}
+        .pd-cell img{width:100%;height:100%;object-fit:cover;display:block;}
+        .pd-client-pills{display:flex;flex-wrap:wrap;gap:8mm;max-width:80%;}
+        .pd-pill2{background:#fff;border:1.5px solid #02367B;color:#02367B;border-radius:999px;padding:5mm 10mm;font-size:14pt;font-weight:700;}
+        .pd-cover-frame{width:100%;padding:14mm 18mm;display:flex;flex-direction:column;justify-content:space-between;border:3px solid #f1f0ec;margin:6mm;box-sizing:border-box;}
+        .pd-cover-top{display:flex;justify-content:space-between;font-size:11pt;font-weight:700;letter-spacing:2px;}
+        .pd-cover-mid{text-align:center;}
+        .pd-script{font-family:"Brush Script MT",cursive,Georgia,serif;font-size:44pt;color:#5B9AE0;line-height:1;}
+        .pd-big{font-size:60pt;font-weight:800;letter-spacing:2px;margin-top:-4mm;}
+        .pd-pill{display:inline-block;background:#02367B;color:#fff;border-radius:999px;padding:5mm 12mm;font-size:12pt;font-weight:700;letter-spacing:2px;margin-top:8mm;}
+        .pd-prepared{margin-top:10mm;font-size:12pt;color:#b9b8b5;}
+        .pd-cover-bottom{display:flex;justify-content:space-between;align-items:flex-end;font-size:10pt;}
+        .pd-cover-bottom img{width:22mm;border-radius:50%;}
+        .pd-close{width:100%;padding:16mm 20mm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14mm;text-align:center;}
+        .pd-close-line{width:70%;height:1px;background:rgba(241,240,236,.3);}
+        .pd-close-mid .pd-big{font-size:52pt;}
+        .pd-close-contact{display:flex;gap:14mm;font-size:12pt;color:#f1f0ec;}
+        /* split layout: text left, image(s) right — fills the gap on About Us / What We Do */
+        .pd-split{display:flex;width:100%;align-items:stretch;}
+        .pd-inner-half{width:52%;justify-content:center;}
+        .pd-side{width:48%;display:flex;align-items:center;justify-content:center;padding:14mm 18mm 14mm 0;gap:8mm;}
+        .pd-side-pair{flex-direction:row;}
+        .pd-framed{flex:1;background:#02367B;border-radius:10px;padding:6mm 6mm 12mm;display:flex;flex-direction:column;box-shadow:0 8px 24px rgba(0,0,0,.15);}
+        .pd-framed-tall{max-width:80mm;margin:0 auto;}
+        .pd-framed img{width:100%;height:60mm;object-fit:cover;border-radius:4px;display:block;background:#dfe3ea;}
+        .pd-framed-tall img{height:95mm;}
+        .pd-framed-label{color:#fff;text-align:center;font-weight:800;letter-spacing:1.5px;font-size:11pt;margin-top:6mm;text-transform:uppercase;}
+        /* polaroid row — Why Work With Us */
+        .pd-polaroid-row{display:flex;gap:10mm;margin-top:4mm;}
+        .pd-polaroid{background:#fff;border:1px solid #e2e0d8;border-radius:8px;padding:5mm 5mm 0;box-shadow:0 6px 18px rgba(0,0,0,.08);width:70mm;}
+        .pd-polaroid-photo{width:100%;height:55mm;background:#ddd;border-radius:4px;overflow:hidden;margin-bottom:5mm;}
+        .pd-polaroid-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+        .pd-polaroid-tag{display:block;color:#fff;font-weight:700;font-size:10.5pt;text-align:center;border-radius:6px 6px 0 0;margin:0 -5mm;padding:4mm 4mm 8mm;line-height:1.3;}
+        @media print{@page{size:A4 landscape;margin:0;}}
+    </style></head><body>${cover}${about_page}${what_page}${portfolio_page}${why_page}${clients_page}${close_page}</body></html>`;
+}
+
+function refreshDeckPreview(){
+    const frame = $('deckFrame');
+    const doc = frame.contentDocument || frame.contentWindow.document;
+    doc.open(); doc.write(buildDeckHTML()); doc.close();
+}
+$('deckRefreshBtn').onclick = refreshDeckPreview;
+document.querySelector('#tabDeck .panel').addEventListener('input', refreshDeckPreview);
+document.querySelector('#tabDeck .panel').addEventListener('change', refreshDeckPreview);
+$('deckPrintBtn').onclick = () => {
+    refreshDeckPreview();
+    const frame = $('deckFrame');
+    const waitForImages = () => {
+        const doc = frame.contentDocument || frame.contentWindow.document;
+        const imgs = Array.from(doc.images || []);
+        if(!imgs.length) return Promise.resolve();
+        return Promise.all(imgs.map(img => (img.complete) ? Promise.resolve() : new Promise(res => { img.onload = img.onerror = res; })));
+    };
+    // give the iframe a beat to parse the doc before we look for <img> tags in it
+    setTimeout(()=>{
+        waitForImages().then(()=>{
+            frame.contentWindow.focus();
+            frame.contentWindow.print();
+        });
+    }, 200);
+};
+
+/* ================================================================
+   EMAIL GENERATOR
+   ================================================================ */
+function buildEmailText(){
+    const recipient = $('eRecipient').value.trim() || 'Team';
+    const event = $('eEvent').value.trim();
+    const template = $('eTemplate').value;
+
+    let mid;
+    if(template === 'accreditation'){
+        mid = `I'd like to express my interest in applying for media accreditation for ${event ? 'the '+event : 'your upcoming event'}. I specialise in sports photography and videography, and I'd love the opportunity to cover the event.`;
+    } else {
+        mid = `I wanted to reach out to introduce FOM Studios and explore the possibility of working together${event ? ' on '+event : ''}. I specialise in photography and videography and would love the opportunity to collaborate.`;
+    }
+
+    return `Dear ${recipient},
+My name is Ishaaq Adam, founder of FOM Studios, a photography and videography brand based in South Africa.
+${mid}
+You can view my portfolio here:
+Website: www.fomstudios.co.za
+Instagram: @fom_studios_
+I have also attached my portfolio for your reference.
+If possible, I'd appreciate being added to your media mailing list and notified when accreditation applications open.
+Thank you for your time, and I look forward to hearing from you.
+Kind regards,
+Ishaaq Adam
+FOM Studios`;
+}
+function refreshEmailPreview(){ $('emailPreview').textContent = buildEmailText(); }
+document.querySelector('#tabEmail .panel').addEventListener('input', refreshEmailPreview);
+document.querySelector('#tabEmail .panel').addEventListener('change', refreshEmailPreview);
+
+$('copyEmailBtn').onclick = async () => {
+    const txt = buildEmailText();
+    try{ await navigator.clipboard.writeText(txt); toast('Email copied — paste into Gmail'); }
+    catch(e){
+        const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); toast('Email copied — paste into Gmail'); } catch(_){ toast('Copy failed — select the text manually'); }
+        ta.remove();
+    }
+};
+$('logLeadBtn').onclick = () => {
+    if(!store){ toast('Still connecting…'); return; }
+    const company = $('eCompany').value.trim() || $('eRecipient').value.trim();
+    if(!company){ toast('Add a company / recipient name first'); return; }
+    store.add(blankLead({
+        company, contact:'', email:$('eLeadEmail').value.trim(),
+        location:'', category:'Media / Press', emailed:'Yes',
+        dateEmailed:new Date().toISOString().slice(0,10),
+        status:'Emailed', comments:'Logged from Email Generator ('+($('eEvent').value.trim()||'general outreach')+')'
+    }));
+    toast('Lead logged in the tracker');
+};
+refreshEmailPreview();
+
+/* ================================================================
+   INIT — cloud only (Firestore), same as database.html
+   ================================================================ */
+function notConfigured(){
+    $('authCheck').style.display='none';
+    const badge=$('syncBadge'); badge.textContent='⚠ Not configured'; badge.className='badge local';
+    document.querySelector('.table-card').insertAdjacentHTML('beforebegin',
+        '<div style="background:#fff4f4;border:1px solid #f0c0c0;color:#a33;border-radius:14px;padding:14px 18px;margin-bottom:14px;font-size:14px;">Leads are cloud-only so they sync to your phone \u2014 add your Firebase keys to <code>firebase-config.js</code> to turn this on.</div>');
+}
+function showConnError(){
+    $('authCheck').style.display='none';
+    const badge=$('syncBadge'); badge.textContent='⚠ Offline'; badge.className='badge local';
+    document.querySelector('.table-card').insertAdjacentHTML('beforebegin',
+        '<div style="background:#fff4f4;border:1px solid #f0c0c0;color:#a33;border-radius:14px;padding:14px 18px;margin-bottom:14px;font-size:14px;">Couldn\u2019t reach the cloud database. Check your connection, then <a href="#" onclick="location.reload();return false;" style="color:var(--accent);font-weight:700;">refresh</a>.</div>');
+}
+function initCloud(){
+    firebase.initializeApp(firebaseConfig);
+    const auth=firebase.auth();
+    const db=firebase.firestore();
+    db.settings({ experimentalAutoDetectLongPolling: true });
+    store=cloudLeadStore(db);
+    const badge=$('syncBadge'); badge.textContent='☁ Cloud sync'; badge.className='badge cloud';
+    $('logoutBtn').style.display='inline-block';
+    $('logoutBtn').onclick=()=>auth.signOut();
+    const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value)
+        .catch(err=>{ $('lgErr').textContent=/password|user|credential|email/i.test(err.code||'')?'Incorrect email or password.':(err.message||'Login failed.'); }); };
+    $('lgBtn').onclick=login;
+    $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+    auth.onAuthStateChanged(u=>{
+        $('authCheck').style.display='none';
+        if(u){ $('loginGate').style.display='none'; store.start(); }
+        else { leads=[]; safeRenderLeads(); $('loginGate').style.display='flex'; }
+    });
+}
+if(!configured){ notConfigured(); } else { loadFirebase().then(initCloud).catch(showConnError); }
+
+/* initial deck preview */
+refreshDeckPreview();
+</script>
+</body>
+</html>

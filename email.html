@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOM Studios | Confirmation Email</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/mascot.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1320px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);min-width:0;overflow-x:hidden;}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* nav + hamburger */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:var(--container);margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:22px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.nav-cta{border:1px solid var(--ink);border-radius:var(--radius-pill);padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;background:none;}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.login-card .btn.block{width:100%;padding:13px;}
+
+/* page */
+.page{padding-top:108px;}
+.page-head{margin-bottom:22px;}
+.page-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.page-head p{color:var(--ink-soft);font-size:14px;margin-top:4px;}
+.grid{display:grid;grid-template-columns:0.85fr 1.15fr;gap:22px;align-items:start;min-width:0;}
+@media(max-width:900px){.grid{grid-template-columns:1fr;}}
+.panel{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:22px;min-width:0;}
+.panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:700;margin-bottom:16px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+input[type=text],input[type=email],input[type=number],input[type=date],input[type=time]{width:100%;min-width:0;max-width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-size:15px;font-family:inherit;color:var(--ink);background:#fff;}
+select{width:100%;min-width:0;max-width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:11px 40px 11px 13px;font-size:15px;font-family:inherit;color:var(--ink);background:#fff;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f6f6d' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;cursor:pointer;}
+/* iOS: date/time pickers otherwise ignore width and overflow their box */
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;display:block;}
+input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value{text-align:left;margin:0;}
+.row2{min-width:0;}
+.row2>*{min-width:0;overflow:hidden;}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:12px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--accent-hover);}
+.btn.block{width:100%;padding:13px;}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink);}
+.btn.ghost:hover{background:var(--ink);color:var(--bg-pill);}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+.actions .btn{flex:1;min-width:140px;text-align:center;}
+@media(max-width:480px){.actions{flex-direction:column;}.actions .btn{width:100%;flex:none;}.panel{padding:14px 12px;}select,input[type=text],input[type=email],input[type=number],input[type=date],input[type=time]{font-size:16px;}}
+.howto{font-size:12.5px;color:var(--ink-soft);margin-top:14px;line-height:1.7;}
+.howto b{color:var(--ink);}
+.preview-wrap{background:#e9e7e1;border:1px solid var(--line);border-radius:var(--radius-card);padding:18px;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-dark);color:#fff;padding:12px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000;}
+.toast.show{opacity:1;}
+@media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
+@media(max-width:560px){.row2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="login-gate" id="loginGate">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close menu">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="leads.html">Leads</a></li>
+        <li><a href="content.html">Content Planner</a></li>
+        <li><a href="index.html">Price Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="leads.html">Leads</a></li>
+                <li><a href="content.html">Content Planner</a></li>
+                <li><a href="index.html">Calculator</a></li>
+                <li><a href="email.html" class="active">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+            </ul>
+            <button class="nav-cta" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </nav>
+</div>
+
+<div class="page wrap">
+    <div class="page-head">
+        <span class="eyebrow">Admin</span>
+        <h1 id="pageTitle">Confirmation Email</h1>
+        <p>Fill in the booking, then copy it into a Gmail from your FOM account and send.</p>
+    </div>
+
+    <div class="grid">
+        <!-- FORM -->
+        <div class="panel">
+            <h2>Booking details</h2>
+            <div class="field"><label for="fType">Email type</label>
+                <select id="fType">
+                    <option value="confirmation">Booking Confirmation</option>
+                    <option value="ready">Files Ready</option>
+                </select>
+            </div>
+            <div id="confirmationFields">
+            <div class="field"><label for="fName">Customer name</label><input type="text" id="fName" placeholder="Jane Doe"></div>
+            <div class="field"><label for="fEmail">Customer email</label><input type="email" id="fEmail" placeholder="jane@email.com"></div>
+            <div class="field"><label for="fPkg">Package / service</label><input type="text" id="fPkg" placeholder="Gold — Photography & Videography"></div>
+            <div class="row2">
+                <div class="field"><label for="fDate">Shoot date</label><input type="date" id="fDate"></div>
+                <div class="field"><label for="fTime">Start time (optional)</label><input type="time" id="fTime"></div>
+            </div>
+            <div class="field"><label for="fLoc">Location (optional)</label><input type="text" id="fLoc" placeholder="Hyde Park, Johannesburg"></div>
+            <div class="row2">
+                <div class="field"><label for="fTotal">Total (R)</label><input type="number" id="fTotal" min="0" step="50" value="0"></div>
+                <div class="field"><label for="fPaid">Amount paid (R)</label><input type="number" id="fPaid" min="0" step="50" value="0"></div>
+            </div>
+            <div class="field" id="dueWrap"><label for="fDue">Balance due before</label><input type="date" id="fDue"></div>
+            </div>
+            <div id="readyFields" style="display:none;">
+            <div class="field"><label for="fReadyName">Customer name</label><input type="text" id="fReadyName" placeholder="Jane Doe"></div>
+            <div class="field"><label for="fReadyEmail">Customer email</label><input type="email" id="fReadyEmail" placeholder="jane@email.com"></div>
+            <div class="field"><label for="fReadyPkg">Package (optional)</label><input type="text" id="fReadyPkg" placeholder="Gold — Photography & Videography"></div>
+            <div class="field"><label for="fPortal">Client portal URL</label><input type="text" id="fPortal" value="https://www.fomstudios.co.za/client-portal.html"></div>
+            </div>
+
+            <div class="actions">
+                <button class="btn" id="copyBtn">Copy email</button>
+                <button class="btn ghost" id="gmailBtn">Open email</button>
+                <button class="btn ghost" id="icsBtn">Download .ics</button>
+            </div>
+            <div class="howto">
+                <b>To send:</b> 1) Click <b>Copy email</b>. &nbsp;2) Click <b>Open Gmail</b> (composes from your FOM account, with the address &amp; subject filled). &nbsp;3) Click into the message body and paste (<b>Cmd/Ctrl + V</b>). &nbsp;4) Send.<br>
+                The <b>Add to Calendar</b> button inside the email lets the customer save the date to their own calendar. <b>.ics</b> is an optional attachment for Apple/Outlook users.
+            </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div>
+            <div class="panel" style="margin-bottom:12px;padding:14px 22px;"><h2 style="margin:0;">Email preview</h2></div>
+            <div class="preview-wrap"><div id="preview"></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const RZA = n => 'R' + (Math.round((+n||0))).toLocaleString('en-ZA');
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+/* brand + contact (edit here if anything changes) */
+const BRAND = {
+  logo: "https://www.fomstudios.co.za/assets/logo.png",
+  site: "https://www.fomstudios.co.za",
+  email: "fomxstudios@gmail.com",
+  phone: "073 755 3136",
+  instagram: "https://instagram.com/fom_studios_",
+  instaHandle: "@fom_studios_",
+};
+
+function fields(){
+  const type = $('fType').value;
+  const isReady = type === 'ready';
+  const total = +($('fTotal')?$('fTotal').value:0)||0;
+  const paid  = +($('fPaid') ?$('fPaid').value :0)||0;
+  const balance = Math.max(0, total - paid);
+  return {
+    type,
+    name:  isReady ? ($('fReadyName').value.trim())  : $('fName').value.trim(),
+    email: isReady ? ($('fReadyEmail').value.trim()) : $('fEmail').value.trim(),
+    pkg:   isReady ? ($('fReadyPkg').value.trim())   : $('fPkg').value.trim(),
+    date: $('fDate') ? $('fDate').value : '',
+    time: $('fTime') ? $('fTime').value : '',
+    loc:  $('fLoc')  ? $('fLoc').value.trim()  : '',
+    total, paid, balance,
+    due:  $('fDue')  ? $('fDue').value  : '',
+    portal: $('fPortal').value.trim() || 'https://www.fomstudios.co.za/client-portal.html',
+    full: balance <= 0,
+  };
+}
+function niceDate(iso){
+  if(!iso) return '';
+  const d = new Date(iso+'T00:00:00');
+  return DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+}
+function eventTimes(f){
+  // returns [startStr, endStr] in Google/ICS UTC basic format, or null
+  if(!f.date) return null;
+  if(f.time){
+    const start = new Date(f.date+'T'+f.time);
+    const end = new Date(start.getTime() + 2*60*60*1000);
+    const fmt = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+    return { start: fmt(start), end: fmt(end), allDay:false };
+  }
+  const d = f.date.replace(/-/g,'');
+  const nx = new Date(f.date+'T00:00:00'); nx.setDate(nx.getDate()+1);
+  const nxs = nx.toISOString().slice(0,10).replace(/-/g,'');
+  return { start: d, end: nxs, allDay:true };
+}
+function gcalUrl(f){
+  const t = eventTimes(f); if(!t) return '#';
+  const title = 'FOM Studios shoot' + (f.pkg?(' — '+f.pkg):'');
+  const details = 'Your FOM Studios booking is confirmed.' + (f.full ? ' Paid in full.' : (f.balance? (' Balance of '+RZA(f.balance)+' due'+(f.due?(' before '+niceDate(f.due)):'')+'.') : ''));
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    + '&text=' + encodeURIComponent(title)
+    + '&dates=' + t.start + '/' + t.end
+    + '&details=' + encodeURIComponent(details)
+    + '&location=' + encodeURIComponent(f.loc||'');
+}
+function icsText(f){
+  const t = eventTimes(f); if(!t) return '';
+  const title = 'FOM Studios shoot' + (f.pkg?(' — '+f.pkg):'');
+  const stamp = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  const dt = t.allDay
+    ? ['DTSTART;VALUE=DATE:'+t.start, 'DTEND;VALUE=DATE:'+t.end]
+    : ['DTSTART:'+t.start, 'DTEND:'+t.end];
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//FOM Studios//Booking//EN','BEGIN:VEVENT',
+    'UID:'+Date.now()+'@fomstudios','DTSTAMP:'+stamp, ...dt,
+    'SUMMARY:'+title, 'LOCATION:'+(f.loc||''),
+    'DESCRIPTION:Your FOM Studios booking is confirmed.', 'END:VEVENT','END:VCALENDAR'].join('\r\n');
+}
+
+/* ---------- the themed HTML email (table-based + inline styles for Gmail) ---------- */
+function buildEmailHtml(){
+  const f = fields();
+  const isReady = f.type === 'ready';
+  const A='#02367B', A2='#5B9AE0', INK='#2a2b2c', SOFT='#6f6f6d', BG='#f1f0ec', LINE='#e6e4dd', CARD='#f7f6f2';
+  const row = (k,v)=> v ? `<tr><td style="padding:9px 2px;color:${SOFT};font-size:14px;border-bottom:1px solid ${LINE};">${k}</td><td style="padding:9px 2px;color:${INK};font-size:14px;font-weight:700;text-align:right;border-bottom:1px solid ${LINE};">${v}</td></tr>` : '';
+  const payBlock = f.full
+    ? `<table width="100%" cellpadding="0" cellspacing="0" style="background:#eef4ee;border:1px solid #cfe0d3;border-radius:14px;"><tr><td style="padding:16px 18px;color:#256b3d;font-size:14px;font-weight:700;">&#10003;&nbsp; Paid in full — no further payment required.</td></tr></table>`
+    : `<table width="100%" cellpadding="0" cellspacing="0" style="background:#eef2fb;border:1px solid #bcd4f5;border-radius:14px;"><tr><td style="padding:16px 18px;color:${A};font-size:14px;line-height:1.7;">Amount paid: <b>${RZA(f.paid)}</b><br>Remaining balance: <b>${RZA(f.balance)}</b>${f.due?` — due before <b>${niceDate(f.due)}</b>`:''}</td></tr></table>`;
+  const cal = eventTimes(f) ? `<tr><td align="center" style="padding:22px 0 4px;"><a href="${gcalUrl(f)}" target="_blank" style="display:inline-block;background:${A};color:#ffffff;text-decoration:none;border-radius:999px;padding:15px 34px;font-size:14px;font-weight:700;letter-spacing:.02em;">&#43;&nbsp; Add to Calendar</a></td></tr>` : '';
+
+  /* ---- CONFIRMATION EMAIL ---- */
+  if(!isReady) return `
+<table width="100%" cellpadding="0" cellspacing="0" style="background:${BG};padding:26px 12px;font-family:-apple-system,'Helvetica Neue',Helvetica,Arial,sans-serif;">
+ <tr><td align="center">
+  <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;">
+    <tr><td style="background:${INK};padding:40px 34px 34px;text-align:center;">
+      <div style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:4px;">FOM STUDIOS</div>
+      <div style="width:46px;height:3px;background:${A2};border-radius:3px;margin:16px auto;line-height:3px;font-size:0;">&nbsp;</div>
+      <div style="color:${A2};font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">Booking Confirmed</div>
+      <div style="color:#ffffff;font-size:30px;font-weight:800;margin-top:10px;line-height:1.15;">You're booked in! 🎉</div>
+    </td></tr>
+    <tr><td style="padding:28px 34px 0;color:${INK};font-size:15px;line-height:1.6;">
+      Hi ${f.name||'there'},<br><br>
+      Thank you — your booking with <b>FOM Studios</b> is confirmed. Here are your details:
+    </td></tr>
+    <tr><td style="padding:16px 34px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:${CARD};border:1px solid ${LINE};border-radius:16px;">
+        <tr><td style="padding:8px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            ${row('Package', f.pkg)}
+            ${row('Date', niceDate(f.date))}
+            ${row('Time', f.time)}
+            ${row('Location', f.loc)}
+            <tr><td style="padding:11px 2px;color:${INK};font-size:15px;font-weight:800;">Total</td><td style="padding:11px 2px;color:${INK};font-size:15px;font-weight:800;text-align:right;">${RZA(f.total)}</td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+    <tr><td style="padding:16px 34px 0;">${payBlock}</td></tr>
+    <tr><td style="padding:0 34px;"><table width="100%" cellpadding="0" cellspacing="0">${cal}</table></td></tr>
+    <tr><td align="center" style="padding:28px 34px 4px;">
+      <img src="https://www.fomstudios.co.za/assets/mascot.png" alt="" width="74" style="width:74px;height:auto;display:inline-block;">
+      <div style="color:${SOFT};font-size:14px;line-height:1.6;margin-top:12px;">We can't wait to capture your shoot. If anything changes, just reply to this email.</div>
+      <div style="color:${INK};font-size:14px;font-weight:800;margin-top:12px;">— The FOM Studios Team</div>
+    </td></tr>
+    <!-- Client Portal CTA -->
+    <tr><td style="padding:4px 34px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#eef2fb;border:1px solid #bcd4f5;border-radius:16px;">
+        <tr><td style="padding:22px 24px;text-align:center;">
+          <div style="color:${INK};font-size:15px;font-weight:800;margin-bottom:6px;">Your Client Portal is ready</div>
+          <div style="color:${SOFT};font-size:13.5px;margin-bottom:18px;">Log in anytime to view your booking details, contract, invoice, and download your files once they're ready.</div>
+          <a href="${f.portal}" target="_blank" style="display:inline-block;background:${A};color:#ffffff;text-decoration:none;border-radius:999px;padding:13px 28px;font-size:14px;font-weight:700;">Go to Client Portal</a>
+          <div style="color:#9a9895;font-size:12px;margin-top:10px;">${f.portal}</div>
+        </td></tr>
+        <tr><td style="padding:0 24px 18px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f6f2;border-radius:10px;">
+            <tr><td style="padding:14px 16px;">
+              <div style="color:${INK};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">How to log in</div>
+              <div style="color:${SOFT};font-size:13px;line-height:1.8;">
+                1. Click the button above or go to <b>${f.portal}</b><br>
+                2. Sign in with <b>${f.email||'your email address'}</b><br>
+                3. First time? Click <b>"Forgot password?"</b> to set your own password
+              </div>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+    <!-- WhatsApp Channel mention -->
+    <tr><td align="center" style="padding:16px 34px 4px;">
+      <div style="color:${SOFT};font-size:13px;">Want first look at future promos and behind-the-scenes? <a href="https://whatsapp.com/channel/0029VbCfflP4SpkNXLDI3b0i" target="_blank" style="color:${A};font-weight:700;text-decoration:none;">Follow our WhatsApp Channel</a></div>
+    </td></tr>
+    <tr><td style="padding:24px 34px 30px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:${INK};border-radius:16px;">
+        <tr><td style="padding:24px 22px;text-align:center;">
+          <div style="color:#ffffff;font-weight:800;letter-spacing:2px;font-size:15px;">FOM STUDIOS</div>
+          <div style="color:#b9b8b5;font-size:12.5px;margin-top:6px;">Photography &amp; Videography · Johannesburg, South Africa</div>
+          <div style="margin-top:14px;font-size:13px;">
+            <a href="${BRAND.site}" style="color:${A2};text-decoration:none;">Website</a> &nbsp;·&nbsp;
+            <a href="${BRAND.instagram}" style="color:${A2};text-decoration:none;">Instagram</a> &nbsp;·&nbsp;
+            <a href="mailto:${BRAND.email}" style="color:${A2};text-decoration:none;">Email</a> &nbsp;·&nbsp;
+            <span style="color:#b9b8b5;">${BRAND.phone}</span>
+          </div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+ </td></tr>
+</table>`;
+
+  /* ---- FILES READY EMAIL ---- */
+  return `
+<table width="100%" cellpadding="0" cellspacing="0" style="background:${BG};padding:26px 12px;font-family:-apple-system,'Helvetica Neue',Helvetica,Arial,sans-serif;">
+ <tr><td align="center">
+  <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;">
+    <tr><td style="background:${INK};padding:40px 34px 34px;text-align:center;">
+      <div style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:4px;">FOM STUDIOS</div>
+      <div style="width:46px;height:3px;background:${A2};border-radius:3px;margin:16px auto;line-height:3px;font-size:0;">&nbsp;</div>
+      <div style="color:${A2};font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">Deliverables Ready</div>
+      <div style="color:#ffffff;font-size:30px;font-weight:800;margin-top:10px;line-height:1.15;">Your files are ready! 🎬</div>
+    </td></tr>
+    <tr><td style="padding:28px 34px 0;color:${INK};font-size:15px;line-height:1.6;">
+      Hi ${f.name||'there'},<br><br>
+      Great news — your edited ${f.pkg ? `<b>${f.pkg}</b> ` : ''}files are ready and waiting for you. You can view and download everything through your <b>FOM Studios Client Portal</b>.
+    </td></tr>
+    <!-- portal CTA -->
+    <tr><td style="padding:22px 34px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#eef2fb;border:1px solid #bcd4f5;border-radius:16px;">
+        <tr><td style="padding:26px 28px;text-align:center;">
+          <div style="color:${INK};font-size:16px;font-weight:800;margin-bottom:6px;">Access your Client Portal</div>
+          <div style="color:${SOFT};font-size:13.5px;margin-bottom:18px;">Sign in to view your photos${f.pkg&&(f.pkg.toLowerCase().includes('video')||f.pkg.toLowerCase().includes('reel'))?'/videos':''}, download your files, and check your booking details.</div>
+          <a href="${f.portal}" target="_blank" style="display:inline-block;background:${A};color:#ffffff;text-decoration:none;border-radius:999px;padding:15px 34px;font-size:14px;font-weight:700;letter-spacing:.02em;">Go to Client Portal</a>
+          <div style="color:#9a9895;font-size:12px;margin-top:10px;">${f.portal}</div>
+        </td></tr>
+      </table>
+    </td></tr>
+    <!-- how to login -->
+    <tr><td style="padding:16px 34px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:${CARD};border:1px solid ${LINE};border-radius:16px;">
+        <tr><td style="padding:18px 22px;">
+          <div style="color:${INK};font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">How to access your files</div>
+          <div style="color:${SOFT};font-size:14px;line-height:1.8;">
+            1. Click the button above or go to <b>${f.portal}</b><br>
+            2. Sign in with <b>${f.email||'your email address'}</b><br>
+            3. If it's your first time, click <b>"Forgot password?"</b> to set your own password<br>
+            4. Open your booking and click <b>"Download files"</b>
+          </div>
+        </td></tr>
+      </table>
+    </td></tr>
+    <tr><td align="center" style="padding:28px 34px 4px;">
+      <img src="https://www.fomstudios.co.za/assets/mascot.png" alt="" width="74" style="width:74px;height:auto;display:inline-block;">
+      <div style="color:${SOFT};font-size:14px;line-height:1.6;margin-top:12px;">Thank you for choosing FOM Studios — it was a pleasure working with you. We hope you love your content!</div>
+      <div style="color:${INK};font-size:14px;font-weight:800;margin-top:12px;">— The FOM Studios Team</div>
+    </td></tr>
+    <!-- Google Review CTA -->
+    <tr><td style="padding:0 34px 4px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f6f2;border:1px solid #e6e4dd;border-radius:16px;">
+        <tr><td style="padding:22px 24px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:8px;">⭐️⭐️⭐️⭐️⭐️</div>
+          <div style="color:${INK};font-size:15px;font-weight:800;margin-bottom:6px;">Enjoyed your experience?</div>
+          <div style="color:${SOFT};font-size:13.5px;margin-bottom:16px;">A quick Google review means the world to us and helps other clients find FOM Studios.</div>
+          <a href="https://g.page/r/Ce2IImiTcNgCEBM/review" target="_blank" style="display:inline-block;background:${A};color:#ffffff;text-decoration:none;border-radius:999px;padding:13px 28px;font-size:14px;font-weight:700;">Leave a Google Review</a>
+        </td></tr>
+      </table>
+    </td></tr>
+    <!-- WhatsApp Channel mention -->
+    <tr><td align="center" style="padding:16px 34px 4px;">
+      <div style="color:${SOFT};font-size:13px;">Want first look at future promos and behind-the-scenes? <a href="https://whatsapp.com/channel/0029VbCfflP4SpkNXLDI3b0i" target="_blank" style="color:${A};font-weight:700;text-decoration:none;">Follow our WhatsApp Channel</a></div>
+    </td></tr>
+    <tr><td style="padding:24px 34px 30px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:${INK};border-radius:16px;">
+        <tr><td style="padding:24px 22px;text-align:center;">
+          <div style="color:#ffffff;font-weight:800;letter-spacing:2px;font-size:15px;">FOM STUDIOS</div>
+          <div style="color:#b9b8b5;font-size:12.5px;margin-top:6px;">Photography &amp; Videography · Johannesburg, South Africa</div>
+          <div style="margin-top:14px;font-size:13px;">
+            <a href="${BRAND.site}" style="color:${A2};text-decoration:none;">Website</a> &nbsp;·&nbsp;
+            <a href="${BRAND.instagram}" style="color:${A2};text-decoration:none;">Instagram</a> &nbsp;·&nbsp;
+            <a href="mailto:${BRAND.email}" style="color:${A2};text-decoration:none;">Email</a> &nbsp;·&nbsp;
+            <span style="color:#b9b8b5;">${BRAND.phone}</span>
+          </div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+ </td></tr>
+</table>`;
+}
+function plainText(){
+  const f = fields();
+  if(f.type === 'ready'){
+    return `Hi ${f.name||'there'},\n\nYour FOM Studios files are ready!\n\n`
+      + `Log in to your Client Portal to view and download your content:\n${f.portal}\n\n`
+      + `If it's your first time logging in, click "Forgot password?" on the login screen to set your own password.\n`
+      + `Sign in with: ${f.email||'your email address'}\n\n`
+      + `Thank you for choosing FOM Studios — it was a pleasure!\n\n`
+      + `— FOM Studios\nwww.fomstudios.co.za · ${BRAND.instaHandle} · ${BRAND.email} · ${BRAND.phone}`;
+  }
+  let t = `Hi ${f.name||'there'},\n\nYour booking with FOM Studios is confirmed.\n\n`;
+  if(f.pkg) t+=`Package: ${f.pkg}\n`;
+  if(f.date) t+=`Date: ${niceDate(f.date)}\n`;
+  if(f.time) t+=`Time: ${f.time}\n`;
+  if(f.loc) t+=`Location: ${f.loc}\n`;
+  t += f.full ? `\nPaid in full — no further payment required.\n` : `\nAmount paid: ${RZA(f.paid)}\nRemaining balance: ${RZA(f.balance)}${f.due?` due before ${niceDate(f.due)}`:''}\n`;
+  if(eventTimes(f)) t+=`\nAdd to calendar: ${gcalUrl(f)}\n`;
+  t += `\n— FOM Studios\nwww.fomstudios.co.za · ${BRAND.instaHandle} · ${BRAND.email} · ${BRAND.phone}`;
+  return t;
+}
+
+function refresh(){
+  const f = fields();
+  const isReady = f.type === 'ready';
+  $('pageTitle').textContent = isReady ? 'Files Ready Email' : 'Confirmation Email';
+  // toggle field groups
+  $('confirmationFields').style.display = isReady ? 'none' : 'block';
+  $('readyFields').style.display = isReady ? 'block' : 'none';
+  // hide ics + due date for ready email
+  const icsBtn = $('icsBtn');
+  if(icsBtn) icsBtn.style.display = isReady ? 'none' : 'inline-flex';
+  if($('dueWrap')) $('dueWrap').style.display = (f.full || isReady) ? 'none' : 'block';
+  $('preview').innerHTML = buildEmailHtml();
+}
+/* trigger refresh on every input/change in the form */
+document.querySelector('.panel').addEventListener('input', refresh);
+document.querySelector('.panel').addEventListener('change', refresh);
+
+/* actions */
+let toastT;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200); }
+$('copyBtn').onclick = async () => {
+  const html = buildEmailHtml();
+  try{
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html],{type:'text/html'}),
+      'text/plain': new Blob([plainText()],{type:'text/plain'})
+    })]);
+    toast('Email copied — now paste into Gmail');
+  }catch(e){
+    const r=document.createRange(); r.selectNode($('preview'));
+    getSelection().removeAllRanges(); getSelection().addRange(r);
+    try{ document.execCommand('copy'); toast('Email copied — now paste into Gmail'); }
+    catch(_){ toast('Copy not supported — select the preview manually'); }
+    getSelection().removeAllRanges();
+  }
+};
+$('gmailBtn').onclick = () => {
+  const f = fields();
+  const subject = f.type === 'ready'
+    ? 'Your FOM Studios files are ready to download'
+    : 'Your FOM Studios booking is confirmed';
+  const url = 'https://mail.google.com/mail/?view=cm&fs=1'
+    + '&to=' + encodeURIComponent(f.email)
+    + '&su=' + encodeURIComponent(subject);
+  window.open(url, '_blank');
+};
+$('icsBtn').onclick = () => {
+  const txt = icsText(fields());
+  if(!txt){ toast('Add a shoot date first'); return; }
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([txt],{type:'text/calendar'}));
+  a.download='FOM-Studios-booking.ics'; a.click(); URL.revokeObjectURL(a.href);
+};
+
+/* hamburger */
+const mm=$('mobileMenu'), sc=$('scrim');
+$('navToggle').onclick=()=>{mm.classList.add('open');sc.classList.add('show');};
+$('closeMenu').onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+
+/* ---- prefill from URL (?name=&email=&pkg=&date=&total=&paid=) e.g. from Database later ---- */
+(function(){ const p=new URLSearchParams(location.search); const map={name:'fName',email:'fEmail',pkg:'fPkg',date:'fDate',time:'fTime',loc:'fLoc',total:'fTotal',paid:'fPaid',due:'fDue'};
+  Object.keys(map).forEach(k=>{ if(p.get(k)!=null && $(map[k])) $(map[k]).value=p.get(k); }); })();
+refresh();
+
+/* ===== password gate (same Firebase login as the other admin pages) ===== */
+(function(){
+  var configured = (typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+  if(!configured) return;
+  var gate=$('loginGate');
+  function loadScript(src){ return new Promise(function(res,rej){ var s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+  (async function(){
+    try{
+      var b='https://www.gstatic.com/firebasejs/10.12.0/';
+      await loadScript(b+'firebase-app-compat.js');
+      await loadScript(b+'firebase-auth-compat.js');
+      firebase.initializeApp(firebaseConfig);
+      var auth=firebase.auth();
+      var login=function(){ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(), $('lgPass').value)
+        .catch(function(err){ $('lgErr').textContent = /password|user|credential|email/i.test(err.code||'') ? 'Incorrect email or password.' : (err.message||'Login failed.'); }); };
+      $('lgBtn').onclick=login;
+      $('lgPass').addEventListener('keydown',function(e){ if(e.key==='Enter') login(); });
+      var logoutBtn=$('logoutBtn'); if(logoutBtn) logoutBtn.onclick=function(){ auth.signOut(); };
+      auth.onAuthStateChanged(function(u){
+        gate.style.display = u ? 'none' : 'flex';
+        if(logoutBtn) logoutBtn.style.display = u ? 'inline-block' : 'none';
+      });
+    }catch(e){ gate.style.display='none'; console.warn('Auth load failed',e); }
+  })();
+})();
+</script>
+</body>
+</html>

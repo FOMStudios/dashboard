@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOM Studios | Internal Price Calculator</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/mascot.png">
+<style>
+:root{
+    --bg: #f1f0ec;
+    --bg-pill: #fafaf9;
+    --bg-dark: #2a2b2c;
+    --ink: #2a2b2c;
+    --ink-soft: #6f6f6d;
+    --ink-on-dark: #f1f0ec;
+    --line: #dcdad3;
+    --accent: #02367B;
+    --accent-hover: #022a5f;
+    --accent-on-dark: #5B9AE0;
+    --container: 1100px;
+    --gutter: clamp(18px, 5vw, 56px);
+    --radius-pill: 999px;
+    --radius-card: 20px;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 60px;
+}
+img{ display:block; max-width:100%; }
+.wrap{ max-width: var(--container); margin:0 auto; padding: 0 var(--gutter); }
+.eyebrow{ font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); font-weight:600; display:block; margin-bottom:10px; }
+
+/* ---- pill header ---- */
+.nav-shell{ padding: 18px var(--gutter) 0; }
+nav.pill{
+    max-width: var(--container); margin:0 auto;
+    background: var(--bg-pill); border:1px solid var(--line);
+    border-radius: var(--radius-pill); padding:14px 24px;
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.brand-mark{ font-weight:800; font-size:18px; letter-spacing:0.02em; }
+.nav-tag{ font-size:13px; font-weight:600; color:var(--ink-soft); }
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:24px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.nav-cta{border:1px solid var(--ink);border-radius:var(--radius-pill);padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;display:inline-block;}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.login-card .btn.block{width:100%;padding:13px;}
+@media(max-width:860px){nav.pill .nav-links{display:none;}}
+
+/* ---- page head ---- */
+.page-head{ padding: 40px 0 8px; }
+.page-head h1{ font-size: clamp(30px,4.5vw,46px); font-weight:800; letter-spacing:-0.01em; }
+.page-head p{ color:var(--ink-soft); font-size:15px; margin-top:6px; max-width:60ch; }
+
+/* ---- layout ---- */
+.grid{ display:grid; grid-template-columns: 0.9fr 1.1fr; gap:24px; align-items:start; margin-top:24px; }
+@media(max-width:840px){ .grid{ grid-template-columns:1fr; } }
+
+/* ---- controls card (light) ---- */
+.panel{ background:var(--bg-pill); border:1px solid var(--line); border-radius:var(--radius-card); padding:24px; }
+.panel h2{ font-size:13px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin:0 0 16px; font-weight:700; }
+.panel h2.mt{ margin-top:24px; padding-top:20px; border-top:1px solid var(--line); }
+.field{ margin-bottom:16px; }
+.field label{ display:block; font-size:12px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+select, input[type=number], input[type=text], input[type=date]{
+    width:100%; border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px; font-size:15px; font-family:inherit; color:var(--ink); background:#fff;
+    -webkit-appearance:none; appearance:none;
+}
+select{
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f6f6d' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position: right 14px center; padding-right:36px; cursor:pointer;
+}
+select:focus, input:focus, textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-size:14px; font-family:inherit; color:var(--ink); background:#fff; resize:vertical; }
+.row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.row-add{ display:grid; grid-template-columns: 1fr 70px auto; gap:8px; align-items:end; }
+.btn{ border:1px solid var(--accent); background:var(--accent); color:var(--ink-on-dark); border-radius:var(--radius-pill); padding:12px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:.2s ease; white-space:nowrap; }
+.btn:hover{ background:var(--accent-hover); border-color:var(--accent-hover); }
+.btn.block{ width:100%; padding:15px; font-size:15px; }
+.btn.ghost{ background:transparent; color:var(--ink); border-color:var(--ink); }
+.btn.ghost:hover{ background:var(--ink); color:var(--bg-pill); }
+.hint{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
+
+/* ---- invoice card (dark, like prices page) ---- */
+.invoice{ background:var(--bg-dark); border-radius:var(--radius-card); padding:18px; color:var(--ink-on-dark); }
+.invoice-head{
+    background:var(--bg-pill); border-radius:var(--radius-pill);
+    padding:12px 18px; display:flex; align-items:center; gap:14px; margin-bottom:6px;
+}
+.invoice-head img{ width:46px; height:46px; border-radius:50%; object-fit:cover; background:#fff; border:1px solid var(--line); }
+.invoice-head .ih-title{ font-weight:800; font-size:18px; color:var(--ink); line-height:1.15; }
+.invoice-head .ih-sub{ font-size:12px; color:var(--ink-soft); font-weight:600; }
+.inv-table{ width:100%; border-collapse:collapse; margin-top:8px; }
+.inv-table th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:#9a9a98; font-weight:600; padding:10px 6px 8px; border-bottom:1px solid rgba(241,240,236,0.14); }
+.inv-table th.r, .inv-table td.r{ text-align:right; }
+.inv-table td{ padding:9px 6px; font-size:14px; border-bottom:1px solid rgba(241,240,236,0.08); vertical-align:top; }
+.inv-table td.desc{ position:relative; padding-left:16px; }
+.inv-table td.desc::before{ content:""; position:absolute; left:2px; top:14px; width:6px; height:6px; border-radius:50%; background:var(--accent-on-dark); }
+.inv-table td.unit, .inv-table td.qty{ color:#b9b8b5; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.inv-table td.amt{ font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap; }
+.inv-table tr.saving td{ color:var(--accent-on-dark); font-style:italic; }
+.inv-table tr.saving td.desc::before{ background:transparent; }
+.inv-table tr.subtotal td{ color:#b9b8b5; font-weight:600; border-bottom:1px solid rgba(241,240,236,0.14); }
+.inv-table tr.subtotal td.desc::before{ background:transparent; }
+.rm{ background:none; border:none; color:#c98; cursor:pointer; font-size:15px; line-height:1; padding:0 2px; opacity:.7; }
+.rm:hover{ opacity:1; color:#e88; }
+.editqty{ width:54px; border:1px solid rgba(241,240,236,0.2); background:rgba(0,0,0,0.18); color:var(--ink-on-dark); border-radius:8px; padding:4px 6px; font-size:13px; text-align:right; }
+
+/* ---- total pill ---- */
+.total-pill{
+    background:var(--bg-pill); border-radius:var(--radius-pill);
+    margin-top:16px; padding:18px 24px; text-align:center; color:var(--ink);
+}
+.total-pill .tp-amt{ font-size:30px; font-weight:800; letter-spacing:-0.01em; }
+.total-pill .tp-lbl{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); font-weight:600; margin-bottom:2px; }
+.excl{ text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#8a8986; margin-top:10px; }
+.empty{ color:#9a9a98; font-size:14px; padding:18px 6px; text-align:center; }
+.codenote{ margin-top:18px; font-size:13px; color:var(--ink-soft); background:var(--bg-pill); border:1px solid var(--line); border-radius:14px; padding:14px 18px; }
+.codenote code{ background:#eceae4; padding:1px 6px; border-radius:6px; font-size:12.5px; }
+
+/* =========================================================
+   PRINTABLE INVOICE SHEET  (hidden on screen, shown when printing)
+   ========================================================= */
+#invoiceSheet{ display:none; }
+.inv-sheet{
+    width: 210mm; margin:0 auto; background:#fff; color:var(--ink);
+    padding: 12mm 15mm 10mm; font-size: 12px; display:block;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+/* keep rows and key blocks from being split across a page break */
+.is-table tr, .is-table thead{ break-inside: avoid; }
+.is-totals, .is-due, .is-pay-btns, .pay-note, .is-notes, .is-foot{ break-inside: avoid; }
+.is-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:20px; padding-bottom:16px; }
+.is-logo img{ max-width: 230px; max-height: 150px; object-fit:contain; }
+.is-logo .logo-fallback{ font-weight:800; font-size:34px; letter-spacing:0.02em; line-height:1; }
+.is-logo .logo-fallback small{ display:block; font-size:15px; letter-spacing:0.5em; font-weight:700; margin-top:4px; }
+.is-meta{ text-align:right; line-height:1.6; }
+.is-meta .inv-no{ font-size:18px; font-weight:800; letter-spacing:0.04em; margin-bottom:14px; }
+.is-meta .strong{ font-weight:700; }
+.is-meta a, .is-meta .web{ color:var(--accent); }
+.is-billbar{
+    display:flex; gap:30px; align-items:center; background:var(--bg);
+    border-radius:var(--radius-pill); padding:12px 24px; margin:6px 0 16px;
+}
+.is-billbar .bb-lbl{ font-weight:700; color:var(--ink-soft); }
+.is-billbar .bb-val{ font-weight:700; }
+.is-table{ width:100%; border-collapse:collapse; }
+.is-table th{ text-align:left; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-soft); padding:8px 10px; border-bottom:2px solid var(--ink); }
+.is-table th.r, .is-table td.r{ text-align:right; }
+.is-table td{ padding:9px 10px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; }
+.is-table td.it{ font-weight:600; }
+.is-totals{ width:55%; margin-left:auto; margin-top:8px; }
+.is-totals .tr{ display:flex; justify-content:space-between; padding:7px 10px; }
+.is-totals .tr.sub{ color:var(--ink-soft); }
+.is-totals .tr.tot{ border-top:1px solid var(--line); font-weight:700; }
+.is-due{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--bg-dark); color:#fff; border-radius:var(--radius-pill);
+    padding:15px 28px; margin:16px 0 0; width:55%; margin-left:auto;
+    font-weight:800; font-size:17px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.is-due span{ font-weight:800; }
+.is-notes{ margin-top:22px; }
+.is-notes h4{ font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-soft); margin-bottom:8px; }
+.is-notes .note-row{ display:flex; gap:18px; margin-bottom:4px; }
+.is-notes .note-row .nk{ min-width:120px; font-weight:700; }
+.is-notes .note-row .nv{ color:var(--ink); white-space:pre-line; }
+.is-foot{ display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-top:16px; }
+.is-pay h4{ font-weight:800; font-size:15px; margin-bottom:6px; }
+.is-pay p{ color:var(--accent); font-size:12.5px; }
+.is-bank{ margin-top:22px; border:1px solid var(--ink); border-radius:10px; padding:12px 16px; display:inline-block; }
+.is-bank div{ display:flex; gap:14px; justify-content:space-between; }
+.is-bank .bk{ } .is-bank .bv{ font-weight:700; }
+.is-mascot{ margin: 0 6mm 4mm 0; }
+.is-mascot img{ max-width: 128px; }
+.is-pay-btns{ display:flex; gap:12px; margin:12px 0 0; width:55%; margin-left:auto; }
+.paybtn{ flex:1; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.25; text-decoration:none; border-radius:var(--radius-pill); padding:12px 16px; font-weight:700; font-size:13.5px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.paybtn.deposit{ background:var(--accent); color:#fff; }
+.paybtn.full{ background:#fff; color:var(--accent); border:1.5px solid var(--accent); }
+.pay-note{ font-size:10.5px; color:var(--ink-soft); margin-top:8px; width:55%; margin-left:auto; text-align:right; }
+
+@media print{
+    @page{ size:A4; margin:0; }
+    body{ background:#fff; padding:0; }
+    .app{ display:none !important; }
+    .scrim, .mobile-menu, .login-gate{ display:none !important; }
+    #invoiceSheet{ display:block !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN GATE (only appears once your Firebase keys are set) -->
+<div class="login-gate" id="loginGate" style="display:none;">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<!-- ===================== APP (calculator UI) ===================== -->
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close menu">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="leads.html">Leads</a></li>
+        <li><a href="content.html">Content Planner</a></li>
+        <li><a href="index.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+<div class="app">
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="leads.html">Leads</a></li>
+                <li><a href="content.html">Content Planner</a></li>
+                <li><a href="index.html" class="active">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+            </ul>
+            <button class="nav-cta" id="logoutBtn" style="display:none;cursor:pointer;background:none;">Log out</button>
+        </div>
+    </nav>
+</div>
+
+<div class="wrap">
+    <div class="page-head">
+        <span class="eyebrow">Pricing</span>
+        <h1>Price Calculator</h1>
+        <p>Pick a package or build a custom quote, add transport / overtime if needed, then export a client invoice. Every line shows item, unit price and quantity. All prices in Rand.</p>
+    </div>
+
+    <div class="grid">
+        <!-- CONTROLS -->
+        <div class="panel">
+            <h2>Build the quote</h2>
+            <div class="field">
+                <label for="qtype">Quote type</label>
+                <select id="qtype">
+                    <option value="combo">Photography &amp; Videography</option>
+                    <option value="photo">Photography</option>
+                    <option value="video">Videography</option>
+                    <option value="padel">Padel League (per week)</option>
+                    <option value="mini">Mini Shoot</option>
+                    <option value="custom">Custom build (from scratch)</option>
+                </select>
+            </div>
+            <div class="row2">
+                <div class="field" id="tierField">
+                    <label for="tier">Package tier</label>
+                    <select id="tier">
+                        <option value="Bronze">Bronze</option>
+                        <option value="Silver">Silver</option>
+                        <option value="Gold">Gold</option>
+                    </select>
+                </div>
+                <div class="field" id="pkgQtyField">
+                    <label for="pkgQty">Quantity / sessions</label>
+                    <input type="number" id="pkgQty" value="1" min="1" step="1">
+                </div>
+            </div>
+            <div class="field" id="miniField" style="display:none;">
+                <label for="miniMode">Mini shoot — discipline</label>
+                <select id="miniMode">
+                    <option value="photographer">Photographer (edited photos)</option>
+                    <option value="videographer">Videographer (30-60s reel)</option>
+                </select>
+            </div>
+
+            <h2 class="mt">Add extra items</h2>
+            <div class="field">
+                <label for="basis">Extra deliverables priced at</label>
+                <select id="basis">
+                    <option value="deliverable">Package add-on rate</option>
+                    <option value="normal">Normal (à la carte) rate</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="extraItem">Item</label>
+                <div class="row-add">
+                    <select id="extraItem"></select>
+                    <input type="number" id="extraQty" value="1" min="1" step="1">
+                    <button class="btn" id="addExtra">Add</button>
+                </div>
+                <div class="hint" id="customHint" style="display:none;">Custom build starts empty — add coverage hours, deliverables, revisions and overhead here.</div>
+            </div>
+
+            <h2 class="mt">Transport &amp; overtime</h2>
+            <div class="row2">
+                <div class="field">
+                    <label for="transport">Transport?</label>
+                    <select id="transport"><option value="no">No</option><option value="yes">Yes</option></select>
+                </div>
+                <div class="field" id="kmField" style="display:none;">
+                    <label for="km">Distance (km)</label>
+                    <input type="number" id="km" value="0" min="0" step="1">
+                </div>
+            </div>
+            <div class="row2">
+                <div class="field">
+                    <label for="overtime">Overtime?</label>
+                    <select id="overtime"><option value="no">No</option><option value="yes">Yes</option></select>
+                </div>
+                <div class="field" id="otField" style="display:none;">
+                    <label for="otHours">Overtime hours</label>
+                    <input type="number" id="otHours" value="0" min="0" step="0.5">
+                </div>
+            </div>
+            <div class="field">
+                <label for="rush">Rush fee? (adds 30% to the total)</label>
+                <select id="rush"><option value="no">No</option><option value="yes">Yes</option></select>
+            </div>
+            <div class="field">
+                <label for="promoCode">Promo code (optional)</label>
+                <input type="text" id="promoCode" placeholder="e.g. FOMGIVEAWAY10" style="text-transform:uppercase;">
+                <div id="promoMsg" style="font-size:12.5px; margin-top:4px; min-height:16px;"></div>
+            </div>
+            <div class="row2">
+                <div class="field">
+                    <label for="discType">Manual discount</label>
+                    <select id="discType">
+                        <option value="none">No discount</option>
+                        <option value="percent">Percentage (%)</option>
+                        <option value="flat">Flat amount (R)</option>
+                    </select>
+                </div>
+                <div class="field" id="discValueField" style="display:none;">
+                    <label for="discValue">Value</label>
+                    <input type="number" id="discValue" min="0" step="1" value="0">
+                </div>
+            </div>
+            <div class="field" id="discLabelField" style="display:none;">
+                <label for="discLabel">Label (shown on invoice)</label>
+                <input type="text" id="discLabel" placeholder="e.g. Friends &amp; family discount">
+            </div>
+
+            <h2 class="mt">Invoice details (for PDF)</h2>
+            <div class="field">
+                <label for="client">Bill to (client name)</label>
+                <input type="text" id="client" placeholder="e.g. Hyde Park Falcons">
+            </div>
+            <div class="row2">
+                <div class="field">
+                    <label for="invno">Invoice #</label>
+                    <input type="text" id="invno" value="1">
+                </div>
+                <div class="field">
+                    <label for="invdate">Date</label>
+                    <input type="date" id="invdate">
+                </div>
+            </div>
+            <div class="field">
+                <label for="invnotes">Extra notes (optional)</label>
+                <input type="text" id="invnotes" placeholder="e.g. Travel cost to KCC for 10 weeks">
+            </div>
+            <div class="row2">
+                <div class="field">
+                    <label for="payMode">Payment buttons</label>
+                    <select id="payMode">
+                        <option value="both">Deposit + Full amount</option>
+                        <option value="balance">Balance only (after deposit)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="depPct">Deposit %</label>
+                    <input type="number" id="depPct" value="50" min="0" max="100" step="5">
+                </div>
+            </div>
+            <div class="field" id="sendModeField" style="display:none;">
+                <label for="sendMode">Working on</label>
+                <select id="sendMode">
+                    <option value="desktop">Desktop — PDF with pay buttons</option>
+                    <option value="mobile">Mobile — WhatsApp pay link</option>
+                </select>
+            </div>
+            <button class="btn block" id="exportBtn">Export PDF invoice</button>
+            <div id="waSection" style="display:none;margin-top:12px;">
+                <div class="field">
+                    <label for="waMsg">WhatsApp message (editable — pay links added automatically)</label>
+                    <textarea id="waMsg" rows="4"></textarea>
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button class="btn ghost" id="waPayBtn" style="flex:1;">WhatsApp pay link</button>
+                    <button class="btn ghost" id="copyPayBtn" style="flex:1;">Copy</button>
+                </div>
+                <div class="hint" style="margin-top:6px;">On mobile the PDF exports with no pay buttons (they don't work on phones) — send the tappable link over WhatsApp instead.</div>
+            </div>
+        </div>
+
+        <!-- INVOICE (live, on screen) -->
+        <div>
+            <div class="invoice">
+                <div class="invoice-head">
+                    <img id="ivMascot" src="assets/mascot-head-color.png" alt="FOM" onerror="this.style.visibility='hidden'">
+                    <div>
+                        <div class="ih-title" id="ivTitle">Photography &amp; Videography</div>
+                        <div class="ih-sub" id="ivSub">Bronze package</div>
+                    </div>
+                </div>
+                <table class="inv-table">
+                    <thead><tr><th>Item</th><th class="r">Unit</th><th class="r">Qty</th><th class="r">Amount</th><th></th></tr></thead>
+                    <tbody id="ivBody"></tbody>
+                </table>
+                <div class="total-pill">
+                    <div class="tp-lbl" id="tpLbl">Package price</div>
+                    <div class="tp-amt" id="tpAmt">R0</div>
+                </div>
+                <div class="excl" id="exclNote">Excluding transport</div>
+            </div>
+            <div class="codenote">
+                Change prices in the <code>CONFIG</code> block at the top of the &lt;script&gt;. Invoice logo &amp; mascot load from <code>assets/logo.png</code> and <code>assets/mascot.png</code> — drop those PNGs next to this file.
+            </div>
+        </div>
+    </div>
+</div>
+</div><!-- /.app -->
+
+<!-- ===================== PRINTABLE INVOICE ===================== -->
+<div id="invoiceSheet">
+  <div class="inv-sheet">
+    <div class="is-top">
+      <div class="is-logo">
+        <img src="assets/logo.png" alt="FOM Studios" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='block';">
+        <div class="logo-fallback" id="logoFallback" style="display:none;">FÖM<small>STUDIOS</small></div>
+      </div>
+      <div class="is-meta">
+        <div class="inv-no" id="psInvNo">INVOICE #1</div>
+        <div class="strong">FOM Studios</div>
+        <div>Johannesburg</div>
+        <div>South Africa</div>
+        <div style="height:10px;"></div>
+        <div>Photographer / Videographer</div>
+        <div>fomxstudios@gmail.com</div>
+        <div class="web">www.fomstudios.co.za</div>
+        <div>0737553136</div>
+      </div>
+    </div>
+
+    <div class="is-billbar">
+      <div class="bb"><span class="bb-lbl">Bill to:</span> <span class="bb-val" id="psClient">—</span></div>
+      <div class="bb" style="margin-left:auto;"><span class="bb-lbl">Date:</span> <span class="bb-val" id="psDate">—</span></div>
+    </div>
+
+    <table class="is-table">
+      <thead><tr><th>Item</th><th class="r">Quantity</th><th class="r">Price</th><th class="r">Amount</th></tr></thead>
+      <tbody id="psBody"></tbody>
+    </table>
+
+    <div class="is-totals">
+      <div class="tr sub"><span>Subtotal:</span><span id="psSubtotal">R0,00</span></div>
+      <div class="tr sub" id="psDepRow" style="display:none;"><span id="psDepLbl">Less: deposit paid</span><span id="psDepVal">R0,00</span></div>
+      <div class="tr tot"><span id="psTotLbl">Total:</span><span id="psTotal">R0,00</span></div>
+    </div>
+    <div class="is-due"><span>Amount Due:</span><span id="psDue">R0,00</span></div>
+
+    <div class="is-pay-btns" id="psPayBtns" style="display:none;">
+      <a class="paybtn deposit" id="psPayDeposit" href="#" target="_blank" rel="noopener">Pay Deposit</a>
+      <a class="paybtn full" id="psPayFull" href="#" target="_blank" rel="noopener">Pay Full</a>
+    </div>
+    <div class="pay-note" id="psPayNote" style="display:none;">Secure payment via Yoco. 50% non-refundable deposit secures your booking; balance payable before the shoot date.</div>
+
+    <div class="is-notes" id="psNotesWrap">
+      <h4>Notes</h4>
+      <div id="psNotes"></div>
+    </div>
+
+    <div class="is-foot">
+      <div>
+        <div class="is-pay">
+          <h4>Payment Instructions</h4>
+          <p id="psPayIntro" style="font-weight:700;"></p>
+          <p>Payment confirms booking</p>
+        </div>
+        <div class="is-bank">
+          <div><span class="bk">Standard Bank Lenasia</span><span class="bv">Ishaaq Adam</span></div>
+          <div><span class="bk">Branch code:</span><span class="bv">015137</span></div>
+          <div><span class="bk">Acc no.:</span><span class="bv">10097158842</span></div>
+        </div>
+      </div>
+      <div class="is-mascot">
+        <img src="assets/mascot.png" alt="" onerror="this.style.display='none'">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="pay-config.js"></script>
+<script>
+/* ╔══════════════════════════════════════════════════════════════════╗
+   ║  EDIT YOUR PRICES HERE — everything the calculator uses is below.   ║
+   ║  All values in Rand. Change a number, save, refresh. Done.         ║
+   ╚══════════════════════════════════════════════════════════════════╝ */
+const CONFIG = {
+
+  /* 1) FINAL PACKAGE PRICES — what you actually charge per package */
+  packagePrice: {
+    photo: { Bronze: 800,  Silver: 1300, Gold: 1800 },
+    video: { Bronze: 1000, Silver: 1700, Gold: 3000 },
+    combo: { Bronze: 1500, Silver: 2700, Gold: 4500 },   // Photography & Videography
+  },
+
+  /* 1b) SPECIAL PACKAGES — flat discounted prices (no Bronze/Silver/Gold) */
+  specialPrice: { padel: 2500, mini: 500 },   // Padel = per week, Mini = per shoot
+
+  /* 2) COVERAGE — charged per hour, per person */
+  hourly: { photographer: 400, videographer: 500 },
+
+  /* 3) PER-SHOOT OVERHEAD (equipment wear + cloud storage + software) */
+  overhead: 150,
+
+  /* 4) REVISION / extra edit round */
+  revision: 75,
+
+  /* 5) SECOND SHOOTER (flat add-on) — set your rate */
+  secondShooter: 500,
+
+  /* 6) PACKAGE ADD-ON RATES — deliverable prices inside/added to packages */
+  deliverable: {
+    "30-60s Reel": 200, "2-3min Reel": 300,
+    "30-40 Photos": 250, "40-50 Photos": 350, "50-60 Photos": 450,
+    "Single Photo": 10, "Drone": 800,
+  },
+
+  /* 7) NORMAL / À LA CARTE RATES — higher, for one-off items (≈ +25%) */
+  normal: {
+    "30-60s Reel": 250, "2-3min Reel": 380,
+    "30-40 Photos": 320, "40-50 Photos": 440, "50-60 Photos": 570,
+    "Single Photo": 20, "Drone": 1000,
+  },
+
+  /* 8) TRANSPORT — fuel cost = (km / consumption) × fuel price */
+  fuel: { consumption: 8, price: 28.06 },   // consumption in litres/100km, price R/litre
+
+  /* 9) OVERTIME multiplier — overtime = (multiplier × hourly rate) × hours */
+  overtimeMultiplier: 1.5,
+
+  /* 10) COVERAGE HOURS & PHOTO TIER per package tier (drives the breakdown) */
+  tierHours: { Bronze: 1, Silver: 2, Gold: 4 },
+  tierFreeHours: { Bronze: 0, Silver: 0, Gold: 1 },   // Gold = 1 free hour
+  photoTier: { Bronze: "30-40 Photos", Silver: "40-50 Photos", Gold: "50-60 Photos" },
+};
+/* ── end of editable prices ──────────────────────────────────────────── */
+
+/* ===== Yoco "Pay Now" buttons =====================
+   The Worker URL now lives in pay-config.js so it survives calculator updates.
+   (Set PAY_WORKER_URL there.) mode is chosen per-invoice via the dropdown. */
+const PAY = {
+  workerUrl:  (typeof PAY_WORKER_URL  !== 'undefined') ? PAY_WORKER_URL  : "",
+  depositPct: (typeof PAY_DEPOSIT_PCT !== 'undefined') ? PAY_DEPOSIT_PCT : 50,
+  mode: "both",       // "both" = Deposit + Full ; "balance" = remaining balance only
+  device: /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+};
+let invoiceTotal = 0;   // set by buildInvoice, used to size the payment links
+let liveTotal = 0;      // current on-screen total, used to prefill the WhatsApp message
+
+/* ===== PROMO CODES =====================================================
+   Add a new code any time by adding a line below — nothing else in the
+   calculator needs to change. Each code can be:
+     type: 'percent'  → value is a % taken off (e.g. 10 = 10% off)
+     type: 'flat'      → value is a flat Rand amount taken off
+   expires (optional): 'YYYY-MM-DD' — after this date the code is
+     automatically rejected, so there's no need to remember to remove it.
+   Codes are matched case-insensitively (FOMGIVEAWAY10 = fomgiveaway10).
+   ========================================================================= */
+const PROMO_CODES = {
+  'FOMGIVEAWAY10': { type: 'percent', value: 10, label: 'Giveaway — 10% off', expires: '2026-09-02' },
+  // Add future codes here, e.g.:
+  // 'REFER15':     { type: 'percent', value: 15, label: 'Referral — 15% off', expires: '2026-12-31' },
+  // 'LOYALTY200':  { type: 'flat',    value: 200, label: 'Loyalty — R200 off' },  // no expiry = never expires
+};
+
+/* Reads whatever's typed in the promo field, validates it against the
+   registry above (including expiry), and shows a status message.
+   Returns the matching promo object, or null if empty/invalid/expired. */
+function getActivePromo(){
+  const input = $('promoCode');
+  const msgEl = $('promoMsg');
+  if(!input || !msgEl) return null;
+  const code = input.value.trim().toUpperCase();
+  if(!code){ msgEl.textContent = ''; return null; }
+
+  const promo = PROMO_CODES[code];
+  if(!promo){
+    msgEl.textContent = 'Code not recognised.';
+    msgEl.style.color = '#c0392b';
+    return null;
+  }
+  if(promo.expires){
+    const today = new Date().toISOString().slice(0,10);
+    if(today > promo.expires){
+      msgEl.textContent = `This code expired on ${fmtDate(promo.expires)}.`;
+      msgEl.style.color = '#c0392b';
+      return null;
+    }
+  }
+  msgEl.textContent = `✓ ${promo.label} applied`;
+  msgEl.style.color = '#27ae60';
+  return promo;
+}
+
+/* Applies a promo object to an amount and returns the discounted total. */
+function applyPromo(amount, promo){
+  if(!promo) return amount;
+  if(promo.type === 'percent') return Math.max(0, Math.round(amount * (1 - promo.value/100)));
+  if(promo.type === 'flat')    return Math.max(0, amount - promo.value);
+  return amount;
+}
+
+/* Reads the manual discount fields (type + value + optional label).
+   Returns an object shaped the same as a promo code, so it can be
+   passed straight into applyPromo() — or null if none is set. */
+function getManualDiscount(){
+  const type = $('discType').value;
+  const value = parseFloat($('discValue').value) || 0;
+  if(type === 'none' || value <= 0) return null;
+  const label = $('discLabel').value.trim() ||
+    (type === 'percent' ? `Discount (${value}%)` : 'Discount');
+  return { type, value, label };
+}
+
+const MASCOT = {
+  Bronze: "assets/mascot-head-bronze.jpg",
+  Silver: "assets/mascot-head-silver.jpg",
+  Gold:   "assets/mascot-head-gold.jpg",
+  color:  "assets/mascot-head-color.png",
+};
+const TYPE_LABEL = { photo:"Photography", video:"Videography", combo:"Photography & Videography", padel:"Padel League Package", mini:"Mini Shoot", custom:"Custom build" };
+const TIERED = ['photo','video','combo'];
+const SPECIAL = ['padel','mini'];
+const pkgPrice = (type, tier) => SPECIAL.includes(type) ? CONFIG.specialPrice[type] : CONFIG.packagePrice[type][tier];
+
+/* money: South African format e.g. R45 000,00 */
+function RZA(n){
+  const neg = n < 0; n = Math.abs(n);
+  let [i,d] = n.toFixed(2).split('.');
+  i = i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return (neg ? '−' : '') + 'R' + i + ',' + d;
+}
+
+const L = (desc, unit, qty) => ({ desc, unit, qty });
+
+/* ---- component lines that make up each package ---- */
+function packageLines(type, tier){
+  const C = CONFIG, hrs = C.tierHours[tier], freeHrs = C.tierFreeHours[tier];
+  const photoKey = C.photoTier[tier], d = C.deliverable, lines = [];
+  if(type === 'photo'){
+    lines.push(L(`Photographer — ${hrs} hr coverage`, C.hourly.photographer, hrs));
+    lines.push(L(photoKey + " (edited)", d[photoKey], 1));
+    lines.push(L("Studio overhead", C.overhead, 1));
+    if(freeHrs) lines.push(L(`${freeHrs} free hour (Gold)`, -C.hourly.photographer, freeHrs));
+  } else if(type === 'video'){
+    const reels = tier === 'Silver' ? 2 : 1;
+    lines.push(L(`Videographer — ${hrs} hr coverage`, C.hourly.videographer, hrs));
+    if(tier === 'Gold'){
+      lines.push(L("2-3min Reel", d["2-3min Reel"], 1));
+      lines.push(L("30-60s Reel", d["30-60s Reel"], 1));
+      lines.push(L("Drone coverage", d["Drone"], 1));
+    } else lines.push(L("30-60s Reel", d["30-60s Reel"], reels));
+    lines.push(L("Reel revisions", C.revision, 2));
+    lines.push(L("Studio overhead", C.overhead, 1));
+    if(freeHrs) lines.push(L(`${freeHrs} free hour (Gold)`, -C.hourly.videographer, freeHrs));
+  } else if(type === 'combo'){
+    const reels = tier === 'Silver' ? 2 : 1;
+    lines.push(L(`Photographer — ${hrs} hr coverage`, C.hourly.photographer, hrs));
+    lines.push(L(`Videographer — ${hrs} hr coverage`, C.hourly.videographer, hrs));
+    lines.push(L(photoKey + " (edited)", d[photoKey], 1));
+    if(tier === 'Gold'){
+      lines.push(L("2-3min Reel", d["2-3min Reel"], 1));
+      lines.push(L("30-60s Reel", d["30-60s Reel"], 1));
+      lines.push(L("Drone coverage", d["Drone"], 1));
+    } else lines.push(L("30-60s Reel", d["30-60s Reel"], reels));
+    lines.push(L("Reel revisions", C.revision, tier === 'Gold' ? 3 : 2));
+    lines.push(L("Studio overhead (photo + video)", C.overhead, 2));
+    if(freeHrs) lines.push(L(`${freeHrs} free hour ea. (Gold)`, -(C.hourly.photographer + C.hourly.videographer), freeHrs));
+  } else if(type === 'padel'){
+    lines.push(L("Videographer — 6 hr game day", C.hourly.videographer, 6));
+    lines.push(L("Photographer — 6 hr game day", C.hourly.photographer, 6));
+    lines.push(L("2-3min Game Day Reel", d["2-3min Reel"], 1));
+    lines.push(L("Edited Photos (per week)", d["40-50 Photos"], 1));
+    lines.push(L("Studio overhead (photo + video)", C.overhead, 2));
+  } else if(type === 'mini'){
+    if(state.miniMode === 'videographer'){
+      lines.push(L("Videographer — 30 min coverage", C.hourly.videographer, 0.5));
+      lines.push(L("30-60s Reel", d["30-60s Reel"], 1));
+    } else {
+      lines.push(L("Photographer — 30 min coverage", C.hourly.photographer, 0.5));
+      lines.push(L("Edited Photos", d["Single Photo"] * 20, 1));   // priced for 20, amount not labelled
+    }
+    lines.push(L("Studio overhead", C.overhead, 1));
+  }
+  return lines;
+}
+
+/* package contents (plain text, for invoice Notes) */
+const CONTENT_TEXT = {
+  photo: {
+    Bronze:["1 Photographer","30-40 Edited Photos","1 Hour Coverage"],
+    Silver:["1 Photographer","40-50 Edited Photos","2 Hour Coverage"],
+    Gold:["1 Photographer","50-60 Edited Photos","4 Hour Coverage"],
+  },
+  video: {
+    Bronze:["1 Videographer","1 (30-60) Second Reel","2 rounds of revisions on the reel","1 Hour Coverage"],
+    Silver:["1 Videographer","2 (30-60) Second Reels","2 rounds of revisions on the reel","2 Hour Coverage"],
+    Gold:["1 Videographer","1 (2-3) Minute Reel","1 (30-60) Second Reel","Drone Coverage","2 rounds of revisions on the reel","4 Hour Coverage"],
+  },
+  combo: {
+    Bronze:["1 Photographer","1 Videographer","1 (30-60) Second Reel","30-40 Edited Photos","2 rounds of revisions on the reel","1 Hour Coverage"],
+    Silver:["1 Photographer","1 Videographer","2 (30-60) Second Reels","40-50 Edited Photos","2 rounds of revisions on the reel","2 Hour Coverage"],
+    Gold:["1 Photographer","1 Videographer","1 (2-3) Minute Reel","1 (30-60) Second Reel","50-60 Edited Photos","Drone Coverage","3 rounds of revisions on the reel","4 Hour Coverage"],
+  },
+};
+const SPECIAL_CONTENT = {
+  padel:["1 Videographer","1 Photographer","6 Hour Game Day Coverage","1 (2-3) Minute Game Day Reel Per Week","Professionally Edited Photos Per Week"],
+};
+const MINI_CONTENT = {
+  photographer:["Photography (Edited Photos)","30 Minute Coverage"],
+  videographer:["Videography (1 × 30-60 Second Reel)","30 Minute Coverage"],
+};
+function contentText(type, tier){
+  if(type === 'mini') return MINI_CONTENT[state.miniMode];
+  if(SPECIAL.includes(type)) return SPECIAL_CONTENT[type];
+  return CONTENT_TEXT[type][tier];
+}
+
+/* ---- state ---- */
+let state = {
+  type:'combo', tier:'Bronze', basis:'deliverable', pkgQty:1, miniMode:'photographer',
+  extras:[], custom:[],
+  transport:{on:false, km:0}, overtime:{on:false, hours:0}, rush:{on:false},
+};
+
+/* ---- extra-item dropdown ---- */
+function buildExtraOptions(){
+  const opts = [];
+  Object.keys(CONFIG.deliverable).forEach(k => opts.push(`<option value="dlv:${k}">${k}</option>`));
+  opts.push(`<option value="hour:photographer">Extra Photographer hour</option>`);
+  opts.push(`<option value="hour:videographer">Extra Videographer hour</option>`);
+  opts.push(`<option value="flat:revision">Revision / extra edit</option>`);
+  opts.push(`<option value="flat:secondShooter">Second shooter</option>`);
+  opts.push(`<option value="flat:overhead">Studio overhead</option>`);
+  document.getElementById('extraItem').innerHTML = opts.join('');
+}
+function extraToLine(value, qty){
+  const [kind, key] = value.split(':');
+  if(kind === 'dlv'){
+    const rate = state.basis === 'normal' ? CONFIG.normal[key] : CONFIG.deliverable[key];
+    return L(key, rate, qty);
+  }
+  if(kind === 'hour') return L(key === 'photographer' ? "Extra Photographer hour" : "Extra Videographer hour", CONFIG.hourly[key], qty);
+  const map = { revision:["Revision", CONFIG.revision], secondShooter:["Second shooter", CONFIG.secondShooter], overhead:["Studio overhead", CONFIG.overhead] };
+  return L(map[key][0], map[key][1], qty);
+}
+
+/* ---- transport & overtime helpers ---- */
+const perKm = () => CONFIG.fuel.price / CONFIG.fuel.consumption;          // R per km
+function transportLine(){ return L(`Transport / fuel (${state.transport.km} km)`, perKm(), state.transport.km); }
+function overtimeRate(){
+  const m = CONFIG.overtimeMultiplier, h = CONFIG.hourly;
+  if(state.type === 'photo') return m * h.photographer;
+  if(state.type === 'video') return m * h.videographer;
+  if(state.type === 'combo') return m * (h.photographer + h.videographer);
+  return m * h.videographer; // custom
+}
+function overtimeLine(){ return L(`Overtime (${CONFIG.overtimeMultiplier}× rate)`, overtimeRate(), state.overtime.hours); }
+
+/* ---- render the live (dark) invoice ---- */
+function render(){
+  const isCustom = state.type === 'custom';
+  const isTiered = TIERED.includes(state.type);
+  document.getElementById('tierField').style.display = isTiered ? 'block' : 'none';
+  document.getElementById('pkgQtyField').style.display = isCustom ? 'none' : 'block';
+  document.getElementById('miniField').style.display = (state.type === 'mini') ? 'block' : 'none';
+  document.getElementById('customHint').style.display = isCustom ? 'block' : 'none';
+  document.getElementById('ivMascot').src = "assets/mascot.png";
+  document.getElementById('ivTitle').textContent = TYPE_LABEL[state.type];
+  const qtyTxt = state.pkgQty>1 ? ` × ${state.pkgQty}` : '';
+  document.getElementById('ivSub').textContent =
+    isCustom ? 'Custom quote' : (isTiered ? state.tier + ' package' + qtyTxt : 'Package' + qtyTxt);
+
+  const body = document.getElementById('ivBody');
+  body.innerHTML = '';
+  let grand = 0;
+
+  if(isCustom){
+    if(state.custom.length === 0)
+      body.innerHTML = `<tr><td colspan="5" class="empty">Add items from the panel to start your quote →</td></tr>`;
+    state.custom.forEach((ln,i)=>{ grand += ln.unit*ln.qty; body.appendChild(rowEl(ln,i,true)); });
+  } else {
+    const base = packageLines(state.type, state.tier);
+    let itemized = 0;
+    base.forEach(ln => { itemized += ln.unit*ln.qty; body.appendChild(rowEl(ln,null,false)); });
+    const price = pkgPrice(state.type, state.tier);
+    const saving = itemized - price;
+    body.appendChild(simpleRow('Itemised value', itemized, 'subtotal'));
+    if(saving > 0) body.appendChild(simpleRow('Bundle saving (client pays package price)', -saving, 'saving'));
+    if(state.pkgQty > 1) body.appendChild(simpleRow(`Package price × ${state.pkgQty}`, price*state.pkgQty, 'subtotal'));
+    grand = price * state.pkgQty;
+
+    if(state.extras.length){
+      body.appendChild(sepRow('Extras / add-ons'));
+      state.extras.forEach((ln,i)=>{ grand += ln.unit*ln.qty; body.appendChild(rowEl(ln,i,true)); });
+    }
+  }
+
+  // transport, overtime & rush (apply to any mode)
+  if(state.transport.on || state.overtime.on || state.rush.on) body.appendChild(sepRow('Adjustments'));
+  if(state.transport.on){ const t = transportLine(); grand += t.unit*t.qty; body.appendChild(rowEl(t,null,false)); }
+  if(state.overtime.on){ const o = overtimeLine(); grand += o.unit*o.qty; body.appendChild(rowEl(o,null,false)); }
+  if(state.rush.on){ const r = L('Rush fee (+30%)', Math.round(grand*0.30), 1); grand += r.unit; body.appendChild(rowEl(r,null,false)); }
+
+  const promo = getActivePromo();
+  if(promo){
+    const discounted = applyPromo(grand, promo);
+    const discAmt = grand - discounted;
+    if(discAmt > 0) body.appendChild(simpleRow(`Promo: ${promo.label}`, -discAmt, 'saving'));
+    grand = discounted;
+  }
+
+  const manualDisc = getManualDiscount();
+  if(manualDisc){
+    const discounted = applyPromo(grand, manualDisc);
+    const discAmt = grand - discounted;
+    if(discAmt > 0) body.appendChild(simpleRow(manualDisc.label, -discAmt, 'saving'));
+    grand = discounted;
+  }
+
+  document.getElementById('tpLbl').textContent = isCustom ? 'Quote total' : 'Total';
+  document.getElementById('tpAmt').textContent = RZA(grand);
+  // "Excluding transport" caption only when no transport added
+  document.getElementById('exclNote').style.display = state.transport.on ? 'none' : 'block';
+  liveTotal = grand;
+  refreshWaMsg();
+  return grand;
+}
+
+function rowEl(ln, idx, removable){
+  const tr = document.createElement('tr');
+  const amt = ln.unit*ln.qty, neg = ln.unit < 0;
+  const unitTxt = (Math.abs(ln.unit) % 1 !== 0) ? RZA(ln.unit) : (neg ? '−'+RZA(-ln.unit) : RZA(ln.unit));
+  tr.innerHTML = `
+    <td class="desc">${ln.desc}</td>
+    <td class="r unit">${unitTxt}</td>
+    <td class="r qty">${ removable ? `<input class="editqty" type="number" min="1" value="${ln.qty}" data-i="${idx}">` : '× '+ln.qty }</td>
+    <td class="r amt">${neg ? '−'+RZA(-amt) : RZA(amt)}</td>
+    <td class="r">${ removable ? `<button class="rm" data-rm="${idx}" title="Remove">✕</button>` : '' }</td>`;
+  return tr;
+}
+function simpleRow(label, amt, cls){
+  const tr = document.createElement('tr'); if(cls) tr.className = cls;
+  const neg = amt < 0;
+  tr.innerHTML = `<td class="desc">${label}</td><td></td><td></td><td class="r amt">${neg ? '−'+RZA(-amt) : RZA(amt)}</td><td></td>`;
+  return tr;
+}
+function sepRow(label){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td colspan="5" style="padding-top:12px; color:#9a9a98; font-size:11px; text-transform:uppercase; letter-spacing:.06em;">${label}</td>`;
+  return tr;
+}
+
+/* ---- build line items for the PDF invoice ---- */
+function invoiceItems(){
+  const items = [];
+  if(state.type === 'custom'){
+    state.custom.forEach(ln => items.push(ln));
+  } else {
+    const price = pkgPrice(state.type, state.tier);
+    const label = TIERED.includes(state.type)
+      ? `${state.tier} Package — ${TYPE_LABEL[state.type]}`
+      : TYPE_LABEL[state.type];
+    items.push(L(label, price, state.pkgQty));
+    state.extras.forEach(ln => items.push(ln));
+  }
+  if(state.transport.on) items.push(transportLine());
+  if(state.overtime.on) items.push(overtimeLine());
+  if(state.rush.on){ const base = items.reduce((a,l)=>a+l.unit*l.qty,0); items.push(L('Rush fee (+30%)', Math.round(base*0.30), 1)); }
+  return items;
+}
+
+/* ---- export: populate the printable sheet, then print ---- */
+function fmtDate(v){
+  if(!v) return '';
+  const d = new Date(v + 'T00:00:00');
+  const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+  return String(d.getDate()).padStart(2,'0') + '-' + mon + '-' + String(d.getFullYear()).slice(2);
+}
+function buildInvoice(){
+  document.getElementById('psInvNo').textContent = 'INVOICE #' + (document.getElementById('invno').value || '1');
+  document.getElementById('psClient').textContent = document.getElementById('client').value || '—';
+  document.getElementById('psDate').textContent = fmtDate(document.getElementById('invdate').value);
+
+  const items = invoiceItems();
+  const body = document.getElementById('psBody');
+  body.innerHTML = '';
+  let total = 0;
+  // show only as many rows as there are items (with a small minimum); grows automatically
+  const minRows = Math.max(items.length, 2);
+  items.forEach(ln => {
+    const amt = ln.unit*ln.qty; total += amt;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="it">${ln.desc}</td><td class="r">${ln.qty}</td><td class="r">${RZA(ln.unit)}</td><td class="r">${RZA(amt)}</td>`;
+    body.appendChild(tr);
+  });
+  for(let i = items.length; i < minRows; i++){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>&nbsp;</td><td></td><td></td><td class="r">R0,00</td>`;
+    body.appendChild(tr);
+  }
+  const invPromo = getActivePromo();
+  if(invPromo){
+    const discounted = applyPromo(total, invPromo);
+    const discAmt = total - discounted;
+    if(discAmt > 0){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="it">Promo: ${invPromo.label}</td><td></td><td></td><td class="r">−${RZA(discAmt)}</td>`;
+      body.appendChild(tr);
+    }
+    total = discounted;
+  }
+
+  const invManualDisc = getManualDiscount();
+  if(invManualDisc){
+    const discounted = applyPromo(total, invManualDisc);
+    const discAmt = total - discounted;
+    if(discAmt > 0){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="it">${invManualDisc.label}</td><td></td><td></td><td class="r">−${RZA(discAmt)}</td>`;
+      body.appendChild(tr);
+    }
+    total = discounted;
+  }
+  document.getElementById('psSubtotal').textContent = RZA(total);
+
+  if(PAY.mode === 'balance'){
+    const dep = Math.round(total * (PAY.depositPct/100));
+    const bal = total - dep;
+    document.getElementById('psDepRow').style.display = 'flex';
+    document.getElementById('psDepLbl').textContent = `Less: ${PAY.depositPct}% deposit paid`;
+    document.getElementById('psDepVal').textContent = '−' + RZA(dep);
+    document.getElementById('psTotLbl').textContent = 'Balance due:';
+    document.getElementById('psTotal').textContent = RZA(bal);
+    document.getElementById('psDue').textContent = RZA(bal);
+    invoiceTotal = bal;
+  } else {
+    document.getElementById('psDepRow').style.display = 'none';
+    document.getElementById('psTotLbl').textContent = 'Total:';
+    document.getElementById('psTotal').textContent = RZA(total);
+    document.getElementById('psDue').textContent = RZA(total);
+    invoiceTotal = total;
+  }
+
+  document.getElementById('psPayIntro').textContent =
+    !PAY.workerUrl ? 'Pay by EFT using the banking details below.'
+    : (PAY.device === 'mobile'
+        ? 'Pay by card using the link we sent you, or by EFT to the account below.'
+        : 'Pay instantly by card using the buttons above, or by EFT to the account below.');
+
+  // notes: package contents + optional custom note
+  const notes = document.getElementById('psNotes');
+  notes.innerHTML = '';
+  if(state.type !== 'custom'){
+    const list = contentText(state.type, state.tier).join('\n');
+    const head = TIERED.includes(state.type) ? `${state.tier} Package:` : `${TYPE_LABEL[state.type]}:`;
+    notes.appendChild(noteRow(head, list));
+  }
+  const extra = document.getElementById('invnotes').value.trim();
+  if(extra) notes.appendChild(noteRow('Note:', extra));
+  document.getElementById('psNotesWrap').style.display =
+    (state.type !== 'custom' || extra) ? 'block' : 'none';
+}
+function noteRow(k, v){
+  const div = document.createElement('div'); div.className = 'note-row';
+  div.innerHTML = `<div class="nk">${k}</div><div class="nv">${v}</div>`;
+  return div;
+}
+
+/* ---- wire up ---- */
+const $ = id => document.getElementById(id);
+$('qtype').addEventListener('change', e => { state.type = e.target.value; render(); });
+$('tier').addEventListener('change', e => { state.tier = e.target.value; render(); });
+$('miniMode').addEventListener('change', e => { state.miniMode = e.target.value; render(); });
+$('pkgQty').addEventListener('input', e => { state.pkgQty = Math.max(1, parseInt(e.target.value)||1); render(); });
+$('basis').addEventListener('change', e => { state.basis = e.target.value; });
+$('addExtra').addEventListener('click', () => {
+  const ln = extraToLine($('extraItem').value, Math.max(1, parseInt($('extraQty').value)||1));
+  (state.type === 'custom' ? state.custom : state.extras).push(ln); render();
+});
+$('transport').addEventListener('change', e => {
+  state.transport.on = e.target.value === 'yes';
+  $('kmField').style.display = state.transport.on ? 'block' : 'none';
+  render();
+});
+$('km').addEventListener('input', e => { state.transport.km = Math.max(0, parseFloat(e.target.value)||0); render(); });
+$('overtime').addEventListener('change', e => {
+  state.overtime.on = e.target.value === 'yes';
+  $('otField').style.display = state.overtime.on ? 'block' : 'none';
+  render();
+});
+$('otHours').addEventListener('input', e => { state.overtime.hours = Math.max(0, parseFloat(e.target.value)||0); render(); });
+$('rush').addEventListener('change', e => { state.rush.on = e.target.value === 'yes'; render(); });
+$('promoCode').addEventListener('input', () => render());
+$('discType').addEventListener('change', () => {
+  const on = $('discType').value !== 'none';
+  $('discValueField').style.display = on ? 'block' : 'none';
+  $('discLabelField').style.display = on ? 'block' : 'none';
+  render();
+});
+$('discValue').addEventListener('input', () => render());
+$('discLabel').addEventListener('input', () => render());
+$('ivBody').addEventListener('click', e => {
+  const rm = e.target.getAttribute('data-rm');
+  if(rm !== null){ (state.type === 'custom' ? state.custom : state.extras).splice(+rm,1); render(); }
+});
+$('ivBody').addEventListener('input', e => {
+  if(e.target.classList.contains('editqty')){
+    const arr = state.type === 'custom' ? state.custom : state.extras;
+    if(arr[+e.target.dataset.i]){ arr[+e.target.dataset.i].qty = Math.max(1, parseInt(e.target.value)||1); render(); }
+  }
+});
+$('depPct').addEventListener('input', e => { PAY.depositPct = Math.min(100, Math.max(0, parseFloat(e.target.value)||0)); });
+$('payMode').addEventListener('change', e => { PAY.mode = e.target.value; });
+
+async function createCheckout(amount, kind){
+  const r = await fetch(PAY.workerUrl, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ amount, kind, invoice: $('invno').value||'', client: $('client').value||'' })
+  });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok || !d.redirectUrl) throw new Error(d.error || 'checkout failed');
+  return d.redirectUrl;
+}
+async function preparePayLinks(){
+  const btns = $('psPayBtns'), note = $('psPayNote');
+  btns.style.display = 'none'; note.style.display = 'none';
+  if(!PAY.workerUrl || !invoiceTotal) return;                 // not configured → no buttons
+
+  if(PAY.mode === 'balance'){
+    // invoiceTotal already equals the remaining balance (set in buildInvoice)
+    $('psPayDeposit').style.display = 'none';
+    const u = await createCheckout(invoiceTotal, 'balance');
+    const b = $('psPayFull'); b.href = u; b.textContent = `Pay Balance — ${RZA(invoiceTotal)}`;
+    note.textContent = 'Secure payment via Yoco. This is the remaining balance for your booking, payable before the shoot date.';
+    btns.style.display = 'flex'; note.style.display = 'block';
+    return;
+  }
+
+  const dep = Math.round(invoiceTotal * (PAY.depositPct/100));
+  const jobs = [];
+  if(PAY.depositPct > 0 && PAY.depositPct < 100 && dep >= 2){
+    jobs.push(createCheckout(dep,'deposit').then(u=>{ const b=$('psPayDeposit'); b.href=u; b.textContent=`Pay ${PAY.depositPct}% Deposit — ${RZA(dep)}`; b.style.display=''; }));
+  } else { $('psPayDeposit').style.display='none'; }
+  jobs.push(createCheckout(invoiceTotal,'full').then(u=>{ const b=$('psPayFull'); b.href=u; b.textContent=`Pay Full — ${RZA(invoiceTotal)}`; }));
+  await Promise.all(jobs);
+  note.textContent = 'Secure payment via Yoco. 50% non-refundable deposit secures your booking; balance payable before the shoot date.';
+  btns.style.display = 'flex'; note.style.display = 'block';
+}
+/* ---- shareable pay link (works on mobile, unlike PDF buttons) ---- */
+function packageLabel(){
+  return state.type==='custom' ? 'your custom quote'
+    : (TIERED.includes(state.type) ? `${state.tier} — ${TYPE_LABEL[state.type]}` : TYPE_LABEL[state.type]);
+}
+let lastAutoMsg = '';
+function defaultWaMsg(){ return `Hi! Here's your FOM Studios invoice for ${packageLabel()} — ${RZA(liveTotal)}. Pay securely below:`; }
+function refreshWaMsg(){
+  const ta = document.getElementById('waMsg'); if(!ta) return;
+  const def = defaultWaMsg();
+  if(ta.value.trim()==='' || ta.value===lastAutoMsg) ta.value = def;   // don't clobber your edits
+  lastAutoMsg = def;
+}
+async function makePayMessage(){
+  buildInvoice();                                  // refresh invoiceTotal for current selection + mode
+  if(!PAY.workerUrl){ alert('Add your Cloudflare Worker URL to pay-config.js first.'); return null; }
+  if(!invoiceTotal){ alert('Choose a package or enter an amount first.'); return null; }
+  let m = ($('waMsg').value.trim()) || defaultWaMsg();   // your editable intro
+  if(PAY.mode === 'balance'){
+    const url = await createCheckout(invoiceTotal,'balance');
+    m += `\n\nPay balance (${RZA(invoiceTotal)}):\n${url}`;
+  } else {
+    const dep = Math.round(invoiceTotal*(PAY.depositPct/100));
+    let depUrl = null;
+    if(PAY.depositPct>0 && PAY.depositPct<100 && dep>=2) depUrl = await createCheckout(dep,'deposit');
+    const fullUrl = await createCheckout(invoiceTotal,'full');
+    if(depUrl) m += `\n\nPay ${PAY.depositPct}% deposit (${RZA(dep)}):\n${depUrl}`;
+    m += `\n\nPay in full (${RZA(invoiceTotal)}):\n${fullUrl}`;
+  }
+  m += `\n\nSecure card payment via Yoco.`;
+  return m;
+}
+$('sendMode').addEventListener('change', e => {
+  PAY.device = e.target.value;
+  $('waSection').style.display = (PAY.device==='mobile' && PAY.workerUrl) ? 'block' : 'none';
+  if(PAY.device==='mobile') refreshWaMsg();
+});
+$('waPayBtn').addEventListener('click', async () => {
+  const b=$('waPayBtn'), o=b.textContent; b.textContent='Creating…'; b.disabled=true;
+  try{ const m=await makePayMessage(); if(m) window.open('https://wa.me/?text='+encodeURIComponent(m),'_blank'); }
+  catch(e){ console.warn(e); alert('Could not create the pay link — check your Worker URL / connection.'); }
+  b.textContent=o; b.disabled=false;
+});
+$('copyPayBtn').addEventListener('click', async () => {
+  const b=$('copyPayBtn'), o=b.textContent; b.textContent='Creating…'; b.disabled=true;
+  try{
+    const m=await makePayMessage();
+    if(m){ try{ await navigator.clipboard.writeText(m); }catch(_){}
+      b.textContent='Copied!'; setTimeout(()=>{ b.textContent=o; b.disabled=false; },1500); return; }
+  }catch(e){ console.warn(e); alert('Could not create the pay link — check your Worker URL / connection.'); }
+  b.textContent=o; b.disabled=false;
+});
+
+$('exportBtn').addEventListener('click', async () => {
+  buildInvoice();
+  const btn = $('exportBtn'), orig = btn.textContent;
+  if(PAY.device === 'desktop' && PAY.workerUrl){
+    btn.textContent = 'Creating payment links…'; btn.disabled = true;
+    try{ await preparePayLinks(); }
+    catch(e){ console.warn('Yoco:', e); alert('Could not create the Yoco payment links (check the Worker URL and your Yoco key). The invoice will still export without Pay buttons.'); }
+    btn.textContent = orig; btn.disabled = false;
+  } else {
+    // mobile (or no worker) → export a clean PDF with no card buttons (they don't work on phones)
+    $('psPayBtns').style.display = 'none'; $('psPayNote').style.display = 'none';
+  }
+  window.print();
+});
+
+/* ---- self-test ---- */
+(function(){ let ok=true;
+  for(const t of ['photo','video','combo']) for(const tier of ['Bronze','Silver','Gold']){
+    const it = packageLines(t,tier).reduce((a,l)=>a+l.unit*l.qty,0);
+    if(it < CONFIG.packagePrice[t][tier]){ ok=false; console.warn(`[check] ${t} ${tier} itemised<price`); }
+  }
+  console.log(ok ? "FOM calculator: package breakdowns OK ✓" : "FOM calculator: review above");
+})();
+
+/* ---- hamburger menu ---- */
+(function(){
+  const mm=$('mobileMenu'), sc=$('scrim');
+  $('navToggle').onclick=()=>{mm.classList.add('open');sc.classList.add('show');};
+  $('closeMenu').onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+  sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+})();
+
+/* ---- init ---- */
+(function init(){
+  const d = new Date();
+  $('invdate').value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  buildExtraOptions();
+  render();
+  if(PAY.workerUrl){
+    $('sendModeField').style.display = 'block';
+    $('sendMode').value = PAY.device;                                    // auto-detected default
+    if(PAY.device === 'mobile'){ $('waSection').style.display = 'block'; refreshWaMsg(); }
+  }
+})();
+</script>
+
+<!-- ===== password gate (uses the same Firebase login as Dashboard/Database) ===== -->
+<script src="firebase-config.js"></script>
+<script>
+(function(){
+  var configured = (typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+  if(!configured) return;                       // no keys yet → no gate (local use)
+  var gate=document.getElementById('loginGate');   // stays hidden until auth resolves → only shows if actually logged out (no flash)
+  function loadScript(src){ return new Promise(function(res,rej){ var s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+  (async function(){
+    try{
+      var b='https://www.gstatic.com/firebasejs/10.12.0/';
+      await loadScript(b+'firebase-app-compat.js');
+      await loadScript(b+'firebase-auth-compat.js');
+      firebase.initializeApp(firebaseConfig);
+      var auth=firebase.auth();
+      var login=function(){ document.getElementById('lgErr').textContent='';
+        auth.signInWithEmailAndPassword(document.getElementById('lgEmail').value.trim(), document.getElementById('lgPass').value)
+          .catch(function(err){ document.getElementById('lgErr').textContent = /password|user|credential|email/i.test(err.code||'') ? 'Incorrect email or password.' : (err.message||'Login failed.'); }); };
+      document.getElementById('lgBtn').onclick=login;
+      document.getElementById('lgPass').addEventListener('keydown',function(e){ if(e.key==='Enter') login(); });
+      var logoutBtn=document.getElementById('logoutBtn');
+      if(logoutBtn) logoutBtn.onclick=function(){ auth.signOut(); };
+      auth.onAuthStateChanged(function(u){
+        gate.style.display = u ? 'none' : 'flex';
+        if(logoutBtn) logoutBtn.style.display = u ? 'inline-block' : 'none';
+      });
+    }catch(e){ gate.style.display='none'; console.warn('Auth SDK failed to load:',e); }  // fail open so you're not locked out of your own tool
+  })();
+})();
+</script>
+</body>
+</html>
