@@ -1211,8 +1211,10 @@ $('exportBtn').addEventListener('click', async () => {
       var b='https://www.gstatic.com/firebasejs/10.12.0/';
       await loadScript(b+'firebase-app-compat.js');
       await loadScript(b+'firebase-auth-compat.js');
+      await loadScript(b+'firebase-firestore-compat.js');
       firebase.initializeApp(firebaseConfig);
       var auth=firebase.auth();
+      var db=firebase.firestore();
       var login=function(){ document.getElementById('lgErr').textContent='';
         auth.signInWithEmailAndPassword(document.getElementById('lgEmail').value.trim(), document.getElementById('lgPass').value)
           .catch(function(err){ document.getElementById('lgErr').textContent = /password|user|credential|email/i.test(err.code||'') ? 'Incorrect email or password.' : (err.message||'Login failed.'); }); };
@@ -1221,8 +1223,22 @@ $('exportBtn').addEventListener('click', async () => {
       var logoutBtn=document.getElementById('logoutBtn');
       if(logoutBtn) logoutBtn.onclick=function(){ auth.signOut(); };
       auth.onAuthStateChanged(function(u){
-        gate.style.display = u ? 'none' : 'flex';
-        if(logoutBtn) logoutBtn.style.display = u ? 'inline-block' : 'none';
+        if(u){
+          db.collection('admins').doc(u.uid).get().then(function(adminDoc){
+            if(!adminDoc.exists){
+              document.getElementById('lgErr').textContent = 'This account does not have admin access.';
+              gate.style.display = 'flex';
+              if(logoutBtn) logoutBtn.style.display = 'none';
+              auth.signOut();
+              return;
+            }
+            gate.style.display = 'none';
+            if(logoutBtn) logoutBtn.style.display = 'inline-block';
+          }).catch(function(err){ console.warn('Admin check failed:',err); gate.style.display = 'flex'; auth.signOut(); });
+        } else {
+          gate.style.display = 'flex';
+          if(logoutBtn) logoutBtn.style.display = 'none';
+        }
       });
     }catch(e){ gate.style.display='none'; console.warn('Auth SDK failed to load:',e); }  // fail open so you're not locked out of your own tool
   })();
