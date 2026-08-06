@@ -320,8 +320,16 @@ function initCloud(){
   $('lgBtn').onclick=login;
   $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
   auth.onAuthStateChanged(u=>{
-    if(u){ $('loginGate').style.display='none';
-      db.collection('orders').onSnapshot(snap=>{ orders=snap.docs.map(d=>({id:d.id,...d.data()})); orders.sort((a,b)=>tsMillis(a.createdAt)-tsMillis(b.createdAt)); safeRender(); }, err=>console.warn('Firestore:',err));
+    if(u){
+      db.collection('admins').doc(u.uid).get().then(adminDoc=>{
+        if(!adminDoc.exists){
+          $('lgErr').textContent='This account does not have admin access.';
+          auth.signOut();
+          return;
+        }
+        $('loginGate').style.display='none';
+        db.collection('orders').onSnapshot(snap=>{ orders=snap.docs.map(d=>({id:d.id,...d.data()})); orders.sort((a,b)=>tsMillis(a.createdAt)-tsMillis(b.createdAt)); safeRender(); }, err=>console.warn('Firestore:',err));
+      }).catch(err=>{ console.warn('Admin check failed:',err); $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
     } else { orders=[]; safeRender(); $('loginGate').style.display='flex'; }
   });
 }
