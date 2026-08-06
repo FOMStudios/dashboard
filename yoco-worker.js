@@ -12,7 +12,7 @@
      4. Copy the Worker URL into index.html (the PAY.workerUrl setting).
    ===================================================================== */
 
-const ALLOWED_ORIGIN = "https://fomstudios.github.io/dashboard/index.html";              // where your calculator is hosted
+const ALLOWED_ORIGIN = "https://www.fomstudios.co.za";              // where your calculator is hosted
 const SUCCESS_URL    = "https://www.fomstudios.co.za/paid.html";   // thank-you page after paying
 const CANCEL_URL     = "https://www.fomstudios.co.za";
 
