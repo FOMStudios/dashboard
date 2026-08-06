@@ -475,9 +475,23 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
 
         auth.onAuthStateChanged(u => {
             $('authCheck').style.display = 'none';
-            $('loginGate').style.display = u ? 'none' : 'flex';
-            $('logoutBtn').style.display = u ? 'inline-block' : 'none';
-            if(u) store.start();
+            if(u){
+                db.collection('admins').doc(u.uid).get().then(adminDoc => {
+                    if(!adminDoc.exists){
+                        $('lgErr').textContent = 'This account does not have admin access.';
+                        $('loginGate').style.display = 'flex';
+                        $('logoutBtn').style.display = 'none';
+                        auth.signOut();
+                        return;
+                    }
+                    $('loginGate').style.display = 'none';
+                    $('logoutBtn').style.display = 'inline-block';
+                    store.start();
+                }).catch(err => { console.warn('Admin check failed:', err); $('loginGate').style.display = 'flex'; auth.signOut(); });
+            } else {
+                $('loginGate').style.display = 'flex';
+                $('logoutBtn').style.display = 'none';
+            }
         });
     }catch(e){
         console.error('Workflow init failed:', e.message || e);
