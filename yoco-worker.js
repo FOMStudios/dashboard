@@ -12,14 +12,20 @@
      4. Copy the Worker URL into index.html (the PAY.workerUrl setting).
    ===================================================================== */
 
-const ALLOWED_ORIGIN = "https://www.fomstudios.co.za";              // where your calculator is hosted
+const ALLOWED_ORIGINS = [
+  "https://www.fomstudios.co.za",
+  "https://fomstudios.co.za",
+  "https://fomstudios.github.io",
+];                                                                   // every origin the site is currently reachable from
 const SUCCESS_URL    = "https://www.fomstudios.co.za/paid.html";   // thank-you page after paying
 const CANCEL_URL     = "https://www.fomstudios.co.za";
 
 export default {
   async fetch(request, env) {
+    const origin = request.headers.get("Origin") || "";
+    const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
     const cors = {
-      "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+      "Access-Control-Allow-Origin": allowOrigin,
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     };
