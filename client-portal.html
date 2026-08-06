@@ -294,7 +294,7 @@ var firebaseConfig = {
 import { initializeApp, getApp }                                    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail,
          onAuthStateChanged, signOut }                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, onSnapshot }                      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, query, where, onSnapshot }        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 
 /* ============================================================
@@ -496,8 +496,10 @@ function init(){
             const name = user.displayName || user.email.split('@')[0];
             $('greetingName').textContent = 'Welcome, ' + name.charAt(0).toUpperCase() + name.slice(1);
 
-            // listen to orders in real time, filtered client-side
-            onSnapshot(collection(db, 'orders'), snap => {
+            // listen to orders in real time, filtered server-side by clientEmail
+            // (must match the security rule's condition exactly, or Firestore rejects the whole read)
+            const ordersQuery = query(collection(db, 'orders'), where('clientEmail', '==', user.email));
+            onSnapshot(ordersQuery, snap => {
                 const orders = snap.docs.map(d => ({id:d.id, ...d.data()}));
                 renderOrders(orders, user.email);
             }, err => console.warn('Firestore:', err));
