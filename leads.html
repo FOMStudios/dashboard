@@ -833,7 +833,17 @@ function initCloud(){
     $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
     auth.onAuthStateChanged(u=>{
         $('authCheck').style.display='none';
-        if(u){ $('loginGate').style.display='none'; store.start(); }
+        if(u){
+            db.collection('admins').doc(u.uid).get().then(adminDoc=>{
+                if(!adminDoc.exists){
+                    $('lgErr').textContent='This account does not have admin access.';
+                    $('loginGate').style.display='flex';
+                    auth.signOut();
+                    return;
+                }
+                $('loginGate').style.display='none'; store.start();
+            }).catch(err=>{ console.warn('Admin check failed:',err); $('loginGate').style.display='flex'; auth.signOut(); });
+        }
         else { leads=[]; safeRenderLeads(); $('loginGate').style.display='flex'; }
     });
 }
