@@ -494,16 +494,32 @@ sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
             var b='https://www.gstatic.com/firebasejs/10.12.0/';
             await ls(b+'firebase-app-compat.js');
             await ls(b+'firebase-auth-compat.js');
+            await ls(b+'firebase-firestore-compat.js');
             firebase.initializeApp(firebaseConfig);
             var auth=firebase.auth();
+            var db=firebase.firestore();
             var login=function(){ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value)
                 .catch(function(e){ $('lgErr').textContent=/password|user|credential|email/i.test(e.code||'')?'Incorrect email or password.':(e.message||'Login failed.'); }); };
             $('lgBtn').onclick=login;
             $('lgPass').addEventListener('keydown',function(e){ if(e.key==='Enter') login(); });
             var lb=$('logoutBtn'); if(lb) lb.onclick=function(){ auth.signOut(); };
             auth.onAuthStateChanged(function(u){
-                gate.style.display=u?'none':'flex';
-                if(lb) lb.style.display=u?'inline-block':'none';
+                if(u){
+                    db.collection('admins').doc(u.uid).get().then(function(adminDoc){
+                        if(!adminDoc.exists){
+                            $('lgErr').textContent='This account does not have admin access.';
+                            gate.style.display='flex';
+                            if(lb) lb.style.display='none';
+                            auth.signOut();
+                            return;
+                        }
+                        gate.style.display='none';
+                        if(lb) lb.style.display='inline-block';
+                    }).catch(function(err){ console.warn('Admin check failed:',err); gate.style.display='flex'; auth.signOut(); });
+                } else {
+                    gate.style.display='flex';
+                    if(lb) lb.style.display='none';
+                }
             });
         }catch(e){ gate.style.display='none'; }
     })();
