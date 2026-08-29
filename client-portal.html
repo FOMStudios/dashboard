@@ -6,6 +6,12 @@
 <title>FOM Studios | Client Portal</title>
 <link rel="icon" type="image/png" href="assets/mascot-head-color.png">
 <link rel="apple-touch-icon" href="assets/mascot-head-color.png">
+<meta name="robots" content="noindex, nofollow">
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){ dataLayer.push(arguments); }
+window.FOM_GA_ID = 'G-TEYD624ZE7';
+</script>
 <style>
 :root{
     --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
@@ -515,5 +521,68 @@ function init(){
 init();
 
 </script>
+
+<!-- ============================================================
+     COOKIE CONSENT + GA4 LOADER
+     GA4 (window.FOM_GA_ID, set in <head>) only loads after the
+     visitor accepts — no tracking cookies are set before consent.
+     Choice is remembered in localStorage.
+     ============================================================ -->
+<div id="cookieConsent" class="cookie-consent" style="display:none;">
+    <p>We use cookies for analytics, to understand how visitors use this site. <a href="/policy.html">Learn more</a></p>
+    <div class="cookie-consent-actions">
+        <button id="cookieDecline" class="cookie-btn outline">Decline</button>
+        <button id="cookieAccept" class="cookie-btn filled">Accept</button>
+    </div>
+</div>
+<style>
+.cookie-consent{
+    position:fixed; left:16px; right:16px; bottom:16px; z-index:3000;
+    max-width:480px; margin:0 auto;
+    background:var(--bg-pill, #fafaf9); border:1px solid var(--line, #dcdad3);
+    border-radius:16px; padding:18px 20px; box-shadow:0 12px 40px rgba(0,0,0,.15);
+    font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+.cookie-consent p{ font-size:13px; color:var(--ink-soft, #6f6f6d); margin-bottom:14px; line-height:1.5; }
+.cookie-consent p a{ color:var(--accent, #02367B); font-weight:600; text-decoration:none; }
+.cookie-consent-actions{ display:flex; gap:8px; }
+.cookie-btn{ flex:1; border-radius:999px; padding:10px 14px; font-size:13px; font-weight:700; cursor:pointer; border:1px solid var(--ink, #2a2b2c); background:transparent; color:var(--ink, #2a2b2c); transition:.2s ease; }
+.cookie-btn.filled{ background:var(--ink, #2a2b2c); color:var(--ink-on-dark, #f1f0ec); }
+.cookie-btn:hover{ opacity:.82; }
+/* visible keyboard focus ring on every interactive element */
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{
+    outline: 2px solid var(--accent, #02367B);
+    outline-offset: 2px;
+}
+</style>
+<script>
+(function(){
+    function loadGA(){
+        if(!window.FOM_GA_ID || window.__fomGaLoaded) return;
+        window.__fomGaLoaded = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=' + window.FOM_GA_ID;
+        document.head.appendChild(s);
+        gtag('js', new Date());
+        gtag('config', window.FOM_GA_ID);
+    }
+    var choice = localStorage.getItem('fom_cookie_consent');
+    if(choice === 'accepted'){ loadGA(); }
+    else if(choice !== 'declined'){
+        document.getElementById('cookieConsent').style.display = 'block';
+    }
+    document.getElementById('cookieAccept').addEventListener('click', function(){
+        localStorage.setItem('fom_cookie_consent', 'accepted');
+        document.getElementById('cookieConsent').style.display = 'none';
+        loadGA();
+    });
+    document.getElementById('cookieDecline').addEventListener('click', function(){
+        localStorage.setItem('fom_cookie_consent', 'declined');
+        document.getElementById('cookieConsent').style.display = 'none';
+    });
+})();
+</script>
+
 </body>
 </html>
