@@ -29,7 +29,7 @@ button{font-family:inherit;}
 .eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
 
 /* ============================================================
-   LOGIN GATE — shown until Firebase Auth confirms the user
+   LOGIN GATE - shown until Firebase Auth confirms the user
    ============================================================ */
 .login-gate{
     position:fixed;inset:0;background:var(--bg);z-index:3000;
@@ -61,7 +61,7 @@ button{font-family:inherit;}
 .login-card .reset-link:hover{text-decoration:underline;}
 
 /* ============================================================
-   NAV (minimal — just brand + logout)
+   NAV (minimal - just brand + logout)
    ============================================================ */
 .nav-shell{
     position:sticky;top:0;z-index:1000;padding:16px var(--gutter) 0;
@@ -100,7 +100,7 @@ nav.pill{
 .empty-state p{color:var(--ink-soft);max-width:36ch;margin:0 auto;}
 
 /* ============================================================
-   BOOKING CARD — each project the client has booked
+   BOOKING CARD - each project the client has booked
    ============================================================ */
 .booking-list{display:flex;flex-direction:column;gap:20px;}
 
@@ -248,7 +248,7 @@ nav.pill{
             <img src="assets/mascot-head-color.png" alt="FOM Studios" onerror="this.style.display='none'">
         </div>
         <div class="brand">FOM STUDIOS</div>
-        <div class="brand-sub">Client Portal — sign in to view your project</div>
+        <div class="brand-sub">Client Portal - sign in to view your project</div>
         <input type="email" id="lgEmail" placeholder="Email address" autocomplete="username">
         <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
         <button class="btn" id="lgBtn">Sign in</button>
@@ -304,7 +304,7 @@ import { getFirestore, collection, query, where, onSnapshot }        from 'https
 
 
 /* ============================================================
-   STATUS CONFIG — colours + progress steps
+   STATUS CONFIG - colours + progress steps
    A client's status maps to a step number (0-based) in the
    pipeline, coloured accordingly.
    ============================================================ */
@@ -320,10 +320,10 @@ const PIPELINE = ['Booked','Shoot Day','Editing','Finalising','Delivered'];
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const RZA = n => 'R' + (Math.round((+n||0)*100)/100).toLocaleString('en-ZA',{minimumFractionDigits:2});
-const fmtDate = d => { if(!d) return '—'; try{ const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'long',year:'numeric'}); }catch(e){return d;} };
+const fmtDate = d => { if(!d) return '-'; try{ const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'long',year:'numeric'}); }catch(e){return d;} };
 
 /* ============================================================
-   RENDER — build booking cards from Firestore orders that
+   RENDER - build booking cards from Firestore orders that
    belong to the currently signed-in client email.
    ============================================================ */
 function renderOrders(orders, userEmail){
@@ -380,7 +380,7 @@ function buildCard(o){
         ? `<div class="download-cta">
             <div class="dc-text">
                 <strong>Your files are ready 🎉</strong>
-                <span>High-resolution photos &amp; videos — download at your convenience.</span>
+                <span>High-resolution photos &amp; videos - download at your convenience.</span>
             </div>
             <a class="dl-btn" href="${esc(o.deliverablesUrl)}" target="_blank" rel="noopener">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -389,7 +389,7 @@ function buildCard(o){
           </div>`
         : `<div class="not-ready">
             <strong style="display:block;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Files not ready yet</strong>
-            Your edited photos${o.product&&o.product.toLowerCase().includes('video')||o.product&&o.product.toLowerCase().includes('reel')?'/videos':''} are being worked on — you'll receive an email when they're ready to download.
+            Your edited photos${o.product&&o.product.toLowerCase().includes('video')||o.product&&o.product.toLowerCase().includes('reel')?'/videos':''} are being worked on - you'll receive an email when they're ready to download.
           </div>`;
 
     // message from FOM
@@ -405,7 +405,7 @@ function buildCard(o){
     <div class="booking-card">
         <div class="booking-header">
             <div>
-                <div class="booking-id">${esc(o.orderId||'—')}</div>
+                <div class="booking-id">${esc(o.orderId||'-')}</div>
                 <div class="booking-title">${esc(o.product||'Booking')}</div>
                 <div class="booking-date">${fmtDate(o.shootDate)}</div>
             </div>
@@ -419,10 +419,10 @@ function buildCard(o){
                 <div class="inner-pad">
                     ${message}
                     <div class="detail-grid">
-                        <div class="detail-item"><div class="d-label">Package</div><div class="d-val">${esc(o.product||'—')}</div></div>
+                        <div class="detail-item"><div class="d-label">Package</div><div class="d-val">${esc(o.product||'-')}</div></div>
                         <div class="detail-item"><div class="d-label">Shoot Date</div><div class="d-val">${fmtDate(o.shootDate)}</div></div>
-                        <div class="detail-item"><div class="d-label">Shoot Time</div><div class="d-val">${esc(o.shootTime||'—')}</div></div>
-                        <div class="detail-item"><div class="d-label">Package Details</div><div class="d-val">${esc(o.packageDetails||o.notes||'—')}</div></div>
+                        <div class="detail-item"><div class="d-label">Shoot Time</div><div class="d-val">${esc(o.shootTime||'-')}</div></div>
+                        <div class="detail-item"><div class="d-label">Package Details</div><div class="d-val">${esc(o.packageDetails||o.notes||'-')}</div></div>
                         <div class="detail-item"><div class="d-label">Total</div><div class="d-val">${RZA(o.total)}</div></div>
                         <div class="detail-item"><div class="d-label">Paid</div><div class="d-val" style="color:#27ae60;">${RZA(o.paid)}</div></div>
                         ${outstandingHtml}
@@ -460,7 +460,7 @@ function init(){
         return;
     }
 
-    // Firebase SDKs are loaded in <head> — initialise directly
+    // Firebase SDKs are loaded in <head> - initialise directly
     // Guard against double-init (throws if called twice with same app name)
     // Guard against double-init on page reload
     let app;
@@ -475,7 +475,7 @@ function init(){
         const email = $('lgEmail').value.trim();
         if(!email){ $('lgErr').textContent = 'Enter your email address first.'; return; }
         sendPasswordResetEmail(auth, email)
-            .then(()=>{ $('lgErr').style.color='#27ae60'; $('lgErr').textContent='Reset email sent — check your inbox.'; })
+            .then(()=>{ $('lgErr').style.color='#27ae60'; $('lgErr').textContent='Reset email sent - check your inbox.'; })
             .catch(err=>{ $('lgErr').style.color='#c0392b'; $('lgErr').textContent = err.message||'Could not send reset email.'; });
     });
 
@@ -525,7 +525,7 @@ init();
 <!-- ============================================================
      COOKIE CONSENT + GA4 LOADER
      GA4 (window.FOM_GA_ID, set in <head>) only loads after the
-     visitor accepts — no tracking cookies are set before consent.
+     visitor accepts - no tracking cookies are set before consent.
      Choice is remembered in localStorage.
      ============================================================ -->
 <div id="cookieConsent" class="cookie-consent" style="display:none;">
