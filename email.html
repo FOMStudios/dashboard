@@ -159,7 +159,7 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
             <div id="confirmationFields">
             <div class="field"><label for="fName">Customer name</label><input type="text" id="fName" placeholder="Jane Doe"></div>
             <div class="field"><label for="fEmail">Customer email</label><input type="email" id="fEmail" placeholder="jane@email.com"></div>
-            <div class="field"><label for="fPkg">Package / service</label><input type="text" id="fPkg" placeholder="Gold — Photography & Videography"></div>
+            <div class="field"><label for="fPkg">Package / service</label><input type="text" id="fPkg" placeholder="Gold - Photography & Videography"></div>
             <div class="row2">
                 <div class="field"><label for="fDate">Shoot date</label><input type="date" id="fDate"></div>
                 <div class="field"><label for="fTime">Start time (optional)</label><input type="time" id="fTime"></div>
@@ -174,7 +174,7 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
             <div id="readyFields" style="display:none;">
             <div class="field"><label for="fReadyName">Customer name</label><input type="text" id="fReadyName" placeholder="Jane Doe"></div>
             <div class="field"><label for="fReadyEmail">Customer email</label><input type="email" id="fReadyEmail" placeholder="jane@email.com"></div>
-            <div class="field"><label for="fReadyPkg">Package (optional)</label><input type="text" id="fReadyPkg" placeholder="Gold — Photography & Videography"></div>
+            <div class="field"><label for="fReadyPkg">Package (optional)</label><input type="text" id="fReadyPkg" placeholder="Gold - Photography & Videography"></div>
             <div class="field"><label for="fPortal">Client portal URL</label><input type="text" id="fPortal" value="https://www.fomstudios.co.za/client-portal.html"></div>
             </div>
 
@@ -257,7 +257,7 @@ function eventTimes(f){
 }
 function gcalUrl(f){
   const t = eventTimes(f); if(!t) return '#';
-  const title = 'FOM Studios shoot' + (f.pkg?(' — '+f.pkg):'');
+  const title = 'FOM Studios shoot' + (f.pkg?(' - '+f.pkg):'');
   const details = 'Your FOM Studios booking is confirmed.' + (f.full ? ' Paid in full.' : (f.balance? (' Balance of '+RZA(f.balance)+' due'+(f.due?(' before '+niceDate(f.due)):'')+'.') : ''));
   return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
     + '&text=' + encodeURIComponent(title)
@@ -267,7 +267,7 @@ function gcalUrl(f){
 }
 function icsText(f){
   const t = eventTimes(f); if(!t) return '';
-  const title = 'FOM Studios shoot' + (f.pkg?(' — '+f.pkg):'');
+  const title = 'FOM Studios shoot' + (f.pkg?(' - '+f.pkg):'');
   const stamp = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
   const dt = t.allDay
     ? ['DTSTART;VALUE=DATE:'+t.start, 'DTEND;VALUE=DATE:'+t.end]
@@ -285,8 +285,8 @@ function buildEmailHtml(){
   const A='#02367B', A2='#5B9AE0', INK='#2a2b2c', SOFT='#6f6f6d', BG='#f1f0ec', LINE='#e6e4dd', CARD='#f7f6f2';
   const row = (k,v)=> v ? `<tr><td style="padding:9px 2px;color:${SOFT};font-size:14px;border-bottom:1px solid ${LINE};">${k}</td><td style="padding:9px 2px;color:${INK};font-size:14px;font-weight:700;text-align:right;border-bottom:1px solid ${LINE};">${v}</td></tr>` : '';
   const payBlock = f.full
-    ? `<table width="100%" cellpadding="0" cellspacing="0" style="background:#eef4ee;border:1px solid #cfe0d3;border-radius:14px;"><tr><td style="padding:16px 18px;color:#256b3d;font-size:14px;font-weight:700;">&#10003;&nbsp; Paid in full — no further payment required.</td></tr></table>`
-    : `<table width="100%" cellpadding="0" cellspacing="0" style="background:#eef2fb;border:1px solid #bcd4f5;border-radius:14px;"><tr><td style="padding:16px 18px;color:${A};font-size:14px;line-height:1.7;">Amount paid: <b>${RZA(f.paid)}</b><br>Remaining balance: <b>${RZA(f.balance)}</b>${f.due?` — due before <b>${niceDate(f.due)}</b>`:''}</td></tr></table>`;
+    ? `<table width="100%" cellpadding="0" cellspacing="0" style="background:#eef4ee;border:1px solid #cfe0d3;border-radius:14px;"><tr><td style="padding:16px 18px;color:#256b3d;font-size:14px;font-weight:700;">&#10003;&nbsp; Paid in full - no further payment required.</td></tr></table>`
+    : `<table width="100%" cellpadding="0" cellspacing="0" style="background:#eef2fb;border:1px solid #bcd4f5;border-radius:14px;"><tr><td style="padding:16px 18px;color:${A};font-size:14px;line-height:1.7;">Amount paid: <b>${RZA(f.paid)}</b><br>Remaining balance: <b>${RZA(f.balance)}</b>${f.due?` - due before <b>${niceDate(f.due)}</b>`:''}</td></tr></table>`;
   const cal = eventTimes(f) ? `<tr><td align="center" style="padding:22px 0 4px;"><a href="${gcalUrl(f)}" target="_blank" style="display:inline-block;background:${A};color:#ffffff;text-decoration:none;border-radius:999px;padding:15px 34px;font-size:14px;font-weight:700;letter-spacing:.02em;">&#43;&nbsp; Add to Calendar</a></td></tr>` : '';
 
   /* ---- CONFIRMATION EMAIL ---- */
@@ -302,7 +302,7 @@ function buildEmailHtml(){
     </td></tr>
     <tr><td style="padding:28px 34px 0;color:${INK};font-size:15px;line-height:1.6;">
       Hi ${f.name||'there'},<br><br>
-      Thank you — your booking with <b>FOM Studios</b> is confirmed. Here are your details:
+      Thank you - your booking with <b>FOM Studios</b> is confirmed. Here are your details:
     </td></tr>
     <tr><td style="padding:16px 34px 0;">
       <table width="100%" cellpadding="0" cellspacing="0" style="background:${CARD};border:1px solid ${LINE};border-radius:16px;">
@@ -322,7 +322,7 @@ function buildEmailHtml(){
     <tr><td align="center" style="padding:28px 34px 4px;">
       <img src="https://www.fomstudios.co.za/assets/mascot.png" alt="" width="74" style="width:74px;height:auto;display:inline-block;">
       <div style="color:${SOFT};font-size:14px;line-height:1.6;margin-top:12px;">We can't wait to capture your shoot. If anything changes, just reply to this email.</div>
-      <div style="color:${INK};font-size:14px;font-weight:800;margin-top:12px;">— The FOM Studios Team</div>
+      <div style="color:${INK};font-size:14px;font-weight:800;margin-top:12px;">- The FOM Studios Team</div>
     </td></tr>
     <!-- Client Portal CTA -->
     <tr><td style="padding:4px 34px 0;">
@@ -382,7 +382,7 @@ function buildEmailHtml(){
     </td></tr>
     <tr><td style="padding:28px 34px 0;color:${INK};font-size:15px;line-height:1.6;">
       Hi ${f.name||'there'},<br><br>
-      Great news — your edited ${f.pkg ? `<b>${f.pkg}</b> ` : ''}files are ready and waiting for you. You can view and download everything through your <b>FOM Studios Client Portal</b>.
+      Great news - your edited ${f.pkg ? `<b>${f.pkg}</b> ` : ''}files are ready and waiting for you. You can view and download everything through your <b>FOM Studios Client Portal</b>.
     </td></tr>
     <!-- portal CTA -->
     <tr><td style="padding:22px 34px 0;">
@@ -411,8 +411,8 @@ function buildEmailHtml(){
     </td></tr>
     <tr><td align="center" style="padding:28px 34px 4px;">
       <img src="https://www.fomstudios.co.za/assets/mascot.png" alt="" width="74" style="width:74px;height:auto;display:inline-block;">
-      <div style="color:${SOFT};font-size:14px;line-height:1.6;margin-top:12px;">Thank you for choosing FOM Studios — it was a pleasure working with you. We hope you love your content!</div>
-      <div style="color:${INK};font-size:14px;font-weight:800;margin-top:12px;">— The FOM Studios Team</div>
+      <div style="color:${SOFT};font-size:14px;line-height:1.6;margin-top:12px;">Thank you for choosing FOM Studios - it was a pleasure working with you. We hope you love your content!</div>
+      <div style="color:${INK};font-size:14px;font-weight:800;margin-top:12px;">- The FOM Studios Team</div>
     </td></tr>
     <!-- Google Review CTA -->
     <tr><td style="padding:0 34px 4px;">
@@ -454,17 +454,17 @@ function plainText(){
       + `Log in to your Client Portal to view and download your content:\n${f.portal}\n\n`
       + `If it's your first time logging in, click "Forgot password?" on the login screen to set your own password.\n`
       + `Sign in with: ${f.email||'your email address'}\n\n`
-      + `Thank you for choosing FOM Studios — it was a pleasure!\n\n`
-      + `— FOM Studios\nwww.fomstudios.co.za · ${BRAND.instaHandle} · ${BRAND.email} · ${BRAND.phone}`;
+      + `Thank you for choosing FOM Studios - it was a pleasure!\n\n`
+      + `- FOM Studios\nwww.fomstudios.co.za · ${BRAND.instaHandle} · ${BRAND.email} · ${BRAND.phone}`;
   }
   let t = `Hi ${f.name||'there'},\n\nYour booking with FOM Studios is confirmed.\n\n`;
   if(f.pkg) t+=`Package: ${f.pkg}\n`;
   if(f.date) t+=`Date: ${niceDate(f.date)}\n`;
   if(f.time) t+=`Time: ${f.time}\n`;
   if(f.loc) t+=`Location: ${f.loc}\n`;
-  t += f.full ? `\nPaid in full — no further payment required.\n` : `\nAmount paid: ${RZA(f.paid)}\nRemaining balance: ${RZA(f.balance)}${f.due?` due before ${niceDate(f.due)}`:''}\n`;
+  t += f.full ? `\nPaid in full - no further payment required.\n` : `\nAmount paid: ${RZA(f.paid)}\nRemaining balance: ${RZA(f.balance)}${f.due?` due before ${niceDate(f.due)}`:''}\n`;
   if(eventTimes(f)) t+=`\nAdd to calendar: ${gcalUrl(f)}\n`;
-  t += `\n— FOM Studios\nwww.fomstudios.co.za · ${BRAND.instaHandle} · ${BRAND.email} · ${BRAND.phone}`;
+  t += `\n- FOM Studios\nwww.fomstudios.co.za · ${BRAND.instaHandle} · ${BRAND.email} · ${BRAND.phone}`;
   return t;
 }
 
@@ -495,12 +495,12 @@ $('copyBtn').onclick = async () => {
       'text/html': new Blob([html],{type:'text/html'}),
       'text/plain': new Blob([plainText()],{type:'text/plain'})
     })]);
-    toast('Email copied — now paste into Gmail');
+    toast('Email copied - now paste into Gmail');
   }catch(e){
     const r=document.createRange(); r.selectNode($('preview'));
     getSelection().removeAllRanges(); getSelection().addRange(r);
-    try{ document.execCommand('copy'); toast('Email copied — now paste into Gmail'); }
-    catch(_){ toast('Copy not supported — select the preview manually'); }
+    try{ document.execCommand('copy'); toast('Email copied - now paste into Gmail'); }
+    catch(_){ toast('Copy not supported - select the preview manually'); }
     getSelection().removeAllRanges();
   }
 };
