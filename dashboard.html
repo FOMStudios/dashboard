@@ -223,7 +223,7 @@ function donutSVG(segs, size=190, stroke=30){
     <text x="${cx}" y="${cx-4}" text-anchor="middle" font-size="34" font-weight="800" fill="#2a2b2c">${total}</text>
     <text x="${cx}" y="${cx+18}" text-anchor="middle" font-size="12" fill="#6f6f6d" letter-spacing="1">ORDERS</text></svg>`;
 }
-const groupCount = (arr,f)=>{ const m={}; arr.forEach(o=>{const k=o[f]||'—';m[k]=(m[k]||0)+1;}); return m; };
+const groupCount = (arr,f)=>{ const m={}; arr.forEach(o=>{const k=o[f]||'-';m[k]=(m[k]||0)+1;}); return m; };
 
 function render(){
   const el=$('content');
@@ -241,7 +241,7 @@ function render(){
   const today=new Date(); today.setHours(0,0,0,0);
   const active=s=>!['Completed','Delivered','Cancelled'].includes(s);
   const upcoming=orders.filter(o=>o.deadline&&active(o.status)&&new Date(o.deadline)>=today).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
-  const nextDue=upcoming.length?fmtDate(upcoming[0].deadline):'—';
+  const nextDue=upcoming.length?fmtDate(upcoming[0].deadline):'-';
 
   const monthMap={};
   orders.forEach(o=>{ if(o.shootDate&&o.shootDate.length>=7){ const k=o.shootDate.slice(0,7); monthMap[k]=(monthMap[k]||0)+(+o.total||0); }});
@@ -256,7 +256,7 @@ function render(){
   const legend=statusSegs.map(s=>`<li><span class="dot" style="background:${s.color}"></span>${esc(s.label)}<span class="lv">${s.value}</span></li>`).join('');
   const bars=Object.keys(prodMap).map((k,i)=>`<div class="bar-row"><span>${esc(k)}</span><div class="bar-track"><div class="bar-fill" style="width:${prodMap[k]/prodMax*100}%;background:${colorFor(k,PRODUCT_COLORS,i)}"></div></div><span class="bv">${prodMap[k]}</span></div>`).join('');
   const recent=orders.slice(-5).reverse().map(o=>{ const col=colorFor(o.status,STATUS_COLORS,0);
-    return `<tr><td>${esc(o.orderId)}</td><td>${esc(o.customer)||'—'}</td><td>${esc(o.product)||'—'}</td><td><span class="tag" style="background:${col}">${esc(o.status)}</span></td><td style="text-align:right">${RZA(o.total)}</td><td style="text-align:right;color:var(--accent);font-weight:700">${RZA((+o.total||0)-(+o.paid||0))}</td></tr>`; }).join('');
+    return `<tr><td>${esc(o.orderId)}</td><td>${esc(o.customer)||'-'}</td><td>${esc(o.product)||'-'}</td><td><span class="tag" style="background:${col}">${esc(o.status)}</span></td><td style="text-align:right">${RZA(o.total)}</td><td style="text-align:right;color:var(--accent);font-weight:700">${RZA((+o.total||0)-(+o.paid||0))}</td></tr>`; }).join('');
 
   el.innerHTML=`
     <div class="kpis">
