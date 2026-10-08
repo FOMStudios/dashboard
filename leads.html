@@ -132,7 +132,7 @@ input[type=text],input[type=email],textarea,select.form-select{width:100%;min-wi
 textarea{height:auto;}
 select.form-select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f6f6d' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;}
 
-/* auth-check splash — shown instantly while Firebase resolves the
+/* auth-check splash - shown instantly while Firebase resolves the
    session, so the login card never "flashes then opens" on refresh */
 .auth-check{position:fixed;inset:0;background:var(--bg);z-index:5000;display:flex;align-items:center;justify-content:center;}
 .auth-check .ac-inner{text-align:center;}
@@ -285,7 +285,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
                     <tbody id="tbody"></tbody>
                 </table>
             </div>
-            <div class="empty" id="emptyState" style="display:none;">No leads yet — click <b>“+ Add lead”</b> to start tracking, or log one straight from the Email Generator tab.</div>
+            <div class="empty" id="emptyState" style="display:none;">No leads yet - click <b>“+ Add lead”</b> to start tracking, or log one straight from the Email Generator tab.</div>
         </div>
     </div>
 
@@ -336,7 +336,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
                     <button class="btn" id="copyEmailBtn">Copy email</button>
                     <button class="btn ghost" id="logLeadBtn">Log as lead</button>
                 </div>
-                <div class="hint">Copies plain text — paste straight into Gmail. Attach your exported pitch deck PDF before sending. "Log as lead" adds this company to the tracker and marks it emailed today.</div>
+                <div class="hint">Copies plain text - paste straight into Gmail. Attach your exported pitch deck PDF before sending. "Log as lead" adds this company to the tracker and marks it emailed today.</div>
             </div>
             <div>
                 <div class="panel" style="margin-bottom:12px;padding:14px 22px;"><h2 style="margin:0;">Email preview</h2></div>
@@ -375,7 +375,7 @@ $('closeMenu').onclick=()=>{mm.classList.remove('open');sc.classList.remove('sho
 sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
 
 /* ================================================================
-   LEADS TRACKER — cloud-only (Firestore), same as database.html's
+   LEADS TRACKER - cloud-only (Firestore), same as database.html's
    dedicated cloud store. No local-storage fallback, so leads always
    match across devices (desktop + mobile).
    ================================================================ */
@@ -413,11 +413,11 @@ function cloudLeadStore(db){
                 leads = snap.docs.map(d=>({id:d.id, ...d.data()}));
                 leads.sort((a,b)=> tsMillis(a.createdAt) - tsMillis(b.createdAt));
                 if(editingCell){ pendingRender=true; } else safeRenderLeads();
-            }, err=>{ console.warn('Firestore:',err); toast('Could not load leads — ' + (err.code==='permission-denied' ? 'check your Firestore rules allow the "leads" collection.' : (err.message||'connection error'))); });
+            }, err=>{ console.warn('Firestore:',err); toast('Could not load leads - ' + (err.code==='permission-denied' ? 'check your Firestore rules allow the "leads" collection.' : (err.message||'connection error'))); });
         },
-        add(o){ o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)).catch(err=>{ console.error(err); toast('Could not save — ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "leads" collection.' : (err.message||'try again.'))); }); },
-        update(id){ clearTimeout(timers[id]); timers[id]=setTimeout(()=>{ const o=leads.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}).catch(err=>{ console.error(err); toast('Could not save changes — '+(err.message||'try again.')); }); },500); },
-        remove(id){ col().doc(id).delete().catch(err=>{ console.error(err); toast('Could not delete — '+(err.message||'try again.')); }); },
+        add(o){ o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)).catch(err=>{ console.error(err); toast('Could not save - ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "leads" collection.' : (err.message||'try again.'))); }); },
+        update(id){ clearTimeout(timers[id]); timers[id]=setTimeout(()=>{ const o=leads.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}).catch(err=>{ console.error(err); toast('Could not save changes - '+(err.message||'try again.')); }); },500); },
+        remove(id){ col().doc(id).delete().catch(err=>{ console.error(err); toast('Could not delete - '+(err.message||'try again.')); }); },
         clear(){ leads.slice().forEach(o=>col().doc(o.id).delete()); }
     };
 }
@@ -499,8 +499,8 @@ function renderLeadDashboard(){
     }).sort((a,b)=> daysSince(b.dateEmailed) - daysSince(a.dateEmailed));
 
     $('followupList').innerHTML = followups.length
-        ? followups.map(o=>`<div class="fu-row"><div><div class="fu-name">${esc(o.company||o.contact||'—')}</div><div class="fu-sub">${esc(o.email||'')}</div></div><div class="fu-sub">${daysSince(o.dateEmailed)} days ago</div></div>`).join('')
-        : `<div class="fu-empty">Nothing overdue — nice work staying on top of it.</div>`;
+        ? followups.map(o=>`<div class="fu-row"><div><div class="fu-name">${esc(o.company||o.contact||'-')}</div><div class="fu-sub">${esc(o.email||'')}</div></div><div class="fu-sub">${daysSince(o.dateEmailed)} days ago</div></div>`).join('')
+        : `<div class="fu-empty">Nothing overdue - nice work staying on top of it.</div>`;
 }
 
 leadTbody().addEventListener('focusin',()=>{editingCell=true;});
@@ -526,7 +526,7 @@ leadTbody().addEventListener('change', e=>{
 leadTbody().addEventListener('click', e=>{ const rm=e.target.dataset.rm; if(rm!==undefined) store.remove(leads[+rm].id); });
 leadSearch().addEventListener('input', renderLeads);
 
-$('addBtn').onclick = ()=>{ if(!store){ toast('Still connecting to the cloud — wait a second and try again.'); return; } store.add(blankLead()); };
+$('addBtn').onclick = ()=>{ if(!store){ toast('Still connecting to the cloud - wait a second and try again.'); return; } store.add(blankLead()); };
 $('clearBtn').onclick = ()=>{ if(store && confirm('Delete ALL leads? This cannot be undone.')) store.clear(); };
 $('csvBtn').onclick = ()=>{
     const head=['Lead ID','Company','Contact','Email','Website/Instagram','Location','Category','Emailed','Date Emailed','Follow-up By','Status','Comments'];
@@ -536,13 +536,13 @@ $('csvBtn').onclick = ()=>{
 };
 
 /* ================================================================
-   PITCH DECK BUILDER — 7 landscape pages, printed via hidden iframe
+   PITCH DECK BUILDER - 7 landscape pages, printed via hidden iframe
    ================================================================ */
 const WORK_IMAGES = Array.from({length:18},(_,i)=>`assets/work${i+1}.jpg`);
-const DEFAULT_ABOUT = "Frames Of Motion (FOM) Studios is a creative media brand specialising in photography, videography and visual storytelling, based in Johannesburg, South Africa. We focus on capturing moments with precision, emotion and a cinematic edge — helping brands, events and individuals tell their story visually.";
+const DEFAULT_ABOUT = "Frames Of Motion (FOM) Studios is a creative media brand specialising in photography, videography and visual storytelling, based in Johannesburg, South Africa. We focus on capturing moments with precision, emotion and a cinematic edge - helping brands, events and individuals tell their story visually.";
 const DEFAULT_WHAT = ["Sports & Event Photography","Cinematic Videography & Reels","Aerial / Drone Coverage","Automotive & Lifestyle Content","Content Editing & Colour Grading"].join('\n');
 const DEFAULT_WHY = ["Fast turnaround on edited deliverables","Cinematic, story-driven visual style","Reliable, professional on-site presence","Flexible packages tailored to your needs","Based in Johannesburg, available to travel"].join('\n');
-const DEFAULT_CLIENTS = ["Hyde Park Falcons","Party Bubbles Events","Momsi Mather — Professional Padel Player"].join('\n');
+const DEFAULT_CLIENTS = ["Hyde Park Falcons","Party Bubbles Events","Momsi Mather - Professional Padel Player"].join('\n');
 
 (function initDeckForm(){
     $('dAbout').value = DEFAULT_ABOUT;
@@ -595,7 +595,7 @@ function buildDeckHTML(){
     const about_page = page(`
         <div class="pd-split">
           <div class="pd-inner pd-inner-half">
-            <div class="pd-kicker">01 — Who we are</div>
+            <div class="pd-kicker">01 - Who we are</div>
             <h1 class="pd-h1">About Us</h1>
             <p class="pd-body">${esc(about)}</p>
           </div>
@@ -610,7 +610,7 @@ function buildDeckHTML(){
     const what_page = page(`
         <div class="pd-split">
           <div class="pd-inner pd-inner-half">
-            <div class="pd-kicker">02 — Services</div>
+            <div class="pd-kicker">02 - Services</div>
             <h1 class="pd-h1">What We Do</h1>
             <ul class="pd-list">${what.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>
           </div>
@@ -628,7 +628,7 @@ function buildDeckHTML(){
 
     const portfolio_page = page(`
         <div class="pd-inner">
-          <div class="pd-kicker">03 — Selected Work</div>
+          <div class="pd-kicker">03 - Selected Work</div>
           <h1 class="pd-h1">Portfolio</h1>
           <div class="pd-grid">${portfolio.map(src=>`<div class="pd-cell"><img src="${src}" onerror="this.parentElement.style.display='none'"></div>`).join('')}</div>
         </div>`);
@@ -638,7 +638,7 @@ function buildDeckHTML(){
     const whyRest = why.slice(3);
     const why_page = page(`
         <div class="pd-inner">
-          <div class="pd-kicker">04 — The FOM Difference</div>
+          <div class="pd-kicker">04 - The FOM Difference</div>
           <h1 class="pd-h1">Why Work With Us</h1>
           <div class="pd-polaroid-row">
             ${whyMain.map((reason,i)=>`
@@ -652,7 +652,7 @@ function buildDeckHTML(){
 
     const clients_page = page(`
         <div class="pd-inner">
-          <div class="pd-kicker">05 — Trusted By</div>
+          <div class="pd-kicker">05 - Trusted By</div>
           <h1 class="pd-h1">Previous Clients</h1>
           <div class="pd-client-pills">${clients.map(c=>`<span class="pd-pill2">${esc(c)}</span>`).join('')}</div>
         </div>`);
@@ -702,7 +702,7 @@ function buildDeckHTML(){
         .pd-close-line{width:70%;height:1px;background:rgba(241,240,236,.3);}
         .pd-close-mid .pd-big{font-size:52pt;}
         .pd-close-contact{display:flex;gap:14mm;font-size:12pt;color:#f1f0ec;}
-        /* split layout: text left, image(s) right — fills the gap on About Us / What We Do */
+        /* split layout: text left, image(s) right - fills the gap on About Us / What We Do */
         .pd-split{display:flex;width:100%;align-items:stretch;}
         .pd-inner-half{width:52%;justify-content:center;}
         .pd-side{width:48%;display:flex;align-items:center;justify-content:center;padding:14mm 18mm 14mm 0;gap:8mm;}
@@ -712,7 +712,7 @@ function buildDeckHTML(){
         .pd-framed img{width:100%;height:60mm;object-fit:cover;border-radius:4px;display:block;background:#dfe3ea;}
         .pd-framed-tall img{height:95mm;}
         .pd-framed-label{color:#fff;text-align:center;font-weight:800;letter-spacing:1.5px;font-size:11pt;margin-top:6mm;text-transform:uppercase;}
-        /* polaroid row — Why Work With Us */
+        /* polaroid row - Why Work With Us */
         .pd-polaroid-row{display:flex;gap:10mm;margin-top:4mm;}
         .pd-polaroid{background:#fff;border:1px solid #e2e0d8;border-radius:8px;padding:5mm 5mm 0;box-shadow:0 6px 18px rgba(0,0,0,.08);width:70mm;}
         .pd-polaroid-photo{width:100%;height:55mm;background:#ddd;border-radius:4px;overflow:hidden;margin-bottom:5mm;}
@@ -782,10 +782,10 @@ document.querySelector('#tabEmail .panel').addEventListener('change', refreshEma
 
 $('copyEmailBtn').onclick = async () => {
     const txt = buildEmailText();
-    try{ await navigator.clipboard.writeText(txt); toast('Email copied — paste into Gmail'); }
+    try{ await navigator.clipboard.writeText(txt); toast('Email copied - paste into Gmail'); }
     catch(e){
         const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select();
-        try{ document.execCommand('copy'); toast('Email copied — paste into Gmail'); } catch(_){ toast('Copy failed — select the text manually'); }
+        try{ document.execCommand('copy'); toast('Email copied - paste into Gmail'); } catch(_){ toast('Copy failed - select the text manually'); }
         ta.remove();
     }
 };
@@ -804,7 +804,7 @@ $('logLeadBtn').onclick = () => {
 refreshEmailPreview();
 
 /* ================================================================
-   INIT — cloud only (Firestore), same as database.html
+   INIT - cloud only (Firestore), same as database.html
    ================================================================ */
 function notConfigured(){
     $('authCheck').style.display='none';
