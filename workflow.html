@@ -78,7 +78,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .empty-state p{color:var(--ink-soft);max-width:40ch;margin:0 auto;font-size:14px;}
 
 /* ============================================================
-   PROJECT CARD — one per order, expandable checklist inside
+   PROJECT CARD - one per order, expandable checklist inside
    ============================================================ */
 .project-list{display:flex;flex-direction:column;gap:16px;}
 
@@ -223,7 +223,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
     <div class="page-head">
         <span class="eyebrow">Admin</span>
         <h1>Project Workflow</h1>
-        <p>Every order from your database appears here with its step-by-step checklist. Tap a step to tick it off — progress saves automatically and syncs everywhere.</p>
+        <p>Every order from your database appears here with its step-by-step checklist. Tap a step to tick it off - progress saves automatically and syncs everywhere.</p>
     </div>
 
     <div class="filter-row" id="filterRow">
@@ -244,7 +244,7 @@ const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
 const fmtDate = d => { if(!d) return ''; try{ const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return d; } };
 
 /* ============================================================
-   WORKFLOW STEPS — the master checklist every project follows.
+   WORKFLOW STEPS - the master checklist every project follows.
    `who` marks whether it's your action or the client's, purely
    as a visual tag. Checkbox state is stored per-order in
    Firestore as workflow: { s1:true, s2:false, ... }.
@@ -257,7 +257,7 @@ const STEPS = [
     { key:'s3',  who:'client', title:'Payment received + signed contract returned',
       note:'Client has paid (deposit or full) and sent back the signed contract.' },
     { key:'s4',  who:'me', title:'Database updated',
-      note:'Order filled in on the Database page — amounts, dates, client email, package details.' },
+      note:'Order filled in on the Database page - amounts, dates, client email, package details.' },
     { key:'s5',  who:'me', title:'Documents uploaded to Cloudflare R2',
       note:'Cloudflare \u2192 Storage \u2192 R2 \u2192 Buckets \u2192 open the bucket \u2192 <b>Add folder</b> (name it "name/") \u2192 upload the signed contract + invoice into that folder. Paste the share links into the Contract URL and Invoice URL fields.' },
     { key:'s6',  who:'me', title:'Firebase account created',
@@ -267,7 +267,7 @@ const STEPS = [
     { key:'s8',  who:'me', title:'Confirmation email sent',
       note:'Email page → Booking Confirmation → includes the portal link and login instructions.' },
     { key:'s9',  who:'client', title:'Client logged into portal',
-      note:'Client can see their booking, contract and invoice. (Optional check — confirm with them or skip.)' },
+      note:'Client can see their booking, contract and invoice. (Optional check - confirm with them or skip.)' },
     { key:'s10', who:'me', title:'Shoot completed',
       note:'Shoot day done. Update Order Status in the Database as you go.' },
     { key:'s11', who:'me', title:'Edits done & uploaded to Cloudflare R2',
@@ -328,7 +328,7 @@ function render(){
         <div class="project-card ${complete ? 'complete' : ''} ${open ? 'open' : ''}" data-card="${esc(o.id)}">
             <div class="project-header" data-toggle="${esc(o.id)}">
                 <div class="ph-left">
-                    <div class="ph-id">${esc(o.orderId || '—')}</div>
+                    <div class="ph-id">${esc(o.orderId || '-')}</div>
                     <div class="ph-title">${esc(o.customer || 'Unnamed client')}</div>
                     <div class="ph-sub">${esc(o.product || '')}${o.shootDate ? ' · ' + fmtDate(o.shootDate) : ''}</div>
                 </div>
@@ -358,7 +358,7 @@ function render(){
 }
 
 /* ============================================================
-   EVENTS — delegated: header toggles card, step toggles check
+   EVENTS - delegated: header toggles card, step toggles check
    ============================================================ */
 $('projectList').addEventListener('click', e => {
     const header = e.target.closest('[data-toggle]');
@@ -401,7 +401,7 @@ $('closeMenu').onclick=()=>{mm.classList.remove('open');sc.classList.remove('sho
 sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
 
 /* ============================================================
-   FIREBASE — same compat pattern as the other admin pages.
+   FIREBASE - same compat pattern as the other admin pages.
    Reads the same `orders` collection; workflow state is saved
    onto each order doc as a `workflow` map (merge:true, so it
    never touches the other fields the Database page manages).
@@ -415,7 +415,7 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
     if(!configured){
         $('loginGate').innerHTML = `<div class="login-card">
             <span class="brand-mark">FOM STUDIOS</span>
-            <p class="lg-sub" style="margin-bottom:0;">Firebase is not configured — check firebase-config.js.</p>
+            <p class="lg-sub" style="margin-bottom:0;">Firebase is not configured - check firebase-config.js.</p>
         </div>`;
         return;
     }
@@ -443,7 +443,7 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
             },
             saveWorkflow(id, workflow){
                 db.collection('orders').doc(id).set({ workflow }, { merge:true })
-                  .catch(e => { console.warn('Save failed:', e); toast('Could not save — check connection'); });
+                  .catch(e => { console.warn('Save failed:', e); toast('Could not save - check connection'); });
             }
         };
 
