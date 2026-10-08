@@ -105,7 +105,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .idea-form-row select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f6f6d' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;}
 .idea-form-row input:focus,.idea-form-row select:focus{outline:2px solid var(--accent);outline-offset:1px;}
 
-/* auth-check splash — shown instantly while Firebase resolves the
+/* auth-check splash - shown instantly while Firebase resolves the
    session, so the login card never "flashes then opens" on refresh */
 .auth-check{position:fixed;inset:0;background:var(--bg);z-index:5000;display:flex;align-items:center;justify-content:center;}
 .auth-check .ac-inner{text-align:center;}
@@ -316,7 +316,7 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
                     <tbody id="tbody"></tbody>
                 </table>
             </div>
-            <div class="empty" id="emptyState" style="display:none;">Nothing here yet — add an idea on the Idea Board or click <b>“+ Add item”</b>.</div>
+            <div class="empty" id="emptyState" style="display:none;">Nothing here yet - add an idea on the Idea Board or click <b>“+ Add item”</b>.</div>
         </div>
     </div>
 </div>
@@ -348,7 +348,7 @@ $('closeMenu').onclick=()=>{mm.classList.remove('open');sc.classList.remove('sho
 sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
 
 /* ================================================================
-   CONTENT PLANNER — cloud-only (Firestore collection: contentPlanner)
+   CONTENT PLANNER - cloud-only (Firestore collection: contentPlanner)
    One data model powers both the Idea Board (quick capture, status
    Idea/Planned) and the Posting Tracker (full pipeline, all items).
    ================================================================ */
@@ -388,12 +388,12 @@ function cloudItemStore(db){
                 items = snap.docs.map(d=>({id:d.id, ...d.data()}));
                 items.sort((a,b)=> tsMillis(b.createdAt) - tsMillis(a.createdAt));
                 if(editingCell){ pendingRender=true; } else safeRender();
-            }, err=>{ console.warn('Firestore:',err); toast('Could not load content — ' + (err.code==='permission-denied' ? 'check your Firestore rules allow the "contentPlanner" collection.' : (err.message||'connection error'))); });
+            }, err=>{ console.warn('Firestore:',err); toast('Could not load content - ' + (err.code==='permission-denied' ? 'check your Firestore rules allow the "contentPlanner" collection.' : (err.message||'connection error'))); });
         },
-        add(o){ o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)).catch(err=>{ console.error(err); toast('Could not save — ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "contentPlanner" collection.' : (err.message||'try again.'))); }); },
-        update(id){ clearTimeout(timers[id]); timers[id]=setTimeout(()=>{ const o=items.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}).catch(err=>{ console.error(err); toast('Could not save changes — '+(err.message||'try again.')); }); },500); },
-        updateNow(id){ const o=items.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}).catch(err=>{ console.error(err); toast('Could not save — '+(err.message||'try again.')); }); },
-        remove(id){ col().doc(id).delete().catch(err=>{ console.error(err); toast('Could not delete — '+(err.message||'try again.')); }); },
+        add(o){ o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)).catch(err=>{ console.error(err); toast('Could not save - ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "contentPlanner" collection.' : (err.message||'try again.'))); }); },
+        update(id){ clearTimeout(timers[id]); timers[id]=setTimeout(()=>{ const o=items.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}).catch(err=>{ console.error(err); toast('Could not save changes - '+(err.message||'try again.')); }); },500); },
+        updateNow(id){ const o=items.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}).catch(err=>{ console.error(err); toast('Could not save - '+(err.message||'try again.')); }); },
+        remove(id){ col().doc(id).delete().catch(err=>{ console.error(err); toast('Could not delete - '+(err.message||'try again.')); }); },
         clear(){ items.slice().forEach(o=>col().doc(o.id).delete()); }
     };
 }
@@ -424,7 +424,7 @@ function renderIdeaBoard(){
     if(ideaFilter!=='all') list = list.filter(o=>o.type===ideaFilter);
 
     if(!list.length){
-        board.innerHTML = `<div class="idea-empty">No ideas here yet — use the form above to jot down videos to make or pictures to take.</div>`;
+        board.innerHTML = `<div class="idea-empty">No ideas here yet - use the form above to jot down videos to make or pictures to take.</div>`;
         return;
     }
 
@@ -453,7 +453,7 @@ $('ideaBoard').addEventListener('click', e=>{
 });
 
 $('addIdeaBtn').onclick = ()=>{
-    if(!store){ toast('Still connecting to the cloud — wait a second and try again.'); return; }
+    if(!store){ toast('Still connecting to the cloud - wait a second and try again.'); return; }
     const title = $('iTitle').value.trim();
     if(!title){ $('iTitle').focus(); return; }
     store.add(blankItem({ title, type:$('iType').value, notes:$('iNotes').value.trim(), status:'Idea' }));
@@ -544,7 +544,7 @@ trackerTbody().addEventListener('change', e=>{
 trackerTbody().addEventListener('click', e=>{ const rm=e.target.dataset.rm; if(rm!==undefined) store.remove(items[+rm].id); });
 trackerSearch().addEventListener('input', renderTracker);
 
-$('addRowBtn').onclick = ()=>{ if(!store){ toast('Still connecting to the cloud — wait a second and try again.'); return; } store.add(blankItem()); };
+$('addRowBtn').onclick = ()=>{ if(!store){ toast('Still connecting to the cloud - wait a second and try again.'); return; } store.add(blankItem()); };
 $('clearBtn').onclick = ()=>{ if(store && confirm('Delete ALL content items? This cannot be undone.')) store.clear(); };
 $('csvBtn').onclick = ()=>{
     const head=['Title','Type','Platform','Status','Target Date','Posted Date','Notes','Post Link'];
@@ -554,7 +554,7 @@ $('csvBtn').onclick = ()=>{
 };
 
 /* ================================================================
-   INIT — cloud only (Firestore), same as Leads / database.html.
+   INIT - cloud only (Firestore), same as Leads / database.html.
    No local-storage fallback, so this stays in sync across devices.
    ================================================================ */
 function notConfigured(){
