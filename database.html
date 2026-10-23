@@ -102,11 +102,17 @@ thead th.portal-col{background:#dce8ff;color:var(--accent);}
 .hintbar b{color:var(--ink);}
 @media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
 </style>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<link rel="stylesheet" href="app.css">
 </head>
 <body>
 
+<div class="fom-splash" id="authCheck"><div class="in"><b>FOM STUDIOS</b><p>Checking session…</p></div></div>
+<script>setTimeout(function(){var a=document.getElementById("authCheck");if(a)a.style.display="none";},8000);</script>
+
+
 <!-- LOGIN GATE (shown only in cloud mode until signed in) -->
-<div class="login-gate" id="loginGate" style="display:none;">
+<div class="login-gate" id="loginGate">
     <div class="login-card">
         <span class="brand-mark">FOM STUDIOS</span>
         <p class="lg-sub">Admin sign in</p>
@@ -128,7 +134,7 @@ thead th.portal-col{background:#dce8ff;color:var(--accent);}
         <li><a href="workflow.html">Workflow</a></li>
         <li><a href="leads.html">Leads</a></li>
         <li><a href="content.html">Content Planner</a></li>
-        <li><a href="index.html">Calculator</a></li>
+        <li><a href="calculator.html">Calculator</a></li>
         <li><a href="email.html">Email</a></li>
         <li><a href="contract.html">Contract</a></li>
     </ul>
@@ -146,7 +152,7 @@ thead th.portal-col{background:#dce8ff;color:var(--accent);}
                 <li><a href="workflow.html">Workflow</a></li>
                 <li><a href="leads.html">Leads</a></li>
                 <li><a href="content.html">Content Planner</a></li>
-                <li><a href="index.html">Calculator</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
                 <li><a href="email.html">Email</a></li>
                 <li><a href="contract.html">Contract</a></li>
             </ul>
@@ -293,9 +299,9 @@ function render(){
       <td><input data-i="${i}" data-f="notes" value="${esc(o.notes)}" placeholder="No add ons"></td>
       <td class="col-portal"><input data-i="${i}" data-f="clientEmail" value="${esc(o.clientEmail||'')}" placeholder="client@email.com" type="email"></td>
       <td class="col-date"><input data-i="${i}" data-f="shootTime" value="${esc(o.shootTime||'')}" placeholder="e.g. 10:00"></td>
-      <td class="col-portal"><input data-i="${i}" data-f="contractUrl" value="${esc(o.contractUrl||'')}" placeholder="https://drive.google.com/…"></td>
-      <td class="col-portal"><input data-i="${i}" data-f="invoiceUrl" value="${esc(o.invoiceUrl||'')}" placeholder="https://drive.google.com/…"></td>
-      <td class="col-portal"><input data-i="${i}" data-f="deliverablesUrl" value="${esc(o.deliverablesUrl||'')}" placeholder="https://drive.google.com/…"></td>
+      <td class="col-portal"><input data-i="${i}" data-f="contractUrl" value="${esc(o.contractUrl||'')}" placeholder="Cloudflare R2 link"></td>
+      <td class="col-portal"><input data-i="${i}" data-f="invoiceUrl" value="${esc(o.invoiceUrl||'')}" placeholder="Cloudflare R2 link"></td>
+      <td class="col-portal"><input data-i="${i}" data-f="deliverablesUrl" value="${esc(o.deliverablesUrl||'')}" placeholder="Cloudflare R2 link"></td>
       <td class="col-portal-sm"><select class="ready-select" data-i="${i}" data-f="deliverablesReady">
         <option value="false" ${!o.deliverablesReady?'selected':''}>Not ready</option>
         <option value="true" ${o.deliverablesReady?'selected':''}>✓ Ready</option>
@@ -344,7 +350,7 @@ $('closeMenu').onclick=()=>{mm.classList.remove('open');sc.classList.remove('sho
 sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
 
 /* ================= INIT ================= */
-function startLocal(){
+function startLocal(){ var _ac0=document.getElementById('authCheck'); if(_ac0)_ac0.style.display='none';
   $('loginGate').style.display='none';
   const badge=$('syncBadge'); badge.textContent='💾 Local only'; badge.className='badge local';
   $('logoutBtn').style.display='none';
@@ -374,13 +380,16 @@ function offerImport(db){
 function initCloud(){
   firebase.initializeApp(firebaseConfig);
   auth=firebase.auth();
+  // Session-only persistence + idle auto-lock (set in Settings). Closing the app re-locks it.
+  try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e){}
+  (function(){var _il;function _ms(){return (window.FOM&&FOM.idleMs)?FOM.idleMs:900000;}function _rst(){clearTimeout(_il);var m=_ms();if(m&&auth&&auth.currentUser){_il=setTimeout(function(){if(auth&&auth.currentUser)auth.signOut();},m);}}['pointerdown','keydown','scroll','touchstart','mousemove'].forEach(function(ev){addEventListener(ev,_rst,{passive:true});});document.addEventListener('visibilitychange',function(){if(!document.hidden)_rst();});auth.onAuthStateChanged(function(u){var _ac=document.getElementById('authCheck');if(_ac)_ac.style.display='none';if(u)_rst();});})();
   const db=firebase.firestore();
   db.settings({ experimentalAutoDetectLongPolling: true });  // works through VPNs/blockers; no stale cache
   store=cloudStore(db);
   const badge=$('syncBadge'); badge.textContent='☁ Cloud sync'; badge.className='badge cloud';
   $('logoutBtn').style.display='inline-block';
   $('logoutBtn').onclick=()=>auth.signOut();
-  const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value)
+  const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value).then(function(){try{if(window.PasswordCredential&&navigator.credentials){var _e=document.getElementById('lgEmail'),_p=document.getElementById('lgPass');if(_e&&_p)navigator.credentials.store(new PasswordCredential({id:_e.value.trim(),password:_p.value,name:'FOM Studios'}));}}catch(_x){}})
       .catch(err=>{ $('lgErr').textContent = /password|user|credential|email/i.test(err.code||'') ? 'Incorrect email or password.' : (err.message||'Login failed.'); }); };
   $('lgBtn').onclick=login;
   $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
@@ -404,5 +413,6 @@ if(!configured){
   loadFirebase().then(initCloud).catch(showConnError);   // cloud only - no local fallback (avoids mixing datasets)
 }
 </script>
+<script src="app.js"></script>
 </body>
 </html>

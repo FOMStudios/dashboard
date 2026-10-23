@@ -44,7 +44,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .scrim.show{opacity:1;pointer-events:auto;}
 
 /* login gate */
-.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px;}
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
 .login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
 .login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
 .login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
@@ -165,6 +165,8 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
 @media(max-width:980px){.kpis{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:640px){.kpis{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}}
 </style>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<link rel="stylesheet" href="app.css">
 </head>
 <body>
 
@@ -175,7 +177,7 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
     </div>
 </div>
 
-<div class="login-gate" id="loginGate" style="display:none;">
+<div class="login-gate" id="loginGate">
     <div class="login-card">
         <span class="brand-mark">FOM STUDIOS</span>
         <p class="lg-sub">Admin sign in</p>
@@ -195,7 +197,7 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
         <li><a href="workflow.html">Workflow</a></li>
         <li><a href="leads.html">Leads</a></li>
         <li><a href="content.html">Content Planner</a></li>
-        <li><a href="index.html">Calculator</a></li>
+        <li><a href="calculator.html">Calculator</a></li>
         <li><a href="email.html">Email</a></li>
         <li><a href="contract.html">Contract</a></li>
     </ul>
@@ -213,7 +215,7 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
                 <li><a href="workflow.html">Workflow</a></li>
                 <li><a href="leads.html">Leads</a></li>
                 <li><a href="content.html" class="active">Content Planner</a></li>
-                <li><a href="index.html">Calculator</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
                 <li><a href="email.html">Email</a></li>
                 <li><a href="contract.html">Contract</a></li>
             </ul>
@@ -572,13 +574,16 @@ function showConnError(){
 function initCloud(){
     firebase.initializeApp(firebaseConfig);
     const auth=firebase.auth();
+  // Session-only persistence + idle auto-lock (set in Settings). Closing the app re-locks it.
+  try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e){}
+  (function(){var _il;function _ms(){return (window.FOM&&FOM.idleMs)?FOM.idleMs:900000;}function _rst(){clearTimeout(_il);var m=_ms();if(m&&auth&&auth.currentUser){_il=setTimeout(function(){if(auth&&auth.currentUser)auth.signOut();},m);}}['pointerdown','keydown','scroll','touchstart','mousemove'].forEach(function(ev){addEventListener(ev,_rst,{passive:true});});document.addEventListener('visibilitychange',function(){if(!document.hidden)_rst();});auth.onAuthStateChanged(function(u){var _ac=document.getElementById('authCheck');if(_ac)_ac.style.display='none';if(u)_rst();});})();
     const db=firebase.firestore();
     db.settings({ experimentalAutoDetectLongPolling: true });
     store=cloudItemStore(db);
     const badge=$('syncBadge'); badge.textContent='☁ Cloud sync'; badge.className='badge cloud';
     $('logoutBtn').style.display='inline-block';
     $('logoutBtn').onclick=()=>auth.signOut();
-    const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value)
+    const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value).then(function(){try{if(window.PasswordCredential&&navigator.credentials){var _e=document.getElementById('lgEmail'),_p=document.getElementById('lgPass');if(_e&&_p)navigator.credentials.store(new PasswordCredential({id:_e.value.trim(),password:_p.value,name:'FOM Studios'}));}}catch(_x){}})
         .catch(err=>{ $('lgErr').textContent=/password|user|credential|email/i.test(err.code||'')?'Incorrect email or password.':(err.message||'Login failed.'); }); };
     $('lgBtn').onclick=login;
     $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
@@ -600,5 +605,6 @@ function initCloud(){
 }
 if(!configured){ notConfigured(); } else { loadFirebase().then(initCloud).catch(showConnError); }
 </script>
+<script src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,148 @@
+/* ============================================================
+   FOM STUDIOS — shared admin app shell (theme, buttons, nav,
+   gate, settings). Loaded AFTER each page's own <style> so the
+   tokens and button styles here win. One file for the whole app.
+   ============================================================ */
+
+/* ---- Theme tokens: light (default) ---- */
+:root{
+  --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --surface-2:#e7e5df;
+  --ink:#2a2b2c; --ink-soft:#6f6f6d; --ink-on-dark:#f1f0ec;
+  --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f; --accent-on-dark:#5B9AE0;
+  /* black/white buttons + interactive chrome */
+  --btn:#1a1a1a; --btn-ink:#ffffff; --btn-ink-soft:#d8d8d8;
+  /* tokens that replace per-page hardcoded light colours (so dark mode works) */
+  --input-bg:#ffffff; --track:#e9e7e1; --hover:#f4f3ef; --th-bg:#e7e5df;
+  --radius-pill:999px; --radius-card:20px;
+  --container:1320px; --gutter:clamp(16px,5vw,56px);
+  --nav-h:68px; --safe-b:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+/* ---- Dark: follow the system unless the user forced light ---- */
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#0f0f10; --bg-pill:#181819; --bg-dark:#f1f0ec; --surface-2:#242527;
+  --ink:#f1f0ec; --ink-soft:#a2a2a0; --ink-on-dark:#161616;
+  --line:rgba(255,255,255,.11); --accent:#5B9AE0; --accent-hover:#7aa6c9; --accent-on-dark:#5B9AE0;
+  --btn:#f1f0ec; --btn-ink:#161616; --btn-ink-soft:#4a4a48;
+  --input-bg:#101012; --track:#2a2b2c; --hover:#202123; --th-bg:#242527;
+  color-scheme:dark;
+}}
+/* ---- Dark: forced on ---- */
+:root[data-theme="dark"]{
+  --bg:#0f0f10; --bg-pill:#181819; --bg-dark:#f1f0ec; --surface-2:#242527;
+  --ink:#f1f0ec; --ink-soft:#a2a2a0; --ink-on-dark:#161616;
+  --line:rgba(255,255,255,.11); --accent:#5B9AE0; --accent-hover:#7aa6c9; --accent-on-dark:#5B9AE0;
+  --btn:#f1f0ec; --btn-ink:#161616; --btn-ink-soft:#4a4a48;
+  --input-bg:#101012; --track:#2a2b2c; --hover:#202123; --th-bg:#242527;
+  color-scheme:dark;
+}
+
+/* ---- Black/white buttons (override the per-page blue .btn) ---- */
+.btn{background:var(--btn)!important;color:var(--btn-ink)!important;border:1px solid var(--btn)!important;}
+.btn:hover{opacity:.9;}
+.btn.ghost{background:transparent!important;color:var(--ink)!important;border-color:var(--ink)!important;}
+.btn.ghost:hover{background:var(--ink)!important;color:var(--bg-pill)!important;}
+.btn.block{width:100%;}
+
+/* ---- Fit every page to the phone: nothing escapes the viewport ---- */
+html,body{max-width:100%;overflow-x:hidden;}
+body{padding-bottom:calc(var(--nav-h) + 26px + var(--safe-b))!important;}
+.wrap,.page{max-width:100%;}
+img,table,iframe,video,pre{max-width:100%;}
+/* wide content (tables, previews) scrolls inside its own card, not the page */
+.table-scroll,.recent-scroll,.preview-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+/* ---- Auth-check splash ---- */
+.fom-splash{position:fixed;inset:0;background:var(--bg);z-index:6000;display:flex;align-items:center;justify-content:center;}
+.fom-splash .in{text-align:center;}
+.fom-splash .in b{display:block;font-weight:800;letter-spacing:.04em;font-size:20px;color:var(--ink);margin-bottom:8px;}
+.fom-splash .in p{color:var(--ink-soft);font-size:13px;}
+
+/* ---- Login gate ---- */
+.fom-gate{position:fixed;inset:0;background:var(--bg);z-index:5000;display:none;align-items:center;justify-content:center;padding:20px;}
+.fom-gate.on{display:flex;}
+.fom-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 28px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.14);}
+.fom-card .mark{font-weight:800;letter-spacing:.04em;font-size:22px;color:var(--ink);display:block;}
+.fom-card .sub{color:var(--ink-soft);font-size:13px;margin:4px 0 20px;}
+.fom-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:13px 14px;font-size:16px;font-family:inherit;margin-bottom:12px;background:var(--input-bg);color:var(--ink);}
+.fom-card input:focus{outline:2px solid var(--ink);outline-offset:1px;}
+.fom-card .err{color:#c0392b;font-size:13px;min-height:16px;margin-top:6px;}
+
+/* ---- Bottom nav bar ---- */
+.fom-nav{position:fixed;left:50%;bottom:calc(12px + var(--safe-b));transform:translateX(-50%);z-index:1200;
+  width:min(92vw,420px);height:var(--nav-h);border-radius:var(--radius-pill);background:var(--bg-pill);
+  border:1px solid var(--line);box-shadow:0 12px 32px -14px rgba(0,0,0,.4);display:flex;align-items:center;
+  justify-content:space-around;padding:0 10px;}
+.fom-nav button{position:relative;width:52px;height:52px;border-radius:50%;border:0;background:none;cursor:pointer;
+  display:grid;place-items:center;color:var(--ink-soft);transition:background .2s,color .2s;padding:0;}
+.fom-nav button svg{width:24px;height:24px;}
+.fom-nav button.active{background:var(--btn);color:var(--btn-ink);}
+.fom-nav .av{width:36px;height:36px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px var(--line);}
+.fom-nav .av img{width:100%;height:100%;object-fit:cover;background:#fff;display:block;}
+
+/* ---- Sheet (hamburger list + settings), slides up from bottom ---- */
+.fom-scrim{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:1300;opacity:0;pointer-events:none;transition:opacity .25s;}
+.fom-scrim.on{opacity:1;pointer-events:auto;}
+.fom-sheet{position:fixed;left:50%;bottom:0;z-index:1400;width:100%;max-width:520px;max-height:86dvh;
+  transform:translate(-50%,105%);visibility:hidden;transition:transform .3s cubic-bezier(.2,.8,.2,1),visibility 0s .3s;
+  background:var(--bg-pill);border-radius:26px 26px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.25);
+  display:flex;flex-direction:column;padding-bottom:calc(16px + var(--safe-b));}
+.fom-sheet.on{transform:translate(-50%,0);visibility:visible;transition:transform .3s cubic-bezier(.2,.8,.2,1),visibility 0s;}
+.fom-sheet .grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:10px auto 2px;}
+.fom-sheet-h{display:flex;align-items:center;justify-content:space-between;padding:8px 20px 10px;}
+.fom-sheet-h h2{margin:0;font-size:19px;font-weight:800;color:var(--ink);}
+.fom-x{width:36px;height:36px;border-radius:50%;background:var(--surface-2);border:0;color:var(--ink);font-size:20px;cursor:pointer;}
+.fom-sheet-b{overflow-y:auto;padding:4px 16px 18px;}
+.fom-row{display:flex;align-items:center;gap:14px;padding:13px 12px;border-radius:14px;width:100%;text-align:left;
+  border:0;background:none;color:var(--ink);cursor:pointer;text-decoration:none;font:inherit;}
+.fom-row:hover{background:var(--hover);}
+.fom-row .e{width:34px;height:34px;border-radius:10px;background:var(--surface-2);display:grid;place-items:center;font-size:18px;flex:none;}
+.fom-row b{font-weight:600;font-size:15px;}
+.fom-row.active{background:var(--surface-2);}
+.fom-set{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 12px;border-bottom:1px solid var(--line);}
+.fom-set:last-of-type{border-bottom:0;}
+.fom-set label{font-size:14.5px;font-weight:600;color:var(--ink);}
+.fom-set small{display:block;color:var(--ink-soft);font-size:12px;font-weight:400;margin-top:2px;}
+.fom-seg{display:flex;background:var(--bg);border-radius:var(--radius-pill);padding:4px;gap:4px;}
+.fom-seg button{border:0;background:none;cursor:pointer;height:34px;padding:0 14px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;color:var(--ink-soft);}
+.fom-seg button.on{background:var(--btn);color:var(--btn-ink);}
+.fom-sel{height:40px;border-radius:var(--radius-pill);border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 14px;font:inherit;}
+.fom-note{font-size:12px;color:var(--ink-soft);padding:12px 12px 0;line-height:1.6;}
+.fom-logout{margin:16px 12px 4px;width:calc(100% - 24px);height:48px;border-radius:var(--radius-pill);
+  background:var(--btn);color:var(--btn-ink);border:0;font-weight:700;font-size:15px;cursor:pointer;}
+.fom-prof{display:flex;align-items:center;gap:14px;padding:12px;}
+.fom-prof .pic{width:52px;height:52px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px var(--line);flex:none;}
+.fom-prof .pic img{width:100%;height:100%;object-fit:cover;background:#fff;}
+.fom-prof b{display:block;font-size:17px;color:var(--ink);}
+.fom-prof small{color:var(--ink-soft);font-size:12.5px;}
+
+/* hide any old per-page top nav / hamburger once the shell is active (pages that still have them) */
+.fom-ready .nav-shell,.fom-ready .mobile-menu,.fom-ready .scrim{display:none!important;}
+
+/* ============================================================
+   Dark-mode + layout overrides for the existing page content.
+   These run only once .fom-ready is on <html> (set by app.js),
+   so pages look right in dark mode and clear the bottom nav.
+   ============================================================ */
+.fom-ready .page{padding-top:22px!important;}
+/* form inputs that were hardcoded white -> theme-aware (table-cell inputs stay transparent) */
+.fom-ready .login-card input,.fom-ready .toolbar input.search,.fom-ready .search input,
+.fom-ready .panel input,.fom-ready .panel select,.fom-ready .panel textarea,
+.fom-ready .field input,.fom-ready .field select,.fom-ready .form-select,
+.fom-ready .idea-form-row input,.fom-ready .idea-form-row select{
+  background:var(--input-bg)!important;color:var(--ink)!important;}
+.fom-ready td input,.fom-ready td select{background:transparent!important;color:var(--ink)!important;}
+.fom-ready td input:focus,.fom-ready td select:focus{background:var(--input-bg)!important;}
+/* table headers, row hovers, progress tracks, preview backdrops */
+.fom-ready thead th{background:var(--th-bg)!important;color:var(--ink)!important;}
+.fom-ready thead th.portal-col{background:var(--surface-2)!important;color:var(--accent)!important;}
+.fom-ready tbody tr:hover{background:var(--hover)!important;}
+.fom-ready .bar-track,.fom-ready .prog-track,.fom-ready .progress-track,
+.fom-ready .preview-wrap{background:var(--track)!important;}
+.fom-ready .foot-row td{background:var(--hover)!important;}
+.fom-ready .badge.local{background:var(--surface-2)!important;color:var(--ink-soft)!important;}
+/* chart svg text follows the theme (counts/labels were hardcoded dark) */
+.fom-ready .donut-wrap svg text{fill:var(--ink);}
+/* toast: black/white, lifted above the bottom nav */
+.fom-ready .toast{background:var(--btn)!important;color:var(--btn-ink)!important;
+  bottom:calc(var(--nav-h) + 28px + var(--safe-b))!important;}
