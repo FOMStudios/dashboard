@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FOM Studios | Your Gallery</title>
+<link rel="icon" type="image/png" href="assets/mascot-head-color.jpg">
+<link rel="apple-touch-icon" href="assets/mascot-head-color.jpg">
+<style>
+/* ===== FOM theme (cream, navy accent) ===== */
+:root{
+  --bg:#f1f0ec; --panel:#fafaf9; --panel-2:#eeece6; --line:#dcdad3;
+  --ink:#2a2b2c; --ink-soft:#6f6f6d; --ink-dim:#9a9895;
+  --accent:#02367B; --accent-2:#5B9AE0; --on-accent:#ffffff;
+  --radius:18px; --radius-sm:12px; --gutter:clamp(16px,5vw,56px);
+  --container:1280px; --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{max-width:100%;overflow-x:hidden;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;}
+img,video{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:700;}
+
+/* ===== buttons ===== */
+.btn{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:999px;font-weight:700;font-size:13.5px;
+  background:var(--accent);color:var(--on-accent);transition:transform .12s,opacity .2s;white-space:nowrap;}
+.btn:active{transform:scale(.97);} .btn:hover{opacity:.92;}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink);}
+.btn.ghost:hover{border-color:var(--ink);}
+.btn svg{width:17px;height:17px;} .btn.sm{height:38px;padding:0 15px;font-size:12.5px;}
+
+/* ===== top bar ===== */
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:11px var(--gutter);background:rgba(250,250,249,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);}
+.topbar .mark{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.1em;font-size:14px;text-transform:uppercase;color:var(--ink);}
+.topbar .mark img{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#fff;box-shadow:0 0 0 1px var(--line);}
+
+/* ===== hero (image band with light fade into the page) ===== */
+.hero{position:relative;min-height:clamp(380px,62vh,600px);display:flex;align-items:flex-end;overflow:hidden;background:#15161a;}
+.hero .bg{position:absolute;inset:0;background-size:cover;background-position:center;}
+.hero .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,21,24,.15) 0%,rgba(20,21,24,.1) 30%,rgba(20,21,24,.72) 82%,var(--bg) 100%);}
+.hero .inner{position:relative;z-index:2;width:100%;padding:0 var(--gutter) clamp(26px,5vw,52px);max-width:var(--container);margin:0 auto;}
+.hero .eyebrow{color:#bcd4f5;}
+.hero .mh{width:60px;height:60px;border-radius:50%;object-fit:cover;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.35);margin-bottom:14px;}
+.hero h1{font-size:clamp(38px,9vw,84px);font-weight:800;line-height:.98;letter-spacing:-.02em;text-transform:uppercase;color:#fff;margin:10px 0 0;text-shadow:0 2px 18px rgba(0,0,0,.3);}
+.hero h1 .accent{color:#8fb8e8;display:block;}
+.hero .sub{color:rgba(255,255,255,.86);font-size:clamp(14px,2.4vw,16px);margin-top:14px;max-width:44ch;text-shadow:0 1px 10px rgba(0,0,0,.3);}
+.hero .rule{height:1px;background:rgba(255,255,255,.25);margin:22px 0 16px;max-width:520px;}
+.meta{display:flex;flex-wrap:wrap;gap:clamp(20px,6vw,54px);}
+.meta .m .k{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.62);font-weight:700;}
+.meta .m .v{font-size:16px;font-weight:800;margin-top:4px;letter-spacing:.02em;color:#fff;}
+.meta .m .v.hi{color:#8fb8e8;}
+
+/* ===== library toolbar ===== */
+.lib{padding:clamp(28px,6vw,52px) 0 0;}
+.lib-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.lib-head h2{font-size:clamp(26px,5vw,44px);font-weight:800;letter-spacing:-.01em;text-transform:uppercase;margin-top:8px;}
+.lib-head .right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.tabs{display:flex;gap:8px;}
+.tab{height:38px;padding:0 16px;border-radius:999px;font-size:13px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line);background:var(--panel);transition:.15s;}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.tab .n{opacity:.6;margin-left:6px;}
+
+/* ===== grid ===== */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:4px;}
+@media(min-width:900px){.grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .2s;}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 30px -16px rgba(0,0,0,.35);}
+.card .thumb{position:relative;aspect-ratio:4/3;background:var(--panel-2);overflow:hidden;}
+.card .thumb img,.card .thumb video{width:100%;height:100%;object-fit:cover;}
+.card .thumb .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-dim);font-size:34px;}
+.badge{position:absolute;top:10px;left:10px;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:999px;
+  background:rgba(20,21,24,.72);backdrop-filter:blur(6px);font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;}
+.badge svg{width:12px;height:12px;}
+.dl-mini{position:absolute;top:8px;right:8px;width:36px;height:36px;border-radius:50%;background:rgba(20,21,24,.72);backdrop-filter:blur(6px);
+  display:grid;place-items:center;color:#fff;transition:background .2s;}
+.dl-mini:hover{background:var(--accent);}
+.dl-mini svg{width:16px;height:16px;}
+.play{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;}
+.play span{width:54px;height:54px;border-radius:50%;background:rgba(20,21,24,.5);backdrop-filter:blur(4px);display:grid;place-items:center;border:1.5px solid rgba(255,255,255,.6);}
+.play span svg{width:20px;height:20px;margin-left:3px;fill:#fff;}
+.card .cap{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;}
+.card .cap .nm{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card .cap .sz{font-size:11.5px;font-weight:700;color:var(--accent);white-space:nowrap;}
+
+/* ===== thank you / footer ===== */
+.thanks{margin-top:clamp(40px,8vw,84px);border-top:1px solid var(--line);padding:clamp(40px,7vw,70px) 0 0;text-align:center;}
+.thanks .mascot{width:78px;height:78px;border-radius:50%;object-fit:cover;background:#fff;box-shadow:0 10px 26px -10px rgba(0,0,0,.35);margin:0 auto 20px;display:block;}
+.thanks .big{font-size:clamp(30px,6vw,50px);font-weight:800;text-transform:uppercase;letter-spacing:-.01em;}
+.thanks p{color:var(--ink-soft);max-width:52ch;margin:16px auto 0;font-size:15px;line-height:1.7;}
+.thanks .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px;}
+.foot{margin-top:clamp(44px,8vw,78px);padding:26px var(--gutter) calc(30px + var(--safe-b));border-top:1px solid var(--line);text-align:center;color:var(--ink-dim);font-size:12.5px;}
+.foot .fb{font-weight:800;letter-spacing:.12em;color:var(--ink);text-transform:uppercase;margin-bottom:6px;}
+.foot a{color:var(--accent);font-weight:600;}
+
+/* ===== states ===== */
+.state{min-height:62vh;display:grid;place-items:center;text-align:center;padding:40px var(--gutter);}
+.state .box{max-width:440px;} .state .box .mascot{width:76px;height:76px;border-radius:50%;object-fit:cover;background:#fff;margin:0 auto 16px;display:block;box-shadow:0 8px 22px -10px rgba(0,0,0,.4);}
+.state h3{font-size:22px;font-weight:800;margin-bottom:8px;} .state p{color:var(--ink-soft);font-size:14.5px;line-height:1.7;}
+.hidden{display:none!important;}
+
+/* ===== lightbox (dark media viewer) ===== */
+.lb{position:fixed;inset:0;z-index:200;background:rgba(18,19,22,.97);display:none;flex-direction:column;}
+.lb.on{display:flex;}
+.lb-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px var(--gutter);color:#fff;}
+.lb-top .info .nm{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw;}
+.lb-top .info .sz{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;}
+.lb-top .acts{display:flex;gap:10px;align-items:center;}
+.lb-x{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;display:grid;place-items:center;font-size:22px;line-height:1;}
+.lb-stage{flex:1;position:relative;display:grid;place-items:center;padding:0 clamp(8px,4vw,64px);min-height:0;}
+.lb-stage img{max-width:100%;max-height:82vh;object-fit:contain;border-radius:8px;}
+.lb-stage video{max-width:100%;max-height:82vh;border-radius:8px;background:#000;}
+.lb-stage .novid{text-align:center;color:rgba(255,255,255,.75);}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;display:grid;place-items:center;font-size:24px;}
+.lb-nav:hover{background:var(--accent);}
+.lb-prev{left:10px;}.lb-next{right:10px;}
+.lb-count{text-align:center;padding:14px;color:rgba(255,255,255,.55);font-size:12.5px;letter-spacing:.1em;}
+@media(max-width:640px){.lb-nav{width:40px;height:40px;font-size:20px;}}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" role="dialog" aria-modal="true">
+  <div class="lb-top">
+    <div class="info"><div class="nm" id="lbName"></div><div class="sz" id="lbSize"></div></div>
+    <div class="acts">
+      <button class="btn sm" id="lbDl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>Download</button>
+      <button class="lb-x" id="lbClose" aria-label="Close">&times;</button>
+    </div>
+  </div>
+  <div class="lb-stage" id="lbStage">
+    <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous">&#8249;</button>
+    <div id="lbMedia"></div>
+    <button class="lb-nav lb-next" id="lbNext" aria-label="Next">&#8250;</button>
+  </div>
+  <div class="lb-count" id="lbCount"></div>
+</div>
+
+<script>
+/* ============================================================
+   FOM STUDIOS — Client gallery (reads file list from the R2 Worker).
+   Opens in DEMO mode (sample tiles) when no Worker/params are set.
+   ============================================================ */
+const CONFIG = {
+  worker:      'https://fom-gallery.cold-moon-d65c.workers.dev', // blank = demo mode
+  banner:      'assets/email-hero.png',                       // fixed FOM hero banner (swap for your branded image)
+  mascot:      'assets/mascot-head-color.jpg',
+  reviewUrl:   'feedback.html',                               // your own feedback form (or an external http(s) link)
+  reviewLabel: 'Leave a review',
+  feedbackUrl: '',                                            // optional second button (e.g. a Google Form)
+  feedbackLabel:'Share feedback',
+  site:'www.fomstudios.co.za', email:'info@fomstudios.co.za', phone:'073 755 3136',
+  instagram:'https://instagram.com/fom_studios_'
+};
+
+const $ = id => document.getElementById(id);
+const P = new URLSearchParams(location.search);
+const GAL = {
+  folder: P.get('g') || '',
+  name:   P.get('name') || 'there',
+  date:   P.get('date') || '',
+  expiry: P.get('expiry') || '',
+  dl:     P.get('dl') || ''
+};
+
+const VIDEO_EXT=['mp4','webm','m4v','ogg','mov','avi','mkv'], PLAYABLE=['mp4','webm','m4v','ogg'], IMAGE_EXT=['jpg','jpeg','png','webp','gif','avif','bmp'];
+const ext=n=>(n.split('.').pop()||'').toLowerCase();
+const kindOf=n=>VIDEO_EXT.includes(ext(n))?'video':IMAGE_EXT.includes(ext(n))?'image':'file';
+const playable=n=>PLAYABLE.includes(ext(n));
+function fmtSize(b){b=+b||0;if(b>=1e9)return(b/1e9).toFixed(2)+' GB';if(b>=1e6)return(b/1e6).toFixed(1)+' MB';if(b>=1e3)return(b/1e3).toFixed(0)+' KB';return b+' B';}
+function niceDate(s){if(!s)return'';try{const d=new Date(s.length<=10?s+'T00:00:00':s);return d.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});}catch(e){return s;}}
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+
+let ITEMS=[], FILTER='all';
+
+function demoItems(){const A=n=>'assets/'+n;return[
+  {name:'FOM_Hero_01.jpg',size:9400000,kind:'image',url:A('email-hero.png')},
+  {name:'FOM_0421.jpg',size:6200000,kind:'image',url:A('mascot-head-color.jpg')},
+  {name:'FOM_0422.jpg',size:5800000,kind:'image',url:A('mascot-head-gold.jpg')},
+  {name:'FOM_0423.jpg',size:5100000,kind:'image',url:A('mascot-head-silver.jpg')},
+  {name:'FOM_0424.jpg',size:4700000,kind:'image',url:A('mascot-head-bronze.jpg')},
+  {name:'Detail_logo.jpg',size:3300000,kind:'image',url:A('logo.png')},
+  {name:'Behind_scenes.jpg',size:4200000,kind:'image',url:A('mascot.png')},
+  {name:'Highlight_Reel.mp4',size:88000000,kind:'video',url:'',poster:A('email-hero.png')}
+];}
+
+async function load(){
+  if(GAL.expiry){const exp=new Date(GAL.expiry+'T23:59:59');if(new Date()>exp)return renderExpired();}
+  if(CONFIG.worker && GAL.folder){
+    try{
+      const r=await fetch(CONFIG.worker.replace(/\/$/,'')+'/list?g='+encodeURIComponent(GAL.folder));
+      if(!r.ok)throw 0;
+      const data=await r.json();
+      ITEMS=(data.files||data||[]).map(f=>({name:f.name,size:f.size,url:f.url,poster:f.poster,kind:f.kind||kindOf(f.name)}));
+      if(!ITEMS.length)return renderEmpty();
+    }catch(e){return renderError();}
+  } else { ITEMS=demoItems(); }
+  renderGallery();
+}
+
+function meta(){const photos=ITEMS.filter(i=>i.kind==='image').length,vids=ITEMS.filter(i=>i.kind==='video').length,total=ITEMS.reduce((a,i)=>a+(+i.size||0),0);return{photos,vids,count:ITEMS.length,total};}
+
+function reviewHref(){ var u=CONFIG.reviewUrl; if(/^https?:/.test(u)) return u;
+  return u+(u.indexOf('?')>=0?'&':'?')+'name='+encodeURIComponent(GAL.name)+'&order='+encodeURIComponent(GAL.folder); }
+function dlAllBtn(cls){ const href = GAL.dl || '#';
+  return `<a class="btn ${cls}" href="${esc(href)}" ${GAL.dl?'target="_blank" rel="noopener"':'onclick="return false"'}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>Download all</a>`; }
+
+function renderGallery(){
+  const m=meta();
+  $('app').innerHTML=`
+    <header class="topbar">
+      <a class="mark" href="client-portal.html"><img src="${esc(CONFIG.mascot)}" alt="" onerror="this.style.display='none'">FOM STUDIOS</a>
+      ${dlAllBtn('sm')}
+    </header>
+
+    <section class="hero">
+      <div class="bg" style="background-image:url('${esc(CONFIG.banner)}')"></div>
+      <div class="scrim"></div>
+      <div class="inner">
+        <img class="mh" src="${esc(CONFIG.mascot)}" alt="FOM Studios" onerror="this.style.display='none'">
+        <span class="eyebrow">FOM Studios &middot; Your Gallery</span>
+        <h1>Welcome,<span class="accent">${esc(GAL.name)}</span></h1>
+        <p class="sub">Your edited photos and videos are ready. Tap any file to view or play it full-screen, then download the ones you love or grab them all.</p>
+        <div class="rule"></div>
+        <div class="meta">
+          ${GAL.date?`<div class="m"><div class="k">Shoot Date</div><div class="v">${esc(niceDate(GAL.date))}</div></div>`:''}
+          <div class="m"><div class="k">Files</div><div class="v">${m.count}</div></div>
+          <div class="m"><div class="k">Total Size</div><div class="v hi">${fmtSize(m.total)}</div></div>
+          ${GAL.expiry?`<div class="m"><div class="k">Available Until</div><div class="v">${esc(niceDate(GAL.expiry))}</div></div>`:''}
+        </div>
+      </div>
+    </section>
+
+    <main class="wrap lib">
+      <div class="lib-head">
+        <div><span class="eyebrow">Asset Library</span><h2>Project Files</h2></div>
+        <div class="right">
+          <div class="tabs" id="tabs">
+            <button class="tab on" data-f="all">All<span class="n">${m.count}</span></button>
+            ${m.photos?`<button class="tab" data-f="image">Photos<span class="n">${m.photos}</span></button>`:''}
+            ${m.vids?`<button class="tab" data-f="video">Videos<span class="n">${m.vids}</span></button>`:''}
+          </div>
+          ${dlAllBtn('sm')}
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+
+      <section class="thanks">
+        <img class="mascot" src="${esc(CONFIG.mascot)}" alt="FOM Studios" onerror="this.style.display='none'">
+        <div class="big">Thank You</div>
+        <p>It was a pleasure capturing this for you, ${esc(GAL.name)}. We hope these bring the day back every time you look at them. If you enjoyed working with us, a quick review means the world and helps other clients find FOM Studios.</p>
+        <div class="cta">
+          <a class="btn" href="${esc(reviewHref())}" ${/^https?:/.test(CONFIG.reviewUrl)?'target="_blank" rel="noopener"':''}>&#9733;&nbsp; ${esc(CONFIG.reviewLabel)}</a>
+          ${CONFIG.feedbackUrl?`<a class="btn ghost" href="${esc(CONFIG.feedbackUrl)}" target="_blank" rel="noopener">${esc(CONFIG.feedbackLabel)}</a>`:''}
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="fb">FOM Studios</div>
+      Photography &amp; Videography &middot; Johannesburg, South Africa<br>
+      <a href="https://${esc(CONFIG.site)}" target="_blank" rel="noopener">${esc(CONFIG.site)}</a> &middot;
+      <a href="${esc(CONFIG.instagram)}" target="_blank" rel="noopener">Instagram</a> &middot;
+      <a href="mailto:${esc(CONFIG.email)}">${esc(CONFIG.email)}</a> &middot; ${esc(CONFIG.phone)}
+    </footer>`;
+
+  $('tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t)return;FILTER=t.dataset.f;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));renderGrid();});
+  renderGrid();
+}
+function visible(){return FILTER==='all'?ITEMS:ITEMS.filter(i=>i.kind===FILTER);}
+function renderGrid(){
+  const g=$('grid'),list=visible();
+  g.innerHTML=list.map(it=>{
+    const gi=ITEMS.indexOf(it),isVid=it.kind==='video';
+    const thumb=isVid
+      ?(it.poster?`<img src="${esc(it.poster)}" loading="lazy" alt="">`:`<div class="ph">&#127909;</div>`)+`<div class="play"><span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></div>`
+      :(it.kind==='image'?`<img src="${esc(it.url)}" loading="lazy" alt="${esc(it.name)}" onerror="this.parentElement.innerHTML='&lt;div class=\\'ph\\'&gt;&#128247;&lt;/div&gt;'">`:`<div class="ph">&#128196;</div>`);
+    const badge=isVid?`<span class="badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Video</span>`:`<span class="badge">Photo</span>`;
+    return `<article class="card" data-i="${gi}"><div class="thumb">${thumb}${badge}
+      <button class="dl-mini" data-dl="${gi}" title="Download" aria-label="Download ${esc(it.name)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></button></div>
+      <div class="cap"><span class="nm">${esc(it.name)}</span><span class="sz">${fmtSize(it.size)}</span></div></article>`;
+  }).join('');
+  g.onclick=e=>{const dl=e.target.closest('[data-dl]');if(dl){e.stopPropagation();download(ITEMS[+dl.dataset.dl]);return;}const c=e.target.closest('.card');if(c)openLb(+c.dataset.i);};
+}
+
+function download(it){ if(!it||!it.url)return;
+  const a=document.createElement('a'); a.href=it.url+(it.url.includes('?')?'&':'?')+'dl=1'; a.download=it.name; a.target='_blank'; a.rel='noopener';
+  document.body.appendChild(a); a.click(); a.remove(); }
+
+let LBI=0;
+function openLb(i){LBI=i;paintLb();$('lb').classList.add('on');document.body.style.overflow='hidden';}
+function closeLb(){$('lb').classList.remove('on');$('lbMedia').innerHTML='';document.body.style.overflow='';}
+function stepLb(d){LBI=(LBI+d+ITEMS.length)%ITEMS.length;paintLb();}
+function paintLb(){
+  const it=ITEMS[LBI];
+  $('lbName').textContent=it.name;$('lbSize').textContent=fmtSize(it.size);$('lbCount').textContent=(LBI+1)+' / '+ITEMS.length;
+  const m=$('lbMedia');
+  if(it.kind==='video'&&it.url&&playable(it.name)) m.innerHTML=`<video src="${esc(it.url)}" controls autoplay playsinline ${it.poster?`poster="${esc(it.poster)}"`:''}></video>`;
+  else if(it.kind==='video') m.innerHTML=`<div class="novid">${it.poster?`<img src="${esc(it.poster)}" alt="" style="max-height:60vh;border-radius:8px;margin:0 auto 16px">`:''}<p>Preview isn't available for this format in the browser.<br>Use <b>Download</b> to save the full-quality video.</p></div>`;
+  else if(it.kind==='image'&&it.url) m.innerHTML=`<img src="${esc(it.url)}" alt="${esc(it.name)}">`;
+  else m.innerHTML=`<div class="novid"><p>No preview. Use <b>Download</b> to save this file.</p></div>`;
+  $('lbDl').onclick=()=>download(it);
+}
+$('lbClose').onclick=closeLb;$('lbPrev').onclick=()=>stepLb(-1);$('lbNext').onclick=()=>stepLb(1);
+$('lbStage').addEventListener('click',e=>{if(e.target.id==='lbStage')closeLb();});
+addEventListener('keydown',e=>{if(!$('lb').classList.contains('on'))return;if(e.key==='Escape')closeLb();else if(e.key==='ArrowRight')stepLb(1);else if(e.key==='ArrowLeft')stepLb(-1);});
+
+function stateBox(mascot,h,p){$('app').innerHTML=`<div class="state"><div class="box">${mascot?`<img class="mascot" src="${esc(CONFIG.mascot)}" alt="" onerror="this.style.display='none'">`:''}<h3>${h}</h3><p>${p}</p><p style="margin-top:18px"><a class="btn ghost" href="client-portal.html">Back to portal</a></p></div></div>`;}
+function renderExpired(){stateBox(1,'This gallery has expired','To keep your files safe we remove galleries after a set time. Please contact FOM Studios if you still need your deliverables.');}
+function renderEmpty(){stateBox(1,'Your gallery is being prepared','Your files aren\'t ready just yet. You\'ll get an email the moment they are.');}
+function renderError(){stateBox(1,'Couldn\'t load your gallery','Please check your connection and refresh. If it keeps happening, contact FOM Studios.');}
+
+load();
+</script>
+</body>
+</html>

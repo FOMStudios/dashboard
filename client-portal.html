@@ -413,11 +413,16 @@ function buildCard(o){
             `<div class="timeline-step ${i<step?'done':i===step?'active':''}">${esc(s)}</div>`
           ).join('')}</div>`;
 
-    // document buttons
+    // document buttons - once signed, "View contract" opens the signed version (contract + signature)
     const contractBtn = o.contractUrl
-        ? `<a class="doc-btn" href="${esc(o.contractUrl)}" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Contract</a>` : '';
+        ? (o.contractSigned
+            ? `<a class="doc-btn" href="contract-view.html?o=${encodeURIComponent(o.id)}" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Signed contract</a>`
+            : `<a class="doc-btn" href="${esc(o.contractUrl)}" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Contract</a>`)
+        : '';
 
     const invoiceBtn = o.invoiceUrl
         ? `<a class="doc-btn" href="${esc(o.invoiceUrl)}" target="_blank" rel="noopener">
@@ -437,7 +442,7 @@ function buildCard(o){
 
     // gallery link (uses the admin-set folder, or falls back to the customer name slug)
     const galFolder = o.galleryFolder || (slug(o.customer)+'/');
-    const galLink = 'gallery.html?g='+encodeURIComponent(galFolder)+'&name='+encodeURIComponent(o.customer||'there')
+    const galLink = 'client-gallery.html?g='+encodeURIComponent(galFolder)+'&name='+encodeURIComponent(o.customer||'there')
         +(o.shootDate?'&date='+encodeURIComponent(o.shootDate):'')
         +(o.galleryExpiry?'&expiry='+encodeURIComponent(o.galleryExpiry):'')
         +(o.deliverablesUrl?'&dl='+encodeURIComponent(o.deliverablesUrl):'');
