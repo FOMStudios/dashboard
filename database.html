@@ -352,7 +352,7 @@ tbody.addEventListener('click',e=>{ const rm=e.target.dataset.rm; if(rm!==undefi
   const sl=e.target.dataset.signlink;
   if(sl!==undefined){
     const o=orders[+sl];
-    const link=new URL('sign.html',location.href).href+'?o='+encodeURIComponent(o.id)+'&name='+encodeURIComponent(o.customer||'')+'&c='+encodeURIComponent(o.contractUrl||'');
+    const link='https://www.fomstudios.co.za/sign.html'+'?o='+encodeURIComponent(o.id)+'&name='+encodeURIComponent(o.customer||'')+'&c='+encodeURIComponent(o.contractUrl||'');
     const btn=e.target, orig=btn.textContent;
     const done=ok=>{ btn.textContent=ok?'Copied!':'Copy failed'; setTimeout(()=>{btn.textContent=orig;},1600); };
     if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(link).then(()=>done(true)).catch(()=>{ prompt('Copy this signing link:',link); done(true); }); }
