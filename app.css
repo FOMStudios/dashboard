@@ -146,3 +146,7 @@ img,table,iframe,video,pre{max-width:100%;}
 /* toast: black/white, lifted above the bottom nav */
 .fom-ready .toast{background:var(--btn)!important;color:var(--btn-ink)!important;
   bottom:calc(var(--nav-h) + 28px + var(--safe-b))!important;}
+
+/* ---- desktop polish ---- */
+.fom-nav button:hover:not(.active){background:var(--hover);color:var(--ink);}
+@media (min-width:860px){ .fom-nav{width:min(92vw,460px);} .fom-sheet{border-radius:26px;bottom:18px;max-height:80dvh;} }
