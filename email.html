@@ -83,7 +83,12 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
 @media(max-width:480px){.actions{flex-direction:column;}.actions .btn{width:100%;flex:none;}.panel{padding:14px 12px;}select,input[type=text],input[type=email],input[type=number],input[type=date],input[type=time]{font-size:16px;}}
 .howto{font-size:12.5px;color:var(--ink-soft);margin-top:14px;line-height:1.7;}
 .howto b{color:var(--ink);}
-.preview-wrap{background:#e9e7e1;border:1px solid var(--line);border-radius:var(--radius-card);padding:18px;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch;}
+.preview-wrap{background:#e9e7e1;border:1px solid var(--line);border-radius:var(--radius-card);padding:18px;overflow:hidden;max-width:100%;-webkit-overflow-scrolling:touch;}
+.grid>*{min-width:0;}
+.preview-wrap{min-width:0;}
+#emailStage{overflow:hidden;width:100%;min-width:0;}
+#emailDoc{width:600px;transform-origin:top left;background:#f1f0ec;}
+#emailDoc,#emailDoc *{box-sizing:content-box;}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-dark);color:#fff;padding:12px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000;}
 .toast.show{opacity:1;}
 @media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
@@ -198,7 +203,7 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
         <!-- PREVIEW -->
         <div>
             <div class="panel" style="margin-bottom:12px;padding:14px 22px;"><h2 style="margin:0;">Email preview</h2></div>
-            <div class="preview-wrap"><iframe id="emailFrame" style="width:100%;border:none;background:#fff;display:block;" scrolling="no"></iframe></div>
+            <div class="preview-wrap"><div id="emailStage"><div id="emailDoc"></div></div></div>
         </div>
     </div>
 </div>
@@ -485,28 +490,20 @@ function refresh(){
   const icsBtn = $('icsBtn');
   if(icsBtn) icsBtn.style.display = isReady ? 'none' : 'inline-flex';
   if($('dueWrap')) $('dueWrap').style.display = (f.full || isReady) ? 'none' : 'block';
-  var _f=$('emailFrame');
-  if(_f){ var _d=_f.contentDocument||_f.contentWindow.document; _d.open();
-    _d.write('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=600">'+
-      '<scr'+'ipt>window.addEventListener("load",function(){try{parent.fitPreview&&parent.fitPreview();}catch(e){}});</scr'+'ipt>'+
-      '</head><body style="margin:0;background:#f1f0ec;">'+buildEmailHtml()+'</body></html>'); _d.close();
-    setTimeout(fitPreview, 60); setTimeout(fitPreview, 500); }
+  var _doc=$('emailDoc');
+  if(_doc){ _doc.innerHTML=buildEmailHtml(); fitPreview(); setTimeout(fitPreview,60); setTimeout(fitPreview,400); }
 }
 /* scale the 600px email down to fit the preview box width (never upscales past 100%) */
 /* Shrink the email to fit the preview box using CSS zoom (scales the layout
    box too, so nothing overflows). Never enlarges past 100% on wide screens. */
 function fitPreview(){
-  var f=$('emailFrame'), box=f&&f.parentElement; if(!f||!box) return;
+  var doc=$('emailDoc'), st=$('emailStage'); if(!doc||!st) return;
   try{
-    f.style.zoom='1'; f.style.width='720px';   // wide canvas so the email settles at its natural width
-    var doc=f.contentDocument||f.contentWindow.document, bd=doc.body;
-    var cw=320, els=bd?bd.getElementsByTagName('*'):[];
-    for(var i=0;i<els.length;i++){ var r=els[i].getBoundingClientRect(); if(r.right>cw) cw=r.right; }
-    cw=Math.ceil(cw)+1;
-    var ch=Math.max(bd?bd.scrollHeight:400, 200);
-    f.style.width=cw+'px'; f.style.height=ch+'px';
-    var s=Math.min(1, (box.clientWidth||cw)/cw);
-    f.style.zoom=s;
+    doc.style.transform='none'; doc.style.width='600px';     // fixed email design width (deterministic)
+    var ch=doc.scrollHeight||doc.offsetHeight||400;
+    var avail=st.clientWidth||600, s=Math.min(1, avail/600); // scale the 600px email to fit the box (iOS-safe transform)
+    doc.style.transform='scale('+s+')';
+    st.style.height=(ch*s)+'px';
   }catch(e){}
 }
 addEventListener('resize', fitPreview);
@@ -526,10 +523,10 @@ $('copyBtn').onclick = async () => {
     })]);
     toast('Email copied - now paste into Gmail');
   }catch(e){
-    const _f=$('emailFrame'), _fw=_f&&_f.contentWindow, _fd=_f&&(_f.contentDocument||(_fw&&_fw.document));
-    if(_fd&&_fw){ _fw.focus(); const r=_fd.createRange(); r.selectNodeContents(_fd.body);
-      const sel=_fw.getSelection(); sel.removeAllRanges(); sel.addRange(r);
-      try{ _fd.execCommand('copy'); toast('Email copied - now paste into Gmail'); }
+    const _d=$('emailDoc');
+    if(_d){ const r=document.createRange(); r.selectNodeContents(_d);
+      const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      try{ document.execCommand('copy'); toast('Email copied - now paste into Gmail'); }
       catch(_){ toast('Copy not supported - select the preview manually'); }
       sel.removeAllRanges(); }
   }

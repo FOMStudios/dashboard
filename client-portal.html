@@ -284,6 +284,55 @@ nav.pill{
         <p>Questions? Contact us at <a href="mailto:info@fomstudios.co.za">info@fomstudios.co.za</a> or <a href="https://wa.me/27737553136">WhatsApp</a></p>
     </footer>
 </div>
+
+<!-- ============ CONTRACT SIGNATURE MODAL ============ -->
+<style>
+.sign-scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:4000;opacity:0;pointer-events:none;transition:.25s;display:flex;align-items:flex-end;justify-content:center;}
+.sign-scrim.on{opacity:1;pointer-events:auto;}
+.sign-modal{background:var(--bg-pill);width:100%;max-width:520px;max-height:92dvh;overflow-y:auto;border-radius:22px 22px 0 0;padding:24px 22px calc(22px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);}
+@media(min-width:560px){.sign-scrim{align-items:center;}.sign-modal{border-radius:22px;}}
+.sign-scrim.on .sign-modal{transform:translateY(0);}
+.sign-modal h2{font-size:20px;font-weight:800;margin-bottom:4px;}
+.sign-modal .sm-sub{color:var(--ink-soft);font-size:13.5px;margin-bottom:16px;line-height:1.5;}
+.sign-view{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:var(--accent);margin-bottom:16px;}
+.sign-view svg{width:16px;height:16px;}
+.sign-pad-wrap{position:relative;border:1.5px dashed var(--line);border-radius:14px;background:#fff;overflow:hidden;}
+.sign-pad{display:block;width:100%;height:190px;touch-action:none;cursor:crosshair;}
+.sign-pad-hint{position:absolute;inset:0;display:grid;place-items:center;color:#c9c7c0;font-size:14px;pointer-events:none;}
+.sign-clear{position:absolute;top:8px;right:10px;font-size:12px;font-weight:700;color:var(--ink-soft);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;}
+.sign-name{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin:14px 0 2px;background:#fff;color:var(--ink);}
+.sign-name:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.sign-agree{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-soft);margin:14px 0 18px;cursor:pointer;}
+.sign-agree input{width:18px;height:18px;margin-top:1px;flex:none;accent-color:var(--accent);}
+.sign-actions{display:flex;gap:10px;}
+.sign-actions .btn{flex:1;background:var(--accent);color:var(--ink-on-dark);border:0;border-radius:999px;padding:14px;font-weight:700;font-size:14.5px;cursor:pointer;}
+.sign-actions .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line);}
+.sign-actions .btn[disabled]{opacity:.5;pointer-events:none;}
+.sign-err{color:#c0392b;font-size:13px;min-height:16px;margin-top:8px;text-align:center;}
+.signed-badge{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;border-radius:12px;background:#eaf6ee;color:#1f8a4c;font-weight:700;font-size:13px;border:1px solid #c7e6d2;}
+.signed-badge svg{width:15px;height:15px;}
+.doc-btn.sign-btn{cursor:pointer;border:1px solid var(--accent);color:var(--accent);background:#eef2fb;font:inherit;}
+</style>
+<div class="sign-scrim" id="signScrim">
+  <div class="sign-modal" role="dialog" aria-modal="true">
+    <h2>Sign your contract</h2>
+    <p class="sm-sub">Please review your contract, then sign below. Your signature, name and the date are recorded against your booking.</p>
+    <a class="sign-view" id="signView" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> View the contract</a>
+    <div class="sign-pad-wrap">
+      <canvas class="sign-pad" id="signPad"></canvas>
+      <div class="sign-pad-hint" id="signHint">Sign here with your finger or mouse</div>
+      <button class="sign-clear" id="signClear" type="button">Clear</button>
+    </div>
+    <input class="sign-name" id="signName" type="text" placeholder="Type your full name">
+    <label class="sign-agree"><input type="checkbox" id="signAgree"> I have read and agree to the terms of this contract.</label>
+    <div class="sign-actions">
+      <button class="btn ghost" id="signCancel" type="button">Cancel</button>
+      <button class="btn" id="signSubmit" type="button">Submit signature</button>
+    </div>
+    <p class="sign-err" id="signErr"></p>
+  </div>
+</div>
+
 <script>
 /* Firebase config embedded directly so the portal works on the public site
    without needing firebase-config.js as a sibling file */
@@ -300,7 +349,8 @@ var firebaseConfig = {
 import { initializeApp, getApp }                                    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail,
          onAuthStateChanged, signOut }                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, query, where, onSnapshot }        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, query, where, onSnapshot,
+         doc, updateDoc, serverTimestamp }                           from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 
 /* ============================================================
@@ -321,6 +371,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const RZA = n => 'R' + (Math.round((+n||0)*100)/100).toLocaleString('en-ZA',{minimumFractionDigits:2});
 const fmtDate = d => { if(!d) return '-'; try{ const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'long',year:'numeric'}); }catch(e){return d;} };
+const slug = s => (String(s||'client').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'client');
 
 /* ============================================================
    RENDER - build booking cards from Firestore orders that
@@ -373,23 +424,39 @@ function buildCard(o){
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             Invoice</a>` : '';
 
-    const hasDocs = contractBtn || invoiceBtn;
+    // digital contract signing
+    const signBlock = o.contractUrl
+        ? (o.contractSigned
+            ? `<span class="signed-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Signed${o.signedAt&&o.signedAt.toDate?' &middot; '+o.signedAt.toDate().toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}):''}</span>`
+            : `<button class="doc-btn sign-btn" data-sign="${esc(o.id)}" data-curl="${esc(o.contractUrl)}" data-cname="${esc(o.customer||'')}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l3-1 11.3-11.3a2 2 0 0 0-2.8-2.8L3.2 18.2 3 21z"/></svg>
+                Review &amp; sign</button>`)
+        : '';
+
+    const hasDocs = contractBtn || invoiceBtn || signBlock;
+
+    // gallery link (uses the admin-set folder, or falls back to the customer name slug)
+    const galFolder = o.galleryFolder || (slug(o.customer)+'/');
+    const galLink = 'gallery.html?g='+encodeURIComponent(galFolder)+'&name='+encodeURIComponent(o.customer||'there')
+        +(o.shootDate?'&date='+encodeURIComponent(o.shootDate):'')
+        +(o.galleryExpiry?'&expiry='+encodeURIComponent(o.galleryExpiry):'')
+        +(o.deliverablesUrl?'&dl='+encodeURIComponent(o.deliverablesUrl):'');
 
     // deliverables section
-    const deliverables = (o.deliverablesReady && o.deliverablesUrl)
+    const deliverables = (o.deliverablesReady)
         ? `<div class="download-cta">
             <div class="dc-text">
-                <strong>Your files are ready 🎉</strong>
-                <span>High-resolution photos &amp; videos - download at your convenience.</span>
+                <strong>Your gallery is ready 🎉</strong>
+                <span>View, play and download your photos &amp; videos.</span>
             </div>
-            <a class="dl-btn" href="${esc(o.deliverablesUrl)}" target="_blank" rel="noopener">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Download files
+            <a class="dl-btn" href="${galLink}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                View gallery
             </a>
           </div>`
         : `<div class="not-ready">
-            <strong style="display:block;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Files not ready yet</strong>
-            Your edited photos${o.product&&o.product.toLowerCase().includes('video')||o.product&&o.product.toLowerCase().includes('reel')?'/videos':''} are being worked on - you'll receive an email when they're ready to download.
+            <strong style="display:block;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Gallery not ready yet</strong>
+            Your edited photos${o.product&&o.product.toLowerCase().includes('video')||o.product&&o.product.toLowerCase().includes('reel')?'/videos':''} are being worked on - you'll get an email the moment your gallery is ready.
           </div>`;
 
     // message from FOM
@@ -434,7 +501,7 @@ function buildCard(o){
                         ${timeline}
                     </div>
 
-                    ${hasDocs ? `<div class="deliverables-section"><h3>Documents</h3><div class="doc-links">${contractBtn}${invoiceBtn}</div></div>` : ''}
+                    ${hasDocs ? `<div class="deliverables-section"><h3>Documents</h3><div class="doc-links">${contractBtn}${invoiceBtn}${signBlock}</div></div>` : ''}
 
                     <div class="deliverables-section">
                         <h3>Deliverables</h3>
@@ -468,7 +535,41 @@ function init(){
     catch(e) { app = getApp(); }
     const auth = getAuth(app);
     const db   = getFirestore(app);
-    
+
+    /* ---- contract signing ---- */
+    const signScrim=$('signScrim'), pad=$('signPad'), pctx=pad.getContext('2d');
+    let signingId=null, drawing=false, hasInk=false;
+    function sizePad(){ const r=pad.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+        pad.width=r.width*dpr; pad.height=r.height*dpr;
+        pctx.setTransform(1,0,0,1,0,0); pctx.scale(dpr,dpr);
+        pctx.lineWidth=2.4; pctx.lineCap='round'; pctx.lineJoin='round'; pctx.strokeStyle='#1a1a1a'; }
+    function clearPad(){ pctx.clearRect(0,0,pad.width,pad.height); hasInk=false; $('signHint').style.display='grid'; }
+    function posOf(e){ const r=pad.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
+    pad.addEventListener('pointerdown',e=>{ drawing=true; hasInk=true; $('signHint').style.display='none'; const p=posOf(e); pctx.beginPath(); pctx.moveTo(p.x,p.y); pad.setPointerCapture&&pad.setPointerCapture(e.pointerId); e.preventDefault(); });
+    pad.addEventListener('pointermove',e=>{ if(!drawing)return; const p=posOf(e); pctx.lineTo(p.x,p.y); pctx.stroke(); e.preventDefault(); });
+    addEventListener('pointerup',()=>{ drawing=false; });
+    $('signClear').addEventListener('click',clearPad);
+    function openSign(id,curl,cname){ signingId=id;
+        const v=$('signView'); v.href=curl||'#'; v.style.display=curl?'inline-flex':'none';
+        $('signName').value=cname||''; $('signAgree').checked=false; $('signErr').textContent='';
+        $('signSubmit').disabled=false; $('signSubmit').textContent='Submit signature';
+        signScrim.classList.add('on'); setTimeout(()=>{ sizePad(); clearPad(); },60); }
+    function closeSign(){ signScrim.classList.remove('on'); signingId=null; }
+    $('signCancel').addEventListener('click',closeSign);
+    signScrim.addEventListener('click',e=>{ if(e.target===signScrim) closeSign(); });
+    addEventListener('resize',()=>{ if(signScrim.classList.contains('on')) sizePad(); });
+    $('signSubmit').addEventListener('click', async ()=>{
+        if(!hasInk){ $('signErr').textContent='Please sign in the box above.'; return; }
+        if(!$('signName').value.trim()){ $('signErr').textContent='Please type your full name.'; return; }
+        if(!$('signAgree').checked){ $('signErr').textContent='Please tick to agree to the terms.'; return; }
+        $('signSubmit').disabled=true; $('signSubmit').textContent='Saving...'; $('signErr').textContent='';
+        try{
+            await updateDoc(doc(db,'orders',signingId), { contractSigned:true, signatureData:pad.toDataURL('image/png'), signedName:$('signName').value.trim(), signedAt:serverTimestamp() });
+            closeSign();
+        }catch(e){ $('signSubmit').disabled=false; $('signSubmit').textContent='Submit signature'; $('signErr').textContent='Could not save. Please try again.'; console.warn('sign save',e); }
+    });
+    $('bookingList').addEventListener('click', e=>{ const b=e.target.closest('.sign-btn'); if(b){ e.stopPropagation(); openSign(b.dataset.sign, b.dataset.curl, b.dataset.cname); } });
+
 
     /* --- password reset --- */
     $('resetLink').addEventListener('click', () => {

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FOM Studios | Share your experience</title>
+<link rel="icon" type="image/png" href="assets/mascot-head-color.jpg">
+<link rel="apple-touch-icon" href="assets/mascot-head-color.jpg">
+<style>
+:root{
+  --bg:#f1f0ec; --panel:#fafaf9; --ink:#2a2b2c; --ink-soft:#6f6f6d; --line:#dcdad3;
+  --accent:#02367B; --accent-hover:#022a5f; --gold:#e0a93b; --on-accent:#fff;
+  --radius:20px; --gutter:clamp(18px,5vw,40px); --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{max-width:100%;overflow-x:hidden;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;
+  min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:28px var(--gutter) calc(28px + var(--safe-b));}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);max-width:480px;width:100%;
+  padding:clamp(26px,6vw,40px);box-shadow:0 24px 60px -30px rgba(0,0,0,.3);text-align:center;}
+.mascot{width:78px;height:78px;border-radius:50%;object-fit:cover;background:#fff;margin:0 auto 16px;display:block;box-shadow:0 8px 22px -10px rgba(0,0,0,.4);}
+.eyebrow{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;}
+h1{font-size:clamp(23px,5vw,29px);font-weight:800;letter-spacing:-.01em;margin:8px 0 6px;}
+.sub{color:var(--ink-soft);font-size:14.5px;margin-bottom:22px;}
+.stars{display:flex;justify-content:center;gap:8px;margin:4px 0 22px;}
+.stars button{font-size:40px;line-height:1;color:var(--line);background:none;border:0;cursor:pointer;transition:transform .1s,color .15s;padding:0;}
+.stars button:active{transform:scale(.9);}
+.stars button.on{color:var(--gold);}
+.field{text-align:left;margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+.field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:#fff;color:var(--ink);}
+.field input:focus,.field textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.field textarea{min-height:110px;resize:vertical;line-height:1.6;}
+.chk{display:flex;align-items:flex-start;gap:10px;text-align:left;font-size:13.5px;color:var(--ink-soft);margin:4px 0 20px;cursor:pointer;}
+.chk input{width:18px;height:18px;margin-top:2px;flex:none;accent-color:var(--accent);}
+.btn{width:100%;background:var(--accent);color:var(--on-accent);border:0;border-radius:999px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--accent-hover);} .btn:active{transform:scale(.98);}
+.btn[disabled]{opacity:.55;pointer-events:none;}
+.msg{min-height:18px;font-size:13px;color:#c0392b;margin-top:12px;}
+.foot{margin-top:22px;font-size:12.5px;color:var(--ink-soft);}
+.foot a{color:var(--accent);font-weight:600;text-decoration:none;}
+.hidden{display:none!important;}
+/* thank-you state */
+.done .big{font-size:46px;margin-bottom:8px;}
+.done p{color:var(--ink-soft);font-size:15px;margin-top:8px;}
+.done .links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px;}
+.link-btn{display:inline-flex;align-items:center;height:44px;padding:0 20px;border-radius:999px;border:1.5px solid var(--line);font-weight:700;font-size:13.5px;color:var(--ink);text-decoration:none;}
+.link-btn:hover{border-color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <img class="mascot" src="assets/mascot-head-color.jpg" alt="FOM Studios" onerror="this.style.display='none'">
+  <span class="eyebrow">FOM Studios</span>
+  <h1 id="title">How was your experience?</h1>
+  <p class="sub" id="sub">Your feedback means the world and helps us keep improving.</p>
+
+  <div id="form">
+    <div class="stars" id="stars" role="radiogroup" aria-label="Rating">
+      <button data-v="1" aria-label="1 star">&#9733;</button>
+      <button data-v="2" aria-label="2 stars">&#9733;</button>
+      <button data-v="3" aria-label="3 stars">&#9733;</button>
+      <button data-v="4" aria-label="4 stars">&#9733;</button>
+      <button data-v="5" aria-label="5 stars">&#9733;</button>
+    </div>
+    <div class="field"><label for="fName">Your name</label><input type="text" id="fName" placeholder="Your name"></div>
+    <div class="field"><label for="fMsg">Your review</label><textarea id="fMsg" placeholder="Tell us about your shoot and your experience with FOM Studios..."></textarea></div>
+    <label class="chk"><input type="checkbox" id="fShare" checked> You can share my review publicly (website / social) as a testimonial.</label>
+    <button class="btn" id="sendBtn">Send review</button>
+    <p class="msg" id="msg"></p>
+  </div>
+
+  <div id="thanks" class="done hidden">
+    <div class="big">&#127881;</div>
+    <h1>Thank you!</h1>
+    <p id="thanksMsg">We really appreciate you taking the time. It was a pleasure working with you.</p>
+    <div class="links">
+      <a class="link-btn" href="https://instagram.com/fom_studios_" target="_blank" rel="noopener">Follow on Instagram</a>
+      <a class="link-btn" href="https://www.fomstudios.co.za" target="_blank" rel="noopener">Visit website</a>
+    </div>
+  </div>
+
+  <div class="foot">FOM Studios &middot; Photography &amp; Videography<br>info@fomstudios.co.za</div>
+</div>
+
+<script>
+var firebaseConfig = {
+  apiKey:"AIzaSyCbRXQmIxzVWuFS0CRmDY33qYuzpcVL80A", authDomain:"fom-studios.firebaseapp.com",
+  projectId:"fom-studios", storageBucket:"fom-studios.firebasestorage.app",
+  messagingSenderId:"1049126528829", appId:"1:1049126528829:web:8ed0ea930e0b1579630754"
+};
+</script>
+<script type="module">
+import { initializeApp, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const $ = id => document.getElementById(id);
+const P = new URLSearchParams(location.search);
+const NAME = P.get('name') || '', ORDER = P.get('order') || '';
+if(NAME && NAME !== 'there') $('fName').value = NAME.charAt(0).toUpperCase()+NAME.slice(1);
+
+let rating = 0;
+const stars = [...$('stars').querySelectorAll('button')];
+function paintStars(v){ stars.forEach(b => b.classList.toggle('on', +b.dataset.v <= v)); }
+stars.forEach(b => {
+  b.addEventListener('click', () => { rating = +b.dataset.v; paintStars(rating); $('msg').textContent=''; });
+  b.addEventListener('mouseenter', () => paintStars(+b.dataset.v));
+});
+$('stars').addEventListener('mouseleave', () => paintStars(rating));
+
+let app; try{ app = initializeApp(firebaseConfig); }catch(e){ app = getApp(); }
+const db = getFirestore(app);
+
+$('sendBtn').addEventListener('click', async () => {
+  const msg = $('fMsg').value.trim(), name = $('fName').value.trim();
+  if(!rating){ $('msg').textContent = 'Please tap a star rating first.'; return; }
+  $('sendBtn').disabled = true; $('sendBtn').textContent = 'Sending...'; $('msg').textContent='';
+  try{
+    await addDoc(collection(db, 'feedback'), {
+      rating, name: name || 'Anonymous', message: msg,
+      orderId: ORDER, sharePublic: $('fShare').checked,
+      createdAt: serverTimestamp(), source: 'gallery'
+    });
+    $('form').classList.add('hidden'); $('title').classList.add('hidden'); $('sub').classList.add('hidden');
+    $('thanks').classList.remove('hidden');
+    if(rating >= 4) $('thanksMsg').textContent = 'So glad you loved it! If you have a moment, sharing FOM Studios with friends means everything to a small business.';
+  }catch(e){
+    $('sendBtn').disabled = false; $('sendBtn').textContent = 'Send review';
+    $('msg').textContent = 'Could not send just now. Please check your connection and try again.';
+    console.warn('feedback save failed', e);
+  }
+});
+</script>
+</body>
+</html>

@@ -150,6 +150,9 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 }
 .check-who.me{background:#e7f0ff;color:var(--accent);}
 .check-who.client{background:#efece5;color:var(--ink-soft);}
+.check-who.auto-badge{background:#e3f5ea;color:#1f8a4c;}
+.check-step.auto{cursor:default;}
+.check-step.auto .check-box{cursor:default;}
 
 /* quick links row inside checklist */
 .quick-links{display:flex;gap:8px;flex-wrap:wrap;padding:16px 4px 2px;}
@@ -260,12 +263,12 @@ const STEPS = [
       note:'Client viewed the website, picked a package and sent a WhatsApp.' },
     { key:'s2',  who:'me', title:'Invoice & contract sent',
       note:'Generate the invoice (Calculator) and contract (Contract page), send both via WhatsApp, and request their email address.' },
-    { key:'s3',  who:'client', title:'Payment received + signed contract returned',
-      note:'Client has paid (deposit or full) and sent back the signed contract.' },
+    { key:'s3',  who:'client', title:'Payment received + contract signed online', auto:o=>!!o.contractSigned,
+      note:'Client has paid (deposit or full). The contract is signed digitally inside their portal - this step ticks itself the moment they sign, and the signature is saved against the order on the Database page.' },
     { key:'s4',  who:'me', title:'Database updated',
       note:'Order filled in on the Database page - amounts, dates, client email, package details.' },
     { key:'s5',  who:'me', title:'Documents uploaded to Cloudflare R2',
-      note:'Cloudflare \u2192 Storage \u2192 R2 \u2192 Buckets \u2192 open the bucket \u2192 <b>Add folder</b> (name it "name/") \u2192 upload the signed contract + invoice into that folder. Paste the share links into the Contract URL and Invoice URL fields.' },
+      note:'Cloudflare \u2192 Storage \u2192 R2 \u2192 Buckets \u2192 open the bucket \u2192 <b>Add folder</b> (name it "name/") \u2192 upload the invoice (and a contract PDF if you keep one) into that folder. Paste the share links into the Contract URL and Invoice URL fields. The signed signature is captured automatically in the Database once the client signs online.' },
     { key:'s6',  who:'me', title:'Firebase account created',
       note:'Firebase Console → Authentication → Add user with the client\u2019s email.' },
     { key:'s7',  who:'me', title:'Password reset email triggered',
@@ -277,9 +280,9 @@ const STEPS = [
     { key:'s10', who:'me', title:'Shoot completed',
       note:'Shoot day done. Update Order Status in the Database as you go.' },
     { key:'s11', who:'me', title:'Edits done & uploaded to Cloudflare R2',
-      note:'First export the final photos/videos to your Desktop and zip the folder. Then Cloudflare \u2192 Storage \u2192 R2 \u2192 Buckets \u2192 open the bucket \u2192 <b>Add folder</b> (name it "name/") \u2192 add the files into that folder. Paste the deliverables link into the Database and flip "Files Ready?" to ✓ Ready.' },
+      note:'First export the final photos/videos to your Desktop and zip the folder. Then Cloudflare \u2192 Storage \u2192 R2 \u2192 Buckets \u2192 open the bucket \u2192 <b>Add folder</b> (name it "name/") \u2192 add the files into that folder. In the Database, set the <b>Gallery Folder</b> to that folder name (e.g. "jane-smith/") and a <b>Gallery Expiry</b> date, paste the deliverables link, and flip "Files Ready?" to ✓ Ready. Clients view and download their photos and videos in the gallery straight from their portal.' },
     { key:'s12', who:'me', title:'"Files Ready" email sent',
-      note:'Email page → Files Ready → includes portal link + Google review request.' },
+      note:'Email page → Files Ready → includes the portal link to their gallery and a request to leave a review on your own feedback form.' },
     { key:'s13', who:'client', title:'Client downloaded deliverables',
       note:'Project complete. 🎉' },
 ];
@@ -292,9 +295,12 @@ let openCards = new Set(); // remember which cards are expanded across re-render
 /* ============================================================
    RENDER
    ============================================================ */
-function doneCount(o){
+function stepDone(s, o){
     const wf = o.workflow || {};
-    return STEPS.filter(s => wf[s.key]).length;
+    return !!wf[s.key] || (typeof s.auto === 'function' && !!s.auto(o));
+}
+function doneCount(o){
+    return STEPS.filter(s => stepDone(s, o)).length;
 }
 function isComplete(o){ return doneCount(o) === STEPS.length; }
 
@@ -321,14 +327,18 @@ function render(){
         const complete = done === STEPS.length;
         const open = openCards.has(o.id);
 
-        const steps = STEPS.map(s => `
-            <div class="check-step ${wf[s.key] ? 'done' : ''}" data-oid="${esc(o.id)}" data-step="${s.key}">
+        const steps = STEPS.map(s => {
+            const isAuto = typeof s.auto === 'function' && !!s.auto(o);
+            const isDone = stepDone(s, o);
+            return `
+            <div class="check-step ${isDone ? 'done' : ''} ${isAuto ? 'auto' : ''}" data-oid="${esc(o.id)}" data-step="${s.key}" ${isAuto ? 'data-auto="1"' : ''}>
                 <div class="check-box"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
                 <div class="check-text">
-                    <div class="check-title">${esc(s.title)}<span class="check-who ${s.who}">${s.who === 'me' ? 'You' : 'Client'}</span></div>
+                    <div class="check-title">${esc(s.title)}<span class="check-who ${s.who}">${s.who === 'me' ? 'You' : 'Client'}</span>${isAuto ? '<span class="check-who auto-badge">Auto</span>' : ''}</div>
                     <div class="check-note">${s.note}</div>
                 </div>
-            </div>`).join('');
+            </div>`;
+        }).join('');
 
         return `
         <div class="project-card ${complete ? 'complete' : ''} ${open ? 'open' : ''}" data-card="${esc(o.id)}">
@@ -376,6 +386,7 @@ $('projectList').addEventListener('click', e => {
         return;
     }
     const step = e.target.closest('.check-step');
+    if(step && step.dataset.auto === '1'){ return; } // auto step - driven by the client's signature, not manual
     if(step && store){
         const oid = step.dataset.oid, key = step.dataset.step;
         const o = orders.find(x => x.id === oid);
