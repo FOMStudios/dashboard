@@ -150,3 +150,13 @@ img,table,iframe,video,pre{max-width:100%;}
 /* ---- desktop polish ---- */
 .fom-nav button:hover:not(.active){background:var(--hover);color:var(--ink);}
 @media (min-width:860px){ .fom-nav{width:min(92vw,460px);} .fom-sheet{border-radius:26px;bottom:18px;max-height:80dvh;} }
+
+/* ============================================================
+   Seamless navigation: the login gate is hidden by default and
+   only shown by each page's own JS when truly signed out. Once
+   you've signed in this app session (sessionStorage flag), the
+   head script adds .fom-authed and the splash is skipped on every
+   page, so switching pages opens instantly with no gate flash.
+   ============================================================ */
+.login-gate{display:none;}
+html.fom-authed .fom-splash,html.fom-authed .auth-check{display:none!important;}
