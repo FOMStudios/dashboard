@@ -198,7 +198,7 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
         <!-- PREVIEW -->
         <div>
             <div class="panel" style="margin-bottom:12px;padding:14px 22px;"><h2 style="margin:0;">Email preview</h2></div>
-            <div class="preview-wrap"><iframe id="emailFrame" style="width:100%;min-height:640px;border:none;border-radius:10px;background:#fff;display:block;" scrolling="yes"></iframe></div>
+            <div class="preview-wrap"><iframe id="emailFrame" style="width:100%;border:none;background:#fff;display:block;" scrolling="no"></iframe></div>
         </div>
     </div>
 </div>
@@ -487,8 +487,29 @@ function refresh(){
   if($('dueWrap')) $('dueWrap').style.display = (f.full || isReady) ? 'none' : 'block';
   var _f=$('emailFrame');
   if(_f){ var _d=_f.contentDocument||_f.contentWindow.document; _d.open();
-    _d.write('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;">'+buildEmailHtml()+'</body></html>'); _d.close(); }
+    _d.write('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=600">'+
+      '<scr'+'ipt>window.addEventListener("load",function(){try{parent.fitPreview&&parent.fitPreview();}catch(e){}});</scr'+'ipt>'+
+      '</head><body style="margin:0;background:#f1f0ec;">'+buildEmailHtml()+'</body></html>'); _d.close();
+    setTimeout(fitPreview, 60); setTimeout(fitPreview, 500); }
 }
+/* scale the 600px email down to fit the preview box width (never upscales past 100%) */
+/* Shrink the email to fit the preview box using CSS zoom (scales the layout
+   box too, so nothing overflows). Never enlarges past 100% on wide screens. */
+function fitPreview(){
+  var f=$('emailFrame'), box=f&&f.parentElement; if(!f||!box) return;
+  try{
+    f.style.zoom='1'; f.style.width='720px';   // wide canvas so the email settles at its natural width
+    var doc=f.contentDocument||f.contentWindow.document, bd=doc.body;
+    var cw=320, els=bd?bd.getElementsByTagName('*'):[];
+    for(var i=0;i<els.length;i++){ var r=els[i].getBoundingClientRect(); if(r.right>cw) cw=r.right; }
+    cw=Math.ceil(cw)+1;
+    var ch=Math.max(bd?bd.scrollHeight:400, 200);
+    f.style.width=cw+'px'; f.style.height=ch+'px';
+    var s=Math.min(1, (box.clientWidth||cw)/cw);
+    f.style.zoom=s;
+  }catch(e){}
+}
+addEventListener('resize', fitPreview);
 /* trigger refresh on every input/change in the form */
 document.querySelector('.panel').addEventListener('input', refresh);
 document.querySelector('.panel').addEventListener('change', refresh);
