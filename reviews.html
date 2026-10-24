@@ -265,7 +265,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
     <div class="page-head">
         <span class="eyebrow">Admin</span>
         <h1>Client Reviews</h1>
-        <p>Every review left on your own feedback form lands here. Copy the happy ones straight onto your website as testimonials.</p>
+        <p>Every review left on your own feedback form lands here. Feature up to 3 and they appear in the "What clients say" section of your website.</p>
     </div>
 
     <div class="rv-summary" id="rvSummary"></div>
@@ -273,7 +273,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
     <div class="filter-row" id="filterRow">
         <button class="filter-chip on" data-filter="all">All</button>
         <button class="filter-chip" data-filter="share">OK to share</button>
-        <button class="filter-chip" data-filter="featured">Featured</button>
+        <button class="filter-chip" data-filter="featured" id="featChip">Featured</button>
         <button class="filter-chip" data-filter="happy">4-5 stars</button>
         <button class="filter-chip" data-filter="low">3 stars or less</button>
         <button class="filter-chip" id="csvBtn" style="margin-left:auto;">Export CSV</button>
@@ -291,6 +291,7 @@ const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
 let toastT;
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2000); }
 
+const MAX_FEATURED = 3;
 let reviews = [], orders = [], FILTER = 'all', db = null;
 const tsMs = t => (t && t.toMillis) ? t.toMillis() : (t && t.seconds ? t.seconds*1000 : 0);
 const fmtWhen = t => { const ms=tsMs(t); if(!ms) return ''; return new Date(ms).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}); };
@@ -327,6 +328,7 @@ function visible(){
 
 function render(){
   renderSummary();
+  const fc=reviews.filter(r=>r.featured).length; const chip=$('featChip'); if(chip) chip.textContent='Featured '+fc+'/'+MAX_FEATURED;
   const list=visible();
   if(!list.length){ $('rvList').innerHTML='<div class="rv-empty">'+(reviews.length?'No reviews match this filter.':'Nothing here yet.')+'</div>'; return; }
   $('rvList').innerHTML=list.map(r=>{
@@ -356,12 +358,27 @@ $('rvList').addEventListener('click', async e=>{
     try{ await navigator.clipboard.writeText(txt); toast('Testimonial copied'); }
     catch(_){ prompt('Copy this testimonial:', txt); }
   } else if(act==='feat'){
-    try{ await db.collection('feedback').doc(r.id).update({featured:!r.featured}); }
-    catch(err){ console.warn(err); toast('Could not save - check connection'); }
+    // Featured reviews are copied to the public "testimonials" collection that the website reads.
+    // Only name, rating and message are copied, so nothing private ever becomes public.
+    const turningOn=!r.featured;
+    if(turningOn && reviews.filter(x=>x.featured).length>=MAX_FEATURED){ toast('Only '+MAX_FEATURED+' can be featured. Remove one first.'); return; }
+    try{
+      const batch=db.batch();
+      batch.update(db.collection('feedback').doc(r.id),{featured:turningOn});
+      const pub=db.collection('testimonials').doc(r.id);
+      if(turningOn) batch.set(pub,{name:r.name||'Anonymous',rating:+r.rating||5,message:(r.message||'').trim(),featuredAt:firebase.firestore.FieldValue.serverTimestamp()});
+      else batch.delete(pub);
+      await batch.commit();
+      toast(turningOn?'Now showing on your website':'Removed from your website');
+    }catch(err){ console.warn(err); toast('Could not save - check the testimonials rule'); }
   } else if(act==='del'){
-    if(!confirm('Delete this review permanently?')) return;
-    try{ await db.collection('feedback').doc(r.id).delete(); toast('Review deleted'); }
-    catch(err){ console.warn(err); toast('Could not delete - check connection'); }
+    if(!confirm('Delete this review permanently?'+(r.featured?' It will also come off your website.':''))) return;
+    try{
+      const batch=db.batch();
+      batch.delete(db.collection('feedback').doc(r.id));
+      if(r.featured) batch.delete(db.collection('testimonials').doc(r.id));
+      await batch.commit(); toast('Review deleted');
+    }catch(err){ console.warn(err); toast('Could not delete - check connection'); }
   }
 });
 
