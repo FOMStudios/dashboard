@@ -312,7 +312,7 @@ function render(){
       <td class="col-portal"><input data-i="${i}" data-f="portalMessage" value="${esc(o.portalMessage||'')}" placeholder="Message to client…"></td>
       <td class="col-portal"><input data-i="${i}" data-f="galleryFolder" value="${esc(o.galleryFolder||'')}" placeholder="e.g. jane-smith/"></td>
       <td class="col-date"><input type="date" data-i="${i}" data-f="galleryExpiry" value="${esc(o.galleryExpiry||'')}"></td>
-      <td class="col-portal-sm" style="text-align:center;">${o.contractSigned?`<span title="${esc(o.signedName||'')}${o.signedAt&&o.signedAt.toDate?' · '+o.signedAt.toDate().toLocaleDateString('en-ZA'):''}" style="color:#1f8a4c;font-weight:700;white-space:nowrap;">✓ Signed</span>`:'<span style="color:var(--ink-soft);">Not yet</span>'}</td>
+      <td class="col-portal-sm" style="text-align:center;">${o.contractSigned?`<span title="${esc(o.signedName||'')}${o.signedAt&&o.signedAt.toDate?' · '+o.signedAt.toDate().toLocaleDateString('en-ZA'):''}" style="color:#1f8a4c;font-weight:700;white-space:nowrap;">✓ Signed</span>`:`<button data-signlink="${i}" type="button" title="Copy the signing link to send the client" style="font:inherit;font-size:11px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:#eef2fb;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap;">Copy sign link</button>`}</td>
       <td class="rm-col"><button class="rm" data-rm="${i}" title="Delete">✕</button></td>`;
     tbody.appendChild(tr);
   });
@@ -330,7 +330,7 @@ tbody.addEventListener('input',e=>{
   store.update(orders[i].id);
 });
 // Paste your deployed gallery Worker URL here to auto-sync expiry dates for cleanup (optional).
-const GALLERY_WORKER='';
+const GALLERY_WORKER='https://fom-gallery.cold-moon-d65c.workers.dev';
 function syncGalleryMeta(o){
   if(!GALLERY_WORKER || !o.galleryFolder || !o.galleryExpiry) return;
   try{
@@ -348,7 +348,17 @@ tbody.addEventListener('change',e=>{
   store.update(orders[i].id);
   if(f==='galleryExpiry' || f==='galleryFolder') syncGalleryMeta(orders[i]);
 });
-tbody.addEventListener('click',e=>{ const rm=e.target.dataset.rm; if(rm!==undefined) store.remove(orders[+rm].id); });
+tbody.addEventListener('click',e=>{ const rm=e.target.dataset.rm; if(rm!==undefined){ store.remove(orders[+rm].id); return; }
+  const sl=e.target.dataset.signlink;
+  if(sl!==undefined){
+    const o=orders[+sl];
+    const link=new URL('sign.html',location.href).href+'?o='+encodeURIComponent(o.id)+'&name='+encodeURIComponent(o.customer||'')+'&c='+encodeURIComponent(o.contractUrl||'');
+    const btn=e.target, orig=btn.textContent;
+    const done=ok=>{ btn.textContent=ok?'Copied!':'Copy failed'; setTimeout(()=>{btn.textContent=orig;},1600); };
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(link).then(()=>done(true)).catch(()=>{ prompt('Copy this signing link:',link); done(true); }); }
+    else { prompt('Copy this signing link:',link); done(true); }
+  }
+});
 function recalcFoot(){ let t=0,p=0,o=0; orders.forEach(r=>{t+=+r.total||0;p+=+r.paid||0;o+=(+r.total||0)-(+r.paid||0);}); $('sumTotal').textContent=RZA(t);$('sumPaid').textContent=RZA(p);$('sumOut').textContent=RZA(o); }
 
 $('addBtn').onclick=()=>{ if(store) store.add(blankOrder()); };

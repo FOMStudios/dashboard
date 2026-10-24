@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FOM Studios | Sign your contract</title>
+<link rel="icon" type="image/png" href="assets/mascot-head-color.jpg">
+<link rel="apple-touch-icon" href="assets/mascot-head-color.jpg">
+<style>
+:root{
+  --bg:#f1f0ec; --panel:#fafaf9; --ink:#2a2b2c; --ink-soft:#6f6f6d; --line:#dcdad3;
+  --accent:#02367B; --accent-hover:#022a5f; --on-accent:#fff;
+  --radius:20px; --gutter:clamp(18px,5vw,40px); --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{max-width:100%;overflow-x:hidden;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;
+  min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:28px var(--gutter) calc(28px + var(--safe-b));}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);max-width:520px;width:100%;
+  padding:clamp(24px,6vw,38px);box-shadow:0 24px 60px -30px rgba(0,0,0,.3);}
+.center{text-align:center;}
+.mascot{width:72px;height:72px;border-radius:50%;object-fit:cover;background:#fff;margin:0 auto 14px;display:block;box-shadow:0 8px 22px -10px rgba(0,0,0,.4);}
+.eyebrow{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;display:block;text-align:center;}
+h1{font-size:clamp(22px,5vw,28px);font-weight:800;letter-spacing:-.01em;margin:8px 0 6px;text-align:center;}
+.sub{color:var(--ink-soft);font-size:14.5px;margin-bottom:22px;text-align:center;}
+.view-contract{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border:1.5px solid var(--accent);color:var(--accent);
+  border-radius:12px;font-weight:700;font-size:14.5px;text-decoration:none;background:#eef2fb;margin-bottom:22px;}
+.view-contract svg{width:17px;height:17px;}
+.pad-label{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;}
+.sign-pad-wrap{position:relative;border:1.5px dashed var(--line);border-radius:14px;background:#fff;overflow:hidden;}
+.sign-pad{display:block;width:100%;height:200px;touch-action:none;cursor:crosshair;}
+.sign-pad-hint{position:absolute;inset:0;display:grid;place-items:center;color:#c9c7c0;font-size:14px;pointer-events:none;}
+.sign-clear{position:absolute;top:8px;right:10px;font-size:12px;font-weight:700;color:var(--ink-soft);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;}
+.sign-name{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin:16px 0 2px;background:#fff;color:var(--ink);}
+.sign-name:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.sign-agree{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--ink-soft);margin:16px 0 20px;cursor:pointer;}
+.sign-agree input{width:18px;height:18px;margin-top:2px;flex:none;accent-color:var(--accent);}
+.btn{width:100%;background:var(--accent);color:var(--on-accent);border:0;border-radius:999px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--accent-hover);} .btn:active{transform:scale(.98);}
+.btn[disabled]{opacity:.55;pointer-events:none;}
+.err{color:#c0392b;font-size:13px;min-height:16px;margin-top:12px;text-align:center;}
+.foot{margin-top:24px;font-size:12.5px;color:var(--ink-soft);text-align:center;}
+.hidden{display:none!important;}
+.big{font-size:46px;margin-bottom:8px;text-align:center;}
+.state p{color:var(--ink-soft);font-size:15px;margin-top:8px;text-align:center;}
+.legal{font-size:11.5px;color:var(--ink-soft);margin-top:16px;text-align:center;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+
+  <!-- SIGNING FORM -->
+  <div id="form">
+    <img class="mascot" src="assets/mascot-head-color.jpg" alt="FOM Studios" onerror="this.style.display='none'">
+    <span class="eyebrow">FOM Studios</span>
+    <h1 id="title">Sign your contract</h1>
+    <p class="sub" id="greeting">Please review your contract, then sign below to confirm your booking.</p>
+
+    <a class="view-contract" id="viewContract" href="#" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      View the contract
+    </a>
+
+    <div class="pad-label">Your signature</div>
+    <div class="sign-pad-wrap">
+      <canvas class="sign-pad" id="signPad"></canvas>
+      <div class="sign-pad-hint" id="signHint">Sign here with your finger or mouse</div>
+      <button class="sign-clear" id="signClear" type="button">Clear</button>
+    </div>
+
+    <input class="sign-name" id="signName" type="text" placeholder="Type your full name">
+    <label class="sign-agree"><input type="checkbox" id="signAgree"> I have read and agree to the terms of this contract.</label>
+    <button class="btn" id="signSubmit" type="button">Submit signature</button>
+    <p class="err" id="err"></p>
+    <p class="legal">By signing, you agree your typed name and drawn signature serve as your electronic signature on this contract, recorded with the date against your booking.</p>
+  </div>
+
+  <!-- THANK YOU -->
+  <div id="done" class="state hidden">
+    <div class="big">&#9989;</div>
+    <h1>Contract signed</h1>
+    <p id="doneMsg">Thank you. Your signed contract is saved and your booking is confirmed. We will be in touch with the next steps.</p>
+    <div class="foot">FOM Studios &middot; Photography &amp; Videography<br>info@fomstudios.co.za</div>
+  </div>
+
+  <!-- ALREADY SIGNED / INVALID -->
+  <div id="blocked" class="state hidden">
+    <div class="big">&#128275;</div>
+    <h1 id="blockedTitle">Already signed</h1>
+    <p id="blockedMsg">This contract has already been signed, or this link is no longer valid. If you think this is a mistake, please contact FOM Studios.</p>
+    <div class="foot">FOM Studios &middot; info@fomstudios.co.za</div>
+  </div>
+
+  <!-- BAD LINK (no order id) -->
+  <div id="badlink" class="state hidden">
+    <div class="big">&#128279;</div>
+    <h1>Link not recognised</h1>
+    <p>This signing link looks incomplete. Please use the exact link FOM Studios sent you, or get in touch and we will resend it.</p>
+    <div class="foot">FOM Studios &middot; info@fomstudios.co.za</div>
+  </div>
+
+</div>
+
+<script>
+var firebaseConfig = {
+  apiKey:"AIzaSyCbRXQmIxzVWuFS0CRmDY33qYuzpcVL80A", authDomain:"fom-studios.firebaseapp.com",
+  projectId:"fom-studios", storageBucket:"fom-studios.firebasestorage.app",
+  messagingSenderId:"1049126528829", appId:"1:1049126528829:web:8ed0ea930e0b1579630754"
+};
+</script>
+<script type="module">
+import { initializeApp, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const $ = id => document.getElementById(id);
+const show = id => { ['form','done','blocked','badlink'].forEach(x => $(x).classList.toggle('hidden', x !== id)); };
+
+const P = new URLSearchParams(location.search);
+const ORDER = (P.get('o') || '').trim();
+const NAME  = (P.get('name') || '').trim();
+const CURL  = (P.get('c') || '').trim();
+
+// No order id in the link = nothing to sign against
+if(!ORDER){ show('badlink'); }
+else {
+  // Greeting + contract link
+  if(NAME) $('greeting').textContent = 'Hi ' + NAME.charAt(0).toUpperCase() + NAME.slice(1) + ', please review your contract then sign below to confirm your booking.';
+  if(NAME) $('signName').value = NAME.charAt(0).toUpperCase() + NAME.slice(1);
+  if(CURL){ $('viewContract').href = CURL; } else { $('viewContract').style.display = 'none'; }
+
+  // ---- signature pad ----
+  const pad = $('signPad'), pctx = pad.getContext('2d');
+  let drawing = false, hasInk = false;
+  function sizePad(){
+    const r = pad.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    pad.width = r.width * dpr; pad.height = r.height * dpr;
+    pctx.setTransform(1,0,0,1,0,0); pctx.scale(dpr,dpr);
+    pctx.lineWidth = 2.4; pctx.lineCap = 'round'; pctx.lineJoin = 'round'; pctx.strokeStyle = '#1a1a1a';
+  }
+  function clearPad(){ pctx.clearRect(0,0,pad.width,pad.height); hasInk = false; $('signHint').style.display = 'grid'; }
+  function posOf(e){ const r = pad.getBoundingClientRect(); return { x:e.clientX - r.left, y:e.clientY - r.top }; }
+  pad.addEventListener('pointerdown', e => { drawing = true; hasInk = true; $('signHint').style.display = 'none'; const p = posOf(e); pctx.beginPath(); pctx.moveTo(p.x,p.y); pad.setPointerCapture && pad.setPointerCapture(e.pointerId); e.preventDefault(); });
+  pad.addEventListener('pointermove', e => { if(!drawing) return; const p = posOf(e); pctx.lineTo(p.x,p.y); pctx.stroke(); e.preventDefault(); });
+  addEventListener('pointerup', () => { drawing = false; });
+  addEventListener('resize', () => { /* keep ink: only resize when empty */ if(!hasInk) sizePad(); });
+  $('signClear').addEventListener('click', clearPad);
+  setTimeout(() => { sizePad(); clearPad(); }, 60);
+
+  // ---- firebase ----
+  let app; try{ app = initializeApp(firebaseConfig); }catch(e){ app = getApp(); }
+  const db = getFirestore(app);
+
+  $('signSubmit').addEventListener('click', async () => {
+    if(!hasInk){ $('err').textContent = 'Please sign in the box above.'; return; }
+    const name = $('signName').value.trim();
+    if(!name){ $('err').textContent = 'Please type your full name.'; return; }
+    if(!$('signAgree').checked){ $('err').textContent = 'Please tick to agree to the terms.'; return; }
+    $('signSubmit').disabled = true; $('signSubmit').textContent = 'Saving...'; $('err').textContent = '';
+    try{
+      await updateDoc(doc(db, 'orders', ORDER), {
+        contractSigned: true,
+        signatureData: pad.toDataURL('image/png'),
+        signedName: name,
+        signedAt: serverTimestamp(),
+        signedVia: 'link'
+      });
+      // send them to the confirmation page so they can see it is done
+      location.href = 'signed.html' + (name ? '?name=' + encodeURIComponent(name) : '');
+    }catch(e){
+      console.warn('sign save failed', e);
+      // permission-denied here usually means already signed or the id is wrong
+      if((e.code || '').includes('permission-denied') || (e.code || '').includes('not-found')){
+        show('blocked');
+      }else{
+        $('signSubmit').disabled = false; $('signSubmit').textContent = 'Submit signature';
+        $('err').textContent = 'Could not save just now. Please check your connection and try again.';
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
