@@ -197,7 +197,8 @@ async function load(){
       const r=await fetch(CONFIG.worker.replace(/\/$/,'')+'/list?g='+encodeURIComponent(GAL.folder));
       if(!r.ok)throw 0;
       const data=await r.json();
-      ITEMS=(data.files||data||[]).map(f=>({name:f.name,size:f.size,url:f.url,poster:f.poster,kind:f.kind||kindOf(f.name)}));
+      ITEMS=(data.files||data||[]).map(f=>({name:f.name,size:f.size,url:f.url,poster:f.poster,kind:f.kind||kindOf(f.name)}))
+        .filter(f=>f.kind==='image'||f.kind==='video');   // only show photos/videos, never contracts, invoices or zips in the same folder
       if(!ITEMS.length)return renderEmpty();
     }catch(e){return renderError();}
   } else { ITEMS=demoItems(); }
