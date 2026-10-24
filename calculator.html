@@ -216,6 +216,83 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
     .scrim, .mobile-menu, .login-gate{ display:none !important; }
     #invoiceSheet{ display:block !important; }
 }
+
+/* ---- Data panel + Package Advisor ---- */
+.page-head.has-act{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+.dm-scrim{position:fixed;inset:0;background:rgba(20,20,20,.45);z-index:2000;opacity:0;pointer-events:none;transition:.2s;}
+.dm-scrim.show{opacity:1;pointer-events:auto;}
+.dm{position:fixed;z-index:2001;top:50%;left:50%;width:min(880px,calc(100vw - 28px));height:min(86vh,820px);background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:0 30px 80px -20px rgba(0,0,0,.45);display:flex;flex-direction:column;transform:translate(-50%,-46%);opacity:0;pointer-events:none;transition:.22s;overflow:hidden;}
+.dm.show{transform:translate(-50%,-50%);opacity:1;pointer-events:auto;}
+.dm-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:18px 22px 10px;}
+.dm-head b{font-size:19px;font-weight:800;display:block;}
+.dm-head span{font-size:13px;color:var(--ink-soft);}
+.dm-x{border:0;background:none;font-size:30px;line-height:1;cursor:pointer;color:var(--ink);padding:0 4px;}
+.dm-tabs{display:flex;gap:8px;padding:6px 22px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+.dm-tabs button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink);}
+.dm-tabs button.on{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+.dm-tabs i{font-style:normal;background:#c0392b;color:#fff;border-radius:99px;font-size:11px;padding:1px 7px;margin-left:5px;}
+.dm-tabs i:empty{display:none;}
+.dm-body{flex:1;overflow:auto;padding:18px 22px 24px;-webkit-overflow-scrolling:touch;}
+.dm-foot{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:12px 22px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--bg-pill);}
+.dm-state{font-size:12.5px;font-weight:600;color:var(--ink-soft);flex:1;text-align:center;}
+.dm-state.dirty{color:#b0640b;} .dm-state.ok{color:#1f8a4c;}
+.dm-sec{margin-bottom:26px;}
+.dm-sec h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px;}
+.dm-help{font-size:13px;color:var(--ink-soft);margin-bottom:12px;max-width:70ch;}
+.dm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px;}
+.dm-f{display:block;min-width:0;}
+.dm-f span{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px;}
+.dm input[type=number],.dm input[type=text],.dm select,.dm textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:15px;font-family:inherit;background:#fff;color:var(--ink);}
+.dm textarea{resize:vertical;}
+.dm-row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) 34px;gap:8px;align-items:center;margin-bottom:8px;}
+.dm-row.hd{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px;}
+.dm-row .nm{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;}
+.dm-rm{border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:#c0392b;font-weight:700;font-size:13px;height:38px;padding:0 10px;}
+.dm-tier{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(3,minmax(0,1fr));gap:8px;align-items:center;margin-bottom:8px;}
+.dm-tier .hd{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);}
+.dm-tier .nm{font-size:14px;font-weight:600;}
+.pw{position:relative;display:block;}
+.pw input{padding-right:26px !important;}
+.dot{position:absolute;right:9px;top:50%;width:10px;height:10px;border-radius:50%;transform:translateY(-50%);background:#cfcdc6;}
+.dot.ok{background:#1f8a4c;} .dot.warn{background:#e0a100;} .dot.bad{background:#c0392b;}
+.dm-card{border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;background:var(--bg);}
+.dm-card-h{display:flex;gap:8px;margin-bottom:12px;}
+.dm-card-h .nm{font-weight:800;}
+.dm-grid.g5{grid-template-columns:repeat(5,minmax(0,1fr));}
+.dm-sub{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 6px;}
+.dm-it{display:grid;grid-template-columns:minmax(0,1fr) 90px 34px;gap:8px;align-items:center;margin-bottom:6px;font-size:14px;font-weight:600;}
+.dm-add{display:flex;gap:8px;margin:6px 0 12px;}
+.dm-add select{flex:1;}
+.dm-mini{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:99px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.dm-mini.fill{background:var(--accent);border-color:var(--accent);color:#fff;}
+.dm-live{margin-top:12px;font-size:13px;line-height:1.5;}
+.chip{display:inline-block;border-radius:99px;padding:2px 10px;font-size:11.5px;font-weight:800;margin-right:6px;color:#fff;background:#6f6f6d;}
+.chip.ok{background:#1f8a4c;} .chip.warn{background:#b0640b;} .chip.bad{background:#c0392b;}
+.dm-sug{margin-top:8px;padding:10px 12px;border-radius:12px;background:#eef2fb;color:var(--ink);display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+.adv-sum{padding:14px 16px;border-radius:14px;background:#eef2fb;margin-bottom:16px;font-size:14px;}
+.adv-sum small{display:block;color:var(--ink-soft);margin-top:4px;font-size:12.5px;}
+.adv{border:1px solid var(--line);border-left:5px solid #cfcdc6;border-radius:14px;padding:12px 14px;margin-bottom:10px;background:#fff;}
+.adv.ok{border-left-color:#1f8a4c;} .adv.warn{border-left-color:#e0a100;} .adv.bad{border-left-color:#c0392b;}
+.adv.mut{opacity:.55;}
+.adv-h{display:flex;justify-content:space-between;gap:10px;font-size:15px;}
+.adv-n{font-size:12.5px;color:var(--ink-soft);margin:3px 0 6px;}
+.adv ul{list-style:none;font-size:13.5px;}
+.adv li{padding-left:16px;position:relative;margin-bottom:3px;}
+.adv li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:50%;background:#cfcdc6;}
+.adv li.ok::before{background:#1f8a4c;} .adv li.warn::before{background:#e0a100;} .adv li.bad::before{background:#c0392b;}
+.adv button{margin-top:8px;border:0;background:none;color:var(--ink-soft);font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;padding:0;}
+.dm-how{font-size:13px;color:var(--ink-soft);margin-top:18px;}
+.dm-how summary{cursor:pointer;font-weight:700;color:var(--ink);}
+.dm-how ol{margin:8px 0 0 18px;} .dm-how li{margin-bottom:4px;}
+.dm-toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:99px;font-size:13.5px;font-weight:600;z-index:2100;opacity:0;pointer-events:none;transition:.25s;max-width:92vw;text-align:center;}
+.dm-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@media(max-width:640px){
+  .dm{width:100vw;height:100dvh;top:0;left:0;border-radius:0;border:0;transform:translateY(24px);}
+  .dm.show{transform:none;}
+  .dm-grid,.dm-grid.g5{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .dm-head,.dm-tabs,.dm-body,.dm-foot{padding-left:16px;padding-right:16px;}
+  .dm-row{grid-template-columns:minmax(0,1fr) minmax(0,.8fr) minmax(0,.8fr) 34px;}
+}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <script src="session.js"></script>
@@ -277,10 +354,13 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
 </div>
 
 <div class="wrap">
-    <div class="page-head">
+    <div class="page-head has-act">
+        <div>
         <span class="eyebrow">Pricing</span>
         <h1>Price Calculator</h1>
         <p>Pick a package or build a custom quote, add transport / overtime if needed, then export a client invoice. Every line shows item, unit price and quantity. All prices in Rand.</p>
+    </div>
+        <button class="btn ghost" id="dataBtn" type="button">Data</button>
     </div>
 
     <div class="grid">
@@ -461,7 +541,7 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
                 <div class="excl" id="exclNote">Excluding transport</div>
             </div>
             <div class="codenote">
-                Change prices in the <code>CONFIG</code> block at the top of the &lt;script&gt;. Invoice logo &amp; mascot load from <code>assets/logo.png</code> and <code>assets/mascot.png</code> - drop those PNGs next to this file.
+                Change prices and add packages with the <b>Data</b> button at the top of the page. Invoice logo &amp; mascot load from <code>assets/logo.png</code> and <code>assets/mascot.png</code> - drop those PNGs next to this file.
             </div>
         </div>
     </div>
@@ -536,6 +616,27 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
     </div>
   </div>
 </div>
+
+<!-- ===== Data panel (edit prices, packages, offline advisor) ===== -->
+<div class="dm-scrim" id="dmScrim"></div>
+<div class="dm" id="dm" role="dialog" aria-modal="true" aria-label="Calculator data">
+  <div class="dm-head">
+    <div><b>Calculator data</b><span>Change prices, add packages and check them with the advisor. Saved to your account, no GitHub needed.</span></div>
+    <button class="dm-x" id="dmClose" aria-label="Close">&times;</button>
+  </div>
+  <div class="dm-tabs" id="dmTabs">
+    <button type="button" data-t="prices" class="on">Rates</button>
+    <button type="button" data-t="pkgs">Packages</button>
+    <button type="button" data-t="adv">Advisor<i id="dmBadge"></i></button>
+  </div>
+  <div class="dm-body" id="dmBody"></div>
+  <div class="dm-foot">
+    <button class="btn ghost" id="dmReset" type="button">Reset to defaults</button>
+    <span class="dm-state" id="dmState"></span>
+    <button class="btn" id="dmSave" type="button">Save changes</button>
+  </div>
+</div>
+<div class="dm-toast" id="dmToast"></div>
 
 <script src="pay-config.js"></script>
 <script>
@@ -680,7 +781,7 @@ const MASCOT = {
 const TYPE_LABEL = { photo:"Photography", video:"Videography", combo:"Photography & Videography", padel:"Padel League Package", mini:"Mini Shoot", custom:"Custom build" };
 const TIERED = ['photo','video','combo'];
 const SPECIAL = ['padel','mini'];
-const pkgPrice = (type, tier) => SPECIAL.includes(type) ? CONFIG.specialPrice[type] : CONFIG.packagePrice[type][tier];
+const pkgPrice = (type, tier) => isUserPkg(type) ? userPkg(type).price : SPECIAL.includes(type) ? CONFIG.specialPrice[type] : CONFIG.packagePrice[type][tier];
 
 /* money: South African format e.g. R45 000,00 */
 function RZA(n){
@@ -694,6 +795,7 @@ const L = (desc, unit, qty) => ({ desc, unit, qty });
 
 /* ---- component lines that make up each package ---- */
 function packageLines(type, tier){
+  if(isUserPkg(type)) return userPackageLines(type);
   const C = CONFIG, hrs = C.tierHours[tier], freeHrs = C.tierFreeHours[tier];
   const photoKey = C.photoTier[tier], d = C.deliverable, lines = [];
   if(type === 'photo'){
@@ -770,6 +872,7 @@ const MINI_CONTENT = {
   videographer:["Videography (1 × 30-60 Second Reel)","30 Minute Coverage"],
 };
 function contentText(type, tier){
+  if(isUserPkg(type)) return userPackageContents(type);
   if(type === 'mini') return MINI_CONTENT[state.miniMode];
   if(SPECIAL.includes(type)) return SPECIAL_CONTENT[type];
   return CONTENT_TEXT[type][tier];
@@ -1174,6 +1277,455 @@ $('exportBtn').addEventListener('click', async () => {
   window.print();
 });
 
+/* ╔══════════════════════════════════════════════════════════════════╗
+   ║  DATA PANEL + PACKAGE ADVISOR                                       ║
+   ║  The CONFIG block above is only the starting point. Anything you    ║
+   ║  save from the Data button is stored in your account and wins.      ║
+   ╚══════════════════════════════════════════════════════════════════╝ */
+CONFIG.extraPackages = [];     // your own flat-price packages
+CONFIG.advisorIgnore = [];     // packages the advisor should stop nagging about
+const DEFAULTS = JSON.parse(JSON.stringify(CONFIG));
+const LS_KEY = 'fom.calc.v1';
+let CLOUD_DB = null;
+const clone = o => JSON.parse(JSON.stringify(o));
+const escH = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const isUserPkg = t => typeof t === 'string' && t.indexOf('pkg:') === 0;
+const userPkg = t => CONFIG.extraPackages.find(p => 'pkg:' + p.id === t);
+const R0 = n => RZA(Math.round(n)).replace(',00','');
+
+/* ---- apply saved settings on top of the defaults (numbers only, everything validated) ---- */
+function applySettings(s){
+  if(!s || typeof s !== 'object') return;
+  const C = CONFIG;
+  const n = (v,d) => (typeof v === 'number' && isFinite(v) && v >= 0) ? v : d;
+  ['overhead','revision','secondShooter','overtimeMultiplier'].forEach(k => { C[k] = n(s[k], C[k]); });
+  const sub = (a,b) => { if(!b || typeof b !== 'object') return; Object.keys(a).forEach(k => { a[k] = n(b[k], a[k]); }); };
+  if(s.packagePrice) Object.keys(C.packagePrice).forEach(t => sub(C.packagePrice[t], s.packagePrice[t]));
+  sub(C.specialPrice, s.specialPrice); sub(C.hourly, s.hourly);
+  sub(C.tierHours, s.tierHours); sub(C.tierFreeHours, s.tierFreeHours);
+  if(s.fuel){ C.fuel.price = n(s.fuel.price, C.fuel.price); const c = n(s.fuel.consumption, C.fuel.consumption); if(c > 0) C.fuel.consumption = c; }
+  ['deliverable','normal'].forEach(m => {
+    if(s[m] && typeof s[m] === 'object') Object.keys(s[m]).forEach(k => {
+      const v = s[m][k]; if(String(k).trim() && typeof v === 'number' && isFinite(v) && v >= 0) C[m][k] = v;
+    });
+  });
+  Object.keys(C.deliverable).forEach(k => { if(C.normal[k] == null) C.normal[k] = C.deliverable[k]; });
+  Object.keys(C.normal).forEach(k => { if(C.deliverable[k] == null) delete C.normal[k]; });
+  if(s.photoTier) Object.keys(C.photoTier).forEach(t => { if(C.deliverable[s.photoTier[t]] != null) C.photoTier[t] = s.photoTier[t]; });
+  if(Array.isArray(s.extraPackages)){
+    C.extraPackages = s.extraPackages.filter(p => p && p.id && String(p.name||'').trim()).slice(0,60).map(p => {
+      const items = {};
+      Object.keys(p.items||{}).forEach(k => { const q = Math.round(+p.items[k]); if(C.deliverable[k] != null && q > 0) items[k] = q; });
+      return { id:String(p.id).replace(/[^a-z0-9]/gi,'').slice(0,20), name:String(p.name).trim().slice(0,60),
+        price:n(+p.price,0), ph:n(+p.ph,0), vh:n(+p.vh,0), rev:Math.round(n(+p.rev,0)), oh:Math.round(n(+p.oh,0)),
+        items, contents:String(p.contents||'').slice(0,800) };
+    });
+  }
+  if(Array.isArray(s.advisorIgnore)) C.advisorIgnore = s.advisorIgnore.map(String).slice(0,200);
+}
+function resetConfig(){ Object.keys(DEFAULTS).forEach(k => { CONFIG[k] = clone(DEFAULTS[k]); }); }
+
+/* ---- quote-type dropdown: add your own packages ---- */
+function buildTypeOptions(){
+  const sel = $('qtype'); if(!sel) return;
+  [].forEach.call(sel.querySelectorAll('option[data-user]'), o => o.remove());
+  Object.keys(TYPE_LABEL).forEach(k => { if(isUserPkg(k)) delete TYPE_LABEL[k]; });
+  const before = sel.querySelector('option[value="custom"]');
+  CONFIG.extraPackages.forEach(p => {
+    TYPE_LABEL['pkg:' + p.id] = p.name;
+    const o = document.createElement('option'); o.value = 'pkg:' + p.id; o.textContent = p.name + ' (package)'; o.setAttribute('data-user','1');
+    sel.insertBefore(o, before);
+  });
+  if(isUserPkg(state.type) && !userPkg(state.type)) state.type = 'combo';
+  sel.value = state.type;
+}
+/* invoice lines + contents for your own packages */
+function userPackageLines(type){
+  const C = CONFIG, p = userPkg(type), d = C.deliverable, out = [];
+  if(!p) return out;
+  if(p.ph) out.push(L(`Photographer - ${p.ph} hr coverage`, C.hourly.photographer, p.ph));
+  if(p.vh) out.push(L(`Videographer - ${p.vh} hr coverage`, C.hourly.videographer, p.vh));
+  Object.keys(p.items).forEach(k => { if(d[k] != null) out.push(L(k, d[k], p.items[k])); });
+  if(p.rev) out.push(L('Revisions', C.revision, p.rev));
+  if(p.oh) out.push(L('Studio overhead', C.overhead, p.oh));
+  return out;
+}
+function userPackageContents(type){
+  const p = userPkg(type); if(!p) return [];
+  const custom = String(p.contents||'').split('\n').map(x => x.trim()).filter(Boolean);
+  if(custom.length) return custom;
+  const out = [];
+  if(p.ph) out.push('1 Photographer', p.ph + ' Hour Photography Coverage');
+  if(p.vh) out.push('1 Videographer', p.vh + ' Hour Videography Coverage');
+  Object.keys(p.items).forEach(k => out.push(p.items[k] + ' x ' + k));
+  if(p.rev) out.push(p.rev + ' rounds of revisions');
+  return out;
+}
+
+/* ---- load / save ---- */
+function dataBoot(){
+  try{ const j = localStorage.getItem(LS_KEY); if(j) applySettings(JSON.parse(j)); }catch(e){}
+  buildTypeOptions();
+}
+function calcCloudLoad(db){            // called once you are logged in
+  CLOUD_DB = db;
+  db.collection('settings').doc('calculator').get().then(snap => {
+    if(!snap.exists) return;
+    const j = snap.data().json; if(!j) return;
+    let s; try{ s = JSON.parse(j); }catch(e){ return; }
+    resetConfig(); applySettings(s);
+    try{ localStorage.setItem(LS_KEY, j); }catch(e){}
+    buildTypeOptions(); buildExtraOptions(); render();
+  }).catch(e => console.warn('calculator settings:', e));
+}
+
+/* ╔══════════════════ PACKAGE ADVISOR (works offline) ═══════════════╗
+   Plain rules, no internet and no AI service. It rebuilds what each
+   package contains, prices that content three ways, and compares.      */
+const PHOTO_RANK = ['30-40 Photos','40-50 Photos','50-60 Photos'];
+const TNAME = { photo:'Photography', video:'Videography', combo:'Photo + video' };
+function allKeys(cfg){
+  const k = [];
+  ['photo','video','combo'].forEach(t => ['Bronze','Silver','Gold'].forEach(r => k.push(t + '|' + r)));
+  k.push('padel','mini|photographer','mini|videographer');
+  (cfg.extraPackages||[]).forEach(p => k.push('pkg:' + p.id));
+  return k;
+}
+function labelOf(key, cfg){
+  if(key.indexOf('pkg:') === 0){ const p = cfg.extraPackages.find(x => 'pkg:' + x.id === key); return p ? p.name : key; }
+  const [t, r] = key.split('|');
+  if(t === 'padel') return 'Padel League';
+  if(t === 'mini') return 'Mini shoot (' + r + ')';
+  return TNAME[t] + ' ' + r;
+}
+function compsOf(key, cfg){
+  if(key.indexOf('pkg:') === 0){
+    const p = cfg.extraPackages.find(x => 'pkg:' + x.id === key);
+    return p ? { ph:p.ph, vh:p.vh, fph:0, fvh:0, items:p.items||{}, rev:p.rev, oh:p.oh } : null;
+  }
+  const [t, tier] = key.split('|');
+  if(t === 'padel') return { ph:6, vh:6, fph:0, fvh:0, items:{'2-3min Reel':1,'40-50 Photos':1}, rev:0, oh:2 };
+  if(t === 'mini') return tier === 'videographer'
+    ? { ph:0, vh:.5, fph:0, fvh:0, items:{'30-60s Reel':1}, rev:0, oh:1 }
+    : { ph:.5, vh:0, fph:0, fvh:0, items:{'Single Photo':20}, rev:0, oh:1 };
+  const h = cfg.tierHours[tier], f = cfg.tierFreeHours[tier], photo = cfg.photoTier[tier];
+  const gold = tier === 'Gold', reels = tier === 'Silver' ? 2 : 1;
+  const vItems = gold ? {'2-3min Reel':1,'30-60s Reel':1,'Drone':1} : {'30-60s Reel':reels};
+  if(t === 'photo') return { ph:h, vh:0, fph:f, fvh:0, items:{[photo]:1}, rev:0, oh:1 };
+  if(t === 'video') return { ph:0, vh:h, fph:0, fvh:f, items:vItems, rev:2, oh:1 };
+  return { ph:h, vh:h, fph:f, fvh:f, items:Object.assign({[photo]:1}, vItems), rev:gold?3:2, oh:2 };
+}
+/* mode 'pkg' = at your package rates (what a custom build costs), 'sep' = at normal a la carte rates */
+function valueOf(c, cfg, mode){
+  const rate = mode === 'sep' ? cfg.normal : cfg.deliverable, fr = mode === 'pkg';
+  let v = (c.ph - (fr ? c.fph : 0)) * cfg.hourly.photographer + (c.vh - (fr ? c.fvh : 0)) * cfg.hourly.videographer
+        + c.rev * cfg.revision + c.oh * cfg.overhead;
+  Object.keys(c.items).forEach(k => { v += (rate[k] != null ? rate[k] : 0) * c.items[k]; });
+  return v;
+}
+function priceOf(k, cfg){
+  if(k.indexOf('pkg:') === 0){ const p = cfg.extraPackages.find(x => 'pkg:' + x.id === k); return p ? p.price : 0; }
+  const [t, tier] = k.split('|');
+  return (t === 'padel' || t === 'mini') ? cfg.specialPrice[t] : cfg.packagePrice[t][tier];
+}
+function covers(Y, X){      // does package Y include at least everything package X includes?
+  if(Y.ph < X.ph || Y.vh < X.vh || Y.rev < X.rev) return false;
+  return Object.keys(X.items).every(k => {
+    const q = X.items[k], have = Y.items;
+    if((have[k]||0) >= q) return true;
+    const r = PHOTO_RANK.indexOf(k);
+    if(r >= 0) return PHOTO_RANK.some((pk,i) => i > r && (have[pk]||0) >= q);
+    if(k === 'Single Photo') return q <= 30 && PHOTO_RANK.some(pk => (have[pk]||0) >= 1);
+    if(k === '30-60s Reel') return (have['2-3min Reel']||0) >= q;
+    return false;
+  });
+}
+function analyze(cfg){
+  const order = allKeys(cfg), res = {}, ign = new Set(cfg.advisorIgnore||[]);
+  order.forEach(k => {
+    const c = compsOf(k, cfg), P = priceOf(k, cfg), A = valueOf(c, cfg, 'pkg'), S = valueOf(c, cfg, 'sep');
+    res[k] = { key:k, label:labelOf(k, cfg), P, A, S, c, save: S > 0 ? (S - P) / S : 0, msgs:[], level:'ok', ignored:ign.has(k) };
+  });
+  const add = (k, l, t) => { if(res[k]) res[k].msgs.push({ l, t }); };
+
+  /* 1) each package against booking the same things separately, and against your own rate card */
+  order.forEach(k => {
+    const r = res[k], P = r.P, A = r.A, S = r.S, pct = Math.round(r.save * 100);
+    if(!(P > 0)){ add(k,'bad','No price set yet.'); return; }
+    if(!(S > 0)){ add(k,'bad','Nothing is included yet. Add coverage hours or deliverables.'); return; }
+    if(P >= S) add(k,'bad',`Booking the same items separately costs ${R0(S)} and this package is ${R0(P)}, so clients will rather book separately.`);
+    else if(P < A * .65) add(k,'bad',`Priced ${Math.round((1 - P/A) * 100)}% under your own rate card (${R0(A)}). You would be working below your own rates.`);
+    else if(r.save > .5) add(k,'bad',`${pct}% cheaper than booking separately (${R0(S)}). That is a very deep discount.`);
+    else if(r.save < .08) add(k,'warn',`Only ${pct}% cheaper than booking separately (${R0(S)}), so clients get little reason to pick the package. Around 15 to 25% off works well.`);
+    else if(P < A * .8) add(k,'warn',`Priced ${Math.round((1 - P/A) * 100)}% under your own rate card (${R0(A)}). Fine for a promo, but check the margin.`);
+    else if(r.save > .35) add(k,'warn',`${pct}% cheaper than booking separately (${R0(S)}). Generous, check you still make money.`);
+    else add(k,'ok',`Good bundle: ${pct}% cheaper than booking separately (${R0(S)}).`);
+  });
+
+  /* 2) tier ladders: Silver should beat Bronze, Gold should beat Silver */
+  ['photo','video','combo'].forEach(t => {
+    const tiers = ['Bronze','Silver','Gold'];
+    for(let i = 1; i < 3; i++){
+      const lo = tiers[i-1], hi = tiers[i], kl = t + '|' + lo, kh = t + '|' + hi, Pl = res[kl].P, Ph = res[kh].P;
+      if(!(Pl > 0) || !(Ph > 0)) continue;
+      const hl = cfg.tierHours[lo], hh = cfg.tierHours[hi];
+      if(Ph <= Pl) add(kh,'bad',`Costs the same or less than ${lo}, so nobody would pick ${lo}.`);
+      else if(hh < hl) add(kh,'bad',`Gives fewer coverage hours than ${lo} but costs more.`);
+      else{
+        if(Ph / Pl < 1.2) add(kh,'warn',`Only ${Math.round((Ph/Pl - 1) * 100)}% more than ${lo}. Clients may not see a reason to upgrade.`);
+        if(hl > 0 && hh > 0 && Ph / hh > Pl / hl * 1.001) add(kh,'warn',`Costs more per hour (${R0(Ph/hh)}) than ${lo} (${R0(Pl/hl)}). A bigger package is normally better value per hour.`);
+      }
+    }
+  });
+
+  /* 3) combo against photo + video bought as two packages */
+  ['Bronze','Silver','Gold'].forEach(tier => {
+    const kc = 'combo|' + tier, Pc = res[kc].P, Pp = res['photo|' + tier].P, Pv = res['video|' + tier].P;
+    if(!(Pc > 0) || !(Pp > 0) || !(Pv > 0)) return;
+    const sum = Pp + Pv;
+    if(Pc >= sum) add(kc,'bad',`Photography ${tier} + Videography ${tier} booked separately is ${R0(sum)}, cheaper than this combo at ${R0(Pc)}.`);
+    else if(Pc <= Math.max(Pp, Pv)) add(kc,'bad',`Costs no more than just ${Pp >= Pv ? 'photography' : 'videography'} alone (${R0(Math.max(Pp, Pv))}), so you give the second service away.`);
+    else if(Pc < sum * .65) add(kc,'warn',`Combo saves ${Math.round((1 - Pc/sum) * 100)}% against booking photo and video separately (${R0(sum)}). Quite deep.`);
+  });
+
+  /* 4) one package that includes everything of another for the same or less money */
+  order.forEach(kx => order.forEach(ky => {
+    if(kx === ky) return;
+    const X = res[kx], Y = res[ky];
+    if(!(X.P > 0) || !(Y.P > 0) || !covers(Y.c, X.c)) return;
+    const strictlyMore = !covers(X.c, Y.c);
+    if(Y.P < X.P || (Y.P === X.P && strictlyMore))
+      add(kx,'bad',`${Y.label} includes everything in this package and costs ${Y.P < X.P ? R0(Y.P) + ', which is less' : 'the same'}. Nobody should pick this one.`);
+  }));
+
+  const counts = { bad:0, warn:0, ok:0 };
+  order.forEach(k => {
+    const r = res[k];
+    r.level = r.msgs.some(m => m.l === 'bad') ? 'bad' : r.msgs.some(m => m.l === 'warn') ? 'warn' : 'ok';
+    if(!r.ignored) counts[r.level]++;
+  });
+  return { res, order, counts };
+}
+function suggestPrice(r){
+  const hi = r.S * .92, lo = Math.min(Math.max(r.S * .70, r.A * .80), hi), sweet = Math.min(hi, Math.max(lo, r.S * .82));
+  const rd = n => Math.max(0, Math.round(n / 50) * 50);
+  return { lo:rd(lo), hi:rd(hi), sweet:rd(sweet) };
+}
+
+/* ╔═════════════════════════ DATA PANEL UI ══════════════════════════╗ */
+let D = null, dmTab = 'prices', dmSavedJson = '';
+const getP = (o, p) => p.split('.').reduce((a, k) => a && a[k], o);
+function setP(o, p, v){ const a = p.split('.'), last = a.pop(); a.reduce((x, k) => x[k], o)[last] = v; }
+const nIn = (path, step) => `<input type="number" inputmode="decimal" min="0" step="${step||1}" data-k="${path}" value="${getP(D, path)}">`;
+const fld = (label, path, step) => `<label class="dm-f"><span>${label}</span>${nIn(path, step)}</label>`;
+const dirtyD = () => D && JSON.stringify(D) !== dmSavedJson;
+let dmToastT;
+function dmToast(msg){ const t = $('dmToast'); t.textContent = msg; t.classList.add('show'); clearTimeout(dmToastT); dmToastT = setTimeout(() => t.classList.remove('show'), 2600); }
+
+function ratesHTML(){
+  const keys = Object.keys(D.deliverable);
+  return `
+  <section class="dm-sec"><h3>Coverage and fees</h3>
+    <p class="dm-help">Your hourly rates, overhead and the fees added to quotes. These feed every package and the extras menu.</p>
+    <div class="dm-grid">
+      ${fld('Photographer per hour (R)','hourly.photographer')}
+      ${fld('Videographer per hour (R)','hourly.videographer')}
+      ${fld('Studio overhead per shoot (R)','overhead')}
+      ${fld('Revision / extra edit (R)','revision')}
+      ${fld('Second shooter (R)','secondShooter')}
+      ${fld('Overtime multiplier (x)','overtimeMultiplier','0.1')}
+      ${fld('Fuel price (R per litre)','fuel.price','0.01')}
+      ${fld('Fuel use (litres per 100km)','fuel.consumption','0.1')}
+    </div>
+    <p class="dm-help" style="margin:10px 0 0">Transport works out at <b>${RZA(D.fuel.price / (D.fuel.consumption || 1))}</b> per km.</p>
+  </section>
+  <section class="dm-sec"><h3>Deliverable rates</h3>
+    <p class="dm-help"><b>Package rate</b> is used inside packages and as the add-on price. <b>Normal rate</b> is the higher one-off price. The advisor uses the normal rate to judge whether a client is better off booking separately. Add anything new (for example Photo album or Same-day edit) and it appears in the extras menu and package builder.</p>
+    <div class="dm-row hd"><span>Item</span><span>Package rate</span><span>Normal rate</span><span></span></div>
+    ${keys.map(k => `<div class="dm-row"><span class="nm" title="${escH(k)}">${escH(k)}</span>
+      <input type="number" inputmode="decimal" min="0" step="1" data-dl="deliverable" data-key="${escH(k)}" value="${D.deliverable[k]}">
+      <input type="number" inputmode="decimal" min="0" step="1" data-dl="normal" data-key="${escH(k)}" value="${D.normal[k]}">
+      ${DEFAULTS.deliverable[k] != null ? '<span></span>' : `<button class="dm-rm" type="button" data-act="rmDl" data-key="${escH(k)}" title="Remove">&times;</button>`}</div>`).join('')}
+    <div class="dm-sub">Add a new deliverable</div>
+    <div class="dm-row"><input type="text" id="dmNewName" placeholder="e.g. Photo album" maxlength="40">
+      <input type="number" inputmode="decimal" min="0" id="dmNewPkg" placeholder="Package R">
+      <input type="number" inputmode="decimal" min="0" id="dmNewNorm" placeholder="Normal R">
+      <button class="dm-mini fill" type="button" data-act="addDl" style="padding:9px 12px">Add</button></div>
+  </section>`;
+}
+function pkgsHTML(){
+  const photoKeys = Object.keys(D.deliverable).filter(k => /photo/i.test(k) && !/single/i.test(k));
+  const types = [['photo','Photography'],['video','Videography'],['combo','Photo + video']], tiers = ['Bronze','Silver','Gold'];
+  const dot = k => `<i class="dot" data-adv="${k}"></i>`;
+  return `
+  <section class="dm-sec"><h3>Package prices</h3>
+    <p class="dm-help">What you charge. The dot shows what the advisor thinks: green is healthy, amber is worth a look, red needs fixing. Hover or open the Advisor tab for the reason.</p>
+    <div class="dm-tier"><span></span>${tiers.map(t => `<span class="hd">${t}</span>`).join('')}</div>
+    ${types.map(([t, n]) => `<div class="dm-tier"><span class="nm">${n}</span>${tiers.map(r => `<span class="pw">${nIn('packagePrice.' + t + '.' + r)}${dot(t + '|' + r)}</span>`).join('')}</div>`).join('')}
+    <div class="dm-sub">What each tier includes</div>
+    <div class="dm-tier"><span></span>${tiers.map(t => `<span class="hd">${t}</span>`).join('')}</div>
+    <div class="dm-tier"><span class="nm">Coverage hours</span>${tiers.map(r => `<span>${nIn('tierHours.' + r, '0.5')}</span>`).join('')}</div>
+    <div class="dm-tier"><span class="nm">Free hours</span>${tiers.map(r => `<span>${nIn('tierFreeHours.' + r, '0.5')}</span>`).join('')}</div>
+    <div class="dm-tier"><span class="nm">Photo set</span>${tiers.map(r => `<span><select data-sel="photoTier.${r}">${photoKeys.map(k => `<option value="${escH(k)}"${D.photoTier[r] === k ? ' selected' : ''}>${escH(k)}</option>`).join('')}</select></span>`).join('')}</div>
+    <div class="dm-sub">Special packages</div>
+    <div class="dm-grid">
+      <label class="dm-f"><span>Padel League (per week)</span><span class="pw">${nIn('specialPrice.padel')}${dot('padel')}</span></label>
+      <label class="dm-f"><span>Mini shoot, photographer</span><span class="pw">${nIn('specialPrice.mini')}${dot('mini|photographer')}</span></label>
+      <label class="dm-f"><span>Mini shoot, videographer</span><span class="pw"><input type="number" disabled value="${D.specialPrice.mini}" title="Mini shoots share one price">${dot('mini|videographer')}</span></label>
+    </div>
+  </section>
+  <section class="dm-sec"><h3>Your own packages</h3>
+    <p class="dm-help">Flat-price packages you can pick in the quote type menu. Choose what is included and the advisor tells you if the price makes sense.</p>
+    ${D.extraPackages.map(pkgCard).join('') || '<p class="dm-help">None yet.</p>'}
+    <button class="dm-mini fill" type="button" data-act="addPkg">+ Add a package</button>
+  </section>`;
+}
+function pkgCard(p){
+  const keys = Object.keys(D.deliverable), avail = keys.filter(k => !(k in p.items));
+  const pf = (label, f, step) => `<label class="dm-f"><span>${label}</span><input type="number" inputmode="decimal" min="0" step="${step||1}" data-pk="${p.id}" data-f="${f}" value="${p[f]}"></label>`;
+  return `<div class="dm-card">
+    <div class="dm-card-h"><input type="text" class="nm" data-pk="${p.id}" data-f="name" value="${escH(p.name)}" placeholder="Package name" maxlength="60"><button class="dm-rm" type="button" data-act="rmPkg" data-pk="${p.id}">Delete</button></div>
+    <div class="dm-grid g5">${pf('Price (R)','price')}${pf('Photographer hrs','ph','0.5')}${pf('Videographer hrs','vh','0.5')}${pf('Revisions','rev')}${pf('Overhead x','oh')}</div>
+    <div class="dm-sub">Deliverables included</div>
+    ${Object.keys(p.items).map(k => `<div class="dm-it"><span>${escH(k)}</span><input type="number" min="1" step="1" data-pk="${p.id}" data-pi="${escH(k)}" value="${p.items[k]}"><button class="dm-rm" type="button" data-act="rmItem" data-pk="${p.id}" data-key="${escH(k)}">&times;</button></div>`).join('') || '<p class="dm-help" style="margin:0 0 6px">Nothing added yet.</p>'}
+    ${avail.length ? `<div class="dm-add"><select id="dmAddIt_${p.id}">${avail.map(k => `<option value="${escH(k)}">${escH(k)}</option>`).join('')}</select><button class="dm-mini" type="button" data-act="addItem" data-pk="${p.id}">Add</button></div>` : ''}
+    <label class="dm-f"><span>Contents shown on the invoice (one per line, blank builds it for you)</span><textarea rows="3" data-pk="${p.id}" data-f="contents">${escH(p.contents)}</textarea></label>
+    <div class="dm-live" data-live="${p.id}"></div>
+  </div>`;
+}
+function liveHTML(r){
+  const lvl = { ok:'Looks good', warn:'Review', bad:'Fix this' }[r.level];
+  const s = suggestPrice(r);
+  return `<span class="chip ${r.level}">${lvl}</span><span>${r.msgs.map(m => escH(m.t)).join(' ')}</span>
+    ${r.S > 0 ? `<div class="dm-sug"><span>Booked separately: <b>${R0(r.S)}</b>. Your rate card: <b>${R0(r.A)}</b>.<br>Suggested price <b>${R0(s.lo)}</b> to <b>${R0(s.hi)}</b>, sweet spot <b>${R0(s.sweet)}</b>.</span>
+    <button class="dm-mini fill" type="button" data-act="useSug" data-pk="${r.key.slice(4)}" data-v="${s.sweet}">Use ${R0(s.sweet)}</button></div>` : ''}`;
+}
+function advHTML(){
+  const A = analyze(D), c = A.counts;
+  const groups = [['bad','Fix first'],['warn','Worth a look'],['ok','Healthy']];
+  const card = r => `<div class="adv ${r.level}${r.ignored ? ' mut' : ''}">
+      <div class="adv-h"><b>${escH(r.label)}</b><span>${R0(r.P)}</span></div>
+      <div class="adv-n">Booked separately ${R0(r.S)} &middot; Rate card ${R0(r.A)} &middot; Client saves ${Math.round(r.save * 100)}%</div>
+      <ul>${r.msgs.map(m => `<li class="${m.l}">${escH(m.t)}</li>`).join('')}</ul>
+      <button type="button" data-act="ign" data-key="${escH(r.key)}">${r.ignored ? 'Stop ignoring' : 'Ignore this package'}</button></div>`;
+  return `<div class="adv-sum"><b>${c.bad ? c.bad + ' to fix' : 'Nothing to fix'}</b>, ${c.warn} to review, ${c.ok} healthy.
+      <small>This checks your current edits even before you save. It runs on this device with no internet or AI service. It is a rule-based checker built on your own rates, so treat it as a second opinion, not a verdict.</small></div>
+    ${groups.map(([lv, name]) => {
+      const list = A.order.map(k => A.res[k]).filter(r => r.level === lv && !r.ignored);
+      return list.length ? `<div class="dm-sub">${name} (${list.length})</div>${list.map(card).join('')}` : '';
+    }).join('')}
+    ${A.order.map(k => A.res[k]).some(r => r.ignored) ? `<div class="dm-sub">Ignored</div>${A.order.map(k => A.res[k]).filter(r => r.ignored).map(card).join('')}` : ''}
+    <details class="dm-how"><summary>How the advisor judges a price</summary><ol>
+      <li><b>Booked separately:</b> hours at your hourly rates plus deliverables at the normal rates. A package must be cheaper, ideally 15 to 25% cheaper. Dearer than this is red, under 8% saving is amber.</li>
+      <li><b>Rate card:</b> the same contents at your package rates. Far below it means you work for less than your own rates.</li>
+      <li><b>Tier ladder:</b> Silver must cost more than Bronze and Gold more than Silver, with a clear step and better value per hour.</li>
+      <li><b>Combo:</b> must be cheaper than photo plus video bought separately, but dearer than either alone.</li>
+      <li><b>Overlap:</b> if one package includes everything in another for the same or less, the other is pointless.</li>
+    </ol></details>`;
+}
+function drawTab(){
+  [].forEach.call($('dmTabs').querySelectorAll('button'), b => b.classList.toggle('on', b.dataset.t === dmTab));
+  const st = $('dmBody').scrollTop;
+  $('dmBody').innerHTML = dmTab === 'prices' ? ratesHTML() : dmTab === 'pkgs' ? pkgsHTML() : advHTML();
+  $('dmBody').scrollTop = st;
+  refreshLive();
+}
+function refreshLive(){
+  const A = analyze(D);
+  [].forEach.call($('dmBody').querySelectorAll('[data-adv]'), el => {
+    const r = A.res[el.dataset.adv]; el.className = 'dot ' + (r ? r.level : '');
+    el.title = r ? r.msgs.map(m => m.t).join(' ') : '';
+  });
+  [].forEach.call($('dmBody').querySelectorAll('[data-live]'), el => { const r = A.res['pkg:' + el.dataset.live]; el.innerHTML = r ? liveHTML(r) : ''; });
+  const n = A.counts.bad + A.counts.warn; $('dmBadge').textContent = n ? n : '';
+  const st = $('dmState'), d = dirtyD();
+  st.className = 'dm-state ' + (d ? 'dirty' : 'ok'); st.textContent = d ? 'Unsaved changes' : 'Saved';
+  $('dmSave').disabled = !d; $('dmSave').style.opacity = d ? '1' : '.5';
+}
+function openData(){
+  D = clone(CONFIG); dmSavedJson = JSON.stringify(D); dmTab = 'prices';
+  $('dmScrim').classList.add('show'); $('dm').classList.add('show'); document.body.style.overflow = 'hidden';
+  drawTab(); $('dmBody').scrollTop = 0;
+}
+function closeData(force){
+  if(!force && dirtyD() && !confirm('Close without saving your changes?')) return;
+  $('dmScrim').classList.remove('show'); $('dm').classList.remove('show'); document.body.style.overflow = '';
+}
+async function saveData(){
+  const bad = D.extraPackages.find(p => !String(p.name).trim() || !(p.price > 0));
+  if(bad){ dmToast('Give every package a name and a price first'); return; }
+  resetConfig(); applySettings(D);
+  const j = JSON.stringify(clone(CONFIG));
+  let cloudOk = true;
+  try{ localStorage.setItem(LS_KEY, j); }catch(e){}
+  if(CLOUD_DB){
+    try{ await CLOUD_DB.collection('settings').doc('calculator').set({ json:j, updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); }
+    catch(e){ cloudOk = false; console.warn('calculator save:', e); }
+  } else cloudOk = false;
+  buildTypeOptions(); buildExtraOptions(); render();
+  D = clone(CONFIG); dmSavedJson = JSON.stringify(D); drawTab();
+  dmToast(cloudOk ? 'Saved. Your calculator is updated.' : 'Saved on this device only. Add the settings rule in Firestore to sync it.');
+}
+function resetData(){
+  if(!confirm('Reset every price and package back to the original defaults? Your own packages will be removed.')) return;
+  resetConfig(); try{ localStorage.removeItem(LS_KEY); }catch(e){}
+  if(CLOUD_DB) CLOUD_DB.collection('settings').doc('calculator').set({ json:JSON.stringify(clone(CONFIG)), updatedAt:firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {});
+  buildTypeOptions(); buildExtraOptions(); render();
+  D = clone(CONFIG); dmSavedJson = JSON.stringify(D); drawTab(); dmToast('Back to defaults');
+}
+(function wireData(){
+  const num = v => Math.max(0, parseFloat(v) || 0);
+  $('dataBtn').onclick = openData;
+  $('dmClose').onclick = () => closeData(); $('dmScrim').onclick = () => closeData();
+  $('dmSave').onclick = saveData; $('dmReset').onclick = resetData;
+  addEventListener('keydown', e => { if(e.key === 'Escape' && $('dm').classList.contains('show')) closeData(); });
+  $('dmTabs').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ dmTab = b.dataset.t; drawTab(); $('dmBody').scrollTop = 0; } });
+  $('dmBody').addEventListener('input', e => {
+    const t = e.target;
+    if(t.dataset.k){ let v = num(t.value); if(t.dataset.k === 'fuel.consumption') v = Math.max(.1, v); setP(D, t.dataset.k, v); }
+    else if(t.dataset.dl){ D[t.dataset.dl][t.dataset.key] = num(t.value); }
+    else if(t.dataset.pk){
+      const p = D.extraPackages.find(x => x.id === t.dataset.pk); if(!p) return;
+      if(t.dataset.pi) p.items[t.dataset.pi] = Math.max(1, Math.round(num(t.value)) || 1);
+      else if(t.dataset.f === 'name' || t.dataset.f === 'contents') p[t.dataset.f] = t.value;
+      else p[t.dataset.f] = (t.dataset.f === 'rev' || t.dataset.f === 'oh') ? Math.round(num(t.value)) : num(t.value);
+    } else return;
+    if(t.dataset.dl || t.dataset.k === 'fuel.price' || t.dataset.k === 'fuel.consumption'){ if(dmTab === 'prices' && t.dataset.k) drawFuelNote(); }
+    refreshLive();
+  });
+  $('dmBody').addEventListener('change', e => { const t = e.target; if(t.dataset.sel){ setP(D, t.dataset.sel, t.value); refreshLive(); } });
+  function drawFuelNote(){ const el = $('dmBody').querySelector('.dm-sec .dm-help b'); if(el) el.textContent = RZA(D.fuel.price / (D.fuel.consumption || 1)); }
+  $('dmBody').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if(!b) return;
+    const act = b.dataset.act, key = b.dataset.key, id = b.dataset.pk;
+    if(act === 'addDl'){
+      const name = $('dmNewName').value.trim(), pk = parseFloat($('dmNewPkg').value);
+      if(!name){ dmToast('Type a name for the new item'); return; }
+      if(D.deliverable[name] != null){ dmToast('That item already exists'); return; }
+      if(!(pk >= 0)){ dmToast('Add the package rate'); return; }
+      const nr = parseFloat($('dmNewNorm').value);
+      D.deliverable[name] = pk; D.normal[name] = nr >= 0 ? nr : Math.round(pk * 1.25); drawTab();
+    } else if(act === 'rmDl'){
+      if(D.extraPackages.some(p => key in p.items)){ dmToast('Remove it from your packages first'); return; }
+      delete D.deliverable[key]; delete D.normal[key]; drawTab();
+    } else if(act === 'addPkg'){
+      D.extraPackages.push({ id:'p' + Date.now().toString(36), name:'New package', price:0, ph:1, vh:0, rev:0, oh:1, items:{}, contents:'' }); drawTab();
+      const cards = $('dmBody').querySelectorAll('.dm-card'); if(cards.length) cards[cards.length - 1].scrollIntoView({ block:'center' });
+    } else if(act === 'rmPkg'){
+      if(!confirm('Delete this package?')) return;
+      D.extraPackages = D.extraPackages.filter(p => p.id !== id); drawTab();
+    } else if(act === 'addItem'){
+      const p = D.extraPackages.find(x => x.id === id), sel = $('dmAddIt_' + id); if(p && sel && sel.value){ p.items[sel.value] = 1; drawTab(); }
+    } else if(act === 'rmItem'){
+      const p = D.extraPackages.find(x => x.id === id); if(p){ delete p.items[key]; drawTab(); }
+    } else if(act === 'useSug'){
+      const p = D.extraPackages.find(x => x.id === id); if(p){ p.price = +b.dataset.v; drawTab(); }
+    } else if(act === 'ign'){
+      const s = new Set(D.advisorIgnore); s.has(key) ? s.delete(key) : s.add(key); D.advisorIgnore = [...s]; drawTab();
+    }
+  });
+})();
+
 /* ---- self-test ---- */
 (function(){ let ok=true;
   for(const t of ['photo','video','combo']) for(const tier of ['Bronze','Silver','Gold']){
@@ -1193,6 +1745,7 @@ $('exportBtn').addEventListener('click', async () => {
 
 /* ---- init ---- */
 (function init(){
+  dataBoot();   // load your saved prices and packages before the first draw
   const d = new Date();
   $('invdate').value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   buildExtraOptions();
@@ -1244,6 +1797,7 @@ $('exportBtn').addEventListener('click', async () => {
             }
             gate.style.display = 'none';
             if(logoutBtn) logoutBtn.style.display = 'inline-block';
+            if(window.calcCloudLoad) window.calcCloudLoad(db);
           }).catch(function(err){ console.warn('Admin check failed:',err); gate.style.display = 'flex'; auth.signOut(); });
         } else {
           gate.style.display = 'flex';
