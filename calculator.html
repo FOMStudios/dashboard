@@ -217,7 +217,8 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
     #invoiceSheet{ display:block !important; }
 }
 </style>
-<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);if(sessionStorage.getItem("fom.authed")==="1")document.documentElement.classList.add("fom-authed");}catch(e){}})();</script>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -1220,9 +1221,9 @@ $('exportBtn').addEventListener('click', async () => {
       await loadScript(b+'firebase-firestore-compat.js');
       firebase.initializeApp(firebaseConfig);
       var auth=firebase.auth();
-  // Session-only persistence + idle auto-lock (set in Settings). Closing the app re-locks it.
-  try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e){}
-  (function(){var _il;function _ms(){return (window.FOM&&FOM.idleMs)?FOM.idleMs:900000;}function _rst(){clearTimeout(_il);var m=_ms();if(m&&auth&&auth.currentUser){_il=setTimeout(function(){if(auth&&auth.currentUser)auth.signOut();},m);}}['pointerdown','keydown','scroll','touchstart','mousemove'].forEach(function(ev){addEventListener(ev,_rst,{passive:true});});document.addEventListener('visibilitychange',function(){if(!document.hidden)_rst();});auth.onAuthStateChanged(function(u){var _ac=document.getElementById('authCheck');if(_ac)_ac.style.display='none';try{if(u)sessionStorage.setItem('fom.authed','1');else sessionStorage.removeItem('fom.authed');}catch(e){}if(u)_rst();});})();
+  // Stays signed in for 10 days (see session.js); idle lock is optional in Settings.
+  try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+  if(window.FOM_SESSION)FOM_SESSION.attach(auth);
       var db=firebase.firestore();
       var login=function(){ document.getElementById('lgErr').textContent='';
         auth.signInWithEmailAndPassword(document.getElementById('lgEmail').value.trim(), document.getElementById('lgPass').value).then(function(){try{if(window.PasswordCredential&&navigator.credentials){var _e=document.getElementById('lgEmail'),_p=document.getElementById('lgPass');if(_e&&_p)navigator.credentials.store(new PasswordCredential({id:_e.value.trim(),password:_p.value,name:'FOM Studios'}));}}catch(_x){}})

@@ -102,7 +102,8 @@ thead th.portal-col{background:#dce8ff;color:var(--accent);}
 .hintbar b{color:var(--ink);}
 @media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
 </style>
-<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);if(sessionStorage.getItem("fom.authed")==="1")document.documentElement.classList.add("fom-authed");}catch(e){}})();</script>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -408,9 +409,9 @@ function offerImport(db){
 function initCloud(){
   firebase.initializeApp(firebaseConfig);
   auth=firebase.auth();
-  // Session-only persistence + idle auto-lock (set in Settings). Closing the app re-locks it.
-  try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e){}
-  (function(){var _il;function _ms(){return (window.FOM&&FOM.idleMs)?FOM.idleMs:900000;}function _rst(){clearTimeout(_il);var m=_ms();if(m&&auth&&auth.currentUser){_il=setTimeout(function(){if(auth&&auth.currentUser)auth.signOut();},m);}}['pointerdown','keydown','scroll','touchstart','mousemove'].forEach(function(ev){addEventListener(ev,_rst,{passive:true});});document.addEventListener('visibilitychange',function(){if(!document.hidden)_rst();});auth.onAuthStateChanged(function(u){var _ac=document.getElementById('authCheck');if(_ac)_ac.style.display='none';try{if(u)sessionStorage.setItem('fom.authed','1');else sessionStorage.removeItem('fom.authed');}catch(e){}if(u)_rst();});})();
+  // Stays signed in for 10 days (see session.js); idle lock is optional in Settings.
+  try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+  if(window.FOM_SESSION)FOM_SESSION.attach(auth);
   const db=firebase.firestore();
   db.settings({ experimentalAutoDetectLongPolling: true });  // works through VPNs/blockers; no stale cache
   store=cloudStore(db);

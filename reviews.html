@@ -206,7 +206,8 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .rv-empty{text-align:center;color:var(--ink-soft);padding:46px 20px;background:var(--bg-pill);border:1px dashed var(--line);border-radius:var(--radius-card);}
 @media(max-width:640px){.rv-summary{grid-template-columns:minmax(0,1fr);}}
 </style>
-<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);if(sessionStorage.getItem("fom.authed")==="1")document.documentElement.classList.add("fom-authed");}catch(e){}})();</script>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -411,9 +412,9 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
     try{ firebase.initializeApp(firebaseConfig); }catch(e){}
     const auth=firebase.auth();
 
-  // Session-only persistence + idle auto-lock (set in Settings). Closing the app re-locks it.
-  try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e){}
-  (function(){var _il;function _ms(){return (window.FOM&&FOM.idleMs)?FOM.idleMs:900000;}function _rst(){clearTimeout(_il);var m=_ms();if(m&&auth&&auth.currentUser){_il=setTimeout(function(){if(auth&&auth.currentUser)auth.signOut();},m);}}['pointerdown','keydown','scroll','touchstart','mousemove'].forEach(function(ev){addEventListener(ev,_rst,{passive:true});});document.addEventListener('visibilitychange',function(){if(!document.hidden)_rst();});auth.onAuthStateChanged(function(u){var _ac=document.getElementById('authCheck');if(_ac)_ac.style.display='none';try{if(u)sessionStorage.setItem('fom.authed','1');else sessionStorage.removeItem('fom.authed');}catch(e){}if(u)_rst();});})();
+  // Stays signed in for 10 days (see session.js); idle lock is optional in Settings.
+  try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+  if(window.FOM_SESSION)FOM_SESSION.attach(auth);
     db=firebase.firestore();
 
     const start=()=>{

@@ -158,7 +158,8 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 @media(max-width:980px){.kpis{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:640px){.kpis{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}.chip-grid{grid-template-columns:repeat(2,1fr);}}
 </style>
-<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);if(sessionStorage.getItem("fom.authed")==="1")document.documentElement.classList.add("fom-authed");}catch(e){}})();</script>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -304,7 +305,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
                 <div class="field">
                     <label>Portfolio images (pick up to 6)</label>
                     <div class="chip-grid" id="portfolioPicker"></div>
-                    <div class="hint">Uses the same <code>assets/workN.jpg</code> files as your gallery.</div>
+                    <div class="hint">Uses the same work photos as your website gallery (loaded from fomstudios.co.za).</div>
                 </div>
                 <div class="actions">
                     <button class="btn" id="deckPrintBtn">Export as PDF</button>
@@ -540,7 +541,9 @@ $('csvBtn').onclick = ()=>{
 /* ================================================================
    PITCH DECK BUILDER - 7 landscape pages, printed via hidden iframe
    ================================================================ */
-const WORK_IMAGES = Array.from({length:18},(_,i)=>`assets/work${i+1}.jpg`);
+// Photos live on the website repo, not here, so always load them from the live site
+const SITE = 'https://www.fomstudios.co.za/';
+const WORK_IMAGES = Array.from({length:18},(_,i)=>`${SITE}assets/work${i+1}.jpg`);
 const DEFAULT_ABOUT = "Frames Of Motion (FOM) Studios is a creative media brand specialising in photography, videography and visual storytelling, based in Johannesburg, South Africa. We focus on capturing moments with precision, emotion and a cinematic edge - helping brands, events and individuals tell their story visually.";
 const DEFAULT_WHAT = ["Sports & Event Photography","Cinematic Videography & Reels","Aerial / Drone Coverage","Automotive & Lifestyle Content","Content Editing & Colour Grading"].join('\n');
 const DEFAULT_WHY = ["Fast turnaround on edited deliverables","Cinematic, story-driven visual style","Reliable, professional on-site presence","Flexible packages tailored to your needs","Based in Johannesburg, available to travel"].join('\n');
@@ -586,11 +589,11 @@ function buildDeckHTML(){
           </div>
           <div class="pd-cover-bottom">
             <span>www.fomstudios.co.za</span>
-            <img src="assets/mascot-head-color.png" onerror="this.style.display='none'">
+            <img src="${SITE}assets/mascot-head-color.png" onerror="this.style.display='none'">
           </div>
         </div>`, {dark:true});
 
-    const fallbackImg = 'assets/mascot-head-color.png';
+    const fallbackImg = SITE + 'assets/mascot-head-color.png';
     const p0 = portfolio[0] || fallbackImg;
     const p1 = portfolio[1] || fallbackImg;
 
@@ -823,9 +826,9 @@ function showConnError(){
 function initCloud(){
     firebase.initializeApp(firebaseConfig);
     const auth=firebase.auth();
-  // Session-only persistence + idle auto-lock (set in Settings). Closing the app re-locks it.
-  try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e){}
-  (function(){var _il;function _ms(){return (window.FOM&&FOM.idleMs)?FOM.idleMs:900000;}function _rst(){clearTimeout(_il);var m=_ms();if(m&&auth&&auth.currentUser){_il=setTimeout(function(){if(auth&&auth.currentUser)auth.signOut();},m);}}['pointerdown','keydown','scroll','touchstart','mousemove'].forEach(function(ev){addEventListener(ev,_rst,{passive:true});});document.addEventListener('visibilitychange',function(){if(!document.hidden)_rst();});auth.onAuthStateChanged(function(u){var _ac=document.getElementById('authCheck');if(_ac)_ac.style.display='none';try{if(u)sessionStorage.setItem('fom.authed','1');else sessionStorage.removeItem('fom.authed');}catch(e){}if(u)_rst();});})();
+  // Stays signed in for 10 days (see session.js); idle lock is optional in Settings.
+  try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+  if(window.FOM_SESSION)FOM_SESSION.attach(auth);
     const db=firebase.firestore();
     db.settings({ experimentalAutoDetectLongPolling: true });
     store=cloudLeadStore(db);

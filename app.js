@@ -22,7 +22,7 @@ applyTheme(theme);
 
 /* ---- idle auto-lock duration (read by the injected gate code) ---- */
 window.FOM = window.FOM || {};
-function setIdleFromStore(){ var m = +LS.get('fom.autolock','15'); window.FOM.idleMs = m>0 ? m*60000 : 0; }
+function setIdleFromStore(){ var m = +LS.get('fom.autolock','0'); window.FOM.idleMs = m>0 ? m*60000 : 0; }
 setIdleFromStore();
 
 /* ---- full page list (hamburger) ---- */
@@ -77,7 +77,7 @@ function openMenu(){
 function openSettings(){
   D.getElementById('fomSheetTitle').textContent = 'Settings';
   var email = currentEmail();
-  var lock = LS.get('fom.autolock','15');
+  var lock = LS.get('fom.autolock','0');
   var seg = function(val,label){ return '<button data-theme-set="'+val+'" class="'+(theme===val?'on':'')+'">'+label+'</button>'; };
   var lockOpt = function(v,label){ return '<option value="'+v+'"'+(lock===String(v)?' selected':'')+'>'+label+'</option>'; };
   D.getElementById('fomSheetBody').innerHTML =
@@ -87,8 +87,15 @@ function openSettings(){
       '<div class="fom-seg" id="fomTheme">'+seg('auto','Auto')+seg('light','Light')+seg('dark','Dark')+'</div></div>'+
     '<div class="fom-set"><span><label>Auto-lock</label><small>Lock after this long with no activity</small></span>'+
       '<select class="fom-sel" id="fomLock">'+lockOpt(5,'5 min')+lockOpt(15,'15 min')+lockOpt(30,'30 min')+lockOpt(60,'1 hour')+lockOpt(0,'Never')+'</select></div>'+
-    '<button class="fom-logout" id="fomLogout">Log out &amp; lock</button>'+
-    '<p class="fom-note">Closing the app always locks it; you sign in again next time. FOM Studios Admin.</p>';
+    '<div class="fom-set"><span><label>Signed in</label><small id="fomExp">Stays signed in, even when the app is closed</small></span></div>'+
+    '<button class="fom-logout" id="fomLogout">Log out this device</button>'+
+    '<button class="fom-logout alt" id="fomLogoutAll">Log out of all devices</button>'+
+    '<p class="fom-note">You stay signed in for 10 days, even if you close the app completely. Lost a phone? Use Log out of all devices and every device is locked.</p>';
+  var ex = D.getElementById('fomExp');
+  if(ex && window.FOM_SESSION && FOM_SESSION.expiresAt()){
+    var d = new Date(FOM_SESSION.expiresAt());
+    ex.textContent = 'Locks automatically on ' + d.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short'}) + ' (10 days after sign-in)';
+  }
   // wire
   var tw = D.getElementById('fomTheme');
   tw.onclick = function(e){ var b=e.target.closest('[data-theme-set]'); if(!b) return;
@@ -96,6 +103,15 @@ function openSettings(){
     tw.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x===b); }); };
   D.getElementById('fomLock').onchange = function(e){ LS.set('fom.autolock', e.target.value); setIdleFromStore(); };
   D.getElementById('fomLogout').onclick = logout;
+  D.getElementById('fomLogoutAll').onclick = function(){
+    if(!confirm('Log out of ALL devices, including this one? Everyone will need to sign in again.')) return;
+    var btn = this; btn.disabled = true; btn.textContent = 'Signing out everywhere...';
+    var p = (window.FOM_SESSION && window.firebase) ? FOM_SESSION.logoutAll() : Promise.reject();
+    p.then(function(){ closeSheet(); }).catch(function(){
+      btn.disabled = false; btn.textContent = 'Log out of all devices';
+      alert('Could not reach the server. Check your connection, and that the Firestore rules include the "settings" collection.');
+    });
+  };
   openSheet();
 }
 
