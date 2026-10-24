@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOM Studios | Reviews</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/mascot.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1000px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* pill header + hamburger */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:1320px;margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:22px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.nav-cta{border:1px solid var(--ink);border-radius:var(--radius-pill);padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;background:none;}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:12px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--accent-hover);}
+.btn.block{width:100%;padding:13px;}
+
+/* page */
+.page{padding-top:108px;}
+.page-head{margin-bottom:24px;}
+.page-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.page-head p{color:var(--ink-soft);font-size:14px;margin-top:4px;max-width:60ch;}
+
+/* filter chips */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.filter-chip{
+    border:1px solid var(--line);background:var(--bg-pill);
+    border-radius:var(--radius-pill);padding:8px 16px;
+    font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.2s;
+}
+.filter-chip:hover{border-color:var(--ink);color:var(--ink);}
+.filter-chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg-pill);}
+
+/* empty state */
+.empty-state{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:48px 28px;text-align:center;}
+.empty-state h3{font-size:19px;font-weight:800;margin-bottom:6px;}
+.empty-state p{color:var(--ink-soft);max-width:40ch;margin:0 auto;font-size:14px;}
+
+/* ============================================================
+   PROJECT CARD - one per order, expandable checklist inside
+   ============================================================ */
+.project-list{display:flex;flex-direction:column;gap:16px;}
+
+.project-card{
+    background:var(--bg-pill);border:1px solid var(--line);
+    border-radius:var(--radius-card);overflow:hidden;
+}
+.project-card.complete{border-color:#b7d8c0;}
+
+.project-header{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:14px;padding:18px 22px;cursor:pointer;user-select:none;flex-wrap:wrap;
+}
+.project-header:hover{background:#f5f4f0;}
+.ph-left{min-width:0;}
+.ph-id{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;}
+.ph-title{font-size:17px;font-weight:800;letter-spacing:-.01em;margin-top:2px;}
+.ph-sub{font-size:13px;color:var(--ink-soft);margin-top:1px;}
+.ph-right{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+
+/* progress ring-style pill */
+.progress-pill{
+    display:flex;align-items:center;gap:8px;
+    background:var(--bg);border:1px solid var(--line);
+    border-radius:var(--radius-pill);padding:6px 14px;
+}
+.progress-pill .p-count{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;}
+.progress-track{width:70px;height:6px;background:var(--line);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .3s ease;}
+.project-card.complete .progress-fill{background:#27ae60;}
+.project-card.complete .progress-pill{border-color:#b7d8c0;background:#eef7f0;}
+
+.chevron{color:var(--ink-soft);font-size:13px;transition:transform .3s;}
+.project-card.open .chevron{transform:rotate(180deg);}
+
+/* checklist body */
+.project-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease;}
+.project-card.open .project-body{grid-template-rows:1fr;}
+.project-body-inner{overflow:hidden;min-height:0;}
+.checklist{padding:4px 22px 22px;border-top:1px solid var(--line);}
+
+.check-step{
+    display:flex;align-items:flex-start;gap:14px;
+    padding:13px 4px;border-bottom:1px solid #eceae4;
+    cursor:pointer;transition:background .15s;
+}
+.check-step:last-child{border-bottom:none;}
+.check-step:hover{background:#f5f4f0;}
+
+.check-box{
+    width:22px;height:22px;flex-shrink:0;margin-top:1px;
+    border:2px solid var(--line);border-radius:7px;
+    display:flex;align-items:center;justify-content:center;
+    transition:.2s;background:#fff;
+}
+.check-step.done .check-box{background:var(--accent);border-color:var(--accent);}
+.check-box svg{width:13px;height:13px;stroke:#fff;stroke-width:3;fill:none;opacity:0;transition:opacity .15s;}
+.check-step.done .check-box svg{opacity:1;}
+
+.check-text{min-width:0;}
+.check-title{font-size:14px;font-weight:600;color:var(--ink);}
+.check-step.done .check-title{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:#b9b8b5;}
+.check-note{font-size:12.5px;color:var(--ink-soft);margin-top:2px;line-height:1.55;}
+.check-step.done .check-note{opacity:.6;}
+.check-who{
+    display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;
+    text-transform:uppercase;border-radius:var(--radius-pill);
+    padding:2px 9px;margin-left:8px;vertical-align:1px;
+}
+.check-who.me{background:#e7f0ff;color:var(--accent);}
+.check-who.client{background:#efece5;color:var(--ink-soft);}
+.check-who.auto-badge{background:#e3f5ea;color:#1f8a4c;}
+.check-step.auto{cursor:default;}
+.check-step.auto .check-box{cursor:default;}
+
+/* quick links row inside checklist */
+.quick-links{display:flex;gap:8px;flex-wrap:wrap;padding:16px 4px 2px;}
+.quick-link{
+    display:inline-flex;align-items:center;gap:6px;
+    border:1px solid var(--line);border-radius:var(--radius-pill);
+    padding:7px 14px;font-size:12px;font-weight:600;color:var(--ink);
+    background:var(--bg-pill);transition:.2s;
+}
+.quick-link:hover{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-dark);color:#fff;padding:12px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000;}
+.toast.show{opacity:1;}
+
+@media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
+@media(max-width:560px){
+    .project-header{padding:15px 16px;}
+    .checklist{padding:2px 14px 18px;}
+    .ph-right{width:100%;justify-content:space-between;}
+}
+
+/* ---- reviews ---- */
+.rv-summary{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:22px;align-items:center;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:22px 24px;margin-bottom:18px;}
+.rv-avg{text-align:center;}
+.rv-avg .num{font-size:52px;font-weight:800;letter-spacing:-.02em;line-height:1;}
+.rv-avg .st{color:#e0a93b;font-size:20px;letter-spacing:2px;margin-top:6px;}
+.rv-avg .ct{color:var(--ink-soft);font-size:13px;margin-top:4px;}
+.rv-bars{display:flex;flex-direction:column;gap:7px;min-width:0;}
+.rv-bar{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-soft);}
+.rv-bar b{width:34px;color:var(--ink);font-weight:700;}
+.rv-bar .tr{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden;min-width:0;}
+.rv-bar .tr i{display:block;height:100%;background:#e0a93b;border-radius:99px;}
+.rv-bar span{width:24px;text-align:right;}
+.rv-list{display:flex;flex-direction:column;gap:12px;}
+.rv-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:18px 20px;}
+.rv-card.feat{border-color:#e0a93b;box-shadow:0 0 0 1px #e0a93b inset;}
+.rv-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.rv-stars{color:#e0a93b;font-size:17px;letter-spacing:2px;white-space:nowrap;}
+.rv-stars .off{color:var(--line);}
+.rv-who{font-weight:800;font-size:15px;margin-top:4px;}
+.rv-meta{color:var(--ink-soft);font-size:12.5px;margin-top:2px;}
+.rv-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.rv-tag{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 10px;background:#efece5;color:var(--ink-soft);}
+.rv-tag.ok{background:#e3f5ea;color:#1f8a4c;} .rv-tag.no{background:#f6e7e5;color:#b0392b;} .rv-tag.feat{background:#fbf0d6;color:#8a6410;}
+.rv-msg{margin-top:12px;font-size:15px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;}
+.rv-msg.empty{color:var(--ink-soft);font-style:italic;}
+.rv-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.rv-btn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;}
+.rv-btn:hover{border-color:var(--ink);} .rv-btn.danger{color:#b0392b;} .rv-btn[disabled]{opacity:.4;pointer-events:none;}
+.rv-empty{text-align:center;color:var(--ink-soft);padding:46px 20px;background:var(--bg-pill);border:1px dashed var(--line);border-radius:var(--radius-card);}
+@media(max-width:640px){.rv-summary{grid-template-columns:minmax(0,1fr);}}
+</style>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);if(sessionStorage.getItem("fom.authed")==="1")document.documentElement.classList.add("fom-authed");}catch(e){}})();</script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="fom-splash" id="authCheck"><div class="in"><b>FOM STUDIOS</b><p>Checking session…</p></div></div>
+<script>setTimeout(function(){var a=document.getElementById("authCheck");if(a)a.style.display="none";},8000);</script>
+
+
+<!-- LOGIN GATE -->
+<div class="login-gate" id="loginGate">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="calculator.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+        <li><a href="reviews.html">Reviews</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+                <li><a href="reviews.html" class="active">Reviews</a></li>
+            </ul>
+            <button class="nav-cta" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </nav>
+</div>
+
+<div class="page wrap">
+    <div class="page-head">
+        <span class="eyebrow">Admin</span>
+        <h1>Client Reviews</h1>
+        <p>Every review left on your own feedback form lands here. Copy the happy ones straight onto your website as testimonials.</p>
+    </div>
+
+    <div class="rv-summary" id="rvSummary"></div>
+
+    <div class="filter-row" id="filterRow">
+        <button class="filter-chip on" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="share">OK to share</button>
+        <button class="filter-chip" data-filter="featured">Featured</button>
+        <button class="filter-chip" data-filter="happy">4-5 stars</button>
+        <button class="filter-chip" data-filter="low">3 stars or less</button>
+        <button class="filter-chip" id="csvBtn" style="margin-left:auto;">Export CSV</button>
+    </div>
+
+    <div class="rv-list" id="rvList"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+let toastT;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2000); }
+
+let reviews = [], orders = [], FILTER = 'all', db = null;
+const tsMs = t => (t && t.toMillis) ? t.toMillis() : (t && t.seconds ? t.seconds*1000 : 0);
+const fmtWhen = t => { const ms=tsMs(t); if(!ms) return ''; return new Date(ms).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}); };
+const starsHtml = n => { n=Math.max(0,Math.min(5,+n||0)); return '&#9733;'.repeat(n)+'<span class="off">'+'&#9733;'.repeat(5-n)+'</span>'; };
+
+// feedback.orderId holds the gallery folder (for example "Ishaaq/"), so match it back to the order
+function orderFor(r){
+  const key=(r.orderId||'').trim().toLowerCase(); if(!key) return null;
+  return orders.find(o => (o.galleryFolder||'').trim().toLowerCase()===key)
+      || orders.find(o => (o.id||'').toLowerCase()===key)
+      || orders.find(o => ((o.customer||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'/')===key) || null;
+}
+
+function renderSummary(){
+  const n=reviews.length;
+  if(!n){ $('rvSummary').innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--ink-soft);">No reviews yet. Once a client submits the feedback form, it shows up here.</div>'; return; }
+  const avg=reviews.reduce((a,r)=>a+(+r.rating||0),0)/n;
+  const dist=[5,4,3,2,1].map(k=>({k,c:reviews.filter(r=>(+r.rating||0)===k).length}));
+  $('rvSummary').innerHTML=`
+    <div class="rv-avg"><div class="num">${avg.toFixed(1)}</div><div class="st">${starsHtml(Math.round(avg))}</div>
+      <div class="ct">${n} review${n===1?'':'s'} &middot; ${reviews.filter(r=>r.sharePublic).length} OK to share</div></div>
+    <div class="rv-bars">${dist.map(d=>`<div class="rv-bar"><b>${d.k} &#9733;</b><div class="tr"><i style="width:${Math.round(d.c/n*100)}%"></i></div><span>${d.c}</span></div>`).join('')}</div>`;
+}
+
+function visible(){
+  return reviews.filter(r=>{
+    if(FILTER==='share') return !!r.sharePublic;
+    if(FILTER==='featured') return !!r.featured;
+    if(FILTER==='happy') return (+r.rating||0)>=4;
+    if(FILTER==='low') return (+r.rating||0)<=3;
+    return true;
+  });
+}
+
+function render(){
+  renderSummary();
+  const list=visible();
+  if(!list.length){ $('rvList').innerHTML='<div class="rv-empty">'+(reviews.length?'No reviews match this filter.':'Nothing here yet.')+'</div>'; return; }
+  $('rvList').innerHTML=list.map(r=>{
+    const o=orderFor(r), msg=(r.message||'').trim();
+    const label=o ? esc(o.customer||'')+(o.orderId?' &middot; '+esc(o.orderId):'') : (r.orderId?esc(r.orderId):'');
+    return `<article class="rv-card ${r.featured?'feat':''}" data-id="${esc(r.id)}">
+      <div class="rv-top">
+        <div><div class="rv-stars">${starsHtml(r.rating)}</div><div class="rv-who">${esc(r.name||'Anonymous')}</div>
+          <div class="rv-meta">${esc(fmtWhen(r.createdAt))}${label?' &middot; '+label:''}</div></div>
+        <div class="rv-tags">${r.featured?'<span class="rv-tag feat">Featured</span>':''}<span class="rv-tag ${r.sharePublic?'ok':'no'}">${r.sharePublic?'OK to share':'Private'}</span></div>
+      </div>
+      <div class="rv-msg ${msg?'':'empty'}">${msg?esc(msg):'No written message, rating only.'}</div>
+      <div class="rv-actions">
+        <button class="rv-btn" data-act="copy" ${(!msg||!r.sharePublic)?'disabled title="Only reviews with a message and permission to share can be copied"':''}>Copy testimonial</button>
+        <button class="rv-btn" data-act="feat" ${r.sharePublic?'':'disabled title="Client did not agree to public sharing"'}>${r.featured?'Remove from featured':'Mark as featured'}</button>
+        <button class="rv-btn danger" data-act="del">Delete</button>
+      </div></article>`;
+  }).join('');
+}
+
+$('rvList').addEventListener('click', async e=>{
+  const btn=e.target.closest('[data-act]'); if(!btn||!db) return;
+  const card=btn.closest('.rv-card'), r=reviews.find(x=>x.id===card.dataset.id); if(!r) return;
+  const act=btn.dataset.act;
+  if(act==='copy'){
+    const txt='\u201C'+(r.message||'').trim()+'\u201D\n'+(r.name||'Anonymous')+', '+'\u2605'.repeat(Math.max(1,+r.rating||5));
+    try{ await navigator.clipboard.writeText(txt); toast('Testimonial copied'); }
+    catch(_){ prompt('Copy this testimonial:', txt); }
+  } else if(act==='feat'){
+    try{ await db.collection('feedback').doc(r.id).update({featured:!r.featured}); }
+    catch(err){ console.warn(err); toast('Could not save - check connection'); }
+  } else if(act==='del'){
+    if(!confirm('Delete this review permanently?')) return;
+    try{ await db.collection('feedback').doc(r.id).delete(); toast('Review deleted'); }
+    catch(err){ console.warn(err); toast('Could not delete - check connection'); }
+  }
+});
+
+$('filterRow').addEventListener('click', e=>{
+  const chip=e.target.closest('.filter-chip'); if(!chip||chip.id==='csvBtn') return;
+  FILTER=chip.dataset.filter;
+  document.querySelectorAll('#filterRow .filter-chip[data-filter]').forEach(c=>c.classList.toggle('on',c===chip));
+  render();
+});
+
+$('csvBtn').addEventListener('click', ()=>{
+  const head=['Date','Name','Rating','Message','OK to share','Featured','Gallery / order'];
+  const rows=reviews.map(r=>[fmtWhen(r.createdAt),r.name||'',r.rating||'',r.message||'',r.sharePublic?'Yes':'No',r.featured?'Yes':'No',r.orderId||'']);
+  const csv=[head,...rows].map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='fom_reviews.csv'; a.click(); URL.revokeObjectURL(a.href);
+});
+
+const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+
+(async function init(){
+  if(!configured){
+    $('loginGate').innerHTML=`<div class="login-card"><span class="brand-mark">FOM STUDIOS</span><p class="lg-sub" style="margin-bottom:0;">Firebase is not configured - check firebase-config.js.</p></div>`;
+    return;
+  }
+  try{
+    const b='https://www.gstatic.com/firebasejs/10.12.0/';
+    await loadScript(b+'firebase-app-compat.js');
+    await Promise.all([loadScript(b+'firebase-auth-compat.js'), loadScript(b+'firebase-firestore-compat.js')]);
+    try{ firebase.initializeApp(firebaseConfig); }catch(e){}
+    const auth=firebase.auth();
+
+  // Session-only persistence + idle auto-lock (set in Settings). Closing the app re-locks it.
+  try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e){}
+  (function(){var _il;function _ms(){return (window.FOM&&FOM.idleMs)?FOM.idleMs:900000;}function _rst(){clearTimeout(_il);var m=_ms();if(m&&auth&&auth.currentUser){_il=setTimeout(function(){if(auth&&auth.currentUser)auth.signOut();},m);}}['pointerdown','keydown','scroll','touchstart','mousemove'].forEach(function(ev){addEventListener(ev,_rst,{passive:true});});document.addEventListener('visibilitychange',function(){if(!document.hidden)_rst();});auth.onAuthStateChanged(function(u){var _ac=document.getElementById('authCheck');if(_ac)_ac.style.display='none';try{if(u)sessionStorage.setItem('fom.authed','1');else sessionStorage.removeItem('fom.authed');}catch(e){}if(u)_rst();});})();
+    db=firebase.firestore();
+
+    const start=()=>{
+      db.collection('orders').onSnapshot(s=>{ orders=s.docs.map(d=>({id:d.id,...d.data()})); render(); }, e=>console.warn('orders:',e));
+      db.collection('feedback').onSnapshot(s=>{
+        reviews=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>tsMs(b.createdAt)-tsMs(a.createdAt));
+        render();
+      }, e=>{ console.warn('feedback:',e); $('rvList').innerHTML='<div class="rv-empty">Could not load reviews. Check the Firestore rules allow admins to read the feedback collection.</div>'; });
+    };
+
+    const login=()=>{
+      $('lgErr').textContent='';
+      auth.signInWithEmailAndPassword($('lgEmail').value.trim(), $('lgPass').value)
+        .catch(err=>{ $('lgErr').textContent=/password|user|credential|email/i.test(err.code||'')?'Incorrect email or password.':(err.message||'Login failed.'); });
+    };
+    $('lgBtn').onclick=login;
+    $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+    $('logoutBtn').onclick=()=>auth.signOut();
+
+    auth.onAuthStateChanged(u=>{
+      $('logoutBtn').style.display=u?'inline-block':'none';
+      if(!u){ $('loginGate').style.display='flex'; return; }
+      db.collection('admins').doc(u.uid).get().then(ad=>{
+        if(!ad.exists){ $('lgErr').textContent='This account does not have admin access.'; auth.signOut(); return; }
+        $('loginGate').style.display='none'; start();
+      }).catch(err=>{ console.warn('Admin check failed:',err); $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
+    });
+  }catch(e){ console.error('Reviews init failed:', e.message||e); }
+})();
+</script>
+<script src="app.js"></script>
+</body>
+</html>

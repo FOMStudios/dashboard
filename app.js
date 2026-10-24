@@ -34,7 +34,8 @@ var PAGES = [
   {n:'Content Planner', h:'content.html',   e:'🎬'},
   {n:'Price Calculator',h:'calculator.html',e:'🧮'},
   {n:'Email',           h:'email.html',     e:'✉️'},
-  {n:'Contract',        h:'contract.html',  e:'📄'}
+  {n:'Contract',        h:'contract.html',  e:'📄'},
+  {n:'Client Reviews',  h:'reviews.html',   e:'⭐'}
 ];
 var here = (location.pathname.split('/').pop() || 'dashboard.html').toLowerCase();
 if(here === '' ) here = 'dashboard.html';
