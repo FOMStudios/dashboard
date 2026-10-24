@@ -79,6 +79,97 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 }
 @media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
 @media(max-width:560px){.row2{grid-template-columns:1fr;}}
+
+/* ---- Data panel + Package Advisor ---- */
+.page-head.has-act{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+.dm-scrim{position:fixed;inset:0;background:rgba(20,20,20,.45);z-index:2000;opacity:0;pointer-events:none;transition:.2s;}
+.dm-scrim.show{opacity:1;pointer-events:auto;}
+.dm{position:fixed;z-index:2001;top:50%;left:50%;width:min(880px,calc(100vw - 28px));height:min(86vh,820px);background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:0 30px 80px -20px rgba(0,0,0,.45);display:flex;flex-direction:column;transform:translate(-50%,-46%);opacity:0;pointer-events:none;transition:.22s;overflow:hidden;}
+.dm.show{transform:translate(-50%,-50%);opacity:1;pointer-events:auto;}
+.dm-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:18px 22px 10px;}
+.dm-head b{font-size:19px;font-weight:800;display:block;}
+.dm-head span{font-size:13px;color:var(--ink-soft);}
+.dm-x{border:0;background:none;font-size:30px;line-height:1;cursor:pointer;color:var(--ink);padding:0 4px;}
+.dm-tabs{display:flex;gap:8px;padding:6px 22px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+.dm-tabs button{border:1px solid var(--line);background:var(--input-bg,#fff);border-radius:99px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink);}
+.dm-tabs button.on{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+.dm-tabs i{font-style:normal;background:#c0392b;color:#fff;border-radius:99px;font-size:11px;padding:1px 7px;margin-left:5px;}
+.dm-tabs i:empty{display:none;}
+.dm-body{flex:1;overflow:auto;padding:18px 22px 24px;-webkit-overflow-scrolling:touch;}
+.dm-foot{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:12px 22px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--bg-pill);}
+.dm-state{font-size:12.5px;font-weight:600;color:var(--ink-soft);flex:1;text-align:center;}
+.dm-state.dirty{color:#b0640b;} .dm-state.ok{color:#1f8a4c;}
+.dm-sec{margin-bottom:26px;}
+.dm-sec h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px;}
+.dm-help{font-size:13px;color:var(--ink-soft);margin-bottom:12px;max-width:70ch;}
+.dm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px;}
+.dm-f{display:block;min-width:0;}
+.dm-f span{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px;}
+.dm input[type=number],.dm input[type=text],.dm select,.dm textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:15px;font-family:inherit;background:var(--input-bg,#fff);color:var(--ink);}
+.dm textarea{resize:vertical;}
+.dm-row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) 34px;gap:8px;align-items:center;margin-bottom:8px;}
+.dm-row.hd{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px;}
+.dm-row .nm{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;}
+.dm-rm{border:1px solid var(--line);background:var(--input-bg,#fff);border-radius:10px;cursor:pointer;color:#c0392b;font-weight:700;font-size:13px;height:38px;padding:0 10px;}
+.dm-tier{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(3,minmax(0,1fr));gap:8px;align-items:center;margin-bottom:8px;}
+.dm-tier .hd{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);}
+.dm-tier .nm{font-size:14px;font-weight:600;}
+.pw{position:relative;display:block;}
+.pw input{padding-right:26px !important;}
+.dot{position:absolute;right:9px;top:50%;width:10px;height:10px;border-radius:50%;transform:translateY(-50%);background:#cfcdc6;}
+.dot.ok{background:#1f8a4c;} .dot.warn{background:#e0a100;} .dot.bad{background:#c0392b;}
+.dm-card{border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;background:var(--bg);}
+.dm-card-h{display:flex;gap:8px;margin-bottom:12px;}
+.dm-card-h .nm{font-weight:800;}
+.dm-grid.g5{grid-template-columns:repeat(5,minmax(0,1fr));}
+.dm-sub{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 6px;}
+.dm-it{display:grid;grid-template-columns:minmax(0,1fr) 90px 34px;gap:8px;align-items:center;margin-bottom:6px;font-size:14px;font-weight:600;}
+.dm-add{display:flex;gap:8px;margin:6px 0 12px;}
+.dm-add select{flex:1;}
+.dm-mini{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:99px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.dm-mini.fill{background:var(--accent);border-color:var(--accent);color:#fff;}
+.dm-live{margin-top:12px;font-size:13px;line-height:1.5;}
+.chip{display:inline-block;border-radius:99px;padding:2px 10px;font-size:11.5px;font-weight:800;margin-right:6px;color:#fff;background:#6f6f6d;}
+.chip.ok{background:#1f8a4c;} .chip.warn{background:#b0640b;} .chip.bad{background:#c0392b;}
+.dm-sug{margin-top:8px;padding:10px 12px;border-radius:12px;background:#eef2fb;color:var(--ink);display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+.adv-sum{padding:14px 16px;border-radius:14px;background:#eef2fb;margin-bottom:16px;font-size:14px;}
+.adv-sum small{display:block;color:var(--ink-soft);margin-top:4px;font-size:12.5px;}
+.adv{border:1px solid var(--line);border-left:5px solid #cfcdc6;border-radius:14px;padding:12px 14px;margin-bottom:10px;background:var(--input-bg,#fff);}
+.adv.ok{border-left-color:#1f8a4c;} .adv.warn{border-left-color:#e0a100;} .adv.bad{border-left-color:#c0392b;}
+.adv.mut{opacity:.55;}
+.adv-h{display:flex;justify-content:space-between;gap:10px;font-size:15px;}
+.adv-n{font-size:12.5px;color:var(--ink-soft);margin:3px 0 6px;}
+.adv ul{list-style:none;font-size:13.5px;}
+.adv li{padding-left:16px;position:relative;margin-bottom:3px;}
+.adv li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:50%;background:#cfcdc6;}
+.adv li.ok::before{background:#1f8a4c;} .adv li.warn::before{background:#e0a100;} .adv li.bad::before{background:#c0392b;}
+.adv button{margin-top:8px;border:0;background:none;color:var(--ink-soft);font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;padding:0;}
+.dm-how{font-size:13px;color:var(--ink-soft);margin-top:18px;}
+.dm-how summary{cursor:pointer;font-weight:700;color:var(--ink);}
+.dm-how ol{margin:8px 0 0 18px;} .dm-how li{margin-bottom:4px;}
+.dm-toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:99px;font-size:13.5px;font-weight:600;z-index:2100;opacity:0;pointer-events:none;transition:.25s;max-width:92vw;text-align:center;}
+.dm-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@media(max-width:640px){
+  .dm{width:100vw;height:100dvh;top:0;left:0;border-radius:0;border:0;transform:translateY(24px);}
+  .dm.show{transform:none;}
+  .dm-grid,.dm-grid.g5{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .dm-head,.dm-tabs,.dm-body,.dm-foot{padding-left:16px;padding-right:16px;}
+  .dm-row{grid-template-columns:minmax(0,1fr) minmax(0,.8fr) minmax(0,.8fr) 34px;}
+}
+
+.ce-num{flex:none;width:32px;height:38px;display:grid;place-items:center;border-radius:10px;background:var(--ink);color:var(--bg-pill);font-weight:800;font-size:14px;}
+.ce-off{opacity:.6;}
+.ce-toks{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.ce-tok{border:1px solid var(--line);background:var(--input-bg,#fff);border-radius:99px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink);}
+.ce-bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:13px;}
+.ce-sw{display:flex;gap:7px;align-items:center;font-weight:600;cursor:pointer;}
+.ce-sw input{width:auto !important;}
+.ce-link{border:0;background:none;color:var(--accent);font-size:12.5px;font-weight:700;cursor:pointer;text-decoration:underline;padding:0;}
+.ce-link.del{color:#c0392b;margin-left:auto;}
+.ce-bad{margin-top:8px;font-size:12.5px;color:#b0640b;font-weight:600;}
+.dm-card-h .dm-mini{padding:8px 12px;}
+.dm-card-h .dm-mini[disabled]{opacity:.35;pointer-events:none;}
+.dm-foot .btn{padding:10px 16px;}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <script src="session.js"></script>
@@ -138,10 +229,13 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 </div>
 
 <div class="page wrap">
-    <div class="page-head">
+    <div class="page-head has-act">
+        <div>
         <span class="eyebrow">Admin</span>
         <h1>Contract Generator</h1>
         <p>Fill in the summary details - FOM Studios is signed and dated automatically. Then save as PDF.</p>
+        </div>
+        <button class="btn ghost" id="editBtn" type="button">Edit contract</button>
     </div>
 
     <div class="grid">
@@ -185,6 +279,28 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     </div>
 </div>
 
+<!-- ===== Data panel (edit prices, packages, offline advisor) ===== -->
+<div class="dm-scrim" id="dmScrim"></div>
+<div class="dm" id="dm" role="dialog" aria-modal="true" aria-label="Edit contract">
+  <div class="dm-head">
+    <div><b>Edit contract</b><span>Change any clause, key term or business detail. Saved to your account, no GitHub needed.</span></div>
+    <button class="dm-x" id="dmClose" aria-label="Close">&times;</button>
+  </div>
+  <div class="dm-tabs" id="dmTabs">
+    <button type="button" data-t="clauses" class="on">Clauses</button>
+    <button type="button" data-t="terms">Key terms</button>
+    <button type="button" data-t="biz">Business</button>
+  </div>
+  <div class="dm-body" id="dmBody"></div>
+  <div class="dm-foot">
+    <button class="btn ghost" id="dmReset" type="button">Reset to defaults</button>
+    <button class="btn ghost" id="dmPreview" type="button">Preview</button>
+    <span class="dm-state" id="dmState"></span>
+    <button class="btn" id="dmSave" type="button">Save changes</button>
+  </div>
+</div>
+<div class="dm-toast" id="dmToast"></div>
+
 <div id="contractDoc"></div>
 <div class="toast" id="toast"></div>
 
@@ -198,6 +314,275 @@ function todayNice(){ return new Date().toLocaleDateString('en-ZA',{day:'numeric
 function RZA(n){ return 'R'+(Math.round(+n||0)).toLocaleString('en-ZA'); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function val(v,fb){ return v ? esc(v) : `<span style="color:#c0392b;font-style:italic;">${fb}</span>`; }
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+   ║  CONTRACT EDITOR - every clause, key term and business detail.      ║
+   ║  The text below is the starting point. Whatever you save with the   ║
+   ║  "Edit contract" button is stored in your account and wins.         ║
+   ╚══════════════════════════════════════════════════════════════════╝ */
+const CT_DEFAULT = {
+  title: 'PHOTOGRAPHY & VIDEOGRAPHY AGREEMENT',
+  intro: 'This Agreement is entered into between **{biz}** ("Service Provider") and the undersigned **Client**.',
+  agreement: 'By making payment, the Client confirms that they have read, understood, and agreed to all terms outlined in this contract.',
+  biz: { name:'FOM Studios', tagline:'Photography & Videography', city:'Johannesburg, South Africa', email:'info@fomstudios.co.za', phone:'073 755 3136', web:'www.fomstudios.co.za',
+         role:'Photographer / Videographer', bank:'Standard Bank Lenasia', holder:'Ishaaq Adam', branch:'015137', acc:'10097158842' },
+  terms: { depositPct:50, cancelDays:10, cancelFeePct:20, overtime:1.5, rushPct:20, editRate:300 },
+  clauses: [
+    { id:'services', title:'Services', on:true, body:`{biz} agrees to provide photography and/or videography services as agreed upon with the Client, including but not limited to shooting, editing, and delivery of final media.` },
+    { id:'booking', title:'Booking & Payment Terms', on:true, body:`- A **{depositPct}% non-refundable deposit** is required to secure the booking date.
+- The remaining **{balancePct}% must be paid in full prior to the shoot date**.
+- **No services will be rendered unless full payment has been received.**
+- Payment confirms the booking and acceptance of this agreement.` },
+    { id:'cancel', title:'Cancellation Policy', on:true, body:`- The {depositPct}% booking deposit is strictly **non-refundable** and secures the scheduled date and services of {biz}.
+- In the event that the Client cancels the booking **{cancelDays} days** or more prior to the scheduled shoot date, no further payment shall be due beyond the deposit already paid.
+- In the event that the Client cancels the booking less than **{cancelDays} days** prior to the scheduled shoot date, the Client shall remain **liable** for an additional fee equal to {cancelFee}% of the outstanding balance (being {cancelFee}% of the remaining {balancePct}% of the total fee).
+- Any cancellation must be submitted in writing to be considered valid.` },
+    { id:'resched', title:'Rescheduling Policy', on:true, body:`- The Client may request to reschedule the shoot; however, no refunds will be issued under any rescheduling circumstances.
+- Only one (1) reschedule request will be permitted per booking. Any further changes will be treated as a cancellation and Clause {n:cancel} (Cancellation Policy) will apply.
+- Where a reschedule is approved, all payments made will be transferred to the new agreed date, subject to {biz}' availability.
+- Rescheduling requests must be submitted in writing and are strictly subject to availability.` },
+    { id:'weather', title:'Weather & Unforeseen Circumstances', on:true, body:`- In the event of adverse weather conditions or natural causes that prevent the shoot from proceeding:
+-- The shoot will be rescheduled at no additional cost to the Client, subject to availability.
+-- If rescheduling is not possible, a mutually agreed refund or credit may be issued.
+- {biz} reserves the right to determine whether conditions are unsuitable for shooting.` },
+    { id:'drone', title:'Drone Operation', on:true, body:`- Drone services (if included in the agreed package) are strictly subject to weather conditions and legal flight restrictions.
+- {biz} reserves the right to determine whether conditions are safe and suitable for drone operation, including but not limited to wind speed, rain, visibility, and airspace restrictions.
+- If drone operations cannot be performed due to weather or safety concerns, they will either be rescheduled (subject to availability) or cancelled.
+- In the event that drone services cannot be performed due to weather, safety concerns, or regulatory restrictions beyond the control of {biz}, the drone portion of the service will be refunded to the Client or alternatively excluded from the final invoice.
+- All drone operations will be conducted in full compliance with applicable aviation laws and safety requirements.` },
+    { id:'rollers', title:'Rollers', on:true, body:`- Safety shall take precedence over the capture of any shot at all times.
+- The driver shall comply with all applicable road laws, regardless of any instruction or signal from the videographer or crew.
+- The driver is solely responsible for independently determining that it is safe to perform any lane change, overtake, or repositioning maneuver; no signal from the crew shall constitute confirmation that such maneuver is safe.
+- The driver and/or Client may delay, decline, or terminate any requested maneuver at their sole discretion.
+- {biz} reserves the right to pause, refuse, or discontinue any rolling shot where conditions are deemed unsafe.
+- The Client is responsible for ensuring that all participating vehicles are roadworthy, legally licensed, and adequately insured.
+- {biz} shall not be liable for any accidents, damage, injury, fines, or other incidents arising during rolling shots, as vehicle operation remains outside its control once vehicles are in motion.
+- All participants acknowledge and accept that they participate in rolling shots entirely at their own risk.` },
+    { id:'noshow', title:'Client Non-Attendance', on:true, body:`- If the Client fails to attend the scheduled shoot without prior notice:
+-- No refund will be issued.
+-- The booking will be considered fulfilled.` },
+    { id:'overtime', title:'Overtime Fees', on:true, body:`- Any time exceeding the agreed shooting duration will be charged at {overtime} times the hourly rate per hour (or part thereof).
+- Overtime must be approved by the Client during the shoot.` },
+    { id:'delivery', title:'Delivery of Content', on:true, body:`- Delivery timelines will be communicated prior to or at the time of booking.
+- Should the Client request expedited editing and delivery outside of the standard turnaround time, a rush fee of {rush}% of the total project value will be applied.
+- Rush delivery is subject to {biz}' availability and workload capacity at the time of request. Approval is not guaranteed and must be confirmed in writing by {biz}.
+- Final edited photos/videos will be delivered via agreed platforms (e.g., Google Drive, WeTransfer).
+- Raw footage/images are not included unless explicitly agreed upon in writing.` },
+    { id:'travel', title:'Travel & Parking Fees', on:true, body:`- Where the shoot location requires paid parking, security-controlled parking, or any form of parking fees, the Client shall be responsible for covering all reasonable parking costs incurred by {biz}.
+- Parking fees will be reimbursed at actual cost, unless otherwise agreed in writing prior to the shoot date.
+- {biz} will, where possible, provide proof of parking expenses upon request.` },
+    { id:'revisions', title:'Revisions & Additional Edits', on:true, body:`- The Client is entitled to {revisions} of revisions as agreed prior to booking.
+- Any additional edits beyond this will be charged at **{editRate} per edit/change**.` },
+    { id:'creative', title:'Creative Control', on:true, body:`- {biz} retains full creative control over the style, editing, and final output.
+- The Client acknowledges that final results may vary based on conditions and artistic interpretation.
+- All photographs will be edited in accordance with the established {biz} editing style, presets, and creative direction. The Client acknowledges and agrees that this editing style forms part of the artistic identity of {biz}.
+- No revisions or re-edits will be permitted for photographs once the final images have been delivered, except where images are technically faulty or incorrect due to error by {biz}.
+- Any additional or alternative editing requests will be treated as a separate service and charged accordingly, subject to availability.` },
+    { id:'usage', title:'Usage Rights & Promotion', on:true, body:`- {biz} retains the right to use all produced content for portfolio, social media, and marketing purposes.
+- This applies unless the Client specifies confidentiality in writing prior to the shoot.` },
+    { id:'client', title:'Client Responsibilities', on:true, body:`- The Client is responsible for:
+-- Ensuring punctuality at the agreed shoot time and location.
+-- Providing accurate and complete shoot details prior to the booking.
+-- Obtaining any necessary permits or permissions for the chosen shoot location.` },
+    { id:'liability', title:'Liability', on:true, body:`- {biz} will not be held liable for:
+-- Missed shots due to circumstances beyond reasonable control.
+-- Equipment failure, though all reasonable precautions are taken.
+-- External disruptions during the shoot.` },
+    { id:'force', title:'Force Majeure', on:true, body:`{biz} shall not be liable for failure to perform due to events beyond its reasonable control, including but not limited to natural disasters, government restrictions, illness, or emergencies. In the event that {biz} is unable to attend or complete a scheduled shoot due to illness or emergency, the Client will be notified as soon as reasonably possible and the booking will be rescheduled to the next mutually available date. Where rescheduling is not possible, alternative arrangements will be discussed between both parties.` },
+  ]
+};
+let CT = JSON.parse(JSON.stringify(CT_DEFAULT)), CT_DB = null;
+const CT_KEY = 'fom.contract.v1';
+const cclone = o => JSON.parse(JSON.stringify(o));
+const BIZ_FIELDS = [['name','Business name'],['tagline','Tagline'],['city','Location line'],['email','Email'],['phone','Phone'],['web','Website'],['role','Your role (invoice)'],['bank','Bank and branch name'],['holder','Account holder'],['branch','Branch code'],['acc','Account number']];
+const TERM_FIELDS = [['depositPct','Deposit (% of total)','1'],['cancelDays','Free cancellation window (days before shoot)','1'],['cancelFeePct','Late cancellation fee (% of outstanding balance)','1'],['overtime','Overtime multiplier (x hourly rate)','0.1'],['rushPct','Rush delivery fee (% of project)','1'],['editRate','Extra edit rate (R per edit)','10']];
+
+function applyCT(s){
+  if(!s || typeof s !== 'object') return;
+  const str = (v, d, max) => (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : d;
+  const num = (v, d, lo, hi) => (typeof v === 'number' && isFinite(v) && v >= lo && v <= hi) ? v : d;
+  const out = cclone(CT_DEFAULT);
+  out.title = str(s.title, out.title, 120); out.intro = str(s.intro, out.intro, 600); out.agreement = str(s.agreement, out.agreement, 600);
+  Object.keys(out.biz).forEach(k => { out.biz[k] = str(s.biz && s.biz[k], out.biz[k], 120); });
+  const t = s.terms || {};
+  out.terms = { depositPct:num(t.depositPct,50,0,100), cancelDays:Math.round(num(t.cancelDays,10,0,365)), cancelFeePct:num(t.cancelFeePct,20,0,100),
+                overtime:num(t.overtime,1.5,0,10), rushPct:num(t.rushPct,20,0,200), editRate:num(t.editRate,300,0,100000) };
+  if(Array.isArray(s.clauses) && s.clauses.length){
+    const seen = new Set();
+    const cl = s.clauses.slice(0,40).filter(c => c && typeof c.title === 'string' && c.title.trim()).map(c => {
+      let id = String(c.id || '').replace(/[^a-z0-9]/gi,'').slice(0,20) || 'c' + Math.random().toString(36).slice(2,8);
+      while(seen.has(id)) id += 'x'; seen.add(id);
+      return { id, title:c.title.trim().slice(0,80), on:c.on !== false, body:String(c.body||'').slice(0,4000) };
+    });
+    if(cl.length) out.clauses = cl;
+  }
+  CT = out;
+}
+function ctBoot(){ try{ const j = localStorage.getItem(CT_KEY); if(j) applyCT(JSON.parse(j)); }catch(e){} }
+function ctCloudLoad(db){
+  CT_DB = db;
+  db.collection('settings').doc('contract').get().then(snap => {
+    if(!snap.exists || !snap.data().json) return;
+    let s; try{ s = JSON.parse(snap.data().json); }catch(e){ return; }
+    applyCT(s); try{ localStorage.setItem(CT_KEY, snap.data().json); }catch(e){}
+    ctDefaults(); refreshPreview();
+  }).catch(e => console.warn('contract settings:', e));
+}
+function ctDefaults(){            // the extra-edit-rate box starts from your saved rate
+  const el = $('cEditRate'); if(el && !new URLSearchParams(location.search).get('editRate') && !el.dataset.touched) el.value = CT.terms.editRate;
+}
+
+/* ---- text to HTML: paragraphs, "- " bullets, "-- " sub bullets, **bold**, {tokens} ---- */
+function ctInline(text, f, ct){
+  const t = ct.terms, nums = {}; let n = 0;
+  ct.clauses.forEach(c => { if(c.on) nums[c.id] = ++n; });
+  let h = esc(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  return h.replace(/\{(\w+)(?::(\w+))?\}/g, (m, k, arg) => {
+    switch(k){
+      case 'biz': return esc(ct.biz.name);
+      case 'depositPct': return t.depositPct;
+      case 'balancePct': return Math.round((100 - t.depositPct) * 100) / 100;
+      case 'cancelDays': return t.cancelDays;
+      case 'cancelFee': return t.cancelFeePct;
+      case 'overtime': return t.overtime;
+      case 'rush': return t.rushPct;
+      case 'editRate': return RZA(f.editRate);
+      case 'revisions': return val(f.revisions, '[revisions]');
+      case 'n': return nums[arg] != null ? nums[arg] : '?';
+      default: return m;
+    }
+  });
+}
+function ctBody(text, f, ct){
+  let out = '', ul = false, sub = false, li = false;
+  const closeSub = () => { if(sub){ out += '</ul>'; sub = false; } };
+  const closeLi = () => { closeSub(); if(li){ out += '</li>'; li = false; } };
+  const closeUl = () => { closeLi(); if(ul){ out += '</ul>'; ul = false; } };
+  String(text||'').split('\n').map(l => l.replace(/\s+$/,'')).filter(l => l.trim()).forEach(l => {
+    if(/^--\s+/.test(l)){
+      if(!li){ if(!ul){ out += '<ul>'; ul = true; } out += '<li>'; li = true; }
+      if(!sub){ out += '<ul style="margin-top:4px;">'; sub = true; }
+      out += '<li>' + ctInline(l.replace(/^--\s+/, ''), f, ct) + '</li>';
+    } else if(/^-\s+/.test(l)){
+      closeLi(); if(!ul){ out += '<ul>'; ul = true; }
+      out += '<li>' + ctInline(l.replace(/^-\s+/, ''), f, ct); li = true;
+    } else { closeUl(); out += '<p>' + ctInline(l, f, ct) + '</p>'; }
+  });
+  closeUl(); return out;
+}
+function ctClauses(f, ct){
+  let n = 0;
+  return ct.clauses.filter(c => c.on).map(c => `<h2>${++n}. ${esc(c.title)}</h2>\n${ctBody(c.body, f, ct)}`).join('\n\n');
+}
+
+/* ---- editor ---- */
+let CTD = null, ctTab = 'clauses', ctSaved = '', lastTA = null, ctToastT;
+const ctDirty = () => CTD && JSON.stringify(CTD) !== ctSaved;
+function ctToast(m){ const t = $('dmToast'); t.textContent = m; t.classList.add('show'); clearTimeout(ctToastT); ctToastT = setTimeout(() => t.classList.remove('show'), 2600); }
+const KNOWN_TOK = ['biz','depositPct','balancePct','cancelDays','cancelFee','overtime','rush','editRate','revisions','n'];
+function badTokens(text, ids){
+  const bad = []; String(text||'').replace(/\{(\w+)(?::(\w+))?\}/g, (m, k, a) => { if(KNOWN_TOK.indexOf(k) < 0 || (k === 'n' && ids.indexOf(a) < 0)) bad.push(m); return m; }); return bad;
+}
+function ctHTML(){
+  if(ctTab === 'biz') return `
+    <section class="dm-sec"><h3>Business details</h3>
+      <p class="dm-help">Used on the contract header and footer, the signature block and the calculator invoice (contact block, bank details).</p>
+      <div class="dm-grid">${BIZ_FIELDS.map(([k, l]) => `<label class="dm-f"><span>${l}</span><input type="text" data-b="${k}" value="${esc(CTD.biz[k])}" maxlength="120"></label>`).join('')}</div>
+    </section>`;
+  if(ctTab === 'terms') return `
+    <section class="dm-sec"><h3>Key terms</h3>
+      <p class="dm-help">These numbers flow into every clause that mentions them (deposit, cancellation, overtime, rush fee, extra edits) and into the summary table. Change one here and the whole contract stays consistent. The calculator invoice and payment notes use the deposit % too.</p>
+      <div class="dm-grid">${TERM_FIELDS.map(([k, l, st]) => `<label class="dm-f"><span>${l}</span><input type="number" min="0" step="${st}" data-t="${k}" value="${CTD.terms[k]}"></label>`).join('')}</div>
+      <p class="dm-help" style="margin-top:12px">Balance is worked out for you: <b>${Math.round((100 - CTD.terms.depositPct) * 100) / 100}%</b> of the total.</p>
+    </section>`;
+  const ids = CTD.clauses.map(c => c.id); let n = 0;
+  const toks = [['{biz}','your name'],['{depositPct}','deposit %'],['{balancePct}','balance %'],['{cancelDays}','cancel days'],['{cancelFee}','cancel fee %'],['{overtime}','overtime x'],['{rush}','rush %'],['{editRate}','edit rate'],['{revisions}','revisions']];
+  return `
+    <section class="dm-sec"><h3>Document wording</h3>
+      <label class="dm-f"><span>Title</span><input type="text" data-w="title" value="${esc(CTD.title)}" maxlength="120"></label>
+      <label class="dm-f" style="margin-top:10px"><span>Opening line under the title</span><textarea rows="2" data-w="intro">${esc(CTD.intro)}</textarea></label>
+      <label class="dm-f" style="margin-top:10px"><span>Closing agreement line</span><textarea rows="2" data-w="agreement">${esc(CTD.agreement)}</textarea></label>
+    </section>
+    <section class="dm-sec"><h3>Clauses</h3>
+      <p class="dm-help">One line per point. Start a line with <b>-</b> for a bullet, <b>--</b> for a sub-point, or plain text for a paragraph. Wrap words in <b>**double stars**</b> for bold. Clause numbers update on their own when you reorder or switch one off. Tap a chip to drop a live value into the clause you are editing.</p>
+      <div class="ce-toks">${toks.map(([t, l]) => `<button type="button" class="ce-tok" data-tok="${t}">${l}</button>`).join('')}</div>
+      ${CTD.clauses.map((c, i) => { const num = c.on ? ++n : '-'; const bad = badTokens(c.body, ids); const def = CT_DEFAULT.clauses.find(d => d.id === c.id);
+        return `<div class="dm-card${c.on ? '' : ' ce-off'}">
+          <div class="dm-card-h"><span class="ce-num">${num}</span><input type="text" class="nm" data-c="title" data-i="${i}" value="${esc(c.title)}" maxlength="80">
+            <button type="button" class="dm-mini" data-act="up" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Move up">&uarr;</button>
+            <button type="button" class="dm-mini" data-act="down" data-i="${i}" ${i === CTD.clauses.length - 1 ? 'disabled' : ''} aria-label="Move down">&darr;</button></div>
+          <textarea rows="${Math.min(14, Math.max(3, c.body.split('\n').length + 1))}" data-c="body" data-i="${i}">${esc(c.body)}</textarea>
+          ${bad.length ? `<div class="ce-bad">Unknown value ${esc(bad.join(', '))}. It will print as typed.</div>` : ''}
+          <div class="ce-bar"><label class="ce-sw"><input type="checkbox" data-c="on" data-i="${i}" ${c.on ? 'checked' : ''}> Include in contract</label>
+            ${def && def.body !== c.body ? `<button type="button" class="ce-link" data-act="restore" data-i="${i}">Restore original wording</button>` : ''}
+            <button type="button" class="ce-link del" data-act="del" data-i="${i}">Delete</button></div>
+        </div>`; }).join('')}
+      <button class="dm-mini fill" type="button" data-act="add">+ Add a clause</button>
+    </section>`;
+}
+function ctDraw(keep){
+  [].forEach.call($('dmTabs').querySelectorAll('button'), b => b.classList.toggle('on', b.dataset.t === ctTab));
+  const st = $('dmBody').scrollTop; $('dmBody').innerHTML = ctHTML(); $('dmBody').scrollTop = keep ? st : 0; ctState();
+}
+function ctState(){
+  const d = ctDirty(), s = $('dmState'); s.className = 'dm-state ' + (d ? 'dirty' : 'ok'); s.textContent = d ? 'Unsaved changes' : 'Saved';
+  $('dmSave').disabled = !d; $('dmSave').style.opacity = d ? '1' : '.5';
+}
+function openCT(){ CTD = cclone(CT); ctSaved = JSON.stringify(CTD); ctTab = 'clauses'; $('dmScrim').classList.add('show'); $('dm').classList.add('show'); document.body.style.overflow = 'hidden'; ctDraw(); }
+function closeCT(force){ if(!force && ctDirty() && !confirm('Close without saving your changes?')) return; $('dmScrim').classList.remove('show'); $('dm').classList.remove('show'); document.body.style.overflow = ''; }
+async function saveCT(){
+  if(CTD.clauses.some(c => !c.title.trim())){ ctToast('Every clause needs a title'); return; }
+  applyCT(CTD); const j = JSON.stringify(CT); let ok = !!CT_DB;
+  try{ localStorage.setItem(CT_KEY, j); }catch(e){}
+  if(CT_DB){ try{ await CT_DB.collection('settings').doc('contract').set({ json:j, updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); }catch(e){ ok = false; console.warn(e); } }
+  CTD = cclone(CT); ctSaved = JSON.stringify(CTD); ctDefaults(); refreshPreview(); ctDraw(true);
+  ctToast(ok ? 'Saved. New contracts use your wording.' : 'Saved on this device only. Add the settings rule in Firestore to sync it.');
+}
+function resetCT(){
+  if(!confirm('Reset all wording, terms and business details back to the originals? Your edits and added clauses will be removed.')) return;
+  CT = cclone(CT_DEFAULT); try{ localStorage.removeItem(CT_KEY); }catch(e){}
+  if(CT_DB) CT_DB.collection('settings').doc('contract').set({ json:JSON.stringify(CT), updatedAt:firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {});
+  CTD = cclone(CT); ctSaved = JSON.stringify(CTD); ctDefaults(); refreshPreview(); ctDraw(); ctToast('Back to the original contract');
+}
+function previewDraft(){
+  const w = window.open('', '_blank'); if(!w){ ctToast('Allow pop-ups to preview'); return; }
+  const tmp = cclone(CTD); w.document.open(); w.document.write(buildContract(fields(), tmp)); w.document.close();
+}
+(function wireCT(){
+  $('editBtn').onclick = openCT; $('dmClose').onclick = () => closeCT(); $('dmScrim').onclick = () => closeCT();
+  $('dmSave').onclick = saveCT; $('dmReset').onclick = resetCT; $('dmPreview').onclick = previewDraft;
+  addEventListener('keydown', e => { if(e.key === 'Escape' && $('dm').classList.contains('show')) closeCT(); });
+  $('dmTabs').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ ctTab = b.dataset.t; ctDraw(); } });
+  $('dmBody').addEventListener('focusin', e => { if(e.target.tagName === 'TEXTAREA' && e.target.dataset.c === 'body') lastTA = e.target; });
+  $('dmBody').addEventListener('input', e => {
+    const t = e.target, i = +t.dataset.i;
+    if(t.dataset.b) CTD.biz[t.dataset.b] = t.value;
+    else if(t.dataset.t) CTD.terms[t.dataset.t] = Math.max(0, parseFloat(t.value) || 0);
+    else if(t.dataset.w) CTD[t.dataset.w] = t.value;
+    else if(t.dataset.c === 'title') CTD.clauses[i].title = t.value;
+    else if(t.dataset.c === 'body') CTD.clauses[i].body = t.value;
+    else return;
+    ctState();
+    if(t.dataset.t === 'depositPct'){ const p = $('dmBody').querySelector('.dm-help b'); if(p) p.textContent = Math.round((100 - CTD.terms.depositPct) * 100) / 100 + '%'; }
+  });
+  $('dmBody').addEventListener('change', e => { const t = e.target; if(t.dataset.c === 'on'){ CTD.clauses[+t.dataset.i].on = t.checked; ctDraw(true); } if(t.dataset.c === 'body') ctDraw(true); });
+  $('dmBody').addEventListener('click', e => {
+    const tk = e.target.closest('[data-tok]');
+    if(tk){
+      if(!lastTA || !document.body.contains(lastTA)){ ctToast('Tap inside a clause first'); return; }
+      const a = lastTA, s = a.selectionStart, en = a.selectionEnd, tok = tk.dataset.tok;
+      a.value = a.value.slice(0, s) + tok + a.value.slice(en); a.selectionStart = a.selectionEnd = s + tok.length; a.focus();
+      CTD.clauses[+a.dataset.i].body = a.value; ctState(); return;
+    }
+    const b = e.target.closest('[data-act]'); if(!b) return;
+    const i = +b.dataset.i, c = CTD.clauses, act = b.dataset.act;
+    if(act === 'up' && i > 0){ [c[i-1], c[i]] = [c[i], c[i-1]]; ctDraw(true); }
+    else if(act === 'down' && i < c.length - 1){ [c[i+1], c[i]] = [c[i], c[i+1]]; ctDraw(true); }
+    else if(act === 'restore'){ const d = CT_DEFAULT.clauses.find(x => x.id === c[i].id); if(d){ c[i].body = d.body; c[i].title = d.title; ctDraw(true); } }
+    else if(act === 'del'){ if(confirm('Delete "' + c[i].title + '"? You can switch it off instead to keep the wording.')){ c.splice(i, 1); ctDraw(true); } }
+    else if(act === 'add'){ c.push({ id:'c' + Date.now().toString(36), title:'New clause', on:true, body:'- ' }); ctDraw(true); const cards = $('dmBody').querySelectorAll('.dm-card'); cards[cards.length - 1].scrollIntoView({ block:'center' }); }
+  });
+})();
 
 function fields(){
     return {
@@ -214,13 +599,14 @@ function fields(){
         deposit:   +$('cDeposit').value||0,
         balanceBy: $('cBalanceBy').value,
         revisions: $('cRevisions').value.trim(),
-        editRate:  +$('cEditRate').value||300,
+        editRate:  +$('cEditRate').value||CT.terms.editRate,
     };
 }
 
-function buildContract(f){
+function buildContract(f, ct){
+    ct = ct || CT;
     const balance = Math.max(0, f.total - f.deposit);
-    const depositDisplay = f.deposit > 0 ? RZA(f.deposit) : RZA(f.total * 0.5);
+    const depositDisplay = f.deposit > 0 ? RZA(f.deposit) : RZA(f.total * ct.terms.depositPct / 100);
 
     return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
@@ -253,148 +639,13 @@ table.st .lbl{font-weight:700;width:42%;}
 </style></head><body>
 <div class="ci">
 <div class="logo-row">
-    <div class="brand">FOM STUDIOS</div>
-    <div class="tagline">Photography &amp; Videography<br>Johannesburg, South Africa<br>info@fomstudios.co.za &nbsp;&middot;&nbsp; 073 755 3136</div>
+    <div class="brand">${esc(ct.biz.name.toUpperCase())}</div>
+    <div class="tagline">${esc(ct.biz.tagline)}<br>${esc(ct.biz.city)}<br>${esc(ct.biz.email)} &nbsp;&middot;&nbsp; ${esc(ct.biz.phone)}</div>
 </div>
-<h1>PHOTOGRAPHY &amp; VIDEOGRAPHY AGREEMENT</h1>
-<div class="subtitle">This Agreement is entered into between <strong>FOM Studios</strong> ("Service Provider") and the undersigned <strong>Client</strong>.</div>
+<h1>${esc(ct.title)}</h1>
+<div class="subtitle">${ctInline(ct.intro, f, ct)}</div>
 
-<h2>1. Services</h2>
-<p>FOM Studios agrees to provide photography and/or videography services as agreed upon with the Client, including but not limited to shooting, editing, and delivery of final media.</p>
-
-<h2>2. Booking &amp; Payment Terms</h2>
-<ul>
-<li>A <strong>50% non-refundable deposit</strong> is required to secure the booking date.</li>
-<li>The remaining <strong>50% must be paid in full prior to the shoot date</strong>.</li>
-<li><strong>No services will be rendered unless full payment has been received.</strong></li>
-<li>Payment confirms the booking and acceptance of this agreement.</li>
-</ul>
-
-<h2>3. Cancellation Policy</h2>
-<ul>
-<li>The 50% booking deposit is strictly <strong>non-refundable</strong> and secures the scheduled date and services of FOM Studios.</li>
-<li>In the event that the Client cancels the booking <strong>10 (ten) days</strong> or more prior to the scheduled shoot date, no further payment shall be due beyond the deposit already paid.</li>
-<li>In the event that the Client cancels the booking less than <strong>10 (ten) days</strong> prior to the scheduled shoot date, the Client shall remain <strong>liable</strong> for an additional fee equal to 20% of the outstanding balance (being 20% of the remaining 50% of the total fee).</li>
-<li>Any cancellation must be submitted in writing to be considered valid.</li>
-</ul>
-
-<h2>4. Rescheduling Policy</h2>
-<ul>
-<li>The Client may request to reschedule the shoot; however, no refunds will be issued under any rescheduling circumstances.</li>
-<li>Only one (1) reschedule request will be permitted per booking. Any further changes will be treated as a cancellation and Clause 3 (Cancellation Policy) will apply.</li>
-<li>Where a reschedule is approved, all payments made will be transferred to the new agreed date, subject to FOM Studios' availability.</li>
-<li>Rescheduling requests must be submitted in writing and are strictly subject to availability.</li>
-</ul>
-
-<h2>5. Weather &amp; Unforeseen Circumstances</h2>
-<ul>
-<li>In the event of adverse weather conditions or natural causes that prevent the shoot from proceeding:
-  <ul style="margin-top:4px;">
-    <li>The shoot will be rescheduled at no additional cost to the Client, subject to availability.</li>
-    <li>If rescheduling is not possible, a mutually agreed refund or credit may be issued.</li>
-  </ul>
-</li>
-<li>FOM Studios reserves the right to determine whether conditions are unsuitable for shooting.</li>
-</ul>
-
-<h2>6. Drone Operation</h2>
-<ul>
-<li>Drone services (if included in the agreed package) are strictly subject to weather conditions and legal flight restrictions.</li>
-<li>FOM Studios reserves the right to determine whether conditions are safe and suitable for drone operation, including but not limited to wind speed, rain, visibility, and airspace restrictions.</li>
-<li>If drone operations cannot be performed due to weather or safety concerns, they will either be rescheduled (subject to availability) or cancelled.</li>
-<li>In the event that drone services cannot be performed due to weather, safety concerns, or regulatory restrictions beyond the control of FOM Studios, the drone portion of the service will be refunded to the Client or alternatively excluded from the final invoice.</li>
-<li>All drone operations will be conducted in full compliance with applicable aviation laws and safety requirements.</li>
-</ul>
-
-<h2>7. Rollers</h2>
-<ul>
-<li>Safety shall take precedence over the capture of any shot at all times.</li>
-<li>The driver shall comply with all applicable road laws, regardless of any instruction or signal from the videographer or crew.</li>
-<li>The driver is solely responsible for independently determining that it is safe to perform any lane change, overtake, or repositioning maneuver; no signal from the crew shall constitute confirmation that such maneuver is safe.</li>
-<li>The driver and/or Client may delay, decline, or terminate any requested maneuver at their sole discretion.</li>
-<li>FOM Studios reserves the right to pause, refuse, or discontinue any rolling shot where conditions are deemed unsafe.</li>
-<li>The Client is responsible for ensuring that all participating vehicles are roadworthy, legally licensed, and adequately insured.</li>
-<li>FOM Studios shall not be liable for any accidents, damage, injury, fines, or other incidents arising during rolling shots, as vehicle operation remains outside its control once vehicles are in motion.</li>
-<li>All participants acknowledge and accept that they participate in rolling shots entirely at their own risk.</li>
-</ul>
-
-<h2>8. Client Non-Attendance</h2>
-<ul>
-<li>If the Client fails to attend the scheduled shoot without prior notice:
-  <ul style="margin-top:4px;">
-    <li>No refund will be issued.</li>
-    <li>The booking will be considered fulfilled.</li>
-  </ul>
-</li>
-</ul>
-
-<h2>9. Overtime Fees</h2>
-<ul>
-<li>Any time exceeding the agreed shooting duration will be charged at 1.5 times the hourly rate per hour (or part thereof).</li>
-<li>Overtime must be approved by the Client during the shoot.</li>
-</ul>
-
-<h2>10. Delivery of Content</h2>
-<ul>
-<li>Delivery timelines will be communicated prior to or at the time of booking.</li>
-<li>Should the Client request expedited editing and delivery outside of the standard turnaround time, a rush fee of 20% of the total project value will be applied.</li>
-<li>Rush delivery is subject to FOM Studios' availability and workload capacity at the time of request. Approval is not guaranteed and must be confirmed in writing by FOM Studios.</li>
-<li>Final edited photos/videos will be delivered via agreed platforms (e.g., Google Drive, WeTransfer).</li>
-<li>Raw footage/images are not included unless explicitly agreed upon in writing.</li>
-</ul>
-
-<h2>11. Travel &amp; Parking Fees</h2>
-<ul>
-<li>Where the shoot location requires paid parking, security-controlled parking, or any form of parking fees, the Client shall be responsible for covering all reasonable parking costs incurred by FOM Studios.</li>
-<li>Parking fees will be reimbursed at actual cost, unless otherwise agreed in writing prior to the shoot date.</li>
-<li>FOM Studios will, where possible, provide proof of parking expenses upon request.</li>
-</ul>
-
-<h2>12. Revisions &amp; Additional Edits</h2>
-<ul>
-<li>The Client is entitled to ${val(f.revisions,'[revisions]')} of revisions as agreed prior to booking.</li>
-<li>Any additional edits beyond this will be charged at <strong>${RZA(f.editRate)} per edit/change</strong>.</li>
-</ul>
-
-<h2>13. Creative Control</h2>
-<ul>
-<li>FOM Studios retains full creative control over the style, editing, and final output.</li>
-<li>The Client acknowledges that final results may vary based on conditions and artistic interpretation.</li>
-<li>All photographs will be edited in accordance with the established FOM Studios editing style, presets, and creative direction. The Client acknowledges and agrees that this editing style forms part of the artistic identity of FOM Studios.</li>
-<li>No revisions or re-edits will be permitted for photographs once the final images have been delivered, except where images are technically faulty or incorrect due to error by FOM Studios.</li>
-<li>Any additional or alternative editing requests will be treated as a separate service and charged accordingly, subject to availability.</li>
-</ul>
-
-<h2>14. Usage Rights &amp; Promotion</h2>
-<ul>
-<li>FOM Studios retains the right to use all produced content for portfolio, social media, and marketing purposes.</li>
-<li>This applies unless the Client specifies confidentiality in writing prior to the shoot.</li>
-</ul>
-
-<h2>15. Client Responsibilities</h2>
-<ul>
-<li>The Client is responsible for:
-  <ul style="margin-top:4px;">
-    <li>Ensuring punctuality at the agreed shoot time and location.</li>
-    <li>Providing accurate and complete shoot details prior to the booking.</li>
-    <li>Obtaining any necessary permits or permissions for the chosen shoot location.</li>
-  </ul>
-</li>
-</ul>
-
-<h2>16. Liability</h2>
-<ul>
-<li>FOM Studios will not be held liable for:
-  <ul style="margin-top:4px;">
-    <li>Missed shots due to circumstances beyond reasonable control.</li>
-    <li>Equipment failure, though all reasonable precautions are taken.</li>
-    <li>External disruptions during the shoot.</li>
-  </ul>
-</li>
-</ul>
-
-<h2>17. Force Majeure</h2>
-<p>FOM Studios shall not be liable for failure to perform due to events beyond its reasonable control, including but not limited to natural disasters, government restrictions, illness, or emergencies. In the event that FOM Studios is unable to attend or complete a scheduled shoot due to illness or emergency, the Client will be notified as soon as reasonably possible and the booking will be rescheduled to the next mutually available date. Where rescheduling is not possible, alternative arrangements will be discussed between both parties.</p>
+${ctClauses(f, ct)}
 
 <h2>Service Summary &amp; Payment Details</h2>
 <table class="st">
@@ -409,7 +660,7 @@ ${f.time ? `<tr><td class="lbl">Shoot Time</td><td>${esc(f.time)}</td></tr>` : '
 ${f.addons ? `<tr><td class="lbl">Add-on Deliverables</td><td>${esc(f.addons)}</td></tr>` : ''}
 <tr><td class="lbl">Delivery Timeframe</td><td>${val(f.delivery,'[delivery timeframe]')}</td></tr>
 <tr><td class="lbl">Total Fee (ZAR)</td><td><strong>${RZA(f.total)}</strong></td></tr>
-<tr><td class="lbl">50% Deposit Required</td><td><strong>${depositDisplay}</strong></td></tr>
+<tr><td class="lbl">${ct.terms.depositPct}% Deposit Required</td><td><strong>${depositDisplay}</strong></td></tr>
 <tr><td class="lbl">Remaining Balance payable by</td><td>${f.balanceBy ? esc(niceDate(f.balanceBy)) : '<span style="color:#c0392b;">[ date ]</span>'}</td></tr>
 ${f.revisions ? `<tr><td class="lbl">Rounds of Revisions</td><td>${esc(f.revisions)}</td></tr>` : ''}
 </table>
@@ -419,7 +670,7 @@ ${f.revisions ? `<tr><td class="lbl">Rounds of Revisions</td><td>${esc(f.revisio
 </div>
 
 <h2>Agreement</h2>
-<p>By making payment, the Client confirms that they have read, understood, and agreed to all terms outlined in this contract.</p>
+<p>${ctInline(ct.agreement, f, ct)}</p>
 
 <div class="sig-grid">
     <div class="sig-party">
@@ -431,12 +682,12 @@ ${f.revisions ? `<tr><td class="lbl">Rounds of Revisions</td><td>${esc(f.revisio
         <div style="height:42px;"></div>
     </div>
     <div class="sig-party">
-        <h3>FOM Studios</h3>
+        <h3>${esc(ct.biz.name)}</h3>
         <div class="sig-lbl">Authorised Representative</div>
-        <div class="sig-val">FOM Studios</div>
+        <div class="sig-val">${esc(ct.biz.name)}</div>
         <div class="sig-line"></div>
         <div class="sig-lbl">Signature</div>
-        <div class="sig-written">FOM Studios</div>
+        <div class="sig-written">${esc(ct.biz.name)}</div>
         <div class="sig-line"></div>
         <div class="sig-lbl">Date</div>
         <div class="sig-val">${todayNice()}</div>
@@ -444,8 +695,8 @@ ${f.revisions ? `<tr><td class="lbl">Rounds of Revisions</td><td>${esc(f.revisio
 </div>
 
 <div class="footer-bar">
-    <span>FOM STUDIOS &nbsp;&middot;&nbsp; Photography &amp; Videography &nbsp;&middot;&nbsp; Johannesburg, South Africa</span>
-    <span>info@fomstudios.co.za &nbsp;&middot;&nbsp; 073 755 3136 &nbsp;&middot;&nbsp; www.fomstudios.co.za</span>
+    <span>${esc(ct.biz.name.toUpperCase())} &nbsp;&middot;&nbsp; ${esc(ct.biz.tagline)} &nbsp;&middot;&nbsp; ${esc(ct.biz.city)}</span>
+    <span>${esc(ct.biz.email)} &nbsp;&middot;&nbsp; ${esc(ct.biz.phone)} &nbsp;&middot;&nbsp; ${esc(ct.biz.web)}</span>
 </div>
 </div>
 </body></html>`;
@@ -482,6 +733,8 @@ document.querySelector('.panel').addEventListener('change', refreshPreview);
     Object.keys(map).forEach(k=>{ if(p.get(k)!=null && $(map[k])) $(map[k]).value=p.get(k); });
 })();
 
+ctBoot(); ctDefaults();
+$('cEditRate').addEventListener('input',function(){ this.dataset.touched='1'; });
 refreshPreview();
 
 // hamburger
@@ -525,6 +778,7 @@ sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
                         }
                         gate.style.display='none';
                         if(lb) lb.style.display='inline-block';
+                        if(window.ctCloudLoad) window.ctCloudLoad(db);
                     }).catch(function(err){ console.warn('Admin check failed:',err); gate.style.display='flex'; auth.signOut(); });
                 } else {
                     gate.style.display='flex';

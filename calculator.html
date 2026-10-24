@@ -558,14 +558,14 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
       </div>
       <div class="is-meta">
         <div class="inv-no" id="psInvNo">INVOICE #1</div>
-        <div class="strong">FOM Studios</div>
-        <div>Johannesburg</div>
-        <div>South Africa</div>
+        <div class="strong" id="ivbName">FOM Studios</div>
+        <div id="ivbCity1">Johannesburg</div>
+        <div id="ivbCity2">South Africa</div>
         <div style="height:10px;"></div>
-        <div>Photographer / Videographer</div>
-        <div>info@fomstudios.co.za</div>
-        <div class="web">www.fomstudios.co.za</div>
-        <div>0737553136</div>
+        <div id="ivbRole">Photographer / Videographer</div>
+        <div id="ivbEmail">info@fomstudios.co.za</div>
+        <div class="web" id="ivbWeb">www.fomstudios.co.za</div>
+        <div id="ivbPhone">0737553136</div>
       </div>
     </div>
 
@@ -605,9 +605,9 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
           <p>Payment confirms booking</p>
         </div>
         <div class="is-bank">
-          <div><span class="bk">Standard Bank Lenasia</span><span class="bv">Ishaaq Adam</span></div>
-          <div><span class="bk">Branch code:</span><span class="bv">015137</span></div>
-          <div><span class="bk">Acc no.:</span><span class="bv">10097158842</span></div>
+          <div><span class="bk" id="ivbBank">Standard Bank Lenasia</span><span class="bv" id="ivbHolder">Ishaaq Adam</span></div>
+          <div><span class="bk">Branch code:</span><span class="bv" id="ivbBranch">015137</span></div>
+          <div><span class="bk">Acc no.:</span><span class="bv" id="ivbAcc">10097158842</span></div>
         </div>
       </div>
       <div class="is-mascot">
@@ -1206,7 +1206,7 @@ async function preparePayLinks(){
   } else { $('psPayDeposit').style.display='none'; }
   jobs.push(createCheckout(invoiceTotal,'full').then(u=>{ const b=$('psPayFull'); b.href=u; b.textContent=`Pay Full - ${RZA(invoiceTotal)}`; }));
   await Promise.all(jobs);
-  note.textContent = 'Secure payment via Yoco. 50% non-refundable deposit secures your booking; balance payable before the shoot date.';
+  note.textContent = `Secure payment via Yoco. ${PAY.depositPct}% non-refundable deposit secures your booking; balance payable before the shoot date.`;
   btns.style.display = 'flex'; note.style.display = 'block';
 }
 /* ---- shareable pay link (works on mobile, unlike PDF buttons) ---- */
@@ -1362,9 +1362,21 @@ function userPackageContents(type){
   return out;
 }
 
+/* ---- business + bank details and deposit %: edited on the Contract page (Edit contract) ---- */
+function applyBiz(s){
+  try{
+    const b = (s && s.biz) || {}, t = (s && s.terms) || {}, set = (id, v) => { const e = $(id); if(e && v) e.textContent = v; };
+    set('ivbName', b.name); set('ivbRole', b.role); set('ivbEmail', b.email); set('ivbWeb', b.web); set('ivbPhone', b.phone);
+    set('ivbBank', b.bank); set('ivbHolder', b.holder); set('ivbBranch', b.branch); set('ivbAcc', b.acc);
+    if(b.city){ const c = String(b.city).split(',').map(x => x.trim()); $('ivbCity1').textContent = c[0]; $('ivbCity2').textContent = c.slice(1).join(', '); }
+    if(typeof t.depositPct === 'number' && t.depositPct >= 0 && t.depositPct <= 100){ PAY.depositPct = t.depositPct; const d = $('depPct'); if(d) d.value = t.depositPct; }
+  }catch(e){}
+}
+
 /* ---- load / save ---- */
 function dataBoot(){
   try{ const j = localStorage.getItem(LS_KEY); if(j) applySettings(JSON.parse(j)); }catch(e){}
+  try{ const c = localStorage.getItem('fom.contract.v1'); if(c) applyBiz(JSON.parse(c)); }catch(e){}
   buildTypeOptions();
 }
 function calcCloudLoad(db){            // called once you are logged in
@@ -1377,6 +1389,10 @@ function calcCloudLoad(db){            // called once you are logged in
     try{ localStorage.setItem(LS_KEY, j); }catch(e){}
     buildTypeOptions(); buildExtraOptions(); render();
   }).catch(e => console.warn('calculator settings:', e));
+  db.collection('settings').doc('contract').get().then(snap => {
+    if(!snap.exists || !snap.data().json) return;
+    try{ const s = JSON.parse(snap.data().json); applyBiz(s); localStorage.setItem('fom.contract.v1', snap.data().json); }catch(e){}
+  }).catch(e => console.warn('contract settings:', e));
 }
 
 /* ╔══════════════════ PACKAGE ADVISOR (works offline) ═══════════════╗
