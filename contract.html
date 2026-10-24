@@ -290,6 +290,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     <button type="button" data-t="clauses" class="on">Clauses</button>
     <button type="button" data-t="terms">Key terms</button>
     <button type="button" data-t="biz">Business</button>
+    <button type="button" data-t="history">History</button>
   </div>
   <div class="dm-body" id="dmBody"></div>
   <div class="dm-foot">
@@ -397,8 +398,8 @@ const cclone = o => JSON.parse(JSON.stringify(o));
 const BIZ_FIELDS = [['name','Business name'],['tagline','Tagline'],['city','Location line'],['email','Email'],['phone','Phone'],['web','Website'],['role','Your role (invoice)'],['bank','Bank and branch name'],['holder','Account holder'],['branch','Branch code'],['acc','Account number']];
 const TERM_FIELDS = [['depositPct','Deposit (% of total)','1'],['cancelDays','Free cancellation window (days before shoot)','1'],['cancelFeePct','Late cancellation fee (% of outstanding balance)','1'],['overtime','Overtime multiplier (x hourly rate)','0.1'],['rushPct','Rush delivery fee (% of project)','1'],['editRate','Extra edit rate (R per edit)','10']];
 
-function applyCT(s){
-  if(!s || typeof s !== 'object') return;
+function ctClean(s){
+  s = (s && typeof s === 'object') ? s : {};
   const str = (v, d, max) => (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : d;
   const num = (v, d, lo, hi) => (typeof v === 'number' && isFinite(v) && v >= lo && v <= hi) ? v : d;
   const out = cclone(CT_DEFAULT);
@@ -416,7 +417,41 @@ function applyCT(s){
     });
     if(cl.length) out.clauses = cl;
   }
+  return out;
+}
+const contentOf = x => ({ title:x.title, intro:x.intro, agreement:x.agreement, biz:cclone(x.biz), terms:cclone(x.terms), clauses:cclone(x.clauses) });
+function applyCT(s){
+  if(!s || typeof s !== 'object') return;
+  const out = ctClean(s);
+  out.version = Math.max(1, Math.round(+s.version) || 1);
+  out.versionAt = typeof s.versionAt === 'string' ? s.versionAt.slice(0, 40) : '';
+  out.history = Array.isArray(s.history) ? s.history.slice(0, 50).map(h => ({
+    v:Math.round(+h.v) || 0, at:String(h.at || '').slice(0, 40), note:String(h.note || '').slice(0, 500),
+    snap:(h.snap && typeof h.snap === 'object') ? contentOf(ctClean(h.snap)) : null })).filter(h => h.v > 0) : [];
   CT = out;
+}
+/* plain-words summary of what changed between two saved versions */
+function ctDiff(a, b){
+  const out = [];
+  if(a.title !== b.title || a.intro !== b.intro || a.agreement !== b.agreement) out.push('Changed the title, opening or closing line');
+  TERM_FIELDS.forEach(([k, l]) => { if(a.terms[k] !== b.terms[k]) out.push(l.replace(/ \(.*\)/, '') + ' ' + a.terms[k] + ' to ' + b.terms[k]); });
+  const bc = BIZ_FIELDS.filter(([k]) => a.biz[k] !== b.biz[k]).map(([, l]) => l);
+  if(bc.length) out.push('Business details (' + bc.join(', ') + ')');
+  const am = {}; a.clauses.forEach(c => { am[c.id] = c; });
+  const bm = {}; b.clauses.forEach(c => { bm[c.id] = c; });
+  b.clauses.forEach(c => {
+    const o = am[c.id];
+    if(!o) out.push('Added "' + c.title + '"');
+    else{
+      if(o.on !== c.on) out.push((c.on ? 'Switched on "' : 'Switched off "') + c.title + '"');
+      if(o.body !== c.body || o.title !== c.title) out.push('Edited "' + c.title + '"');
+    }
+  });
+  a.clauses.forEach(c => { if(!bm[c.id]) out.push('Removed "' + c.title + '"'); });
+  const keep = a.clauses.filter(c => bm[c.id]).map(c => c.id).join(), keepB = b.clauses.filter(c => am[c.id]).map(c => c.id).join();
+  if(keep !== keepB) out.push('Reordered clauses');
+  if(!out.length) return '';
+  return out.length > 6 ? out.slice(0, 6).join('; ') + '; and ' + (out.length - 6) + ' more' : out.join('; ');
 }
 function ctBoot(){ try{ const j = localStorage.getItem(CT_KEY); if(j) applyCT(JSON.parse(j)); }catch(e){} }
 function ctCloudLoad(db){
@@ -429,6 +464,7 @@ function ctCloudLoad(db){
   }).catch(e => console.warn('contract settings:', e));
 }
 function ctDefaults(){            // the extra-edit-rate box starts from your saved rate
+  const eb = $('editBtn'); if(eb) eb.textContent = 'Edit contract (v' + (CT.version || 1) + ')';
   const el = $('cEditRate'); if(el && !new URLSearchParams(location.search).get('editRate') && !el.dataset.touched) el.value = CT.terms.editRate;
 }
 
@@ -484,6 +520,17 @@ function badTokens(text, ids){
   const bad = []; String(text||'').replace(/\{(\w+)(?::(\w+))?\}/g, (m, k, a) => { if(KNOWN_TOK.indexOf(k) < 0 || (k === 'n' && ids.indexOf(a) < 0)) bad.push(m); return m; }); return bad;
 }
 function ctHTML(){
+  if(ctTab === 'history'){
+    const h = CT.history || [];
+    const fmt = a => a ? new Date(a).toLocaleString('en-ZA', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Original';
+    return `<section class="dm-sec"><h3>Version history</h3>
+      <p class="dm-help">Every save becomes a new version, and the version number prints in the footer of each contract you generate. That way any saved PDF can be traced back to the exact wording it used. View an old version, or load it back into the editor and save it as a new version.</p>
+      ${h.length ? h.map((e, i) => `<div class="adv ${e.v === CT.version ? 'ok' : ''}"><div class="adv-h"><b>Version ${e.v}${e.v === CT.version ? ' (live)' : ''}</b><span style="font-size:12.5px;color:var(--ink-soft)">${esc(fmt(e.at))}</span></div>
+        <div class="adv-n" style="color:var(--ink)">${esc(e.note || 'No summary')}</div>
+        ${e.snap ? `<button type="button" data-act="viewv" data-i="${i}">View</button> &nbsp; <button type="button" data-act="restorev" data-i="${i}">Load into editor</button>` : '<span class="adv-n">Older version, text no longer kept.</span>'}</div>`).join('')
+        : '<p class="dm-help">No saved versions yet. Your first save creates version ' + ((CT.version || 1) + 1) + ' and keeps the original as version ' + (CT.version || 1) + '.</p>'}
+    </section>`;
+  }
   if(ctTab === 'biz') return `
     <section class="dm-sec"><h3>Business details</h3>
       <p class="dm-help">Used on the contract header and footer, the signature block and the calculator invoice (contact block, bank details).</p>
@@ -532,11 +579,19 @@ function openCT(){ CTD = cclone(CT); ctSaved = JSON.stringify(CTD); ctTab = 'cla
 function closeCT(force){ if(!force && ctDirty() && !confirm('Close without saving your changes?')) return; $('dmScrim').classList.remove('show'); $('dm').classList.remove('show'); document.body.style.overflow = ''; }
 async function saveCT(){
   if(CTD.clauses.some(c => !c.title.trim())){ ctToast('Every clause needs a title'); return; }
-  applyCT(CTD); const j = JSON.stringify(CT); let ok = !!CT_DB;
+  const summary = ctDiff(contentOf(CT), contentOf(CTD));
+  if(!summary){ ctToast('Nothing has changed'); return; }
+  const payload = cclone(CTD), now = new Date().toISOString();
+  let hist = (CT.history || []).slice();
+  if(!hist.length) hist.push({ v:CT.version || 1, at:CT.versionAt || '', note:'Original wording', snap:contentOf(CT) });
+  hist.unshift({ v:(CT.version || 1) + 1, at:now, note:summary, snap:contentOf(CTD) });
+  hist = hist.slice(0, 50).map((h, i) => i < 15 ? h : Object.assign({}, h, { snap:null }));
+  payload.version = (CT.version || 1) + 1; payload.versionAt = now; payload.history = hist;
+  applyCT(payload); const j = JSON.stringify(CT); let ok = !!CT_DB;
   try{ localStorage.setItem(CT_KEY, j); }catch(e){}
   if(CT_DB){ try{ await CT_DB.collection('settings').doc('contract').set({ json:j, updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); }catch(e){ ok = false; console.warn(e); } }
   CTD = cclone(CT); ctSaved = JSON.stringify(CTD); ctDefaults(); refreshPreview(); ctDraw(true);
-  ctToast(ok ? 'Saved. New contracts use your wording.' : 'Saved on this device only. Add the settings rule in Firestore to sync it.');
+  ctToast(ok ? 'Saved as version ' + CT.version + '. New contracts use this wording.' : 'Saved on this device only. Add the settings rule in Firestore to sync it.');
 }
 function resetCT(){
   if(!confirm('Reset all wording, terms and business details back to the originals? Your edits and added clauses will be removed.')) return;
@@ -580,6 +635,8 @@ function previewDraft(){
     else if(act === 'down' && i < c.length - 1){ [c[i+1], c[i]] = [c[i], c[i+1]]; ctDraw(true); }
     else if(act === 'restore'){ const d = CT_DEFAULT.clauses.find(x => x.id === c[i].id); if(d){ c[i].body = d.body; c[i].title = d.title; ctDraw(true); } }
     else if(act === 'del'){ if(confirm('Delete "' + c[i].title + '"? You can switch it off instead to keep the wording.')){ c.splice(i, 1); ctDraw(true); } }
+    else if(act === 'viewv'){ const e = (CT.history || [])[i]; if(e && e.snap){ const w = window.open('', '_blank'); if(w){ w.document.open(); w.document.write(buildContract(fields(), Object.assign(ctClean(e.snap), { version:e.v, versionAt:e.at }))); w.document.close(); } else ctToast('Allow pop-ups to view'); } }
+    else if(act === 'restorev'){ const e = (CT.history || [])[i]; if(e && e.snap){ const k = contentOf(ctClean(e.snap)); Object.assign(CTD, k); ctTab = 'clauses'; ctDraw(); ctToast('Version ' + e.v + ' loaded. Save to make it live as a new version.'); } }
     else if(act === 'add'){ c.push({ id:'c' + Date.now().toString(36), title:'New clause', on:true, body:'- ' }); ctDraw(true); const cards = $('dmBody').querySelectorAll('.dm-card'); cards[cards.length - 1].scrollIntoView({ block:'center' }); }
   });
 })();
@@ -697,6 +754,7 @@ ${f.revisions ? `<tr><td class="lbl">Rounds of Revisions</td><td>${esc(f.revisio
 <div class="footer-bar">
     <span>${esc(ct.biz.name.toUpperCase())} &nbsp;&middot;&nbsp; ${esc(ct.biz.tagline)} &nbsp;&middot;&nbsp; ${esc(ct.biz.city)}</span>
     <span>${esc(ct.biz.email)} &nbsp;&middot;&nbsp; ${esc(ct.biz.phone)} &nbsp;&middot;&nbsp; ${esc(ct.biz.web)}</span>
+    <span style="width:100%;font-size:7.5pt;color:#8a8a88;">Contract wording version ${ct.version || 1}${ct.versionAt ? ' &middot; updated ' + esc(new Date(ct.versionAt).toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'})) : ' &middot; original wording'}</span>
 </div>
 </div>
 </body></html>`;
