@@ -164,6 +164,40 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
 @media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
 @media(max-width:980px){.kpis{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:640px){.kpis{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}}
+
+/* ===== content advisor ===== */
+.adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+@media(max-width:900px){.adv-grid{grid-template-columns:1fr;}}
+.adv-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 22px;margin-bottom:16px;min-width:0;}
+.adv-card > h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:700;margin-bottom:4px;}
+.adv-card > .sub{font-size:13px;color:var(--ink-soft);margin-bottom:14px;}
+.pulse{border-radius:14px;padding:12px 16px;font-size:14px;margin-bottom:16px;border:1px solid var(--line);}
+.pulse.good{background:#e8f7ee;border-color:#bfe6cd;color:#1f5f3a;}
+.pulse.low{background:#fff4e0;border-color:#f0d9a8;color:#7a5408;}
+.adv-block{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:var(--bg);}
+.adv-block.top{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
+.ab-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;}
+.ab-h b{font-size:15px;}
+.ab-h span{font-size:12.5px;color:var(--ink-soft);font-weight:600;}
+.ab-p{font-size:13px;color:var(--ink-soft);margin:6px 0 8px;line-height:1.55;}
+.ab-empty{font-size:13.5px;color:var(--ink-soft);}
+.ai{list-style:none;display:flex;flex-direction:column;}
+.ai li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+.ai li:first-child{border-top:0;}
+.ai-t{flex:1;min-width:0;line-height:1.45;}
+.ai-t small{display:block;color:var(--ink-soft);font-size:12px;margin-top:2px;}
+.ai-empty{color:var(--ink-soft);}
+.adv-add{border:1px solid var(--accent);background:none;color:var(--accent);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;flex:none;}
+.adv-add:hover{background:var(--accent);color:#fff;}
+.adv-add.on{border-color:var(--line);color:var(--ink-soft);cursor:default;background:none;}
+.tag{display:inline-block;border:1px solid var(--line);background:var(--bg-pill);border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:700;color:var(--ink);}
+.pill-old{display:inline-block;background:#fff4e0;color:#a9720b;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;}
+.pl-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:560px){.pl-form{grid-template-columns:1fr;}}
+.pl-form label{display:block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+.pl-form input,.pl-form select{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink);height:44px;box-sizing:border-box;}
+.pl-step h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:16px 0 4px;}
+.pk-row{margin-top:14px;display:flex;gap:8px;}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <script src="session.js"></script>
@@ -238,6 +272,7 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
     <div class="tab-row">
         <button class="tab-chip on" data-tab="ideas">💡 Idea Board</button>
         <button class="tab-chip" data-tab="tracker">📅 Posting Tracker</button>
+        <button class="tab-chip" data-tab="advisor">🧭 Advisor</button>
     </div>
 
     <!-- ================= TAB 1 : IDEA BOARD ================= -->
@@ -322,11 +357,49 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
             <div class="empty" id="emptyState" style="display:none;">Nothing here yet - add an idea on the Idea Board or click <b>“+ Add item”</b>.</div>
         </div>
     </div>
+
+    <!-- ================= TAB 3 : ADVISOR ================= -->
+    <div class="tab-panel" id="tabAdvisor">
+        <div id="advPulse"></div>
+        <div class="adv-grid">
+            <div>
+                <div class="adv-card">
+                    <h2>Back up your leads</h2>
+                    <p class="sub">Content ideas for the kinds of companies you are pitching, busiest category first.</p>
+                    <div id="advLeads"></div>
+                </div>
+                <div class="adv-card">
+                    <h2>Plan a project or lead</h2>
+                    <p class="sub">Get a before, during and after content plan with target dates.</p>
+                    <div class="pl-form">
+                        <div><label for="plLead">Lead</label><select id="plLead"></select></div>
+                        <div><label for="plName">Project / company name</label><input type="text" id="plName" placeholder="e.g. Red Bull padel event"></div>
+                        <div><label for="plCat">Category</label><select id="plCat"></select></div>
+                        <div><label for="plDate">Shoot date (optional)</label><input type="date" id="plDate"></div>
+                    </div>
+                    <div class="pk-row"><button class="btn" type="button" id="plGo">Build the plan</button></div>
+                    <div id="plOut"></div>
+                </div>
+            </div>
+            <div>
+                <div class="adv-card">
+                    <h2>Coming up in South Africa</h2>
+                    <p class="sub">Moments worth planning content around. Islamic dates are approximate.</p>
+                    <div id="advSeason"></div>
+                </div>
+                <div class="adv-card">
+                    <h2>Trending now</h2>
+                    <div id="advTrends"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script src="firebase-config.js"></script>
+<script src="outreach.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
@@ -365,7 +438,7 @@ const TYPE_CLASS   = { 'Video':'type-video','Photo':'type-photo','Reel':'type-re
 let items = [];
 let store, editingCell=false, pendingRender=false;
 let ideaFilter = 'all';
-function safeRender(){ try{ renderTracker(); renderIdeaBoard(); }catch(e){ console.error('render error',e); } }
+function safeRender(){ try{ renderTracker(); renderIdeaBoard(); }catch(e){ console.error('render error',e); } try{ renderAdvisor(); }catch(e){} }
 
 const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig &&
               !String(firebaseConfig.apiKey||'').startsWith('PASTE');
@@ -598,13 +671,119 @@ function initCloud(){
                     auth.signOut();
                     return;
                 }
-                $('loginGate').style.display='none'; store.start();
+                $('loginGate').style.display='none'; store.start(); loadAdvisor(db);
             }).catch(err=>{ console.warn('Admin check failed:',err); $('loginGate').style.display='flex'; auth.signOut(); });
         }
         else { items=[]; safeRender(); $('loginGate').style.display='flex'; }
     });
 }
 if(!configured){ notConfigured(); } else { loadFirebase().then(initCloud).catch(showConnError); }
+
+/* ================================================================
+   CONTENT ADVISOR - uses the same categories/playbook as the Leads page
+   (outreach.js), your leads, the SA calendar and trends.json (refreshed weekly).
+   ================================================================ */
+const OUT = window.FOM_OUT;
+let OCFG = OUT.cached(), ADV_LEADS = [], TRENDS = null;
+const advAdded = new Set();
+const advNice = s => { try{ return new Date(s + 'T00:00:00').toLocaleDateString('en-ZA', { day:'numeric', month:'short' }); }catch(e){ return s; } };
+const onBoard = t => advAdded.has(t.toLowerCase()) || items.some(o => (o.title || '').toLowerCase() === t.toLowerCase());
+function typeOf(t){ t = t.toLowerCase(); return /reel|timelapse|pov|teaser|recap reel|highlight/.test(t) ? 'Reel' : /carousel|dump|series|before and after/.test(t) ? 'Carousel' : /stor(y|ies)/.test(t) ? 'Story' : /video|film/.test(t) ? 'Video' : 'Photo'; }
+function addBtn(title, notes, type, date){
+  const on = onBoard(title);
+  return `<button class="adv-add ${on ? 'on' : ''}" type="button" ${on ? 'disabled' : ''} data-add="${esc(title)}" data-notes="${esc(notes || '')}" data-type="${esc(type || typeOf(title))}" data-date="${esc(date || '')}">${on ? 'On board' : '+ Add'}</button>`;
+}
+function ideaRow(title, notes, type, date, meta){ return `<li><span class="ai-t">${esc(title)}${meta ? `<small>${esc(meta)}</small>` : ''}</span>${addBtn(title, notes, type, date)}</li>`; }
+
+function renderAdvisor(){
+  if(!$('tabAdvisor')) return;
+  const today = OUT.iso(new Date());
+  /* posting pulse */
+  const since = OUT.addDays(today, -14);
+  const posted = items.filter(o => o.status === 'Posted' && o.postedDate && o.postedDate >= since).length;
+  const queued = items.filter(o => o.status === 'Ready to Post').length;
+  $('advPulse').innerHTML = `<div class="pulse ${posted >= 4 ? 'good' : 'low'}"><b>${posted}</b> post${posted === 1 ? '' : 's'} in the last 14 days${queued ? `, <b>${queued}</b> ready to post` : ''}. ${posted >= 4 ? 'Nice rhythm, keep it going.' : 'Aim for 2 to 3 posts a week so leads who check your page see recent work.'}</div>`;
+
+  /* leads that need backing up */
+  const byCat = {};
+  ADV_LEADS.forEach(o => { const c = OUT.byName(OCFG, o.category) || OUT.guess(OCFG, (o.company || '') + ' ' + (o.web || '')); if(!c) return;
+    const b = byCat[c.id] = byCat[c.id] || { cat:c, waiting:0, todo:0, names:[] };
+    if(o.status === 'Emailed' || o.status === 'Responded'){ b.waiting++; b.names.push(o.company || o.leadId); }
+    else if(o.status === 'Not Emailed' || !o.status){ b.todo++; } });
+  const groups = Object.values(byCat).filter(g => g.waiting || g.todo).sort((a, b) => (b.waiting * 2 + b.todo) - (a.waiting * 2 + a.todo));
+  $('advLeads').innerHTML = groups.length ? groups.map((g, i) => `<div class="adv-block ${i === 0 ? 'top' : ''}">
+      <div class="ab-h"><b>${esc(g.cat.name)}</b><span>${g.waiting ? g.waiting + ' waiting on a reply' : ''}${g.waiting && g.todo ? ', ' : ''}${g.todo ? g.todo + ' still to email' : ''}</span></div>
+      <p class="ab-p">${g.waiting ? `${esc(g.names.slice(0, 3).join(', '))}${g.names.length > 3 ? ' and others' : ''} may check your Instagram this week. ` : ''}Post ${esc(g.cat.name.toLowerCase())} work so your page backs up the pitch.</p>
+      <ul class="ai">${OUT.lines(g.cat.content).map(t => ideaRow(t, 'Backs up ' + g.cat.name + ' leads')).join('') || '<li class="ai-empty">Add content ideas for this category on the Leads page (Edit categories).</li>'}</ul></div>`).join('')
+    : '<p class="ab-empty">No open leads yet. Add leads on the Leads page and this will suggest content that supports them.</p>';
+
+  /* SA calendar */
+  const up = OUT.upcoming(today);
+  $('advSeason').innerHTML = up.length ? up.map(e => `<div class="adv-block">
+      <div class="ab-h"><b>${esc(e.name)}</b><span>${e.live ? 'On now, until ' + advNice(e.to) : 'In ' + e.daysTo + ' day' + (e.daysTo === 1 ? '' : 's') + ' (' + advNice(e.from) + ')'}</span></div>
+      ${e.cats && e.cats.length ? `<p class="ab-p">Good for: ${e.cats.map(id => { const c = OUT.byId(OCFG, id); return c ? `<span class="tag">${esc(c.name)}</span>` : ''; }).join(' ')}</p>` : ''}
+      <ul class="ai">${OUT.lines(e.ideas).map(t => ideaRow(t, e.name, null, e.live ? '' : OUT.addDays(e.from, -5))).join('')}</ul></div>`).join('')
+    : '<p class="ab-empty">Nothing big on the calendar in the next few weeks.</p>';
+
+  /* trends */
+  if(!TRENDS){ $('advTrends').innerHTML = '<p class="ab-empty">Loading trends...</p>'; }
+  else if(!TRENDS.items || !TRENDS.items.length){ $('advTrends').innerHTML = '<p class="ab-empty">No trends file yet. It refreshes every Monday.</p>'; }
+  else {
+    const age = Math.round((new Date(today) - new Date(TRENDS.updated)) / 86400000);
+    $('advTrends').innerHTML = `<p class="ab-p">Updated ${esc(advNice(TRENDS.updated))}${age > 10 ? ' <span class="pill-old">over a week old</span>' : ''}. Refreshed automatically every Monday.</p>
+      <ul class="ai">${TRENDS.items.map(t => `<li><span class="ai-t">${esc(t.title)}<small>${esc(t.why || '')}${t.tip ? ' Tip: ' + esc(t.tip) : ''}</small></span>${addBtn(t.title, 'Trend: ' + (t.why || ''), t.type)}</li>`).join('')}</ul>`;
+  }
+  renderPlanSelect();
+}
+
+/* project / lead planner */
+function renderPlanSelect(){
+  const s = $('plLead'), v = s.value;
+  s.innerHTML = '<option value="">A new project (type below)</option>' + ADV_LEADS.filter(o => o.status !== 'Rejected').map(o => `<option value="${esc(o.id)}">${esc(o.company || o.leadId)}${o.status ? ' (' + esc(o.status) + ')' : ''}</option>`).join('');
+  if(v) s.value = v;
+  const c = $('plCat'), cv = c.value;
+  c.innerHTML = OCFG.categories.map(x => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');
+  if(cv) c.value = cv;
+}
+$('plLead').addEventListener('change', () => {
+  const o = ADV_LEADS.find(x => x.id === $('plLead').value); if(!o) return;
+  $('plName').value = o.company || '';
+  const c = OUT.byName(OCFG, o.category) || OUT.guess(OCFG, o.company || ''); if(c) $('plCat').value = c.id;
+});
+$('plName').addEventListener('input', () => { if($('plLead').value) return; const g = OUT.guess(OCFG, $('plName').value); if(g) $('plCat').value = g.id; });
+function buildPlan(){
+  const name = $('plName').value.trim() || 'the project', cat = OUT.byId(OCFG, $('plCat').value), day = $('plDate').value;
+  const d = n => day ? OUT.addDays(day, n) : '';
+  const ideas = cat ? OUT.lines(cat.content) : [];
+  const plan = [
+    ['Before', [[`Teaser story: shoot coming up with ${name}`, 'Story', d(-2)], [`Moodboard or shot list carousel for ${name}`, 'Carousel', d(-3)]]],
+    ['Shoot day', [[`Behind the scenes stories at ${name}`, 'Story', d(0)], [`Phone BTS clips for a "how I got the shot" reel`, 'Reel', d(0)]]],
+    ['After', [[`Hero reel for ${name} (post within 48 hours)`, 'Reel', d(2)], [`Best frames carousel: ${name}`, 'Carousel', d(3)], [`Tag ${name} and ask them to reshare or collab`, 'Story', d(3)], [`Ask ${name} for a testimonial for the website`, 'Other', d(7)]]],
+    [cat ? 'Ideas for ' + cat.name : 'Extra ideas', ideas.slice(0, 4).map(t => [t + ' (' + name + ')', typeOf(t), d(5)])]
+  ];
+  $('plOut').innerHTML = plan.filter(([, l]) => l.length).map(([h, l]) => `<div class="pl-step"><h4>${esc(h)}</h4><ul class="ai">${l.map(([t, ty, dt]) => ideaRow(t, 'Plan: ' + name, ty, dt, dt ? 'Target ' + advNice(dt) : '')).join('')}</ul></div>`).join('')
+    + `<div class="pk-row"><button class="btn" type="button" id="plAll">Add all to the board</button></div>`;
+}
+$('plGo').onclick = buildPlan;
+
+function addIdea(btn){
+  if(!store){ toast('Still connecting...'); return; }
+  const title = btn.dataset.add;
+  store.add(blankItem({ title, type:btn.dataset.type || 'Other', notes:btn.dataset.notes || '', status:btn.dataset.date ? 'Planned' : 'Idea', targetDate:btn.dataset.date || '' }));
+  advAdded.add(title.toLowerCase()); btn.classList.add('on'); btn.disabled = true; btn.textContent = 'On board';
+}
+$('tabAdvisor').addEventListener('click', e => {
+  const b = e.target.closest('[data-add]'); if(b){ addIdea(b); toast('Added to your board'); return; }
+  if(e.target.id === 'plAll'){ const bs = Array.from($('plOut').querySelectorAll('[data-add]:not([disabled])')); bs.forEach(addIdea); toast(bs.length ? bs.length + ' items added to your board' : 'Everything is already on the board'); }
+});
+
+async function loadAdvisor(db){
+  OCFG = await OUT.load(db);
+  try{ const s = await db.collection('leads').get(); ADV_LEADS = s.docs.map(d => Object.assign({ id:d.id }, d.data())); }catch(e){ console.warn('leads for advisor', e); }
+  renderAdvisor();
+}
+fetch('trends.json?d=' + OUT.iso(new Date()), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(j => { TRENDS = j || { items:[] }; renderAdvisor(); }).catch(() => { TRENDS = { items:[] }; renderAdvisor(); });
+renderAdvisor();
 </script>
 <script src="app.js"></script>
 </body>

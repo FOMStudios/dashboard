@@ -7,9 +7,10 @@
      POST /meta?g=<folder>/           -> body {expiry:"yyyy-mm-dd", graceDays:7}
                                          writes <folder>/_gallery.json (drives auto-delete)
    ADMIN ONLY (needs the signed-in Firebase admin token, used by the dashboard Photos page):
-     POST /admin/upload?n=<name>      -> body = the image; saved as portfolio/<name>
-     POST /admin/delete               -> body {n:"<name>"}; removes portfolio/<name>
-   Portfolio photos are public: GET /file?g=portfolio/&n=<name>
+     POST /admin/upload?n=<name>&f=<folder>  -> body = the image; saved as <folder>/<name>
+     POST /admin/delete               -> body {n:"<name>", f:"<folder>"}; removes <folder>/<name>
+     <folder> is "portfolio" (website photos, the default) or "deck" (pitch deck images).
+   Portfolio and deck images are public: GET /file?g=portfolio/&n=<name>  or  g=deck/
    Scheduled (Cron) run: deletes any folder whose expiry + graceDays has passed.
 
    SETUP
@@ -70,6 +71,9 @@ async function verifyAdmin(request, env) {
 }
 const safeName = n => String(n || '').toLowerCase().replace(/[^a-z0-9._-]/g, '-').replace(/^[.-]+/, '').slice(0, 80);
 const MAX_UPLOAD = 15 * 1024 * 1024;
+const ADMIN_FOLDERS = ['portfolio', 'deck'];
+const PUBLIC_FOLDERS = ['portfolio/', 'deck/'];
+const adminFolder = f => ADMIN_FOLDERS.includes(f) ? f : 'portfolio';
 
 const normPrefix = g => { g = (g || '').replace(/^\/+/, ''); if (g && !g.endsWith('/')) g += '/'; return g; };
 
@@ -120,7 +124,7 @@ export default {
       obj.writeHttpMetadata(h);
       h.set('etag', obj.httpEtag);
       h.set('Accept-Ranges', 'bytes');
-      h.set('Cache-Control', g === 'portfolio/' ? 'public, max-age=86400' : 'private, max-age=3600');
+      h.set('Cache-Control', PUBLIC_FOLDERS.includes(g) ? 'public, max-age=86400' : 'private, max-age=3600');
       if (url.searchParams.get('dl') === '1') h.set('Content-Disposition', `attachment; filename="${n.replace(/"/g, '')}"`);
       if (range && obj.range) {
         const end = obj.range.offset + obj.range.length - 1;
@@ -130,7 +134,7 @@ export default {
       return new Response(obj.body, { headers: h });
     }
 
-    // ---- admin: upload / delete portfolio photos ----
+    // ---- admin: upload / delete portfolio photos and pitch deck images ----
     if (path === '/admin/upload' || path === '/admin/delete') {
       if (request.method !== 'POST') return json({ error: 'POST only' }, 405);
       if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
@@ -142,13 +146,13 @@ export default {
         if (len > MAX_UPLOAD) return json({ error: 'file too large (15 MB max)' }, 413);
         const buf = await request.arrayBuffer();
         if (buf.byteLength > MAX_UPLOAD || !buf.byteLength) return json({ error: 'bad file size' }, 413);
-        await env.BUCKET.put('portfolio/' + n, buf, { httpMetadata: { contentType: type } });
+        await env.BUCKET.put(adminFolder(url.searchParams.get('f')) + '/' + n, buf, { httpMetadata: { contentType: type } });
         return json({ ok: true, name: n });
       }
       let body = {}; try { body = await request.json(); } catch (e) {}
       const n = safeName(body.n);
       if (!n) return json({ error: 'missing n' }, 400);
-      await env.BUCKET.delete('portfolio/' + n);
+      await env.BUCKET.delete(adminFolder(body.f || url.searchParams.get('f')) + '/' + n);
       return json({ ok: true });
     }
 

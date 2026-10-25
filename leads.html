@@ -154,6 +154,109 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 
 .email-preview{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;font-size:14.5px;line-height:1.8;white-space:pre-wrap;color:var(--ink);}
 
+
+/* ===== pitch deck builder ===== */
+.btn.sm{padding:8px 15px;font-size:13px;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:560px){.two,.three{grid-template-columns:1fr;gap:0;}}
+.h2-note{font-size:11px;text-transform:none;letter-spacing:0;font-weight:500;margin-left:6px;}
+.dk-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line);}
+.dk-ver{flex:1;min-width:180px;font-size:13px;color:var(--ink-soft);line-height:1.45;}
+.dk-ver b{color:var(--ink);font-size:14px;}
+.pill-warn{display:inline-block;background:#fff4e0;color:#a9720b;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;margin-left:4px;vertical-align:1px;}
+.pill-ok{display:inline-block;background:#e8f7ee;color:#1f8a4c;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;margin-left:4px;vertical-align:1px;}
+.dk-page{border:1px solid var(--line);border-radius:14px;margin-bottom:8px;background:var(--bg);overflow:hidden;}
+.dk-ph{display:flex;align-items:center;gap:6px;padding:8px 8px 8px 12px;cursor:pointer;user-select:none;}
+.dk-ph .num{width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg-pill);font-size:11px;font-weight:800;display:grid;place-items:center;flex:none;}
+.dk-ph .nm{flex:1;min-width:0;}
+.dk-ph .nm b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dk-ph .nm span{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;}
+.dk-ph .thumbs{display:flex;gap:3px;flex:none;}
+.dk-ph .thumbs img{width:26px;height:26px;border-radius:5px;object-fit:cover;background:#ddd;}
+.ib{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--bg-pill);color:var(--ink);cursor:pointer;font-size:14px;line-height:1;flex:none;display:grid;place-items:center;}
+.ib:hover{border-color:var(--ink);}
+.ib:disabled{opacity:.3;cursor:default;}
+.dk-page.off .nm b{text-decoration:line-through;opacity:.5;}
+.dk-page.off .num{background:var(--line);color:var(--ink-soft);}
+.dk-pb{display:none;padding:6px 12px 14px;border-top:1px solid var(--line);background:var(--bg-pill);}
+.dk-page.open .dk-pb{display:block;}
+.dk-pb .field{margin-bottom:10px;}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 6px;}
+.slot{position:relative;aspect-ratio:4/3;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#e9e7e1;cursor:pointer;padding:0;font:inherit;}
+.slot img{width:100%;height:100%;object-fit:cover;}
+.slot .sl{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;font-size:10.5px;font-weight:700;padding:16px 6px 5px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.slot .sn{position:absolute;top:5px;left:5px;background:rgba(0,0,0,.65);color:#fff;border-radius:999px;font-size:10px;font-weight:800;min-width:20px;height:20px;padding:0 6px;display:grid;place-items:center;}
+.slot .empty-s{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-soft);font-size:12px;font-weight:700;}
+.slot.miss{outline:2px solid #c0392b;outline-offset:-2px;}
+.add-row,.sent-row{display:flex;gap:8px;align-items:center;margin-top:10px;}
+.add-row select,.sent-row select{flex:1;min-width:0;}
+.sent-row{margin-top:12px;}
+
+/* ===== sheet (image picker + editors) ===== */
+.x-sheet{max-width:760px;}
+.mini-chips{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 10px;}
+.mini-chip{border:1px solid var(--line);background:var(--bg-pill);border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;font-family:inherit;}
+.mini-chip.on{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+.pk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;}
+.pk-item{position:relative;aspect-ratio:1;border:0;padding:0;border-radius:9px;overflow:hidden;cursor:pointer;background:#ddd;font:inherit;}
+.pk-item img{width:100%;height:100%;object-fit:cover;}
+.pk-item .cap{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;font-size:10.5px;font-weight:700;padding:14px 5px 4px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pk-item.on{outline:3px solid var(--accent);outline-offset:-3px;}
+.pk-item.on::after{content:"\2713";position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:800;display:grid;place-items:center;}
+.pk-del{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;font-size:14px;line-height:1;z-index:2;}
+.pk-foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.pk-up{border:2px dashed var(--line);border-radius:12px;padding:16px;text-align:center;margin-bottom:10px;color:var(--ink-soft);font-size:13px;}
+.pk-up .btn{margin-top:8px;}
+.ver-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--bg);}
+.ver-row .vi{flex:1;min-width:0;}
+.ver-row .vi b{display:block;font-size:14px;}
+.ver-row .vi span{font-size:12px;color:var(--ink-soft);}
+.ver-row.live{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
+.ed-card{border:1px solid var(--line);border-radius:14px;margin-bottom:8px;background:var(--bg);}
+.ed-card summary{padding:12px 14px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.ed-card summary::-webkit-details-marker{display:none;}
+.ed-card summary::after{content:"+";font-size:18px;color:var(--ink-soft);}
+.ed-card[open] summary::after{content:"\2212";}
+.ed-card .ed-b{padding:4px 14px 14px;}
+.ed-card .field{margin-bottom:10px;}
+.cb-row{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;}
+.cb-row label{display:flex;gap:6px;align-items:center;text-transform:none;letter-spacing:0;font-size:14px;font-weight:500;color:var(--ink);margin:0;}
+.ed-help{font-size:12px;color:var(--ink-soft);line-height:1.6;margin-bottom:12px;}
+.ed-help code{background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:11.5px;}
+.danger-lnk{background:none;border:0;color:#c0392b;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit;padding:4px 0;}
+
+/* ===== email generator + advisor ===== */
+.lbl{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;}
+.lbl label{margin-bottom:0 !important;}
+.lnk{background:none;border:0;color:var(--accent);font-weight:700;font-size:12.5px;cursor:pointer;padding:0;font-family:inherit;}
+.chk-row{display:flex;gap:8px;align-items:center;font-size:13.5px;margin:2px 0 10px;cursor:pointer;}
+#eBody{min-height:300px;font-size:14px;}
+.guess{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#e7f0ff;border:1px solid #bcd4f5;color:var(--accent);border-radius:10px;padding:7px 10px;font-size:12.5px;margin-top:6px;}
+.guess button{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+.pitch-banner{background:#e7f0ff;border:1px solid #bcd4f5;color:var(--accent);border-radius:14px;padding:11px 14px;font-size:13.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.pitch-banner .grow{flex:1;min-width:200px;}
+.adv h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:700;margin:16px 0 8px;}
+.adv h3:first-of-type{margin-top:0;}
+.adv-angle{background:var(--bg-dark);color:var(--ink-on-dark);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.6;}
+.adv-angle small{display:block;color:var(--accent-on-dark);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:10.5px;margin-bottom:4px;}
+.adv ul{list-style:none;display:flex;flex-direction:column;gap:7px;}
+.adv li{font-size:13.5px;line-height:1.5;padding-left:20px;position:relative;}
+.adv .tips li::before{content:"";position:absolute;left:2px;top:8px;width:9px;height:2px;background:var(--accent);}
+.adv .chk li::before{position:absolute;left:0;top:0;font-weight:800;}
+.adv .chk li.ok::before{content:"\2713";color:#1f8a4c;}
+.adv .chk li.warn::before{content:"!";color:#c98a1f;left:4px;}
+.adv .chk li.warn{color:var(--ink);}
+.adv-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13.5px;}
+.tag{display:inline-block;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;}
+
+/* ===== leads table extras ===== */
+td .pitch{border:1px solid var(--accent);background:none;color:var(--accent);border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;cursor:pointer;white-space:nowrap;font-family:inherit;}
+td .pitch:hover{background:var(--accent);color:#fff;}
+td .deck-lnk{background:none;border:0;text-align:left;cursor:pointer;font-family:inherit;color:var(--accent);font-size:12.5px;font-weight:700;line-height:1.3;padding:4px;}
+td .deck-lnk small{display:block;color:var(--ink-soft);font-weight:500;font-size:11.5px;}
+.col-pitch{width:84px;}.col-deck{width:130px;}
+
 @media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
 @media(max-width:980px){.kpis{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:640px){.kpis{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}.chip-grid{grid-template-columns:repeat(2,1fr);}}
@@ -223,7 +326,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
         <div>
             <span class="eyebrow">Outreach</span>
             <h1>Leads &amp; Outreach</h1>
-            <p>Track who you've emailed, generate a pitch deck PDF, and copy a ready-to-send accreditation email.</p>
+            <p>Track who you've emailed, build a pitch deck from your website photos, and write emails with the advisor.</p>
         </div>
         <span class="badge local" id="syncBadge">Connecting…</span>
     </div>
@@ -271,6 +374,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
                     <thead>
                         <tr>
                             <th class="col-id">ID</th>
+                            <th class="col-pitch">Pitch</th>
                             <th>Company / Organisation</th>
                             <th>Contact Name</th>
                             <th>Email</th>
@@ -281,6 +385,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
                             <th class="col-date">Date Emailed</th>
                             <th class="col-date">Follow-up By</th>
                             <th>Status</th>
+                            <th class="col-deck">Deck sent</th>
                             <th>Comments</th>
                             <th class="rm-col"></th>
                         </tr>
@@ -295,64 +400,99 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     <!-- ================= TAB 2 : PITCH DECK ================= -->
     <div class="tab-panel" id="tabDeck">
         <div class="builder-grid">
-            <div class="panel">
-                <h2>Pitch deck details</h2>
-                <div class="field"><label for="dClient">Prepared for (optional)</label><input type="text" id="dClient" placeholder="e.g. Laver Cup Media Team"></div>
-                <div class="field"><label for="dAbout">About us</label><textarea id="dAbout" rows="5"></textarea></div>
-                <div class="field"><label for="dWhat">What we do (one per line)</label><textarea id="dWhat" rows="5"></textarea></div>
-                <div class="field"><label for="dWhy">Why work with us (one per line)</label><textarea id="dWhy" rows="5"></textarea></div>
-                <div class="field"><label for="dClients">Previous clients (one per line)</label><textarea id="dClients" rows="4"></textarea></div>
-                <div class="field">
-                    <label>Portfolio images (pick up to 6)</label>
-                    <div class="chip-grid" id="portfolioPicker"></div>
-                    <div class="hint">Uses the same work photos as your website gallery (loaded from fomstudios.co.za).</div>
+            <div class="panel" id="deckPanel">
+                <div class="dk-bar">
+                    <div class="dk-ver" id="dkVer"></div>
+                    <button class="btn sm" id="dkSave" type="button">Save version</button>
+                    <button class="btn ghost sm" id="dkVersions" type="button">Versions</button>
                 </div>
+
+                <h2>Who it is for</h2>
+                <div class="two">
+                    <div class="field"><label for="dClient">Prepared for (optional)</label><input type="text" id="dClient" placeholder="e.g. Red Bull SA"></div>
+                    <div class="field"><label for="dkCat">Lead category</label><select id="dkCat" class="form-select"></select></div>
+                </div>
+                <div class="hint" style="margin:-6px 0 16px">Picking a category fills the portfolio grid with your latest matching website photos. Images you uploaded stay where they are.</div>
+
+                <h2>Pages <span class="h2-note">tap a page to edit it</span></h2>
+                <div id="dkPages"></div>
+                <div class="add-row">
+                    <select id="dkAddType" class="form-select" aria-label="Page type to add">
+                        <option value="portfolio">Portfolio grid (6 photos)</option>
+                        <option value="textimg">Text and image</option>
+                        <option value="feature">Full image feature</option>
+                    </select>
+                    <button class="btn ghost sm" id="dkAdd" type="button">+ Add page</button>
+                </div>
+
+                <h2 style="margin-top:20px">Contact details</h2>
+                <div class="three">
+                    <div class="field"><label for="dkPhone">Phone</label><input type="text" id="dkPhone" data-c="phone"></div>
+                    <div class="field"><label for="dkEmail">Email</label><input type="text" id="dkEmail" data-c="email"></div>
+                    <div class="field"><label for="dkWeb">Website</label><input type="text" id="dkWeb" data-c="web"></div>
+                </div>
+
                 <div class="actions">
-                    <button class="btn" id="deckPrintBtn">Export as PDF</button>
-                    <button class="btn ghost" id="deckRefreshBtn">Refresh preview</button>
+                    <button class="btn" id="deckPrintBtn" type="button">Export as PDF</button>
+                    <button class="btn ghost" id="deckRefreshBtn" type="button">Refresh preview</button>
                 </div>
-                <div class="hint"><b>To save as PDF:</b> click <b>Export as PDF</b> → in the print dialog set <b>Destination</b> to <b>"Save as PDF"</b> and confirm <b>Layout: Landscape</b> → Save.</div>
+                <div class="sent-row">
+                    <select id="dkLead" class="form-select" aria-label="Lead this deck was sent to"></select>
+                    <button class="btn ghost sm" id="dkSent" type="button">Record as sent</button>
+                </div>
+                <div class="hint"><b>To save as PDF:</b> click <b>Export as PDF</b>, set <b>Destination</b> to <b>Save as PDF</b> and confirm <b>Layout: Landscape</b>, then Save. <b>Record as sent</b> keeps an exact copy of this deck on the lead, so you can reopen what they received.</div>
             </div>
             <div>
-                <div class="panel" style="margin-bottom:12px;padding:14px 22px;"><h2 style="margin:0;">Deck preview (7 pages, landscape)</h2></div>
-                <div class="preview-wrap"><iframe id="deckFrame" scrolling="yes"></iframe></div>
+                <div class="panel" style="margin-bottom:12px;padding:14px 22px;"><h2 style="margin:0;" id="dkPrevTitle">Deck preview</h2></div>
+                <div class="preview-wrap"><iframe id="deckFrame" scrolling="yes" title="Pitch deck preview"></iframe></div>
             </div>
         </div>
     </div>
 
     <!-- ================= TAB 3 : EMAIL GENERATOR ================= -->
     <div class="tab-panel" id="tabEmail">
+        <div class="pitch-banner" id="pitchBanner" style="display:none"></div>
         <div class="builder-grid">
             <div class="panel">
                 <h2>Email details</h2>
-                <div class="field"><label for="eTemplate">Template</label>
-                    <select id="eTemplate" class="form-select">
-                        <option value="accreditation">Media accreditation request</option>
-                        <option value="general">General introduction / collaboration</option>
-                    </select>
+                <div class="two">
+                    <div class="field"><div class="lbl"><label for="eCategory">Category</label><button class="lnk" id="editCats" type="button">Edit categories</button></div><select id="eCategory" class="form-select"></select></div>
+                    <div class="field"><div class="lbl"><label for="eTemplate">Template</label><button class="lnk" id="editTpls" type="button">Edit templates</button></div><select id="eTemplate" class="form-select"></select></div>
                 </div>
-                <div class="field"><label for="eRecipient">Addressed to</label><input type="text" id="eRecipient" placeholder="e.g. Laver Cup Media Team"></div>
-                <div class="field"><label for="eEvent">Event / opportunity name</label><input type="text" id="eEvent" placeholder="e.g. 2026 Laver Cup"></div>
-                <div class="field"><label for="eCompany">Company / organisation (for logging as a lead)</label><input type="text" id="eCompany" placeholder="e.g. Laver Cup"></div>
-                <div class="field"><label for="eLeadEmail">Contact email (optional, for logging)</label><input type="email" id="eLeadEmail" placeholder="media@example.com"></div>
+                <div class="field"><label for="eCompany">Company / organisation</label><input type="text" id="eCompany" placeholder="e.g. Red Bull"><div id="eGuess"></div></div>
+                <div class="two">
+                    <div class="field"><label for="eRecipient">Addressed to</label><input type="text" id="eRecipient" placeholder="e.g. Sarah or Media Team"></div>
+                    <div class="field"><label for="eEvent">Event / opportunity (optional)</label><input type="text" id="eEvent" placeholder="e.g. Red Bull Cape Fear"></div>
+                </div>
+                <div class="field"><label for="eLeadEmail">Contact email</label><input type="email" id="eLeadEmail" placeholder="media@example.com"></div>
+                <div class="field"><div class="lbl"><label for="eSubject">Subject</label><button class="lnk" id="copySubj" type="button">Copy subject</button></div><input type="text" id="eSubject"></div>
+                <div class="field"><div class="lbl"><label for="eBody">Email (edit freely)</label><button class="lnk" id="eReset" type="button" style="display:none">Reset to template</button></div><textarea id="eBody" rows="16"></textarea></div>
+                <label class="chk-row"><input type="checkbox" id="eRecDeck" checked> Save the current pitch deck against this lead</label>
                 <div class="actions">
-                    <button class="btn" id="copyEmailBtn">Copy email</button>
-                    <button class="btn ghost" id="logLeadBtn">Log as lead</button>
+                    <button class="btn" id="copyEmailBtn" type="button">Copy email</button>
+                    <button class="btn ghost" id="mailBtn" type="button">Open in mail app</button>
+                    <button class="btn ghost" id="logLeadBtn" type="button">Log as lead</button>
                 </div>
-                <div class="hint">Copies plain text - paste straight into Gmail. Attach your exported pitch deck PDF before sending. "Log as lead" adds this company to the tracker and marks it emailed today.</div>
+                <div class="hint">Copy pastes the email straight into Gmail. Attach your exported pitch deck PDF before sending. <b>Log as lead</b> adds the company to the tracker as emailed today. Use the <b>Pitch</b> button on a lead to fill all of this in one tap.</div>
             </div>
-            <div>
-                <div class="panel" style="margin-bottom:12px;padding:14px 22px;"><h2 style="margin:0;">Email preview</h2></div>
-                <div class="email-preview" id="emailPreview"></div>
-            </div>
+            <div><div class="panel adv" id="advHost"></div></div>
         </div>
     </div>
 </div>
 
-<div id="deckDoc"></div>
+<div class="fom-scrim" id="xScrim"></div>
+<div class="fom-sheet x-sheet" id="xSheet" role="dialog" aria-modal="true">
+    <div class="grab"></div>
+    <div class="fom-sheet-h"><h2 id="xTitle"></h2><button class="fom-x" id="xClose" type="button" aria-label="Close">&times;</button></div>
+    <div class="fom-sheet-b" id="xBody"></div>
+</div>
+<input type="file" id="dkFile" accept="image/*" multiple hidden>
+
 <div class="toast" id="toast"></div>
 
 <script src="firebase-config.js"></script>
+<script src="photo-defaults.js"></script>
+<script src="outreach.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
@@ -383,7 +523,6 @@ sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
    match across devices (desktop + mobile).
    ================================================================ */
 const STATUSES = ['Not Emailed','Emailed','Responded','Accepted','Rejected'];
-const CATEGORIES = ['Sports Event','Media / Press','Brand / Business','Wedding / Personal','Other'];
 const STATUS_CLASS = { 'Not Emailed':'st-notemailed','Emailed':'st-emailed','Responded':'st-responded','Accepted':'st-accepted','Rejected':'st-rejected' };
 const STATUS_DOT   = { 'Not Emailed':'#6f6f6d','Emailed':'#02367B','Responded':'#c98a1f','Accepted':'#1f8a4c','Rejected':'#c0392b' };
 
@@ -401,7 +540,7 @@ async function loadFirebase(){ const b='https://www.gstatic.com/firebasejs/10.12
 function blankLead(overrides){
     return Object.assign({
         leadId:'L'+String(leads.length+1).padStart(3,'0'), company:'', contact:'', email:'', web:'',
-        location:'', category:'Sports Event', emailed:'No', dateEmailed:'', followUp:'',
+        location:'', category:(catNames()[0]||''), emailed:'No', dateEmailed:'', followUp:'',
         status:'Not Emailed', comments:''
     }, overrides||{});
 }
@@ -457,16 +596,18 @@ function renderLeads(){
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="col-id"><input data-i="${i}" data-f="leadId" value="${esc(o.leadId)}"></td>
+            <td class="col-pitch"><button class="pitch" type="button" data-pitch="${i}" title="Fill the email and deck for this lead">Pitch</button></td>
             <td><input data-i="${i}" data-f="company" value="${esc(o.company)}" placeholder="Company / organisation"></td>
             <td><input data-i="${i}" data-f="contact" value="${esc(o.contact)}" placeholder="Contact name"></td>
             <td><input data-i="${i}" data-f="email" type="email" value="${esc(o.email)}" placeholder="email@example.com"></td>
             <td><input data-i="${i}" data-f="web" value="${esc(o.web)}" placeholder="site or @instagram"></td>
             <td><input data-i="${i}" data-f="location" value="${esc(o.location)}" placeholder="City, Country"></td>
-            <td><select data-i="${i}" data-f="category">${CATEGORIES.map(c=>`<option ${c===o.category?'selected':''}>${c}</option>`).join('')}</select></td>
+            <td><select data-i="${i}" data-f="category">${(catNames().includes(o.category)||!o.category?catNames():[o.category].concat(catNames())).map(c=>`<option ${c===o.category?'selected':''}>${esc(c)}</option>`).join('')}</select></td>
             <td class="col-yn"><select data-i="${i}" data-f="emailed"><option ${o.emailed==='No'?'selected':''}>No</option><option ${o.emailed==='Yes'?'selected':''}>Yes</option></select></td>
             <td class="col-date"><input type="date" data-i="${i}" data-f="dateEmailed" value="${esc(o.dateEmailed)}"></td>
             <td class="col-date"><input type="date" data-i="${i}" data-f="followUp" value="${esc(o.followUp)}"></td>
             <td><select class="status-select ${STATUS_CLASS[o.status]||''}" data-i="${i}" data-f="status">${STATUSES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></td>
+            <td class="col-deck">${o.deckSent?`<button class="deck-lnk" type="button" data-deck="${i}" title="Open the exact deck this lead received">${esc(o.deckSent.version||'Deck')}<small>${esc(niceDate(o.deckSent.at))}</small></button>`:'<span style="color:var(--ink-soft);font-size:12px;padding:0 6px">-</span>'}</td>
             <td><input data-i="${i}" data-f="comments" value="${esc(o.comments)}" placeholder="e.g. emailed again 12 Apr, follow up in 2 weeks"></td>
             <td class="rm-col"><button class="rm" data-rm="${i}" title="Delete">✕</button></td>`;
         tbody.appendChild(tr);
@@ -475,6 +616,7 @@ function renderLeads(){
     $('countPill').textContent = leads.length + (leads.length===1?' lead':' leads');
     $('emptyState').style.display = leads.length ? 'none' : 'block';
     renderLeadDashboard();
+    try{ renderLeadPicker(); renderPitchBanner(); renderAdvisor(); }catch(e){}
 }
 
 function renderLeadDashboard(){
@@ -526,287 +668,737 @@ leadTbody().addEventListener('change', e=>{
     store.update(leads[i].id);
     renderLeadDashboard();
 });
-leadTbody().addEventListener('click', e=>{ const rm=e.target.dataset.rm; if(rm!==undefined) store.remove(leads[+rm].id); });
+leadTbody().addEventListener('click', e=>{
+    const rm=e.target.dataset.rm; if(rm!==undefined){ if(confirm('Delete '+(leads[+rm].company||'this lead')+'?')) store.remove(leads[+rm].id); return; }
+    const p=e.target.closest('[data-pitch]'); if(p){ pitchLead(leads[+p.dataset.pitch]); return; }
+    const d=e.target.closest('[data-deck]'); if(d){ openSentDeck(leads[+d.dataset.deck]); }
+});
 leadSearch().addEventListener('input', renderLeads);
 
 $('addBtn').onclick = ()=>{ if(!store){ toast('Still connecting to the cloud - wait a second and try again.'); return; } store.add(blankLead()); };
 $('clearBtn').onclick = ()=>{ if(store && confirm('Delete ALL leads? This cannot be undone.')) store.clear(); };
 $('csvBtn').onclick = ()=>{
-    const head=['Lead ID','Company','Contact','Email','Website/Instagram','Location','Category','Emailed','Date Emailed','Follow-up By','Status','Comments'];
-    const rows = leads.map(o=>[o.leadId,o.company,o.contact,o.email,o.web,o.location,o.category,o.emailed,o.dateEmailed,o.followUp,o.status,o.comments]);
+    const head=['Lead ID','Company','Contact','Email','Website/Instagram','Location','Category','Emailed','Date Emailed','Follow-up By','Status','Deck Sent','Comments'];
+    const rows = leads.map(o=>[o.leadId,o.company,o.contact,o.email,o.web,o.location,o.category,o.emailed,o.dateEmailed,o.followUp,o.status,(o.deckSent?(o.deckSent.version+' '+o.deckSent.at):''),o.comments]);
     const csv=[head,...rows].map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\n');
     const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='fom_leads.csv'; a.click(); URL.revokeObjectURL(a.href);
 };
 
 /* ================================================================
-   PITCH DECK BUILDER - 7 landscape pages, printed via hidden iframe
+   SHARED: outreach settings (categories, advisor, templates) and the
+   website photo list. Both load from Firestore after login.
    ================================================================ */
-// Photos live on the website repo, not here, so always load them from the live site
+const OUT = window.FOM_OUT;
+let OCFG = OUT.cached();
+let DB = null;
 const SITE = 'https://www.fomstudios.co.za/';
-const WORK_IMAGES = Array.from({length:18},(_,i)=>`${SITE}assets/work${i+1}.jpg`);
+const WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
+let PHOTOS = (window.FOM_PHOTO_DEFAULTS || []).map(p => Object.assign({}, p));
+const photoUrl = p => p.src.indexOf('r2:') === 0 ? WORKER + '/file?g=portfolio%2F&n=' + encodeURIComponent(p.src.slice(3)) : SITE + p.src;
+const visiblePhotos = () => PHOTOS.filter(p => p && p.src && !p.hide);
+const catNames = () => OCFG.categories.map(c => c.name);
+const clone = o => JSON.parse(JSON.stringify(o));
+const todayIso = () => OUT.iso(new Date());
+const niceDate = s => { try{ return new Date(String(s).length > 10 ? s : s + 'T00:00:00').toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' }); }catch(e){ return s || ''; } };
+const leadById = id => leads.find(x => x.id === id);
+
+/* ================================================================
+   PITCH DECK: data model
+   A deck = { client, contact:{phone,email,web}, pages:[...] }.
+   Image slots hold a reference:  g:<photo id>  (website gallery)
+                                  d:<file name> (uploaded to R2 deck/)
+                                  u:<site path> (built-in site file)
+   ================================================================ */
 const DEFAULT_ABOUT = "Frames Of Motion (FOM) Studios is a creative media brand specialising in photography, videography and visual storytelling, based in Johannesburg, South Africa. We focus on capturing moments with precision, emotion and a cinematic edge - helping brands, events and individuals tell their story visually.";
 const DEFAULT_WHAT = ["Sports & Event Photography","Cinematic Videography & Reels","Aerial / Drone Coverage","Automotive & Lifestyle Content","Content Editing & Colour Grading"].join('\n');
 const DEFAULT_WHY = ["Fast turnaround on edited deliverables","Cinematic, story-driven visual style","Reliable, professional on-site presence","Flexible packages tailored to your needs","Based in Johannesburg, available to travel"].join('\n');
 const DEFAULT_CLIENTS = ["Hyde Park Falcons","Party Bubbles Events","Momsi Mather - Professional Padel Player"].join('\n');
+const MASCOT = 'u:assets/mascot-head-color.png';
 
-(function initDeckForm(){
-    $('dAbout').value = DEFAULT_ABOUT;
-    $('dWhat').value = DEFAULT_WHAT;
-    $('dWhy').value = DEFAULT_WHY;
-    $('dClients').value = DEFAULT_CLIENTS;
+const PAGE_TYPES = {
+  cover:    { label:'Cover', slots:1, slotNames:['Corner badge'] },
+  about:    { label:'About us', slots:1 },
+  what:     { label:'What we do', slots:2 },
+  portfolio:{ label:'Portfolio grid', slots:6 },
+  why:      { label:'Why work with us', slots:3 },
+  clients:  { label:'Previous clients', slots:0 },
+  close:    { label:'Closing page', slots:0 },
+  textimg:  { label:'Text and image', slots:1 },
+  feature:  { label:'Full image feature', slots:1 }
+};
+const FIELDS = {
+  cover:    [['top1','Top left'],['top2','Top right'],['script','Script word'],['big','Big title'],['pill','Pill text']],
+  about:    [['kicker','Kicker'],['title','Title'],['body','Text',5],['labels','Label under the image']],
+  what:     [['kicker','Kicker'],['title','Title'],['list','Services (one per line)',5],['labels','Image labels (one per line)',2]],
+  portfolio:[['kicker','Kicker'],['title','Title']],
+  why:      [['kicker','Kicker'],['title','Title'],['list','Reasons (one per line, the first 3 sit on the photos)',5]],
+  clients:  [['kicker','Kicker'],['title','Title'],['list','Clients (one per line)',4]],
+  close:    [['script','Script line'],['big','Big title']],
+  textimg:  [['kicker','Kicker'],['title','Title'],['body','Text',5],['labels','Label under the image']],
+  feature:  [['title','Big caption'],['body','Small line under it',2]]
+};
+const NUMBERED = ['about','what','portfolio','why','clients','textimg'];
+const TEXT_KEYS = ['top1','top2','script','big','pill','kicker','title','body','list','labels'];
 
-    const picker = $('portfolioPicker');
-    picker.innerHTML = WORK_IMAGES.map((src,i)=>`
-        <label class="chip-check"><input type="checkbox" value="${src}" ${i<6?'checked':''}> <img src="${src}" onerror="this.style.display='none'"> Work ${i+1}</label>
-    `).join('');
+function originalDeck(){
+  return { client:'', contact:{ phone:'+27 73 755 3136', email:'info@fomstudios.co.za', web:'www.fomstudios.co.za' }, pages:[
+    { id:'cover', type:'cover', top1:'ISHAAQ ADAM', top2:'FRAMES OF MOTION', script:'creative', big:'PORTFOLIO', pill:'BY FOM STUDIOS', img:[MASCOT] },
+    { id:'about', type:'about', kicker:'Who we are', title:'About Us', body:DEFAULT_ABOUT, labels:'FOM STUDIOS', img:['g:s1'] },
+    { id:'what', type:'what', kicker:'Services', title:'What We Do', list:DEFAULT_WHAT, labels:'VIDEOGRAPHY\nPHOTOGRAPHY', img:['g:s1','g:s2'] },
+    { id:'portfolio', type:'portfolio', kicker:'Selected Work', title:'Portfolio', img:['g:s1','g:s2','g:s3','g:s4','g:s5','g:s6'] },
+    { id:'why', type:'why', kicker:'The FOM Difference', title:'Why Work With Us', list:DEFAULT_WHY, img:['g:s1','g:s2','g:s3'] },
+    { id:'clients', type:'clients', kicker:'Trusted By', title:'Previous Clients', list:DEFAULT_CLIENTS },
+    { id:'close', type:'close', script:"let's work", big:'TOGETHER' }
+  ]};
+}
+function newPage(type){
+  const id = type + Date.now().toString(36);
+  if(type === 'portfolio') return { id, type, kicker:'More Work', title:'Portfolio', img:['','','','','',''] };
+  if(type === 'textimg') return { id, type, kicker:'Spotlight', title:'A recent project', body:'Tell the story of a shoot here: who it was for, what you delivered and the result.', labels:'', img:[''] };
+  return { id, type:'feature', title:'Big moments, captured', body:'', img:[''] };
+}
+function cleanDeck(d){
+  const o = originalDeck(); d = (d && typeof d === 'object') ? d : o;
+  const str = (v, n) => typeof v === 'string' ? v.slice(0, n || 4000) : '';
+  const contact = Object.assign({}, o.contact, (d.contact && typeof d.contact === 'object') ? d.contact : {});
+  Object.keys(contact).forEach(k => contact[k] = str(contact[k], 120));
+  let pages = (Array.isArray(d.pages) ? d.pages : o.pages).filter(p => p && PAGE_TYPES[p.type]).slice(0, 30).map((p, i) => {
+    const t = PAGE_TYPES[p.type], q = { id: str(p.id, 60) || (p.type + i), type: p.type, hidden: !!p.hidden };
+    TEXT_KEYS.forEach(k => { if(typeof p[k] === 'string') q[k] = str(p[k]); });
+    if(t.slots){ const im = Array.isArray(p.img) ? p.img : []; q.img = Array.from({ length:t.slots }, (_, j) => str(im[j], 200)); }
+    return q;
+  });
+  if(!pages.length) pages = o.pages;
+  return { client: str(d.client, 120), contact, pages };
+}
+
+/* ================================================================
+   PITCH DECK: versions, uploads, draft (settings/pitchDeck)
+   ================================================================ */
+const DECKS_KEY = 'fom.decks.v1', DRAFT_KEY = 'fom.deck.draft.v1';
+let DECKS = { versions:[], uploads:[], liveId:'original' };
+let deck = null, deckBase = { id:'original', name:'Original' }, deckDirty = false;
+const openPages = new Set();
+
+function cleanDecks(x){
+  x = (x && typeof x === 'object') ? x : {};
+  return {
+    versions: (Array.isArray(x.versions) ? x.versions : []).filter(v => v && v.id && v.deck).slice(0, 60).map(v => ({ id:String(v.id), name:String(v.name || 'Version').slice(0, 80), at:String(v.at || ''), deck:cleanDeck(v.deck) })),
+    uploads: (Array.isArray(x.uploads) ? x.uploads : []).filter(u => u && u.n).slice(0, 300).map(u => ({ n:String(u.n).slice(0, 100), at:String(u.at || '') })),
+    liveId: typeof x.liveId === 'string' ? x.liveId : 'original'
+  };
+}
+function versionDeck(id){ if(id === 'original') return cleanDeck(originalDeck()); const v = DECKS.versions.find(x => x.id === id); return v ? cleanDeck(clone(v.deck)) : null; }
+function versionName(id){ if(id === 'original') return 'Original'; const v = DECKS.versions.find(x => x.id === id); return v ? v.name : ''; }
+function saveDraft(){ try{ localStorage.setItem(DRAFT_KEY, JSON.stringify({ base:deckBase, dirty:deckDirty, deck })); }catch(e){} }
+function markDirty(){ deckDirty = true; saveDraft(); renderDeckBar(); schedulePreview(); }
+async function persistDecks(){
+  try{ localStorage.setItem(DECKS_KEY, JSON.stringify(DECKS)); }catch(e){}
+  if(!DB) return false;
+  try{ await DB.collection('settings').doc('pitchDeck').set({ json:JSON.stringify(DECKS), updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); return true; }
+  catch(e){ console.warn(e); toast('Saved on this device only. Publish the Firestore rules so "settings" can sync.'); return false; }
+}
+function useDeck(d, base, dirty){
+  deck = cleanDeck(d); deckBase = base; deckDirty = !!dirty;
+  saveDraft(); syncDeckInputs(); renderDeckEditor(); renderDeckBar(); refreshDeckPreview();
+}
+(function initDecks(){
+  try{ DECKS = cleanDecks(JSON.parse(localStorage.getItem(DECKS_KEY) || '{}')); }catch(e){}
+  let draft = null; try{ draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); }catch(e){}
+  if(draft && draft.deck){ deck = cleanDeck(draft.deck); deckBase = draft.base || deckBase; deckDirty = !!draft.dirty; }
+  else { deck = versionDeck(DECKS.liveId) || versionDeck('original'); deckBase = { id:DECKS.liveId, name:versionName(DECKS.liveId) || 'Original' }; }
 })();
 
-function selectedPortfolio(){
-    return Array.from(document.querySelectorAll('#portfolioPicker input:checked')).slice(0,6).map(el=>el.value);
-}
-function linesOf(id){ return $(id).value.split('\n').map(s=>s.trim()).filter(Boolean); }
-
-function buildDeckHTML(){
-    const client = $('dClient').value.trim();
-    const about = $('dAbout').value.trim();
-    const what = linesOf('dWhat');
-    const why = linesOf('dWhy');
-    const clients = linesOf('dClients');
-    const portfolio = selectedPortfolio();
-
-    const page = (inner, opts) => `<section class="pd-page" style="${opts&&opts.dark?'background:#1a1a18;color:#f1f0ec;':'background:#f1f0ec;color:#1a1a18;'}">${inner}</section>`;
-
-    const cover = page(`
-        <div class="pd-cover-frame">
-          <div class="pd-cover-top">
-            <span>ISHAAQ ADAM</span><span>FRAMES OF MOTION</span>
-          </div>
-          <div class="pd-cover-mid">
-            <div class="pd-script">creative</div>
-            <div class="pd-big">PORTFOLIO</div>
-            <div class="pd-pill">BY FOM STUDIOS</div>
-            ${client ? `<div class="pd-prepared">Prepared for: ${esc(client)}</div>` : ''}
-          </div>
-          <div class="pd-cover-bottom">
-            <span>www.fomstudios.co.za</span>
-            <img src="${SITE}assets/mascot-head-color.png" onerror="this.style.display='none'">
-          </div>
-        </div>`, {dark:true});
-
-    const fallbackImg = SITE + 'assets/mascot-head-color.png';
-    const p0 = portfolio[0] || fallbackImg;
-    const p1 = portfolio[1] || fallbackImg;
-
-    const about_page = page(`
-        <div class="pd-split">
-          <div class="pd-inner pd-inner-half">
-            <div class="pd-kicker">01 - Who we are</div>
-            <h1 class="pd-h1">About Us</h1>
-            <p class="pd-body">${esc(about)}</p>
-          </div>
-          <div class="pd-side">
-            <div class="pd-framed pd-framed-tall">
-              <img src="${p0}" onerror="this.closest('.pd-framed').style.display='none'">
-              <div class="pd-framed-label">FOM STUDIOS</div>
-            </div>
-          </div>
-        </div>`);
-
-    const what_page = page(`
-        <div class="pd-split">
-          <div class="pd-inner pd-inner-half">
-            <div class="pd-kicker">02 - Services</div>
-            <h1 class="pd-h1">What We Do</h1>
-            <ul class="pd-list">${what.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>
-          </div>
-          <div class="pd-side pd-side-pair">
-            <div class="pd-framed">
-              <img src="${p0}" onerror="this.closest('.pd-framed').style.display='none'">
-              <div class="pd-framed-label">VIDEOGRAPHY</div>
-            </div>
-            <div class="pd-framed">
-              <img src="${p1}" onerror="this.closest('.pd-framed').style.display='none'">
-              <div class="pd-framed-label">PHOTOGRAPHY</div>
-            </div>
-          </div>
-        </div>`);
-
-    const portfolio_page = page(`
-        <div class="pd-inner">
-          <div class="pd-kicker">03 - Selected Work</div>
-          <h1 class="pd-h1">Portfolio</h1>
-          <div class="pd-grid">${portfolio.map(src=>`<div class="pd-cell"><img src="${src}" onerror="this.parentElement.style.display='none'"></div>`).join('')}</div>
-        </div>`);
-
-    const whyColors = ['#02367B','#1f8a4c','#a9720b'];
-    const whyMain = why.slice(0,3);
-    const whyRest = why.slice(3);
-    const why_page = page(`
-        <div class="pd-inner">
-          <div class="pd-kicker">04 - The FOM Difference</div>
-          <h1 class="pd-h1">Why Work With Us</h1>
-          <div class="pd-polaroid-row">
-            ${whyMain.map((reason,i)=>`
-              <div class="pd-polaroid">
-                <div class="pd-polaroid-photo"><img src="${portfolio[i]||fallbackImg}" onerror="this.closest('.pd-polaroid').querySelector('.pd-polaroid-photo').style.background='#ddd'"></div>
-                <span class="pd-polaroid-tag" style="background:${whyColors[i%3]};">${esc(reason)}</span>
-              </div>`).join('')}
-          </div>
-          ${whyRest.length ? `<ul class="pd-list pd-list-compact">${whyRest.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>` : ''}
-        </div>`);
-
-    const clients_page = page(`
-        <div class="pd-inner">
-          <div class="pd-kicker">05 - Trusted By</div>
-          <h1 class="pd-h1">Previous Clients</h1>
-          <div class="pd-client-pills">${clients.map(c=>`<span class="pd-pill2">${esc(c)}</span>`).join('')}</div>
-        </div>`);
-
-    const close_page = page(`
-        <div class="pd-close">
-          <div class="pd-close-line"></div>
-          <div class="pd-close-mid">
-            <div class="pd-script" style="color:#5B9AE0;">let's work</div>
-            <div class="pd-big">TOGETHER</div>
-          </div>
-          <div class="pd-close-line"></div>
-          <div class="pd-close-contact">
-            <span>+27 73 755 3136</span><span>info@fomstudios.co.za</span><span>www.fomstudios.co.za</span>
-          </div>
-        </div>`, {dark:true});
-
-    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><base href="${esc(document.baseURI)}"><style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;}
-        .pd-page{width:297mm;height:210mm;position:relative;overflow:hidden;page-break-after:always;display:flex;align-items:stretch;}
-        .pd-page:last-child{page-break-after:auto;}
-        .pd-inner{padding:22mm 26mm;width:100%;display:flex;flex-direction:column;justify-content:center;}
-        .pd-kicker{font-size:11pt;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#02367B;margin-bottom:10mm;}
-        .pd-h1{font-size:36pt;font-weight:800;letter-spacing:-.01em;margin-bottom:12mm;}
-        .pd-body{font-size:14pt;line-height:1.8;max-width:95%;color:#3a3a38;}
-        .pd-list{list-style:none;display:flex;flex-direction:column;gap:8mm;max-width:95%;}
-        .pd-list li{font-size:15pt;font-weight:600;padding-left:14mm;position:relative;}
-        .pd-list li::before{content:"";position:absolute;left:0;top:6px;width:8mm;height:2px;background:#02367B;}
-        .pd-list-compact{margin-top:10mm;gap:4mm;}
-        .pd-list-compact li{font-size:11pt;font-weight:500;color:#5a5a57;}
-        .pd-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:6mm;height:130mm;}
-        .pd-cell{border-radius:6px;overflow:hidden;background:#ddd;}
-        .pd-cell img{width:100%;height:100%;object-fit:cover;display:block;}
-        .pd-client-pills{display:flex;flex-wrap:wrap;gap:8mm;max-width:80%;}
-        .pd-pill2{background:#fff;border:1.5px solid #02367B;color:#02367B;border-radius:999px;padding:5mm 10mm;font-size:14pt;font-weight:700;}
-        .pd-cover-frame{width:100%;padding:14mm 18mm;display:flex;flex-direction:column;justify-content:space-between;border:3px solid #f1f0ec;margin:6mm;box-sizing:border-box;}
-        .pd-cover-top{display:flex;justify-content:space-between;font-size:11pt;font-weight:700;letter-spacing:2px;}
-        .pd-cover-mid{text-align:center;}
-        .pd-script{font-family:"Brush Script MT",cursive,Georgia,serif;font-size:44pt;color:#5B9AE0;line-height:1;}
-        .pd-big{font-size:60pt;font-weight:800;letter-spacing:2px;margin-top:-4mm;}
-        .pd-pill{display:inline-block;background:#02367B;color:#fff;border-radius:999px;padding:5mm 12mm;font-size:12pt;font-weight:700;letter-spacing:2px;margin-top:8mm;}
-        .pd-prepared{margin-top:10mm;font-size:12pt;color:#b9b8b5;}
-        .pd-cover-bottom{display:flex;justify-content:space-between;align-items:flex-end;font-size:10pt;}
-        .pd-cover-bottom img{width:22mm;border-radius:50%;}
-        .pd-close{width:100%;padding:16mm 20mm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14mm;text-align:center;}
-        .pd-close-line{width:70%;height:1px;background:rgba(241,240,236,.3);}
-        .pd-close-mid .pd-big{font-size:52pt;}
-        .pd-close-contact{display:flex;gap:14mm;font-size:12pt;color:#f1f0ec;}
-        /* split layout: text left, image(s) right - fills the gap on About Us / What We Do */
-        .pd-split{display:flex;width:100%;align-items:stretch;}
-        .pd-inner-half{width:52%;justify-content:center;}
-        .pd-side{width:48%;display:flex;align-items:center;justify-content:center;padding:14mm 18mm 14mm 0;gap:8mm;}
-        .pd-side-pair{flex-direction:row;}
-        .pd-framed{flex:1;background:#02367B;border-radius:10px;padding:6mm 6mm 12mm;display:flex;flex-direction:column;box-shadow:0 8px 24px rgba(0,0,0,.15);}
-        .pd-framed-tall{max-width:80mm;margin:0 auto;}
-        .pd-framed img{width:100%;height:60mm;object-fit:cover;border-radius:4px;display:block;background:#dfe3ea;}
-        .pd-framed-tall img{height:95mm;}
-        .pd-framed-label{color:#fff;text-align:center;font-weight:800;letter-spacing:1.5px;font-size:11pt;margin-top:6mm;text-transform:uppercase;}
-        /* polaroid row - Why Work With Us */
-        .pd-polaroid-row{display:flex;gap:10mm;margin-top:4mm;}
-        .pd-polaroid{background:#fff;border:1px solid #e2e0d8;border-radius:8px;padding:5mm 5mm 0;box-shadow:0 6px 18px rgba(0,0,0,.08);width:70mm;}
-        .pd-polaroid-photo{width:100%;height:55mm;background:#ddd;border-radius:4px;overflow:hidden;margin-bottom:5mm;}
-        .pd-polaroid-photo img{width:100%;height:100%;object-fit:cover;display:block;}
-        .pd-polaroid-tag{display:block;color:#fff;font-weight:700;font-size:10.5pt;text-align:center;border-radius:6px 6px 0 0;margin:0 -5mm;padding:4mm 4mm 8mm;line-height:1.3;}
-        @media print{@page{size:A4 landscape;margin:0;}}
-    </style></head><body>${cover}${about_page}${what_page}${portfolio_page}${why_page}${clients_page}${close_page}</body></html>`;
+function renderDeckBar(){
+  const live = deckBase.id === DECKS.liveId && !deckDirty;
+  $('dkVer').innerHTML = `Editing <b>${esc(deckBase.name || 'Original')}</b>${deckDirty ? '<span class="pill-warn">Unsaved changes</span>' : (live ? '<span class="pill-ok">Live</span>' : '')}<br>${DECKS.versions.length} saved version${DECKS.versions.length === 1 ? '' : 's'}, the Original is always kept`;
+  const vis = deck.pages.filter(p => !p.hidden).length;
+  $('dkPrevTitle').textContent = `Deck preview (${vis} page${vis === 1 ? '' : 's'}, landscape)`;
 }
 
+$('dkSave').onclick = async () => {
+  const n = DECKS.versions.length + 1;
+  const def = (deck.client ? deck.client + ' pitch' : 'Version ' + n);
+  const name = prompt('Name this version', def); if(name === null) return;
+  const v = { id:'v' + Date.now().toString(36), name:(name.trim() || def).slice(0, 80), at:new Date().toISOString(), deck:clone(deck) };
+  DECKS.versions.unshift(v); DECKS.versions = DECKS.versions.slice(0, 60); DECKS.liveId = v.id;
+  deckBase = { id:v.id, name:v.name }; deckDirty = false; saveDraft(); renderDeckBar();
+  if(await persistDecks()) toast('Saved as "' + v.name + '". This is now your live deck.');
+};
+$('dkVersions').onclick = openVersions;
+function openVersions(){
+  const row = (id, name, at, isOrig) => `<div class="ver-row ${DECKS.liveId === id ? 'live' : ''}">
+      <div class="vi"><b>${esc(name)}${DECKS.liveId === id ? ' <span class="pill-ok">Live</span>' : ''}${deckBase.id === id ? ' <span class="pill-warn" style="background:#e7f0ff;color:var(--accent)">Open</span>' : ''}</b><span>${isOrig ? 'Built in. Always kept, cannot be deleted.' : 'Saved ' + esc(niceDate(at))}</span></div>
+      <button class="btn ghost sm" data-v="load" data-id="${esc(id)}" type="button">Load</button>
+      ${isOrig ? '' : `<button class="ib" data-v="del" data-id="${esc(id)}" type="button" title="Delete this version">&times;</button>`}</div>`;
+  openSheet('Deck versions', `<p class="ed-help">Every save becomes a new version and turns into your live deck (the one that opens by default). Load any version to edit or export it. Loading the Original gives you the deck exactly as it was built.</p>
+    ${DECKS.versions.map(v => row(v.id, v.name, v.at, false)).join('')}${row('original', 'Original', '', true)}`);
+}
+function versionAction(act, id){
+  if(act === 'load'){
+    if(deckDirty && !confirm('You have unsaved changes. Load this version anyway?')) return;
+    const d = versionDeck(id); if(!d) return;
+    useDeck(d, { id, name:versionName(id) }, false); closeSheet(); toast('Loaded "' + versionName(id) + '"');
+  } else if(act === 'del'){
+    const v = DECKS.versions.find(x => x.id === id); if(!v || !confirm('Delete "' + v.name + '"? Leads that received it keep their own copy.')) return;
+    DECKS.versions = DECKS.versions.filter(x => x.id !== id);
+    if(DECKS.liveId === id) DECKS.liveId = DECKS.versions[0] ? DECKS.versions[0].id : 'original';
+    if(deckBase.id === id){ deckBase = { id:'unsaved', name:v.name + ' (deleted)' }; deckDirty = true; saveDraft(); }
+    persistDecks(); renderDeckBar(); openVersions();
+  }
+}
+
+/* ================================================================
+   PITCH DECK: editor
+   ================================================================ */
+function slotInfo(ref){
+  if(!ref) return { url:'', label:'Empty', empty:true };
+  if(ref.indexOf('g:') === 0){ const p = PHOTOS.find(x => x.id === ref.slice(2)); return p ? { url:photoUrl(p), label:(p.cap || 'Photo') + (p.hide ? ' (hidden)' : '') } : { url:'', label:'Removed photo', missing:true }; }
+  if(ref.indexOf('d:') === 0) return { url:WORKER + '/file?g=deck%2F&n=' + encodeURIComponent(ref.slice(2)), label:'Your upload' };
+  if(ref.indexOf('u:') === 0) return { url:SITE + ref.slice(2), label:'Mascot' };
+  return { url:'', label:'Empty', empty:true };
+}
+function pageTitle(p){ return (p.title || p.big || PAGE_TYPES[p.type].label || '').replace(/\n/g, ' '); }
+function slotName(p, j){ const t = PAGE_TYPES[p.type]; return t.slotNames ? t.slotNames[j] : (t.slots > 1 ? 'Photo ' + (j + 1) : 'Image'); }
+
+function syncDeckInputs(){
+  $('dClient').value = deck.client || '';
+  $('dkPhone').value = deck.contact.phone || ''; $('dkEmail').value = deck.contact.email || ''; $('dkWeb').value = deck.contact.web || '';
+}
+function renderDeckEditor(){
+  const host = $('dkPages'); let num = 0;
+  host.innerHTML = deck.pages.map((p, i) => {
+    const t = PAGE_TYPES[p.type];
+    if(!p.hidden && NUMBERED.includes(p.type)) num++;
+    const extra = !['cover','about','what','portfolio','why','clients','close'].includes(p.id);
+    const thumbs = (p.img || []).slice(0, 3).map(r => { const s = slotInfo(r); return s.url ? `<img src="${esc(s.url)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : ''; }).join('');
+    const fields = (FIELDS[p.type] || []).map(([k, lab, rows]) => `<div class="field"><label>${esc(lab)}</label>${rows
+        ? `<textarea rows="${rows}" data-pi="${i}" data-k="${k}">${esc(p[k] || '')}</textarea>`
+        : `<input type="text" data-pi="${i}" data-k="${k}" value="${esc(p[k] || '')}">`}</div>`).join('');
+    const slots = t.slots ? `<div class="field"><label>${t.slots > 1 ? 'Images (tap one to change it)' : 'Image (tap to change)'}</label><div class="slots">${p.img.map((r, j) => { const s = slotInfo(r);
+        return `<button type="button" class="slot ${s.missing ? 'miss' : ''}" data-slot="${i}:${j}" title="${esc(slotName(p, j))}">${s.url ? `<img src="${esc(s.url)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : `<span class="empty-s">+ Add</span>`}${t.slots > 1 ? `<span class="sn">${j + 1}</span>` : ''}<span class="sl">${esc(s.label)}</span></button>`; }).join('')}</div></div>` : '';
+    return `<div class="dk-page ${p.hidden ? 'off' : ''} ${openPages.has(p.id) ? 'open' : ''}" data-pid="${esc(p.id)}">
+      <div class="dk-ph" data-toggle="${i}">
+        <span class="num">${p.hidden ? '-' : (NUMBERED.includes(p.type) ? num : (p.type === 'cover' ? 'C' : (p.type === 'close' ? 'E' : '+')))}</span>
+        <span class="nm"><b>${esc(pageTitle(p))}</b><span>${esc(t.label)}${p.hidden ? ' (hidden)' : ''}</span></span>
+        <span class="thumbs">${thumbs}</span>
+        <button class="ib" type="button" data-act="up" data-i="${i}" title="Move up" ${i === 0 ? 'disabled' : ''}>&uarr;</button>
+        <button class="ib" type="button" data-act="down" data-i="${i}" title="Move down" ${i === deck.pages.length - 1 ? 'disabled' : ''}>&darr;</button>
+        <button class="ib" type="button" data-act="hide" data-i="${i}" title="${p.hidden ? 'Show this page' : 'Hide this page'}">${p.hidden ? '&#9711;' : '&#9673;'}</button>
+        ${extra ? `<button class="ib" type="button" data-act="rm" data-i="${i}" title="Delete this page">&times;</button>` : ''}
+      </div>
+      <div class="dk-pb">${fields}${slots}${NUMBERED.includes(p.type) ? '<div class="hint">The page number in front of the kicker is added automatically.</div>' : ''}</div>
+    </div>`;
+  }).join('');
+}
+$('dkPages').addEventListener('click', e => {
+  const act = e.target.closest('[data-act]');
+  if(act){
+    e.stopPropagation(); const i = +act.dataset.i, P = deck.pages;
+    if(act.dataset.act === 'up' && i > 0){ [P[i - 1], P[i]] = [P[i], P[i - 1]]; }
+    else if(act.dataset.act === 'down' && i < P.length - 1){ [P[i + 1], P[i]] = [P[i], P[i + 1]]; }
+    else if(act.dataset.act === 'hide'){ P[i].hidden = !P[i].hidden; }
+    else if(act.dataset.act === 'rm'){ if(!confirm('Delete the "' + pageTitle(P[i]) + '" page?')) return; P.splice(i, 1); }
+    renderDeckEditor(); markDirty(); return;
+  }
+  const slot = e.target.closest('[data-slot]');
+  if(slot){ const [pi, si] = slot.dataset.slot.split(':').map(Number); openPicker(pi, si); return; }
+  const tg = e.target.closest('[data-toggle]');
+  if(tg){ const p = deck.pages[+tg.dataset.toggle]; if(openPages.has(p.id)) openPages.delete(p.id); else openPages.add(p.id); tg.parentElement.classList.toggle('open'); }
+});
+$('dkPages').addEventListener('input', e => {
+  const el = e.target; if(el.dataset.pi === undefined) return;
+  const p = deck.pages[+el.dataset.pi]; p[el.dataset.k] = el.value;
+  if(el.dataset.k === 'title' || el.dataset.k === 'big'){ const b = el.closest('.dk-page').querySelector('.nm b'); if(b) b.textContent = pageTitle(p); }
+  markDirty();
+});
+$('dClient').addEventListener('input', e => { deck.client = e.target.value; markDirty(); });
+['dkPhone','dkEmail','dkWeb'].forEach(id => $(id).addEventListener('input', e => { deck.contact[e.target.dataset.c] = e.target.value; markDirty(); }));
+$('dkAdd').onclick = () => {
+  const p = newPage($('dkAddType').value), closeAt = deck.pages.findIndex(x => x.type === 'close');
+  deck.pages.splice(closeAt >= 0 ? closeAt : deck.pages.length, 0, p); openPages.add(p.id);
+  renderDeckEditor(); markDirty();
+  const el = document.querySelector(`[data-pid="${p.id}"]`); if(el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+  toast(PAGE_TYPES[p.type].label + ' page added before the closing page');
+};
+
+/* category picks your deck photos */
+function autoPick(catId, quiet){
+  const c = OUT.byId(OCFG, catId); if(!c) return;
+  const want = c.photoCats && c.photoCats.length ? c.photoCats : Object.keys(OUT.PHOTO_CATS);
+  const vis = visiblePhotos();
+  let pool = vis.filter(p => want.includes(p.cat));
+  if(pool.length < 6) pool = pool.concat(vis.filter(p => !pool.includes(p)));
+  if(!pool.length) return;
+  const at = k => 'g:' + pool[k % pool.length].id;
+  let k = 0;
+  deck.pages.filter(p => p.type === 'portfolio').forEach(p => { p.img = p.img.map(() => at(k++)); });
+  // section images that use gallery photos follow along; your uploads and the mascot stay put
+  deck.pages.filter(p => p.type !== 'portfolio' && p.img).forEach(p => { p.img = p.img.map(r => (r.indexOf('g:') === 0 || !r) && p.type !== 'cover' ? at(k++) : r); });
+  renderDeckEditor(); markDirty();
+  if(!quiet) toast('Picked your latest ' + want.map(x => OUT.PHOTO_CATS[x] || x).join(' and ') + ' photos for ' + c.name);
+}
+$('dkCat').addEventListener('change', e => { if(e.target.value) autoPick(e.target.value); });
+
+/* ================================================================
+   IMAGE PICKER (website gallery + your uploads to R2 deck/)
+   ================================================================ */
+let pk = { pi:0, si:0, tab:'gallery', filter:'all' };
+function openPicker(pi, si){ pk.pi = pi; pk.si = si; const r = deck.pages[pi].img[si] || ''; pk.tab = r.indexOf('d:') === 0 ? 'uploads' : 'gallery'; renderPicker(true); }
+function renderPicker(open){
+  const p = deck.pages[pk.pi], cur = p.img[pk.si] || '';
+  const vis = visiblePhotos(), list = vis.filter(x => pk.filter === 'all' || x.cat === pk.filter);
+  const tabs = `<div class="mini-chips"><button class="mini-chip ${pk.tab === 'gallery' ? 'on' : ''}" data-pk-tab="gallery" type="button">Website gallery (${vis.length})</button><button class="mini-chip ${pk.tab === 'uploads' ? 'on' : ''}" data-pk-tab="uploads" type="button">My uploads (${DECKS.uploads.length})</button></div>`;
+  let body;
+  if(pk.tab === 'gallery'){
+    body = `<div class="mini-chips">${[['all','All']].concat(Object.entries(OUT.PHOTO_CATS)).map(([k, v]) => `<button class="mini-chip ${pk.filter === k ? 'on' : ''}" data-pk-f="${k}" type="button">${v}</button>`).join('')}</div>
+      <div class="pk-grid">${list.map(x => `<button type="button" class="pk-item ${cur === 'g:' + x.id ? 'on' : ''}" data-pick="g:${esc(x.id)}"><img src="${esc(photoUrl(x))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span class="cap">${esc(x.cap || '')}</span></button>`).join('') || '<p class="ed-help">No photos in this category yet.</p>'}</div>
+      <p class="ed-help" style="margin-top:10px">These are the photos on your website, in the same order as the Photos page. Add new ones there and they appear here.</p>`;
+  } else {
+    const ups = DECKS.uploads.slice().reverse();
+    body = `<div class="pk-up">Upload your own image for this spot. It is resized for print and saved to your R2 <b>deck/</b> folder.<br><button class="btn sm" id="pkUpload" type="button">Upload image</button><div id="pkMsg" class="hint"></div></div>
+      <div class="pk-grid">${ups.map(u => `<button type="button" class="pk-item ${cur === 'd:' + u.n ? 'on' : ''}" data-pick="d:${esc(u.n)}"><span class="pk-del" data-del="${esc(u.n)}" title="Delete this upload">&times;</span><img src="${esc(slotInfo('d:' + u.n).url)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span class="cap">${esc(niceDate(u.at))}</span></button>`).join('')}</div>`;
+  }
+  const foot = `<div class="pk-foot">${p.type === 'cover' ? `<button class="btn ghost sm" data-pick="${MASCOT}" type="button">Use the mascot</button>` : ''}<button class="btn ghost sm" data-pick="" type="button">Leave empty</button></div>`;
+  const html = tabs + body + foot;
+  if(open) openSheet('Choose image: ' + pageTitle(p) + ', ' + slotName(p, pk.si), html); else $('xBody').innerHTML = html;
+}
+function pickerClick(e){
+  const del = e.target.closest('[data-del]');
+  if(del){ e.stopPropagation(); deleteUpload(del.dataset.del); return true; }
+  const t = e.target.closest('[data-pk-tab]'); if(t){ pk.tab = t.dataset.pkTab; renderPicker(); return true; }
+  const f = e.target.closest('[data-pk-f]'); if(f){ pk.filter = f.dataset.pkF; renderPicker(); return true; }
+  if(e.target.id === 'pkUpload'){ $('dkFile').click(); return true; }
+  const pick = e.target.closest('[data-pick]');
+  if(pick){ deck.pages[pk.pi].img[pk.si] = pick.dataset.pick; closeSheet(); renderDeckEditor(); markDirty(); return true; }
+  return false;
+}
+async function authToken(){ const u = window.firebase && firebase.apps.length && firebase.auth().currentUser; if(!u) throw new Error('not signed in'); return u.getIdToken(); }
+function shrink(file, max){
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => { const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)); const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); c.toBlob(b => b ? res(b) : rej(new Error('could not read image')), 'image/jpeg', 0.9); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('could not read image')); };
+    img.src = url;
+  });
+}
+$('dkFile').addEventListener('change', async e => {
+  const files = Array.from(e.target.files || []); e.target.value = ''; if(!files.length) return;
+  const msg = t => { const m = $('pkMsg'); if(m) m.textContent = t; };
+  let first = null;
+  for(let i = 0; i < files.length; i++){
+    try{
+      msg('Uploading ' + (i + 1) + ' of ' + files.length + '...');
+      const blob = await shrink(files[i], 2400), name = 'deck-' + Date.now().toString(36) + i + '.jpg';
+      const r = await fetch(WORKER + '/admin/upload?f=deck&n=' + encodeURIComponent(name), { method:'POST', headers:{ 'Content-Type':'image/jpeg', Authorization:'Bearer ' + await authToken() }, body:blob });
+      const j = await r.json().catch(() => ({}));
+      if(!r.ok || !j.ok) throw new Error(j.error || ('upload failed (' + r.status + ')'));
+      DECKS.uploads.push({ n:j.name || name, at:new Date().toISOString() }); if(!first) first = j.name || name;
+    }catch(err){ console.warn(err); msg('Upload failed: ' + err.message + '. If this keeps happening, paste the latest gallery-worker.js into Cloudflare and Deploy.'); persistDecks(); renderPicker(); return; }
+  }
+  await persistDecks();
+  deck.pages[pk.pi].img[pk.si] = 'd:' + first; closeSheet(); renderDeckEditor(); markDirty();
+  toast(files.length > 1 ? files.length + ' images uploaded, the first one is in place' : 'Image uploaded and placed');
+});
+async function deleteUpload(n){
+  const ref = 'd:' + n;
+  const usedIn = DECKS.versions.filter(v => JSON.stringify(v.deck).indexOf(ref) >= 0).map(v => v.name);
+  if(JSON.stringify(deck).indexOf(ref) >= 0) usedIn.unshift('the deck you are editing');
+  if(usedIn.length){ alert('This image is still used in: ' + usedIn.join(', ') + '. Swap it out there first.'); return; }
+  if(!confirm('Delete this upload from R2? This cannot be undone.')) return;
+  try{
+    const r = await fetch(WORKER + '/admin/delete', { method:'POST', headers:{ Authorization:'Bearer ' + await authToken() }, body:JSON.stringify({ n, f:'deck' }) });
+    if(!r.ok) throw new Error('delete failed (' + r.status + ')');
+  }catch(err){ toast('Could not delete from R2: ' + err.message); return; }
+  DECKS.uploads = DECKS.uploads.filter(u => u.n !== n); await persistDecks(); renderPicker(); toast('Upload deleted');
+}
+
+/* ================================================================
+   PITCH DECK: render (landscape A4 pages in the preview iframe)
+   ================================================================ */
+function buildDeckHTML(d){
+  d = d || deck;
+  const fallbackImg = SITE + 'assets/mascot-head-color.png';
+  const src = r => slotInfo(r).url || fallbackImg;
+  const L = s => String(s || '').split('\n').map(x => x.trim()).filter(Boolean);
+  const page = (inner, dark) => `<section class="pd-page" style="${dark ? 'background:#1a1a18;color:#f1f0ec;' : 'background:#f1f0ec;color:#1a1a18;'}">${inner}</section>`;
+  const kick = (n, p) => p.kicker ? `<div class="pd-kicker">${String(n).padStart(2, '0')} - ${esc(p.kicker)}</div>` : '';
+  const framed = (r, label, tall) => `<div class="pd-framed ${tall ? 'pd-framed-tall' : ''}"><img src="${esc(src(r))}" onerror="this.closest('.pd-framed').style.display='none'">${label ? `<div class="pd-framed-label">${esc(label)}</div>` : ''}</div>`;
+  const whyColors = ['#02367B','#1f8a4c','#a9720b'];
+  const c = d.contact || {};
+  let n = 0;
+  const R = {
+    cover: p => page(`<div class="pd-cover-frame">
+        <div class="pd-cover-top"><span>${esc(p.top1)}</span><span>${esc(p.top2)}</span></div>
+        <div class="pd-cover-mid"><div class="pd-script">${esc(p.script)}</div><div class="pd-big">${esc(p.big)}</div>${p.pill ? `<div class="pd-pill">${esc(p.pill)}</div>` : ''}${d.client ? `<div class="pd-prepared">Prepared for: ${esc(d.client)}</div>` : ''}</div>
+        <div class="pd-cover-bottom"><span>${esc(c.web)}</span>${p.img[0] ? `<img src="${esc(src(p.img[0]))}" onerror="this.style.display='none'">` : ''}</div></div>`, true),
+    about: p => page(`<div class="pd-split"><div class="pd-inner pd-inner-half">${kick(n, p)}<h1 class="pd-h1">${esc(p.title)}</h1><p class="pd-body">${esc(p.body)}</p></div>
+        <div class="pd-side">${framed(p.img[0], L(p.labels)[0], true)}</div></div>`),
+    textimg: p => R.about(p),
+    what: p => { const lb = L(p.labels); return page(`<div class="pd-split"><div class="pd-inner pd-inner-half">${kick(n, p)}<h1 class="pd-h1">${esc(p.title)}</h1><ul class="pd-list">${L(p.list).map(l => `<li>${esc(l)}</li>`).join('')}</ul></div>
+        <div class="pd-side pd-side-pair">${framed(p.img[0], lb[0])}${framed(p.img[1], lb[1])}</div></div>`); },
+    portfolio: p => page(`<div class="pd-inner">${kick(n, p)}<h1 class="pd-h1">${esc(p.title)}</h1>
+        <div class="pd-grid">${p.img.filter(Boolean).map(r => `<div class="pd-cell"><img src="${esc(src(r))}" onerror="this.parentElement.style.display='none'"></div>`).join('')}</div></div>`),
+    why: p => { const w = L(p.list), main = w.slice(0, 3), rest = w.slice(3); return page(`<div class="pd-inner">${kick(n, p)}<h1 class="pd-h1">${esc(p.title)}</h1>
+        <div class="pd-polaroid-row">${main.map((reason, i) => `<div class="pd-polaroid"><div class="pd-polaroid-photo"><img src="${esc(src(p.img[i]))}" onerror="this.parentElement.style.background='#ddd'"></div><span class="pd-polaroid-tag" style="background:${whyColors[i % 3]};">${esc(reason)}</span></div>`).join('')}</div>
+        ${rest.length ? `<ul class="pd-list pd-list-compact">${rest.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : ''}</div>`); },
+    clients: p => page(`<div class="pd-inner">${kick(n, p)}<h1 class="pd-h1">${esc(p.title)}</h1><div class="pd-client-pills">${L(p.list).map(x => `<span class="pd-pill2">${esc(x)}</span>`).join('')}</div></div>`),
+    feature: p => page(`<div class="pd-feature">${p.img[0] ? `<img src="${esc(src(p.img[0]))}" onerror="this.style.display='none'">` : ''}<div class="pd-feature-cap"><div class="pd-feature-t">${esc(p.title)}</div>${p.body ? `<div class="pd-feature-s">${esc(p.body)}</div>` : ''}</div></div>`, true),
+    close: p => page(`<div class="pd-close"><div class="pd-close-line"></div><div class="pd-close-mid"><div class="pd-script" style="color:#5B9AE0;">${esc(p.script)}</div><div class="pd-big">${esc(p.big)}</div></div><div class="pd-close-line"></div>
+        <div class="pd-close-contact">${[c.phone, c.email, c.web].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('')}</div></div>`, true)
+  };
+  const body = d.pages.filter(p => !p.hidden).map(p => { if(NUMBERED.includes(p.type)) n++; return R[p.type](p); }).join('');
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;}
+    .pd-page{width:297mm;height:210mm;position:relative;overflow:hidden;page-break-after:always;display:flex;align-items:stretch;}
+    .pd-page:last-child{page-break-after:auto;}
+    .pd-inner{padding:22mm 26mm;width:100%;display:flex;flex-direction:column;justify-content:center;}
+    .pd-kicker{font-size:11pt;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#02367B;margin-bottom:10mm;}
+    .pd-h1{font-size:36pt;font-weight:800;letter-spacing:-.01em;margin-bottom:12mm;}
+    .pd-body{font-size:14pt;line-height:1.8;max-width:95%;color:#3a3a38;white-space:pre-line;}
+    .pd-list{list-style:none;display:flex;flex-direction:column;gap:8mm;max-width:95%;}
+    .pd-list li{font-size:15pt;font-weight:600;padding-left:14mm;position:relative;}
+    .pd-list li::before{content:"";position:absolute;left:0;top:6px;width:8mm;height:2px;background:#02367B;}
+    .pd-list-compact{margin-top:10mm;gap:4mm;}
+    .pd-list-compact li{font-size:11pt;font-weight:500;color:#5a5a57;}
+    .pd-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:6mm;height:130mm;}
+    .pd-cell{border-radius:6px;overflow:hidden;background:#ddd;}
+    .pd-cell img{width:100%;height:100%;object-fit:cover;display:block;}
+    .pd-client-pills{display:flex;flex-wrap:wrap;gap:8mm;max-width:80%;}
+    .pd-pill2{background:#fff;border:1.5px solid #02367B;color:#02367B;border-radius:999px;padding:5mm 10mm;font-size:14pt;font-weight:700;}
+    .pd-cover-frame{width:100%;padding:14mm 18mm;display:flex;flex-direction:column;justify-content:space-between;border:3px solid #f1f0ec;margin:6mm;box-sizing:border-box;}
+    .pd-cover-top{display:flex;justify-content:space-between;font-size:11pt;font-weight:700;letter-spacing:2px;}
+    .pd-cover-mid{text-align:center;}
+    .pd-script{font-family:"Brush Script MT",cursive,Georgia,serif;font-size:44pt;color:#5B9AE0;line-height:1;}
+    .pd-big{font-size:60pt;font-weight:800;letter-spacing:2px;margin-top:-4mm;}
+    .pd-pill{display:inline-block;background:#02367B;color:#fff;border-radius:999px;padding:5mm 12mm;font-size:12pt;font-weight:700;letter-spacing:2px;margin-top:8mm;}
+    .pd-prepared{margin-top:10mm;font-size:12pt;color:#b9b8b5;}
+    .pd-cover-bottom{display:flex;justify-content:space-between;align-items:flex-end;font-size:10pt;}
+    .pd-cover-bottom img{width:22mm;height:22mm;object-fit:cover;border-radius:50%;}
+    .pd-close{width:100%;padding:16mm 20mm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14mm;text-align:center;}
+    .pd-close-line{width:70%;height:1px;background:rgba(241,240,236,.3);}
+    .pd-close-mid .pd-big{font-size:52pt;}
+    .pd-close-contact{display:flex;gap:14mm;font-size:12pt;color:#f1f0ec;}
+    .pd-split{display:flex;width:100%;align-items:stretch;}
+    .pd-inner-half{width:52%;justify-content:center;}
+    .pd-side{width:48%;display:flex;align-items:center;justify-content:center;padding:14mm 18mm 14mm 0;gap:8mm;}
+    .pd-side-pair{flex-direction:row;}
+    .pd-framed{flex:1;background:#02367B;border-radius:10px;padding:6mm 6mm 12mm;display:flex;flex-direction:column;box-shadow:0 8px 24px rgba(0,0,0,.15);}
+    .pd-framed-tall{max-width:80mm;margin:0 auto;}
+    .pd-framed img{width:100%;height:60mm;object-fit:cover;border-radius:4px;display:block;background:#dfe3ea;}
+    .pd-framed-tall img{height:95mm;}
+    .pd-framed-label{color:#fff;text-align:center;font-weight:800;letter-spacing:1.5px;font-size:11pt;margin-top:6mm;text-transform:uppercase;}
+    .pd-polaroid-row{display:flex;gap:10mm;margin-top:4mm;}
+    .pd-polaroid{background:#fff;border:1px solid #e2e0d8;border-radius:8px;padding:5mm 5mm 0;box-shadow:0 6px 18px rgba(0,0,0,.08);width:70mm;}
+    .pd-polaroid-photo{width:100%;height:55mm;background:#ddd;border-radius:4px;overflow:hidden;margin-bottom:5mm;}
+    .pd-polaroid-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+    .pd-polaroid-tag{display:block;color:#fff;font-weight:700;font-size:10.5pt;text-align:center;border-radius:6px 6px 0 0;margin:0 -5mm;padding:4mm 4mm 8mm;line-height:1.3;}
+    .pd-feature{position:relative;width:100%;height:100%;}
+    .pd-feature img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+    .pd-feature-cap{position:absolute;left:0;right:0;bottom:0;padding:40mm 22mm 18mm;background:linear-gradient(transparent,rgba(0,0,0,.75));color:#fff;}
+    .pd-feature-t{font-size:38pt;font-weight:800;letter-spacing:-.01em;line-height:1.1;}
+    .pd-feature-s{font-size:14pt;margin-top:4mm;color:#e6e5e0;}
+    @media print{@page{size:A4 landscape;margin:0;}}
+  </style></head><body>${body}</body></html>`;
+}
+let prevT;
+function schedulePreview(){ clearTimeout(prevT); prevT = setTimeout(refreshDeckPreview, 350); }
 function refreshDeckPreview(){
-    const frame = $('deckFrame');
-    const doc = frame.contentDocument || frame.contentWindow.document;
-    doc.open(); doc.write(buildDeckHTML()); doc.close();
+  const frame = $('deckFrame'), doc = frame.contentDocument || frame.contentWindow.document;
+  doc.open(); doc.write(buildDeckHTML()); doc.close();
 }
 $('deckRefreshBtn').onclick = refreshDeckPreview;
-document.querySelector('#tabDeck .panel').addEventListener('input', refreshDeckPreview);
-document.querySelector('#tabDeck .panel').addEventListener('change', refreshDeckPreview);
 $('deckPrintBtn').onclick = () => {
-    refreshDeckPreview();
-    const frame = $('deckFrame');
-    const waitForImages = () => {
-        const doc = frame.contentDocument || frame.contentWindow.document;
-        const imgs = Array.from(doc.images || []);
-        if(!imgs.length) return Promise.resolve();
-        return Promise.all(imgs.map(img => (img.complete) ? Promise.resolve() : new Promise(res => { img.onload = img.onerror = res; })));
-    };
-    // give the iframe a beat to parse the doc before we look for <img> tags in it
-    setTimeout(()=>{
-        waitForImages().then(()=>{
-            frame.contentWindow.focus();
-            frame.contentWindow.print();
-        });
-    }, 200);
+  refreshDeckPreview();
+  const frame = $('deckFrame');
+  const waitForImages = () => { const doc = frame.contentDocument || frame.contentWindow.document; const imgs = Array.from(doc.images || []);
+    return Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = img.onerror = res; }))); };
+  setTimeout(() => { waitForImages().then(() => { frame.contentWindow.focus(); frame.contentWindow.print(); }); }, 200);
 };
 
 /* ================================================================
-   EMAIL GENERATOR
+   DECK PER LEAD: keep an exact copy of what each lead received
    ================================================================ */
-function buildEmailText(){
-    const recipient = $('eRecipient').value.trim() || 'Team';
-    const event = $('eEvent').value.trim();
-    const template = $('eTemplate').value;
-
-    let mid;
-    if(template === 'accreditation'){
-        mid = `I'd like to express my interest in applying for media accreditation for ${event ? 'the '+event : 'your upcoming event'}. I specialise in sports photography and videography, and I'd love the opportunity to cover the event.`;
-    } else {
-        mid = `I wanted to reach out to introduce FOM Studios and explore the possibility of working together${event ? ' on '+event : ''}. I specialise in photography and videography and would love the opportunity to collaborate.`;
-    }
-
-    return `Dear ${recipient},
-My name is Ishaaq Adam, founder of FOM Studios, a photography and videography brand based in South Africa.
-${mid}
-You can view my portfolio here:
-Website: www.fomstudios.co.za
-Instagram: @fom_studios_
-I have also attached my portfolio for your reference.
-If possible, I'd appreciate being added to your media mailing list and notified when accreditation applications open.
-Thank you for your time, and I look forward to hearing from you.
-Kind regards,
-Ishaaq Adam
-FOM Studios`;
+function deckLabel(){ return (deckBase.name || 'Original') + (deckDirty ? ' (edited)' : ''); }
+function recordDeckOn(o){
+  if(!o) return;
+  const at = todayIso(), version = deckLabel();
+  o.deckSent = { at, version, deck:clone(deck) };
+  o.deckLog = (Array.isArray(o.deckLog) ? o.deckLog : []).concat([{ at, version }]).slice(-20);
 }
-function refreshEmailPreview(){ $('emailPreview').textContent = buildEmailText(); }
-document.querySelector('#tabEmail .panel').addEventListener('input', refreshEmailPreview);
-document.querySelector('#tabEmail .panel').addEventListener('change', refreshEmailPreview);
+function renderLeadPicker(){
+  const sel = $('dkLead'), cur = sel.value || emailState.leadId || '';
+  sel.innerHTML = '<option value="">Record this deck as sent to...</option>' + leads.map(o => `<option value="${esc(o.id)}">${esc(o.company || o.contact || o.leadId)}${o.deckSent ? ' (last: ' + esc(niceDate(o.deckSent.at)) + ')' : ''}</option>`).join('');
+  if(cur && leads.some(o => o.id === cur)) sel.value = cur;
+}
+$('dkSent').onclick = () => {
+  const o = leadById($('dkLead').value);
+  if(!o){ toast('Pick the lead you sent it to first'); return; }
+  if(!store){ toast('Still connecting...'); return; }
+  recordDeckOn(o); store.update(o.id); safeRenderLeads();
+  toast('Saved "' + deckLabel() + '" against ' + (o.company || o.leadId));
+};
+function openSentDeck(o){
+  if(!o || !o.deckSent) return;
+  if(deckDirty && !confirm('You have unsaved changes in the deck. Open the deck sent to ' + (o.company || o.leadId) + ' anyway?')) return;
+  useDeck(o.deckSent.deck, { id:'sent', name:'Sent to ' + (o.company || o.leadId) + ', ' + niceDate(o.deckSent.at) }, false);
+  showTab('deck'); toast('This is exactly what ' + (o.company || 'they') + ' received. Save it as a version to reuse it.');
+}
 
-$('copyEmailBtn').onclick = async () => {
-    const txt = buildEmailText();
-    try{ await navigator.clipboard.writeText(txt); toast('Email copied - paste into Gmail'); }
-    catch(e){
-        const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select();
-        try{ document.execCommand('copy'); toast('Email copied - paste into Gmail'); } catch(_){ toast('Copy failed - select the text manually'); }
-        ta.remove();
-    }
+/* ================================================================
+   EMAIL GENERATOR + ADVISOR
+   ================================================================ */
+const emailState = { leadId:null, edited:false, marked:false };
+function fillCategorySelects(){
+  const opts = OCFG.categories.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+  ['eCategory','dkCat'].forEach(id => { const s = $(id), v = s.value; s.innerHTML = (id === 'dkCat' ? '<option value="">Pick a category</option>' : '') + opts; if(v && OCFG.categories.some(c => c.id === v)) s.value = v; });
+  const t = $('eTemplate'), tv = t.value;
+  t.innerHTML = OCFG.templates.map(x => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');
+  if(tv && OCFG.templates.some(x => x.id === tv)) t.value = tv;
+}
+const curCat = () => OUT.byId(OCFG, $('eCategory').value) || OCFG.categories[0];
+const curTpl = () => OCFG.templates.find(t => t.id === $('eTemplate').value) || OCFG.templates[0];
+function emailVars(){
+  const cat = curCat(), me = OCFG.me;
+  const base = { recipient:$('eRecipient').value.trim() || 'Team', company:$('eCompany').value.trim(), event:$('eEvent').value.trim(), category:cat ? cat.name : '',
+    name:me.name, phone:me.phone, website:me.website, instagram:me.instagram, email:me.email };
+  base.angle = cat ? OUT.fill(cat.angle, base) : '';
+  return base;
+}
+function regen(force){
+  if(force) emailState.edited = false;
+  const t = curTpl();
+  if(t){ const v = emailVars(); $('eSubject').value = OUT.fill(t.subject, v).replace(/[ \t]+/g, ' ').trim(); if(!emailState.edited) $('eBody').value = OUT.fill(t.body, v).replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n'); }
+  $('eReset').style.display = emailState.edited ? 'inline' : 'none';
+  renderAdvisor(); renderGuess();
+}
+function renderGuess(){
+  const g = OUT.guess(OCFG, $('eCompany').value + ' ' + $('eEvent').value), cur = curCat();
+  $('eGuess').innerHTML = g && cur && g.id !== cur.id ? `<div class="guess">Looks like a <b>${esc(g.name)}</b> lead. <button type="button" data-guess="${esc(g.id)}">Use ${esc(g.name)}</button></div>` : '';
+}
+function setCategory(id, pickTemplate){
+  $('eCategory').value = id; const c = curCat();
+  if(pickTemplate && c && c.template && OCFG.templates.some(t => t.id === c.template)) $('eTemplate').value = c.template;
+  regen();
+}
+$('eGuess').addEventListener('click', e => { const b = e.target.closest('[data-guess]'); if(b) setCategory(b.dataset.guess, !emailState.edited); });
+$('eCategory').addEventListener('change', () => setCategory($('eCategory').value, !emailState.edited));
+$('eTemplate').addEventListener('change', () => regen(!emailState.edited));
+['eRecipient','eCompany','eEvent','eLeadEmail'].forEach(id => $(id).addEventListener('input', () => regen()));
+$('eSubject').addEventListener('input', renderAdvisor);
+$('eBody').addEventListener('input', () => { emailState.edited = true; $('eReset').style.display = 'inline'; renderAdvisor(); });
+$('eReset').onclick = () => { if(confirm('Replace your edits with the template text?')) regen(true); };
+
+function emailChecks(){
+  const out = [], body = $('eBody').value, subj = $('eSubject').value.trim(), rec = $('eRecipient').value.trim(), co = $('eCompany').value.trim();
+  const words = (body.match(/\S+/g) || []).length, cat = curCat(), short = cat && cat.id === 'sportsbrand' ? 130 : 200;
+  out.push(rec && !/^team$/i.test(rec) && !/ team$/i.test(rec) ? ['ok', 'Addressed to a person or a named team'] : ['warn', 'Find a contact name if you can. Emails to a person get far more replies than "Team".']);
+  out.push(co ? ['ok', 'Company named'] : ['warn', 'Add the company name so the email feels written for them']);
+  if(co) out.push(body.toLowerCase().indexOf(co.toLowerCase()) >= 0 ? ['ok', 'Mentions ' + co + ' in the email'] : ['warn', 'The email never mentions ' + co + '. Add one line that is clearly about them.']);
+  out.push(words <= short ? ['ok', words + ' words, easy to read'] : ['warn', words + ' words. Try to stay under ' + short + ' for this kind of lead, busy people skim.']);
+  out.push(subj && subj.length <= 60 ? ['ok', 'Subject is clear and short'] : ['warn', subj ? 'Shorten the subject to under 60 characters so it is not cut off' : 'Add a subject line']);
+  out.push(/fomstudios\.co\.za/i.test(body) ? ['ok', 'Portfolio link included'] : ['warn', 'Add your website link so they can see your work in one tap']);
+  if(/\{\w+/.test(body + subj)) out.push(['warn', 'There is a leftover {placeholder} in the text']);
+  if(curTpl() && curTpl().id === 'accreditation' && !$('eEvent').value.trim()) out.push(['warn', 'Accreditation emails work best with the exact event name']);
+  const em = $('eLeadEmail').value.trim(); if(em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) out.push(['warn', 'That contact email does not look right']);
+  const prev = co && leads.find(o => o.id !== emailState.leadId && (o.company || '').toLowerCase() === co.toLowerCase() && o.dateEmailed);
+  const self = emailState.leadId && leadById(emailState.leadId);
+  const sent = (self && self.dateEmailed && self.status !== 'Not Emailed') ? self : prev;
+  if(sent && curTpl() && curTpl().id !== 'followup') out.push(['warn', 'You already emailed ' + (sent.company || 'them') + ' on ' + niceDate(sent.dateEmailed) + '. The Follow-up template might fit better.']);
+  return out;
+}
+function renderAdvisor(){
+  const cat = curCat(); if(!cat){ $('advHost').innerHTML = '<p class="ed-help">Add a category to get advice.</p>'; return; }
+  const v = emailVars(), tips = OUT.lines(cat.tips), ideas = OUT.lines(cat.content).slice(0, 2);
+  const tpl = OCFG.templates.find(t => t.id === cat.template);
+  const photoTags = (cat.photoCats || []).map(p => `<span class="tag">${esc(OUT.PHOTO_CATS[p] || p)}</span>`).join(' ') || '<span class="tag">Any</span>';
+  const waiting = leads.filter(o => o.category === cat.name && (o.status === 'Emailed' || o.status === 'Responded')).length;
+  $('advHost').innerHTML = `<h3>Advisor: ${esc(cat.name)}</h3>
+    <div class="adv-angle"><small>Your angle</small>${esc(v.angle || 'Add an angle for this category in Edit categories.')}</div>
+    <h3>How to pitch them</h3><ul class="tips">${tips.map(t => `<li>${esc(t)}</li>`).join('') || '<li>No tips yet. Add some in Edit categories.</li>'}</ul>
+    <h3>Photos to show</h3><div class="adv-row">${photoTags}<button class="lnk" type="button" data-adv="pick">Auto-pick deck photos</button><button class="lnk" type="button" data-adv="deck">View deck</button></div>
+    ${tpl ? `<h3>Suggested template</h3><div class="adv-row"><span class="tag">${esc(tpl.name)}</span>${$('eTemplate').value !== tpl.id ? `<button class="lnk" type="button" data-adv="tpl">Use it</button>` : '<span style="color:#1f8a4c;font-weight:700;font-size:12.5px">In use</span>'}</div>` : ''}
+    <h3>Email check</h3><ul class="chk">${emailChecks().map(([k, t]) => `<li class="${k}">${esc(t)}</li>`).join('')}</ul>
+    ${ideas.length ? `<h3>Back it up on Instagram</h3><p style="font-size:13.5px;line-height:1.55">${waiting ? `You have <b>${waiting}</b> ${esc(cat.name)} lead${waiting === 1 ? '' : 's'} waiting on a reply. ` : ''}Post something they will see when they check your page, like:</p><ul class="tips" style="margin-top:6px">${ideas.map(t => `<li>${esc(t)}</li>`).join('')}</ul><div class="hint">More ideas in the Content Planner advisor.</div>` : ''}`;
+}
+$('advHost').addEventListener('click', e => {
+  const b = e.target.closest('[data-adv]'); if(!b) return; const cat = curCat();
+  if(b.dataset.adv === 'pick'){ $('dkCat').value = cat.id; autoPick(cat.id); }
+  else if(b.dataset.adv === 'deck') showTab('deck');
+  else if(b.dataset.adv === 'tpl'){ $('eTemplate').value = cat.template; regen(true); }
+});
+
+/* one-tap pitch from the leads table */
+function pitchLead(o){
+  if(!o) return;
+  emailState.leadId = o.id; emailState.marked = false;
+  $('eCompany').value = o.company || ''; $('eRecipient').value = o.contact || ((o.company || '').trim() ? o.company.trim() + ' Team' : '');
+  $('eLeadEmail').value = o.email || ''; $('eEvent').value = '';
+  const cat = OUT.byName(OCFG, o.category) || OUT.guess(OCFG, (o.company || '') + ' ' + (o.web || '')) || OCFG.categories[0];
+  $('eCategory').value = cat.id;
+  const already = o.dateEmailed && o.status !== 'Not Emailed';
+  $('eTemplate').value = already && OCFG.templates.some(t => t.id === 'followup') ? 'followup' : (cat.template && OCFG.templates.some(t => t.id === cat.template) ? cat.template : OCFG.templates[0].id);
+  regen(true);
+  deck.client = o.company || ''; $('dClient').value = deck.client; $('dkCat').value = cat.id; autoPick(cat.id, true);
+  renderPitchBanner(); renderLeadPicker(); showTab('email');
+  toast('Ready to pitch ' + (o.company || o.leadId) + ' as ' + cat.name);
+}
+function renderPitchBanner(){
+  const o = emailState.leadId && leadById(emailState.leadId), b = $('pitchBanner');
+  if(!o){ b.style.display = 'none'; return; }
+  b.style.display = 'flex';
+  b.innerHTML = `<span class="grow">Pitching <b>${esc(o.company || o.leadId)}</b> (${esc(o.leadId || '')}, ${esc(o.status || '')}). ${emailState.marked ? 'Marked as emailed.' : 'Copying or opening the email marks it as emailed and saves the deck you sent.'}</span>
+    <button class="btn ghost sm" type="button" data-pb="deck">View deck</button><button class="btn ghost sm" type="button" data-pb="unlink">Unlink</button>`;
+}
+$('pitchBanner').addEventListener('click', e => { const b = e.target.closest('[data-pb]'); if(!b) return;
+  if(b.dataset.pb === 'deck') showTab('deck'); else { emailState.leadId = null; renderPitchBanner(); renderAdvisor(); } });
+
+function markPitched(){
+  const o = emailState.leadId && leadById(emailState.leadId);
+  if(!o || emailState.marked || !store) return '';
+  const t = todayIso();
+  o.emailed = 'Yes';
+  if(o.status === 'Not Emailed' || !o.status) o.status = 'Emailed';
+  o.dateEmailed = t;
+  if(!o.followUp || o.followUp < t) o.followUp = OUT.addDays(t, 7);
+  const cat = curCat(); if(cat) o.category = cat.name;
+  if(!o.email && $('eLeadEmail').value.trim()) o.email = $('eLeadEmail').value.trim();
+  if(!o.contact && $('eRecipient').value.trim() && !/team$/i.test($('eRecipient').value.trim())) o.contact = $('eRecipient').value.trim();
+  if($('eRecDeck').checked) recordDeckOn(o);
+  o.comments = (o.comments ? o.comments + '; ' : '') + curTpl().name + ' sent ' + niceDate(t);
+  emailState.marked = true; store.update(o.id); safeRenderLeads(); renderPitchBanner();
+  return ' Marked ' + (o.leadId || o.company) + ' as emailed' + ($('eRecDeck').checked ? ' and saved the deck.' : '.');
+}
+async function copyText(txt){
+  try{ await navigator.clipboard.writeText(txt); return true; }
+  catch(e){ const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); let ok = false; try{ ok = document.execCommand('copy'); }catch(_){} ta.remove(); return ok; }
+}
+$('copyEmailBtn').onclick = async () => { const ok = await copyText($('eBody').value); toast(ok ? 'Email copied, paste it into Gmail.' + markPitched() : 'Copy failed, select the text manually'); };
+$('copySubj').onclick = async () => { toast(await copyText($('eSubject').value) ? 'Subject copied' : 'Copy failed'); };
+$('mailBtn').onclick = () => {
+  const to = $('eLeadEmail').value.trim();
+  const extra = markPitched();
+  location.href = 'mailto:' + encodeURIComponent(to) + '?subject=' + encodeURIComponent($('eSubject').value) + '&body=' + encodeURIComponent($('eBody').value);
+  if(extra) toast(extra.trim());
 };
 $('logLeadBtn').onclick = () => {
-    if(!store){ toast('Still connecting…'); return; }
-    const company = $('eCompany').value.trim() || $('eRecipient').value.trim();
-    if(!company){ toast('Add a company / recipient name first'); return; }
-    store.add(blankLead({
-        company, contact:'', email:$('eLeadEmail').value.trim(),
-        location:'', category:'Media / Press', emailed:'Yes',
-        dateEmailed:new Date().toISOString().slice(0,10),
-        status:'Emailed', comments:'Logged from Email Generator ('+($('eEvent').value.trim()||'general outreach')+')'
-    }));
-    toast('Lead logged in the tracker');
+  if(!store){ toast('Still connecting...'); return; }
+  if(emailState.leadId){ const m = markPitched(); toast(m ? m.trim() : 'This lead is already logged'); return; }
+  const company = $('eCompany').value.trim() || $('eRecipient').value.trim();
+  if(!company){ toast('Add a company name first'); return; }
+  const t = todayIso(), cat = curCat();
+  const o = blankLead({ company, contact:/team$/i.test($('eRecipient').value.trim()) ? '' : $('eRecipient').value.trim(), email:$('eLeadEmail').value.trim(),
+    category:cat ? cat.name : '', emailed:'Yes', dateEmailed:t, followUp:OUT.addDays(t, 7), status:'Emailed',
+    comments:'Logged from Email Generator (' + ($('eEvent').value.trim() || curTpl().name) + ')' });
+  if($('eRecDeck').checked) recordDeckOn(o);
+  store.add(o); toast('Lead logged in the tracker' + ($('eRecDeck').checked ? ' with the deck you sent' : ''));
 };
-refreshEmailPreview();
+
+/* ================================================================
+   EDITORS: categories (advisor playbook) and templates
+   ================================================================ */
+let edDraft = null, edKind = '';
+function openCatEditor(){ edKind = 'cats'; edDraft = clone(OCFG); renderCatEditor(); }
+function renderCatEditor(openId){
+  const tplOpts = id => '<option value="">None</option>' + edDraft.templates.map(t => `<option value="${esc(t.id)}" ${t.id === id ? 'selected' : ''}>${esc(t.name)}</option>`).join('');
+  const html = `<p class="ed-help">Each category is a playbook for the advisor. <b>Keywords</b> let it guess the category from a company name (Red Bull goes to Sports Brand). <b>Photo types</b> decide which website photos the deck auto-picks. In the angle you can use <code>{company|fallback}</code>.</p>
+    ${edDraft.categories.map((c, i) => `<details class="ed-card" ${c.id === openId ? 'open' : ''}><summary>${esc(c.name || 'New category')}</summary><div class="ed-b">
+      <div class="field"><label>Name</label><input type="text" data-ec="${i}" data-k="name" value="${esc(c.name)}"></div>
+      <div class="field"><label>Keywords (comma separated)</label><textarea rows="2" data-ec="${i}" data-k="keywords">${esc(c.keywords)}</textarea></div>
+      <div class="field"><label>Photo types for the deck</label><div class="cb-row">${Object.entries(OUT.PHOTO_CATS).map(([k, v]) => `<label><input type="checkbox" data-ec="${i}" data-pc="${k}" ${c.photoCats.includes(k) ? 'checked' : ''}> ${v}</label>`).join('')}</div></div>
+      <div class="field"><label>Suggested template</label><select class="form-select" data-ec="${i}" data-k="template">${tplOpts(c.template)}</select></div>
+      <div class="field"><label>Angle (one sentence that goes into the email)</label><textarea rows="3" data-ec="${i}" data-k="angle">${esc(c.angle)}</textarea></div>
+      <div class="field"><label>How to pitch them (one tip per line)</label><textarea rows="5" data-ec="${i}" data-k="tips">${esc(c.tips)}</textarea></div>
+      <div class="field"><label>Content ideas (one per line, used by the Content Planner)</label><textarea rows="4" data-ec="${i}" data-k="content">${esc(c.content)}</textarea></div>
+      <button class="danger-lnk" type="button" data-ecdel="${i}">Delete this category</button>
+    </div></details>`).join('')}
+    <div class="pk-foot"><button class="btn ghost sm" type="button" data-ed="addcat">+ Add category</button><button class="btn sm" type="button" data-ed="save">Save categories</button><button class="danger-lnk" type="button" data-ed="resetcats">Reset to defaults</button></div>`;
+  openSheet('Edit categories', html);
+}
+function openTplEditor(){ edKind = 'tpls'; edDraft = clone(OCFG); renderTplEditor(); }
+function renderTplEditor(openId){
+  const me = edDraft.me;
+  const html = `<p class="ed-help">Placeholders: <code>{recipient}</code> <code>{company}</code> <code>{event}</code> <code>{angle}</code> <code>{category}</code> <code>{name}</code> <code>{phone}</code> <code>{website}</code> <code>{instagram}</code>. Add a fallback with <code>{event|your upcoming event}</code>. <code>{event| on }</code> prints " on " only when an event is filled in.</p>
+    <details class="ed-card"><summary>Your details (used in every template)</summary><div class="ed-b"><div class="two">
+      ${[['name','Name'],['phone','Phone'],['website','Website'],['instagram','Instagram handle (no @)'],['email','Email']].map(([k, l]) => `<div class="field"><label>${l}</label><input type="text" data-me="${k}" value="${esc(me[k] || '')}"></div>`).join('')}
+    </div></div></details>
+    ${edDraft.templates.map((t, i) => `<details class="ed-card" ${t.id === openId ? 'open' : ''}><summary>${esc(t.name || 'New template')}</summary><div class="ed-b">
+      <div class="field"><label>Name</label><input type="text" data-et="${i}" data-k="name" value="${esc(t.name)}"></div>
+      <div class="field"><label>Subject</label><input type="text" data-et="${i}" data-k="subject" value="${esc(t.subject)}"></div>
+      <div class="field"><label>Body</label><textarea rows="14" data-et="${i}" data-k="body">${esc(t.body)}</textarea></div>
+      <button class="danger-lnk" type="button" data-etdel="${i}">Delete this template</button>
+    </div></details>`).join('')}
+    <div class="pk-foot"><button class="btn ghost sm" type="button" data-ed="addtpl">+ Add template</button><button class="btn sm" type="button" data-ed="save">Save templates</button><button class="danger-lnk" type="button" data-ed="resettpls">Reset to defaults</button></div>`;
+  openSheet('Edit templates', html);
+}
+function editorInput(e){
+  const el = e.target;
+  if(el.dataset.ec !== undefined){ const c = edDraft.categories[+el.dataset.ec];
+    if(el.dataset.pc){ c.photoCats = c.photoCats.filter(x => x !== el.dataset.pc); if(el.checked) c.photoCats.push(el.dataset.pc); }
+    else { c[el.dataset.k] = el.value; if(el.dataset.k === 'name') el.closest('details').querySelector('summary').textContent = el.value || 'New category'; }
+    return true; }
+  if(el.dataset.et !== undefined){ const t = edDraft.templates[+el.dataset.et]; t[el.dataset.k] = el.value; if(el.dataset.k === 'name') el.closest('details').querySelector('summary').textContent = el.value || 'New template'; return true; }
+  if(el.dataset.me){ edDraft.me[el.dataset.me] = el.value; return true; }
+  return false;
+}
+async function editorClick(e){
+  const b = e.target.closest('[data-ed],[data-ecdel],[data-etdel]'); if(!b) return false;
+  if(b.dataset.ecdel !== undefined){ if(edDraft.categories.length < 2){ toast('Keep at least one category'); return true; } if(confirm('Delete this category? Leads keep their category text.')){ edDraft.categories.splice(+b.dataset.ecdel, 1); renderCatEditor(); } return true; }
+  if(b.dataset.etdel !== undefined){ if(edDraft.templates.length < 2){ toast('Keep at least one template'); return true; } if(confirm('Delete this template?')){ edDraft.templates.splice(+b.dataset.etdel, 1); renderTplEditor(); } return true; }
+  const a = b.dataset.ed;
+  if(a === 'addcat'){ const id = 'c' + Date.now().toString(36); edDraft.categories.push({ id, name:'New category', keywords:'', photoCats:['sports'], template:'general', angle:'', tips:'', content:'' }); renderCatEditor(id); }
+  else if(a === 'addtpl'){ const id = 't' + Date.now().toString(36); edDraft.templates.push({ id, name:'New template', subject:'', body:'Dear {recipient},\n\n{angle}\n\nKind regards,\n{name}\nFOM Studios' }); renderTplEditor(id); }
+  else if(a === 'resetcats'){ if(confirm('Replace all categories with the built-in ones?')){ edDraft.categories = OUT.defaults().categories; renderCatEditor(); } }
+  else if(a === 'resettpls'){ if(confirm('Replace all templates and your details with the built-in ones?')){ const d = OUT.defaults(); edDraft.templates = d.templates; edDraft.me = d.me; renderTplEditor(); } }
+  else if(a === 'save'){
+    OCFG = OUT.clean(edDraft); const ok = await OUT.save(DB, OCFG);
+    fillCategorySelects(); regen(); safeRenderLeads(); closeSheet();
+    toast(ok ? 'Saved. Every device now uses these ' + (edKind === 'cats' ? 'categories.' : 'templates.') : 'Saved on this device only. Publish the Firestore rules so "settings" can sync.');
+  }
+  return true;
+}
+$('editCats').onclick = openCatEditor;
+$('editTpls').onclick = openTplEditor;
+
+/* ================================================================
+   SHEET plumbing (one sheet, reused by the picker, versions and editors)
+   ================================================================ */
+function openSheet(title, html){ $('xTitle').textContent = title; $('xBody').innerHTML = html; $('xBody').scrollTop = 0; $('xScrim').classList.add('on'); $('xSheet').classList.add('on'); }
+function closeSheet(){ $('xScrim').classList.remove('on'); $('xSheet').classList.remove('on'); }
+$('xClose').onclick = closeSheet; $('xScrim').onclick = closeSheet;
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && $('xSheet').classList.contains('on')) closeSheet(); });
+$('xBody').addEventListener('click', async e => {
+  const v = e.target.closest('[data-v]'); if(v){ versionAction(v.dataset.v, v.dataset.id); return; }
+  if(await editorClick(e)) return;
+  pickerClick(e);
+});
+$('xBody').addEventListener('input', editorInput);
+$('xBody').addEventListener('change', editorInput);
+
+function showTab(name){ const chip = document.querySelector(`.tab-chip[data-tab="${name}"]`); if(chip) chip.click(); }
+
+/* ================================================================
+   LOAD settings + website photos after login
+   ================================================================ */
+async function loadOutreachAndDeck(db){
+  DB = db;
+  OCFG = await OUT.load(db); fillCategorySelects(); regen();
+  try{ const s = await db.collection('settings').doc('pitchDeck').get();
+    if(s.exists && s.data().json){ DECKS = cleanDecks(JSON.parse(s.data().json)); try{ localStorage.setItem(DECKS_KEY, JSON.stringify(DECKS)); }catch(e){} }
+    let draftExists = false; try{ draftExists = !!localStorage.getItem(DRAFT_KEY); }catch(e){}
+    if(!draftExists){ deck = versionDeck(DECKS.liveId) || versionDeck('original'); deckBase = { id:DECKS.liveId, name:versionName(DECKS.liveId) || 'Original' }; syncDeckInputs(); }
+  }catch(e){ console.warn('pitchDeck load', e); }
+  try{ const s = await db.collection('siteContent').doc('portfolio').get();
+    if(s.exists && s.data().json){ const l = JSON.parse(s.data().json); if(Array.isArray(l) && l.length) PHOTOS = l.filter(p => p && p.src && p.id); }
+  }catch(e){ console.warn('portfolio load', e); }
+  renderDeckBar(); renderDeckEditor(); refreshDeckPreview();
+}
+
+/* first paint */
+fillCategorySelects(); syncDeckInputs(); renderDeckBar(); renderDeckEditor(); regen(true);
 
 /* ================================================================
    INIT - cloud only (Firestore), same as database.html
@@ -849,7 +1441,7 @@ function initCloud(){
                     auth.signOut();
                     return;
                 }
-                $('loginGate').style.display='none'; store.start();
+                $('loginGate').style.display='none'; store.start(); loadOutreachAndDeck(db);
             }).catch(err=>{ console.warn('Admin check failed:',err); $('loginGate').style.display='flex'; auth.signOut(); });
         }
         else { leads=[]; safeRenderLeads(); $('loginGate').style.display='flex'; }
