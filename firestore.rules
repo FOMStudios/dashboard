@@ -1,0 +1,77 @@
+rules_version = '2';
+
+// FOM Studios - Firestore security rules (project fom-studios)
+// Paste this WHOLE file into Firebase Console > Firestore Database > Rules, then Publish.
+// Last updated 25 Oct 2026: covers settings/outreach and settings/pitchDeck (pitch deck, email advisor).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- helpers ----
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function myEmail() { return signedIn() && request.auth.token.email != null ? request.auth.token.email : ''; }
+
+    // ---- admins: you can only read your own admin doc (the Worker upload check relies on this).
+    //      Add or remove admins in the Firebase Console, never from the app.
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // ---- orders: admin does everything; a client reads only their own booking;
+    //      anyone with the sign link can sign ONCE, changing only the signature fields.
+    match /orders/{orderId} {
+      allow read: if isAdmin()
+                  || (signedIn() && resource.data.clientEmail == myEmail());
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin()
+                    || (
+                         resource.data.get('contractSigned', false) != true
+                         && request.resource.data.diff(resource.data).affectedKeys()
+                              .hasOnly(['contractSigned', 'signatureData', 'signedName', 'signedAt'])
+                         && request.resource.data.contractSigned == true
+                         && request.resource.data.signedName is string
+                         && request.resource.data.signedName.size() > 0
+                         && request.resource.data.signedName.size() < 120
+                         && request.resource.data.signatureData is string
+                         && request.resource.data.signatureData.size() < 600000
+                         && request.resource.data.signedAt == request.time
+                       );
+    }
+
+    // ---- feedback (reviews): anyone can leave a review; only you can read or manage them.
+    match /feedback/{id} {
+      allow create: if request.resource.data.rating is int
+                    && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+                    && request.resource.data.get('message', '') is string
+                    && request.resource.data.get('message', '').size() < 3000
+                    && request.resource.data.get('name', '') is string
+                    && request.resource.data.get('name', '').size() < 120;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ---- public website content: anyone reads, only you write.
+    match /testimonials/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /siteContent/{id} {            // site (contact, banner, blocked dates) and portfolio (photo list)
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---- admin only ----
+    match /settings/{id} {               // security, calculator, contract, checklist, outreach, pitchDeck
+      allow read, write: if isAdmin();
+    }
+    match /leads/{id} {
+      allow read, write: if isAdmin();
+    }
+    match /contentPlanner/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // ---- everything else is closed by default ----
+  }
+}
