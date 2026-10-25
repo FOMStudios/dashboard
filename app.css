@@ -1,5 +1,5 @@
 /* ============================================================
-   FOM STUDIOS — shared admin app shell (theme, buttons, nav,
+   FOM STUDIOS, shared admin app shell (theme, buttons, nav,
    gate, settings). Loaded AFTER each page's own <style> so the
    tokens and button styles here win. One file for the whole app.
    ============================================================ */
@@ -78,7 +78,7 @@ img,table,iframe,video,pre{max-width:100%;}
 .fom-nav button svg{width:24px;height:24px;}
 .fom-nav button.active{background:var(--btn);color:var(--btn-ink);}
 .fom-nav .av{width:36px;height:36px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px var(--line);}
-.fom-nav .av img{width:100%;height:100%;object-fit:cover;background:#fff;display:block;}
+.fom-nav .av img{width:100%;height:100%;object-fit:contain;padding:3px;background:#fff;display:block;}
 
 /* ---- Sheet (hamburger list + settings), slides up from bottom ---- */
 .fom-scrim{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:1300;opacity:0;pointer-events:none;transition:opacity .25s;}
@@ -114,7 +114,7 @@ img,table,iframe,video,pre{max-width:100%;}
 .fom-logout[disabled]{opacity:.5;pointer-events:none;}
 .fom-prof{display:flex;align-items:center;gap:14px;padding:12px;}
 .fom-prof .pic{width:52px;height:52px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px var(--line);flex:none;}
-.fom-prof .pic img{width:100%;height:100%;object-fit:cover;background:#fff;}
+.fom-prof .pic img{width:100%;height:100%;object-fit:contain;padding:4px;background:#fff;display:block;}
 .fom-prof b{display:block;font-size:17px;color:var(--ink);}
 .fom-prof small{color:var(--ink-soft);font-size:12.5px;}
 
