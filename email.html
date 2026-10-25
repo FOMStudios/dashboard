@@ -166,6 +166,7 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
                 <select id="fType">
                     <option value="confirmation">Booking Confirmation</option>
                     <option value="ready">Files Ready</option>
+                    <option value="expiring">Gallery Expiring</option>
                 </select>
             </div>
             <div id="confirmationFields">
@@ -187,6 +188,7 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
             <div class="field"><label for="fReadyName">Customer name</label><input type="text" id="fReadyName" placeholder="Jane Doe"></div>
             <div class="field"><label for="fReadyEmail">Customer email</label><input type="email" id="fReadyEmail" placeholder="jane@email.com"></div>
             <div class="field"><label for="fReadyPkg">Package (optional)</label><input type="text" id="fReadyPkg" placeholder="Gold - Photography & Videography"></div>
+            <div class="field" id="expiryWrap" style="display:none;"><label for="fExpiry">Gallery expiry date</label><input type="date" id="fExpiry"></div>
             <div class="field"><label for="fPortal">Client portal URL</label><input type="text" id="fPortal" value="https://www.fomstudios.co.za/client-portal.html"></div>
             </div>
 
@@ -230,7 +232,7 @@ const BRAND = {
 
 function fields(){
   const type = $('fType').value;
-  const isReady = type === 'ready';
+  const isReady = (type === 'ready' || type === 'expiring');
   const total = +($('fTotal')?$('fTotal').value:0)||0;
   const paid  = +($('fPaid') ?$('fPaid').value :0)||0;
   const balance = Math.max(0, total - paid);
@@ -244,6 +246,7 @@ function fields(){
     loc:  $('fLoc')  ? $('fLoc').value.trim()  : '',
     total, paid, balance,
     due:  $('fDue')  ? $('fDue').value  : '',
+    expiry: $('fExpiry') ? $('fExpiry').value : '',
     portal: $('fPortal').value.trim() || 'https://www.fomstudios.co.za/client-portal.html',
     full: balance <= 0,
   };
@@ -291,8 +294,66 @@ function icsText(f){
 }
 
 /* ---------- the themed HTML email (table-based + inline styles for Gmail) ---------- */
+function buildExpiringHtml(f){
+  const A='#02367B', A2='#5B9AE0', INK='#2a2b2c', SOFT='#6f6f6d', BG='#f1f0ec', LINE='#e6e4dd', CARD='#f7f6f2';
+  let days = ''; if(f.expiry){ const d = Math.ceil((new Date(f.expiry+'T23:59:59') - new Date())/864e5); if(d > 0) days = ` (${d} day${d===1?'':'s'} left)`; }
+  return `
+<table width="100%" cellpadding="0" cellspacing="0" style="background:${BG};padding:26px 12px;font-family:-apple-system,'Helvetica Neue',Helvetica,Arial,sans-serif;">
+ <tr><td align="center">
+  <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;">
+    <tr><td style="background:${INK};padding:40px 34px 34px;text-align:center;">
+      <div style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:4px;">FOM STUDIOS</div>
+      <div style="width:46px;height:3px;background:${A2};border-radius:3px;margin:16px auto;line-height:3px;font-size:0;">&nbsp;</div>
+      <div style="color:${A2};font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">Friendly Reminder</div>
+      <div style="color:#ffffff;font-size:28px;font-weight:800;margin-top:10px;line-height:1.15;">Your gallery is expiring soon</div>
+    </td></tr>
+    <tr><td style="padding:28px 34px 0;color:${INK};font-size:15px;line-height:1.6;">
+      Hi ${f.name||'there'},<br><br>
+      Just a quick reminder that your ${f.pkg ? `<b>${f.pkg}</b> ` : ''}gallery on the <b>FOM Studios Client Portal</b> will be removed soon. Please download your photos and videos before then so you keep them safe.
+    </td></tr>
+    <tr><td style="padding:18px 34px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdeceb;border:1px solid #f3c9c5;border-radius:16px;">
+        <tr><td style="padding:18px 22px;text-align:center;">
+          <div style="color:#a8554e;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;">Available until</div>
+          <div style="color:#8c3f39;font-size:22px;font-weight:800;margin-top:4px;">${f.expiry ? niceDate(f.expiry) : '[ add the expiry date ]'}${days}</div>
+        </td></tr>
+      </table>
+    </td></tr>
+    <tr><td style="padding:16px 34px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#eef2fb;border:1px solid #bcd4f5;border-radius:16px;">
+        <tr><td style="padding:24px 26px;text-align:center;">
+          <div style="color:${INK};font-size:16px;font-weight:800;margin-bottom:6px;">Download your files</div>
+          <div style="color:${SOFT};font-size:13.5px;margin-bottom:18px;">Sign in with <b>${f.email||'your email address'}</b>, open your booking and tap <b>View gallery</b>. You can download everything in one go.</div>
+          <a href="${f.portal}" target="_blank" style="display:inline-block;background:${A};color:#ffffff;text-decoration:none;border-radius:999px;padding:15px 34px;font-size:14px;font-weight:700;letter-spacing:.02em;">Open my gallery</a>
+        </td></tr>
+      </table>
+    </td></tr>
+    <tr><td align="center" style="padding:26px 34px 4px;">
+      <img src="https://www.fomstudios.co.za/assets/mascot.png" alt="" width="74" style="width:74px;height:auto;display:inline-block;">
+      <div style="color:${SOFT};font-size:14px;line-height:1.6;margin-top:12px;">If you have already saved your files, you can ignore this email. Need more time? Just reply and we will sort it out.</div>
+      <div style="color:${INK};font-size:14px;font-weight:800;margin-top:12px;">- The FOM Studios Team</div>
+    </td></tr>
+    <tr><td style="padding:24px 34px 30px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:${INK};border-radius:16px;">
+        <tr><td style="padding:24px 22px;text-align:center;">
+          <div style="color:#ffffff;font-weight:800;letter-spacing:2px;font-size:15px;">FOM STUDIOS</div>
+          <div style="color:#b9b8b5;font-size:12.5px;margin-top:6px;">Photography &amp; Videography &middot; Johannesburg, South Africa</div>
+          <div style="margin-top:14px;font-size:13px;">
+            <a href="${BRAND.site}" style="color:${A2};text-decoration:none;">Website</a> &nbsp;&middot;&nbsp;
+            <a href="${BRAND.instagram}" style="color:${A2};text-decoration:none;">Instagram</a> &nbsp;&middot;&nbsp;
+            <a href="mailto:${BRAND.email}" style="color:${A2};text-decoration:none;">Email</a> &nbsp;&middot;&nbsp;
+            <span style="color:#b9b8b5;">${BRAND.phone}</span>
+          </div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+ </td></tr>
+</table>`;
+}
 function buildEmailHtml(){
   const f = fields();
+  if(f.type === 'expiring') return buildExpiringHtml(f);
   const isReady = f.type === 'ready';
   const A='#02367B', A2='#5B9AE0', INK='#2a2b2c', SOFT='#6f6f6d', BG='#f1f0ec', LINE='#e6e4dd', CARD='#f7f6f2';
   const row = (k,v)=> v ? `<tr><td style="padding:9px 2px;color:${SOFT};font-size:14px;border-bottom:1px solid ${LINE};">${k}</td><td style="padding:9px 2px;color:${INK};font-size:14px;font-weight:700;text-align:right;border-bottom:1px solid ${LINE};">${v}</td></tr>` : '';
@@ -461,6 +522,13 @@ function buildEmailHtml(){
 }
 function plainText(){
   const f = fields();
+  if(f.type === 'expiring'){
+    return `Hi ${f.name||'there'},\n\nA quick reminder that your FOM Studios gallery expires${f.expiry ? ' on ' + niceDate(f.expiry) : ' soon'}.\n\n`
+      + `Please download your photos and videos before then:\n${f.portal}\n\n`
+      + `Sign in with: ${f.email||'your email address'}, open your booking and tap "View gallery".\n\n`
+      + `If you have already saved your files you can ignore this. Need more time? Just reply to this email.\n\n`
+      + `- FOM Studios\nwww.fomstudios.co.za · ${BRAND.instaHandle} · ${BRAND.email} · ${BRAND.phone}`;
+  }
   if(f.type === 'ready'){
     return `Hi ${f.name||'there'},\n\nYour FOM Studios files are ready!\n\n`
       + `Log in to your Client Portal to view and download your content:\n${f.portal}\n\n`
@@ -482,8 +550,9 @@ function plainText(){
 
 function refresh(){
   const f = fields();
-  const isReady = f.type === 'ready';
-  $('pageTitle').textContent = isReady ? 'Files Ready Email' : 'Confirmation Email';
+  const isReady = (f.type === 'ready' || f.type === 'expiring');
+  $('pageTitle').textContent = f.type === 'expiring' ? 'Gallery Expiring Email' : (isReady ? 'Files Ready Email' : 'Confirmation Email');
+  if($('expiryWrap')) $('expiryWrap').style.display = f.type === 'expiring' ? 'block' : 'none';
   // toggle field groups
   $('confirmationFields').style.display = isReady ? 'none' : 'block';
   $('readyFields').style.display = isReady ? 'block' : 'none';
@@ -534,7 +603,9 @@ $('copyBtn').onclick = async () => {
 };
 $('gmailBtn').onclick = () => {
   const f = fields();
-  const subject = f.type === 'ready'
+  const subject = f.type === 'expiring'
+    ? 'Reminder: your FOM Studios gallery expires soon'
+    : f.type === 'ready'
     ? 'Your FOM Studios files are ready to download'
     : 'Your FOM Studios booking is confirmed';
   const url = 'https://mail.google.com/mail/?view=cm&fs=1'

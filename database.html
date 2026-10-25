@@ -313,7 +313,7 @@ function render(){
       <td class="col-portal"><input data-i="${i}" data-f="portalMessage" value="${esc(o.portalMessage||'')}" placeholder="Message to client…"></td>
       <td class="col-portal"><input data-i="${i}" data-f="galleryFolder" value="${esc(o.galleryFolder||'')}" placeholder="e.g. jane-smith/"></td>
       <td class="col-date"><input type="date" data-i="${i}" data-f="galleryExpiry" value="${esc(o.galleryExpiry||'')}"></td>
-      <td class="col-portal-sm" style="text-align:center;">${o.contractSigned?`<span title="${esc(o.signedName||'')}${o.signedAt&&o.signedAt.toDate?' · '+o.signedAt.toDate().toLocaleDateString('en-ZA'):''}" style="color:#1f8a4c;font-weight:700;white-space:nowrap;">✓ Signed</span>`:`<button data-signlink="${i}" type="button" title="Copy the signing link to send the client" style="font:inherit;font-size:11px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:#eef2fb;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap;">Copy sign link</button>`}</td>
+      <td class="col-portal-sm" style="text-align:center;">${o.contractSigned?`<span title="${esc(o.signedName||'')}${o.signedAt&&o.signedAt.toDate?' · '+o.signedAt.toDate().toLocaleDateString('en-ZA'):''}${o.contractVersion?' · wording v'+o.contractVersion:''}" style="color:#1f8a4c;font-weight:700;white-space:nowrap;">✓ Signed</span>`:`<button data-signlink="${i}" type="button" title="Copy the signing link to send the client" style="font:inherit;font-size:11px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:#eef2fb;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap;">Copy sign link</button>`}</td>
       <td class="rm-col"><button class="rm" data-rm="${i}" title="Delete">✕</button></td>`;
     tbody.appendChild(tr);
   });
@@ -354,6 +354,8 @@ tbody.addEventListener('click',e=>{ const rm=e.target.dataset.rm; if(rm!==undefi
   if(sl!==undefined){
     const o=orders[+sl];
     const link='https://www.fomstudios.co.za/sign.html'+'?o='+encodeURIComponent(o.id)+'&name='+encodeURIComponent(o.customer||'')+'&c='+encodeURIComponent(o.contractUrl||'');
+    // remember which contract wording version this client is being sent
+    try{ const cv=JSON.parse(localStorage.getItem('fom.contract.v1')||'{}'); o.contractVersion=Math.max(1,Math.round(+cv.version)||1); o.contractVersionAt=new Date().toISOString(); store.update(o.id); }catch(err){}
     const btn=e.target, orig=btn.textContent;
     const done=ok=>{ btn.textContent=ok?'Copied!':'Copy failed'; setTimeout(()=>{btn.textContent=orig;},1600); };
     if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(link).then(()=>done(true)).catch(()=>{ prompt('Copy this signing link:',link); done(true); }); }
@@ -431,6 +433,7 @@ function initCloud(){
           return;
         }
         $('loginGate').style.display='none'; store.start(); setTimeout(()=>offerImport(db),1800);
+        db.collection('settings').doc('contract').get().then(s=>{ if(s.exists&&s.data().json){ try{ localStorage.setItem('fom.contract.v1', s.data().json); }catch(e){} } }).catch(()=>{});   // so the sign link can stamp the live contract wording version
       }).catch(err=>{ console.warn('Admin check failed:',err); $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
     }
     else { orders=[]; safeRender(); $('loginGate').style.display='flex'; }
