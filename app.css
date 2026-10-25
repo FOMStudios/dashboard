@@ -162,3 +162,5 @@ img,table,iframe,video,pre{max-width:100%;}
    ============================================================ */
 .login-gate{display:none;}
 html.fom-authed .fom-splash,html.fom-authed .auth-check{display:none!important;}
+
+@media print{ .fom-nav,.fom-scrim,.fom-sheet,.fom-prof{display:none !important;} }

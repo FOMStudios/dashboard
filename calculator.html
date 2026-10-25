@@ -153,9 +153,30 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
 #invoiceSheet{ display:none; }
 .inv-sheet{
     width: 210mm; margin:0 auto; background:#fff; color:var(--ink);
-    padding: 12mm 15mm 10mm; font-size: 12px; display:block;
+    font-size: 12px; border-collapse:collapse; table-layout:fixed;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
+/* header and footer live in thead/tfoot so they repeat on every page */
+.is-page{ height:296mm; max-width:none !important; }
+.is-page > thead > tr > td{ padding:12mm 15mm 0; vertical-align:top; }
+.is-page > tbody > tr > td{ padding:0 15mm; vertical-align:top; }
+.is-page > tfoot > tr > td{ padding:0 15mm 10mm; vertical-align:bottom; }
+.is-page > thead{ display:table-header-group; } .is-page > tfoot{ display:table-footer-group; }
+#invoiceSheet tbody tr:hover{ background:none !important; }
+.is-page .is-foot{ margin-top:8px; }
+.is-page .is-bank{ margin-top:14px; }
+.is-page .is-mascot{ margin:0 4mm 0 0; }
+.is-page .is-mascot img{ max-width:104px; display:block; }
+.is-sum{ break-inside:avoid; }
+.is-terms #psTerms{ white-space:pre-line; font-size:11px; color:var(--ink-soft); line-height:1.5; }
+/* on-screen preview */
+#invoiceSheet.ivp{ display:block; position:fixed; left:0; right:0; top:58px; bottom:0; overflow:auto; background:#d9d7d0; z-index:2600; padding:16px 0 40px; }
+#invoiceSheet.ivp .inv-sheet{ box-shadow:0 6px 30px rgba(0,0,0,.25); transform-origin:top center; }
+.iv-bar{ display:none; position:fixed; left:0; right:0; top:0; height:58px; z-index:2601; background:#fff; border-bottom:1px solid var(--line); align-items:center; justify-content:space-between; gap:10px; padding:0 14px; }
+.iv-bar.show{ display:flex; }
+.iv-info{ display:flex; flex-direction:column; line-height:1.25; min-width:0; } .iv-info span{ font-size:12px; color:var(--ink-soft); }
+.iv-acts{ display:flex; gap:8px; } .iv-acts .btn{ padding:9px 14px; }
+@media (max-width:560px){ .iv-info span{ display:none; } .iv-acts .btn{ padding:9px 10px; font-size:12px; } }
 /* keep rows and key blocks from being split across a page break */
 .is-table tr, .is-table thead{ break-inside: avoid; }
 .is-totals, .is-due, .is-pay-btns, .pay-note, .is-notes, .is-foot{ break-inside: avoid; }
@@ -211,10 +232,11 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
 
 @media print{
     @page{ size:A4; margin:0; }
-    body{ background:#fff; padding:0; }
+    html body{ background:#fff !important; padding:0 !important; margin:0 !important; height:auto !important; min-height:0 !important; overflow:visible !important; }
     .app{ display:none !important; }
-    .scrim, .mobile-menu, .login-gate{ display:none !important; }
-    #invoiceSheet{ display:block !important; }
+    .scrim, .mobile-menu, .login-gate, .iv-bar, .dm, .dm-scrim, .dm-toast{ display:none !important; }
+    #invoiceSheet, #invoiceSheet.ivp{ display:block !important; position:static !important; overflow:visible !important; background:none !important; padding:0 !important; }
+    #invoiceSheet .inv-sheet{ zoom:1 !important; transform:none !important; box-shadow:none !important; margin:0 !important; }
 }
 
 /* ---- Data panel + Package Advisor ---- */
@@ -550,7 +572,8 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
 
 <!-- ===================== PRINTABLE INVOICE ===================== -->
 <div id="invoiceSheet">
-  <div class="inv-sheet">
+  <table class="inv-sheet is-page">
+    <thead><tr><td>
     <div class="is-top">
       <div class="is-logo">
         <img src="assets/logo.png" alt="FOM Studios" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='block';">
@@ -569,6 +592,23 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
       </div>
     </div>
 
+    </td></tr></thead>
+    <tfoot><tr><td>
+    <div class="is-foot">
+      <div>
+        <div class="is-pay">
+          <h4>Payment Instructions</h4>
+          <p id="psPayIntro" style="font-weight:700;"></p>
+          <p id="psConfirm">Payment confirms booking</p>
+        </div>
+        <div class="is-bank" id="psBank"></div>
+      </div>
+      <div class="is-mascot">
+        <img src="assets/mascot.png" alt="" onerror="this.style.display='none'">
+      </div>
+    </div>
+    </td></tr></tfoot>
+    <tbody><tr><td><div id="psContent">
     <div class="is-billbar">
       <div class="bb"><span class="bb-lbl">Bill to:</span> <span class="bb-val" id="psClient">-</span></div>
       <div class="bb" style="margin-left:auto;"><span class="bb-lbl">Date:</span> <span class="bb-val" id="psDate">-</span></div>
@@ -579,6 +619,7 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
       <tbody id="psBody"></tbody>
     </table>
 
+    <div class="is-sum">
     <div class="is-totals">
       <div class="tr sub"><span>Subtotal:</span><span id="psSubtotal">R0,00</span></div>
       <div class="tr sub" id="psDepRow" style="display:none;"><span id="psDepLbl">Less: deposit paid</span><span id="psDepVal">R0,00</span></div>
@@ -591,30 +632,26 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
       <a class="paybtn full" id="psPayFull" href="#" target="_blank" rel="noopener">Pay Full</a>
     </div>
     <div class="pay-note" id="psPayNote" style="display:none;">Secure payment via Yoco. 50% non-refundable deposit secures your booking; balance payable before the shoot date.</div>
+    </div>
+
+    <div class="is-notes is-terms" id="psTermsWrap" style="display:none;">
+      <h4>Terms</h4>
+      <div id="psTerms"></div>
+    </div>
 
     <div class="is-notes" id="psNotesWrap">
       <h4>Notes</h4>
       <div id="psNotes"></div>
     </div>
 
-    <div class="is-foot">
-      <div>
-        <div class="is-pay">
-          <h4>Payment Instructions</h4>
-          <p id="psPayIntro" style="font-weight:700;"></p>
-          <p>Payment confirms booking</p>
-        </div>
-        <div class="is-bank">
-          <div><span class="bk" id="ivbBank">Standard Bank Lenasia</span><span class="bv" id="ivbHolder">Ishaaq Adam</span></div>
-          <div><span class="bk">Branch code:</span><span class="bv" id="ivbBranch">015137</span></div>
-          <div><span class="bk">Acc no.:</span><span class="bv" id="ivbAcc">10097158842</span></div>
-        </div>
-      </div>
-      <div class="is-mascot">
-        <img src="assets/mascot.png" alt="" onerror="this.style.display='none'">
-      </div>
-    </div>
-  </div>
+    </div></td></tr></tbody>
+  </table>
+</div>
+
+<!-- Invoice preview toolbar -->
+<div class="iv-bar" id="ivBar">
+  <div class="iv-info"><b>Invoice preview</b><span id="ivPages"></span></div>
+  <div class="iv-acts"><button class="btn ghost" id="ivEdit" type="button">Edit details</button><button class="btn" id="ivPrint" type="button">Export PDF</button><button class="btn ghost" id="ivClose" type="button">Close</button></div>
 </div>
 
 <!-- ===== Data panel (edit prices, packages, offline advisor) ===== -->
@@ -627,6 +664,7 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
   <div class="dm-tabs" id="dmTabs">
     <button type="button" data-t="prices" class="on">Rates</button>
     <button type="button" data-t="pkgs">Packages</button>
+    <button type="button" data-t="inv">Invoice</button>
     <button type="button" data-t="adv">Advisor<i id="dmBadge"></i></button>
   </div>
   <div class="dm-body" id="dmBody"></div>
@@ -1104,6 +1142,7 @@ function buildInvoice(){
     invoiceTotal = total;
   }
 
+  renderInvoiceExtras(invDraft);
   document.getElementById('psPayIntro').textContent =
     !PAY.workerUrl ? 'Pay by EFT using the banking details below.'
     : (PAY.device === 'mobile'
@@ -1206,7 +1245,7 @@ async function preparePayLinks(){
   } else { $('psPayDeposit').style.display='none'; }
   jobs.push(createCheckout(invoiceTotal,'full').then(u=>{ const b=$('psPayFull'); b.href=u; b.textContent=`Pay Full - ${RZA(invoiceTotal)}`; }));
   await Promise.all(jobs);
-  note.textContent = `Secure payment via Yoco. ${PAY.depositPct}% non-refundable deposit secures your booking; balance payable before the shoot date.`;
+  note.textContent = (CONFIG.invoice && CONFIG.invoice.payNote) ? CONFIG.invoice.payNote.replace(/\{deposit\}/g, PAY.depositPct) : `Secure payment via Yoco. ${PAY.depositPct}% non-refundable deposit secures your booking; balance payable before the shoot date.`;
   btns.style.display = 'flex'; note.style.display = 'block';
 }
 /* ---- shareable pay link (works on mobile, unlike PDF buttons) ---- */
@@ -1284,6 +1323,7 @@ $('exportBtn').addEventListener('click', async () => {
    ╚══════════════════════════════════════════════════════════════════╝ */
 CONFIG.extraPackages = [];     // your own flat-price packages
 CONFIG.advisorIgnore = [];     // packages the advisor should stop nagging about
+CONFIG.invoice = { bank:[], confirm:'', payNote:'', terms:'' };   // editable invoice details (Data > Invoice)
 const DEFAULTS = JSON.parse(JSON.stringify(CONFIG));
 const LS_KEY = 'fom.calc.v1';
 let CLOUD_DB = null;
@@ -1322,6 +1362,13 @@ function applySettings(s){
     });
   }
   if(Array.isArray(s.advisorIgnore)) C.advisorIgnore = s.advisorIgnore.map(String).slice(0,200);
+  if(s.invoice && typeof s.invoice === 'object'){
+    const iv = s.invoice, tx = (v,m) => String(v==null?'':v).slice(0,m);
+    C.invoice = {
+      bank: Array.isArray(iv.bank) ? iv.bank.slice(0,12).map(r => ({ k:tx(r&&r.k,40).trim(), v:tx(r&&r.v,80).trim() })).filter(r => r.k || r.v) : [],
+      confirm: tx(iv.confirm,80).trim(), payNote: tx(iv.payNote,300).trim(), terms: tx(iv.terms,1500).trim()
+    };
+  }
 }
 function resetConfig(){ Object.keys(DEFAULTS).forEach(k => { CONFIG[k] = clone(DEFAULTS[k]); }); }
 
@@ -1363,11 +1410,26 @@ function userPackageContents(type){
 }
 
 /* ---- business + bank details and deposit %: edited on the Contract page (Edit contract) ---- */
+var BIZ = { bank:'Standard Bank Lenasia', holder:'Ishaaq Adam', branch:'015137', acc:'10097158842' };
+var invDraft = null;
+function bizBankRows(){ return [{k:BIZ.bank, v:BIZ.holder},{k:'Branch code:', v:BIZ.branch},{k:'Acc no.:', v:BIZ.acc}]; }
+/* bank box, confirm line and terms: your Invoice tab wins, else the Contract business details */
+function renderInvoiceExtras(inv){
+  inv = inv || CONFIG.invoice || {};
+  const rows = (inv.bank && inv.bank.length) ? inv.bank : bizBankRows();
+  const bx = document.getElementById('psBank'); if(!bx) return;
+  bx.innerHTML = rows.map(r => `<div><span class="bk">${escH(r.k)}</span><span class="bv">${escH(r.v)}</span></div>`).join('');
+  document.getElementById('psConfirm').textContent = inv.confirm || 'Payment confirms booking';
+  const t = (inv.terms || '').trim();
+  document.getElementById('psTerms').textContent = t;
+  document.getElementById('psTermsWrap').style.display = t ? 'block' : 'none';
+}
 function applyBiz(s){
   try{
     const b = (s && s.biz) || {}, t = (s && s.terms) || {}, set = (id, v) => { const e = $(id); if(e && v) e.textContent = v; };
     set('ivbName', b.name); set('ivbRole', b.role); set('ivbEmail', b.email); set('ivbWeb', b.web); set('ivbPhone', b.phone);
-    set('ivbBank', b.bank); set('ivbHolder', b.holder); set('ivbBranch', b.branch); set('ivbAcc', b.acc);
+    ['bank','holder','branch','acc'].forEach(k => { if(b[k]) BIZ[k] = String(b[k]); });
+    renderInvoiceExtras();
     if(b.city){ const c = String(b.city).split(',').map(x => x.trim()); $('ivbCity1').textContent = c[0]; $('ivbCity2').textContent = c.slice(1).join(', '); }
     if(typeof t.depositPct === 'number' && t.depositPct >= 0 && t.depositPct <= 100){ PAY.depositPct = t.depositPct; const d = $('depPct'); if(d) d.value = t.depositPct; }
   }catch(e){}
@@ -1377,7 +1439,7 @@ function applyBiz(s){
 function dataBoot(){
   try{ const j = localStorage.getItem(LS_KEY); if(j) applySettings(JSON.parse(j)); }catch(e){}
   try{ const c = localStorage.getItem('fom.contract.v1'); if(c) applyBiz(JSON.parse(c)); }catch(e){}
-  buildTypeOptions();
+  buildTypeOptions(); renderInvoiceExtras();
 }
 function calcCloudLoad(db){            // called once you are logged in
   CLOUD_DB = db;
@@ -1387,7 +1449,7 @@ function calcCloudLoad(db){            // called once you are logged in
     let s; try{ s = JSON.parse(j); }catch(e){ return; }
     resetConfig(); applySettings(s);
     try{ localStorage.setItem(LS_KEY, j); }catch(e){}
-    buildTypeOptions(); buildExtraOptions(); render();
+    buildTypeOptions(); buildExtraOptions(); render(); renderInvoiceExtras();
   }).catch(e => console.warn('calculator settings:', e));
   db.collection('settings').doc('contract').get().then(snap => {
     if(!snap.exists || !snap.data().json) return;
@@ -1639,10 +1701,34 @@ function advHTML(){
       <li><b>Overlap:</b> if one package includes everything in another for the same or less, the other is pointless.</li>
     </ol></details>`;
 }
+function invHTML(){
+  const iv = D.invoice || (D.invoice = { bank:[], confirm:'', payNote:'', terms:'' });
+  const rows = iv.bank.length ? iv.bank : bizBankRows();
+  return `
+  <section class="dm-sec"><h3>Banking details</h3>
+    <p class="dm-help">These rows print in the box at the bottom of every invoice page. Change an account number, add a reference line or a second account. ${iv.bank.length ? 'You are using your own rows.' : 'Right now they follow Contract, Edit contract, Business details. Edit any row to take over.'}</p>
+    <div class="dm-row hd" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) 34px"><span>Label</span><span>Value</span><span></span></div>
+    <div id="ivRows">${rows.map((r,i) => `<div class="dm-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) 34px"><input type="text" data-iv="bk" data-c="k" value="${escH(r.k)}" placeholder="e.g. Acc no.:"><input type="text" data-iv="bk" data-c="v" value="${escH(r.v)}" placeholder="e.g. 1234567890"><button class="dm-rm" type="button" data-act="ivRm" data-i="${i}" title="Remove row">&times;</button></div>`).join('')}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button class="btn ghost" type="button" data-act="ivAdd">+ Add row</button><button class="btn ghost" type="button" data-act="ivFill">Use Contract business details</button></div>
+  </section>
+  <section class="dm-sec"><h3>Wording</h3>
+    <label class="dm-f"><span>Line under "Payment Instructions"</span><input type="text" data-iv="confirm" maxlength="80" value="${escH(iv.confirm)}" placeholder="Payment confirms booking"></label>
+    <label class="dm-f" style="margin-top:12px"><span>Card payment note (shown by the Pay buttons)</span><textarea data-iv="payNote" rows="2" maxlength="300" placeholder="Secure payment via Yoco. {deposit}% non-refundable deposit secures your booking; balance payable before the shoot date.">${escH(iv.payNote)}</textarea></label>
+    <p class="dm-help" style="margin-top:4px">Type {deposit} to insert your deposit percentage. Leave empty for the standard note.</p>
+    <label class="dm-f" style="margin-top:12px"><span>Terms or extra information (optional)</span><textarea data-iv="terms" rows="5" maxlength="1500" placeholder="e.g. Late payments may incur a fee. Thank you for choosing FOM Studios.">${escH(iv.terms)}</textarea></label>
+    <p class="dm-help" style="margin-top:4px">Each new line prints on its own line, in a Terms block above the footer. If an invoice runs past one page, it continues on page 2 with the same header and footer.</p>
+  </section>
+  <button class="btn" type="button" data-act="ivPrev">Preview invoice with these changes</button>`;
+}
+function readBankRows(){
+  return [].map.call($('dmBody').querySelectorAll('#ivRows .dm-row'), r => {
+    const i = r.querySelectorAll('input'); return { k:i[0].value, v:i[1].value };
+  });
+}
 function drawTab(){
   [].forEach.call($('dmTabs').querySelectorAll('button'), b => b.classList.toggle('on', b.dataset.t === dmTab));
   const st = $('dmBody').scrollTop;
-  $('dmBody').innerHTML = dmTab === 'prices' ? ratesHTML() : dmTab === 'pkgs' ? pkgsHTML() : advHTML();
+  $('dmBody').innerHTML = dmTab === 'prices' ? ratesHTML() : dmTab === 'pkgs' ? pkgsHTML() : dmTab === 'inv' ? invHTML() : advHTML();
   $('dmBody').scrollTop = st;
   refreshLive();
 }
@@ -1678,7 +1764,7 @@ async function saveData(){
     try{ await CLOUD_DB.collection('settings').doc('calculator').set({ json:j, updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); }
     catch(e){ cloudOk = false; console.warn('calculator save:', e); }
   } else cloudOk = false;
-  buildTypeOptions(); buildExtraOptions(); render();
+  buildTypeOptions(); buildExtraOptions(); render(); renderInvoiceExtras();
   D = clone(CONFIG); dmSavedJson = JSON.stringify(D); drawTab();
   dmToast(cloudOk ? 'Saved. Your calculator is updated.' : 'Saved on this device only. Add the settings rule in Firestore to sync it.');
 }
@@ -1686,9 +1772,43 @@ function resetData(){
   if(!confirm('Reset every price and package back to the original defaults? Your own packages will be removed.')) return;
   resetConfig(); try{ localStorage.removeItem(LS_KEY); }catch(e){}
   if(CLOUD_DB) CLOUD_DB.collection('settings').doc('calculator').set({ json:JSON.stringify(clone(CONFIG)), updatedAt:firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {});
-  buildTypeOptions(); buildExtraOptions(); render();
+  buildTypeOptions(); buildExtraOptions(); render(); renderInvoiceExtras();
   D = clone(CONFIG); dmSavedJson = JSON.stringify(D); drawTab(); dmToast('Back to defaults');
 }
+/* ---- invoice preview ---- */
+function fitPreview(){
+  const sh = document.querySelector('#invoiceSheet .inv-sheet'); if(!sh || !$('invoiceSheet').classList.contains('ivp')) return;
+  sh.style.zoom = 1;
+  const mm = 96/25.4, pageH = 296*mm;
+  const hd = sh.tHead.getBoundingClientRect().height, ft = sh.tFoot.getBoundingClientRect().height;
+  const body = $('psContent').getBoundingClientRect().height, avail = Math.max(200, pageH - hd - ft);
+  const pages = Math.max(1, Math.ceil(body / avail - 0.001));
+  $('ivPages').textContent = pages === 1 ? 'Prints on 1 page' : `Prints on ${pages} pages, header and footer repeat`;
+  const w = $('invoiceSheet').clientWidth - 16, z = Math.min(1, w / (210*mm));
+  sh.style.zoom = z;
+}
+function openPreview(draft){
+  invDraft = draft && D ? D.invoice : null;
+  buildInvoice();
+  $('psPayBtns').style.display = 'none'; $('psPayNote').style.display = 'none';
+  $('invoiceSheet').classList.add('ivp'); $('ivBar').classList.add('show'); document.body.style.overflow = 'hidden';
+  fitPreview();
+}
+function closePreview(){
+  invDraft = null; $('invoiceSheet').classList.remove('ivp'); $('ivBar').classList.remove('show');
+  if(!$('dm').classList.contains('show')) document.body.style.overflow = '';
+  buildInvoice(); renderInvoiceExtras();
+}
+(function wirePreview(){
+  $('ivClose').onclick = closePreview;
+  $('ivEdit').onclick = () => { closePreview(); openData(); dmTab = 'inv'; drawTab(); };
+  $('ivPrint').onclick = () => { closePreview(); $('exportBtn').click(); };
+  addEventListener('resize', fitPreview);
+  addEventListener('keydown', e => { if(e.key === 'Escape' && $('ivBar').classList.contains('show')) closePreview(); });
+  const sb = document.createElement('button'); sb.className = 'btn ghost block'; sb.id = 'previewBtn'; sb.type = 'button'; sb.textContent = 'Preview invoice';
+  sb.style.marginBottom = '8px'; sb.onclick = () => openPreview(false);
+  $('exportBtn').parentNode.insertBefore(sb, $('exportBtn'));
+})();
 (function wireData(){
   const num = v => Math.max(0, parseFloat(v) || 0);
   $('dataBtn').onclick = openData;
@@ -1705,6 +1825,8 @@ function resetData(){
       if(t.dataset.pi) p.items[t.dataset.pi] = Math.max(1, Math.round(num(t.value)) || 1);
       else if(t.dataset.f === 'name' || t.dataset.f === 'contents') p[t.dataset.f] = t.value;
       else p[t.dataset.f] = (t.dataset.f === 'rev' || t.dataset.f === 'oh') ? Math.round(num(t.value)) : num(t.value);
+    } else if(t.dataset.iv){
+      if(t.dataset.iv === 'bk') D.invoice.bank = readBankRows(); else D.invoice[t.dataset.iv] = t.value;
     } else return;
     if(t.dataset.dl || t.dataset.k === 'fuel.price' || t.dataset.k === 'fuel.consumption'){ if(dmTab === 'prices' && t.dataset.k) drawFuelNote(); }
     refreshLive();
@@ -1736,6 +1858,14 @@ function resetData(){
       const p = D.extraPackages.find(x => x.id === id); if(p){ delete p.items[key]; drawTab(); }
     } else if(act === 'useSug'){
       const p = D.extraPackages.find(x => x.id === id); if(p){ p.price = +b.dataset.v; drawTab(); }
+    } else if(act === 'ivAdd'){
+      D.invoice.bank = D.invoice.bank.length ? readBankRows() : bizBankRows(); D.invoice.bank.push({ k:'', v:'' }); drawTab();
+    } else if(act === 'ivRm'){
+      const rows = D.invoice.bank.length ? readBankRows() : bizBankRows(); rows.splice(+b.dataset.i, 1); D.invoice.bank = rows; drawTab();
+    } else if(act === 'ivFill'){
+      D.invoice.bank = []; drawTab();
+    } else if(act === 'ivPrev'){
+      openPreview(true);
     } else if(act === 'ign'){
       const s = new Set(D.advisorIgnore); s.has(key) ? s.delete(key) : s.add(key); D.advisorIgnore = [...s]; drawTab();
     }
