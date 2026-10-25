@@ -234,6 +234,14 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .ws-prev .strip b{text-decoration:underline;text-underline-offset:3px;}
 .ws-prev .off{padding:10px;color:var(--ink-soft);border:1px dashed var(--line);border-radius:12px;font-weight:500;}
 .ws-note{color:var(--ink-soft);font-size:12.5px;text-align:center;margin:6px 0 0;}
+
+.bd-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr) 38px;gap:8px;margin-bottom:8px;align-items:center;}
+.bd-row input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--ink);}
+.bd-row input.bad{border-color:#c0392b;}
+.bd-row .bd-x{border:1px solid var(--line);background:var(--bg);border-radius:10px;height:42px;cursor:pointer;color:#c0392b;font-weight:700;font-size:16px;}
+.bd-row.past{opacity:.5;}
+.bd-cap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr) 38px;gap:8px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+@media(max-width:640px){.bd-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}.bd-row input[data-bd=label]{grid-column:1/-1;}.bd-row .bd-x{grid-column:1/-1;height:34px;}.bd-cap{display:none;}}
 @media(max-width:640px){.ws-grid{grid-template-columns:minmax(0,1fr);}.ws-bar{top:66px;}}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
@@ -354,6 +362,14 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
         </div>
     </section>
 
+    <section class="ws-card">
+        <h2>Blocked dates</h2>
+        <p class="ws-help">Holidays, days closed, or dates you are already booked. On the website, the booking form refuses these dates and shows your label. Leave "To" empty for a single day.</p>
+        <div id="bdList"></div>
+        <button class="rv-btn" id="bdAdd" type="button">+ Block a date</button>
+        <button class="rv-btn" id="bdClear" type="button" style="display:none;">Remove past dates</button>
+    </section>
+
     <p class="ws-note">Anything you leave blank keeps the details already written on the site, so the website never shows an empty gap.</p>
 </div>
 
@@ -372,16 +388,42 @@ const F={phone:'fPhone',whatsapp:'fWa',email:'fEmail',instagram:'fIg',whatsappCo
 function readForm(){
   const d={}; Object.keys(F).forEach(k=>{ const v=$(F[k]).value.trim(); if(v) d[k]=v; });
   d.banner={on:$('bOn').checked,text:$('bText').value.trim(),link:$('bLink').value.trim(),linkLabel:$('bLabel').value.trim()};
+  d.blockedDates=readBD();
   return d;
 }
+/* ---- blocked dates ---- */
+const todayISO=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
+function normBD(a){
+  return (Array.isArray(a)?a:[]).map(x=>({from:String((x&&x.from)||'').slice(0,10),to:String((x&&x.to)||(x&&x.from)||'').slice(0,10),label:String((x&&x.label)||'').trim().slice(0,60)}))
+    .filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.from)).map(x=>({from:x.from,to:/^\d{4}-\d{2}-\d{2}$/.test(x.to)?x.to:x.from,label:x.label}))
+    .sort((a,b)=>a.from<b.from?-1:a.from>b.from?1:0);
+}
+function readBD(){
+  const rows=[].map.call($('bdList').querySelectorAll('.bd-row'),r=>({from:r.querySelector('[data-bd=from]').value,to:r.querySelector('[data-bd=to]').value,label:r.querySelector('[data-bd=label]').value}));
+  return normBD(rows);
+}
+function bdRow(x){
+  const past=(x.to||x.from)<todayISO();
+  return '<div class="bd-row'+(past?' past':'')+'"><input type="date" data-bd="from" value="'+esc(x.from||'')+'" aria-label="From"><input type="date" data-bd="to" value="'+(x.to&&x.to!==x.from?esc(x.to):'')+'" aria-label="To"><input type="text" data-bd="label" maxlength="60" placeholder="Reason, e.g. Closed for the holidays" value="'+esc(x.label||'')+'"><button class="bd-x" type="button" aria-label="Remove">&times;</button></div>';
+}
+function drawBD(list){
+  $('bdList').innerHTML=(list.length?'<div class="bd-cap"><span>From</span><span>To (optional)</span><span>Label</span><span></span></div>':'')+list.map(bdRow).join('');
+  $('bdClear').style.display=list.some(x=>x.to<todayISO())?'inline-block':'none';
+}
+$('bdAdd').onclick=()=>{ const cur=[].slice.call($('bdList').querySelectorAll('.bd-row')).length; if(!cur) drawBD([]); $('bdList').insertAdjacentHTML('beforeend',(cur?'':'<div class="bd-cap"><span>From</span><span>To (optional)</span><span>Label</span><span></span></div>')+bdRow({from:'',to:'',label:''})); const r=$('bdList').querySelectorAll('.bd-row'); r[r.length-1].querySelector('input').focus(); };
+$('bdClear').onclick=()=>{ drawBD(readBD().filter(x=>x.to>=todayISO())); setState(); };
+$('bdList').addEventListener('click',e=>{ const b=e.target.closest('.bd-x'); if(b){ b.closest('.bd-row').remove(); if(!$('bdList').querySelector('.bd-row')) $('bdList').innerHTML=''; setState(); } });
+
 function readSaved(d){
   const o={}; Object.keys(F).forEach(k=>{ const v=String((d&&d[k])||'').trim(); if(v) o[k]=v; });
   const b=(d&&d.banner)||{}; o.banner={on:!!b.on,text:String(b.text||'').trim(),link:String(b.link||'').trim(),linkLabel:String(b.linkLabel||'').trim()};
+  o.blockedDates=normBD(d&&d.blockedDates);
   return o;
 }
 function fillForm(d){
   d=d||{}; Object.keys(F).forEach(k=>{ $(F[k]).value=d[k]||''; });
   const b=d.banner||{}; $('bOn').checked=!!b.on; $('bText').value=b.text||''; $('bLink').value=b.link||''; $('bLabel').value=b.linkLabel||'';
+  drawBD(normBD(d.blockedDates));
   preview();
 }
 function preview(){
@@ -405,6 +447,7 @@ function validate(d){
   ['whatsappCommunity','facebook','tiktok','youtube'].forEach(k=>mark(F[k], !d[k] || /^https?:\/\//i.test(d[k])));
   mark('bLink', !d.banner.link || /^(https?:\/\/|\/|[a-z0-9_-]+\.html)/i.test(d.banner.link));
   mark('bText', !d.banner.on || !!d.banner.text);
+  [].forEach.call($('bdList').querySelectorAll('.bd-row'),r=>{ const f=r.querySelector('[data-bd=from]'),t=r.querySelector('[data-bd=to]'); const okF=!!f.value, okT=!t.value||t.value>=f.value; f.classList.toggle('bad',!okF); t.classList.toggle('bad',!okT); if(!okF||!okT) bad.push('bd'); });
   return bad.length===0;
 }
 
