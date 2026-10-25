@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOM Studios | Photos</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/mascot.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1320px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* pill header + hamburger */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:var(--container);margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:24px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.btn.block{width:100%;padding:13px;}
+
+/* page */
+.page{padding-top:108px;}
+.dash-head{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:24px;}
+.dash-head .logo img{max-height:64px;width:auto;}
+.dash-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.dash-head p{color:var(--ink-soft);font-size:14px;margin-top:2px;}
+.head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap;}
+.btn:hover{background:var(--accent-hover);}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink);}
+.btn.ghost:hover{background:var(--ink);color:var(--bg-pill);}
+.badge{font-size:12px;font-weight:600;border-radius:var(--radius-pill);padding:8px 14px;border:1px solid var(--line);}
+.badge.cloud{background:#e7f0ff;border-color:#bcd4f5;color:var(--accent);}
+.badge.local{background:#f3f1ea;color:var(--ink-soft);}
+
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
+.vchart{display:flex;align-items:flex-end;gap:14px;height:200px;overflow-x:auto;padding-top:6px;-webkit-overflow-scrolling:touch;}
+.vbar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;flex:1 0 44px;min-width:44px;}
+.vbar-c{width:100%;max-width:50px;background:var(--accent);border-radius:8px 8px 0 0;min-height:4px;}
+.vbar-v{font-size:11px;font-weight:700;color:var(--ink-soft);}
+.vbar-l{font-size:11px;color:var(--ink-soft);white-space:nowrap;}
+.kpi{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 22px;}
+.kpi .k-lbl{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:600;}
+.kpi .k-val{font-size:28px;font-weight:800;letter-spacing:-.01em;margin-top:6px;font-variant-numeric:tabular-nums;}
+.kpi .k-sub{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+.kpi.accent{background:var(--bg-dark);color:var(--ink-on-dark);border-color:var(--bg-dark);}
+.kpi.accent .k-lbl{color:var(--accent-on-dark);}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:22px;}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:700;margin-bottom:16px;}
+.donut-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.donut-wrap svg{flex:0 0 auto;}
+.legend{list-style:none;display:flex;flex-direction:column;gap:10px;flex:1;min-width:140px;}
+.legend li{display:flex;align-items:center;gap:10px;font-size:14px;}
+.legend .dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;}
+.legend .lv{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-soft);}
+.bars{display:flex;flex-direction:column;gap:12px;}
+.bar-row{display:grid;grid-template-columns:90px 1fr 48px;align-items:center;gap:12px;font-size:14px;}
+.bar-track{background:#e9e7e1;border-radius:var(--radius-pill);height:14px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:var(--radius-pill);background:var(--accent);}
+.bar-row .bv{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-soft);}
+.collect{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.collect .prog{flex:1;min-width:200px;}
+.prog-track{background:#e9e7e1;border-radius:var(--radius-pill);height:22px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--accent);border-radius:var(--radius-pill);display:flex;align-items:center;justify-content:flex-end;color:#fff;font-size:12px;font-weight:700;padding-right:10px;}
+.collect .legend2{font-size:13px;color:var(--ink-soft);}
+.collect .legend2 b{color:var(--ink);font-size:16px;}
+.recent-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.recent table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px;}
+.recent th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:600;padding:8px 8px;border-bottom:1px solid var(--line);}
+.recent td{padding:9px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);color:#fff;}
+.empty-card{text-align:center;padding:50px 20px;}
+.empty-card img{max-width:150px;margin:0 auto 16px;}
+.empty-card h3{font-size:20px;font-weight:800;margin-bottom:6px;}
+.empty-card p{color:var(--ink-soft);margin-bottom:18px;}
+.mascot-corner{position:fixed;right:18px;bottom:14px;width:78px;opacity:.9;z-index:1;pointer-events:none;}
+.mascot-corner img{width:100%;}
+
+@media(max-width:980px){.kpis{grid-template-columns:1fr 1fr;}}
+@media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
+@media(max-width:720px){.grid2{grid-template-columns:1fr;}.mascot-corner{display:none;}}
+@media(max-width:520px){.kpis{grid-template-columns:1fr;}}
+
+.ns-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px;}
+.ns-head h2{margin:0 !important;}
+.ns-sel{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 10px;font-size:14px;font-family:inherit;color:var(--ink);max-width:100%;min-width:0;}
+.ns-prog{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft);margin-bottom:12px;font-weight:600;}
+.ns-bar{flex:1;height:8px;border-radius:99px;background:#e9e7e1;overflow:hidden;} .ns-bar i{display:block;height:100%;background:var(--accent);border-radius:99px;}
+.ns-step{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);}
+.ns-step:first-of-type{border-top:0;}
+.ns-who{flex:none;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 9px;}
+.ns-who.me{background:var(--accent);color:#fff;} .ns-who.client{background:#e9e7e1;color:var(--ink-soft);}
+.ns-t{flex:1;min-width:0;font-size:14.5px;font-weight:600;}
+.ns-go{flex:none;border:1px solid var(--ink);border-radius:99px;padding:5px 12px;font-size:12.5px;font-weight:600;white-space:nowrap;}
+.ns-meta{font-size:12.5px;color:var(--ink-soft);margin-top:10px;}
+.sg-lvl{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 9px;margin-bottom:8px;color:#fff;background:#5B9AE0;}
+.sg-lvl.bad{background:#c0392b;} .sg-lvl.warn{background:#e0a100;} .sg-lvl.ok{background:#1f8a4c;}
+.sg-t{font-size:16px;font-weight:700;} .sg-d{font-size:13.5px;color:var(--ink-soft);margin-top:4px;}
+.sg-links{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px;font-size:13px;}
+.sg-links a{font-weight:700;color:var(--accent);}
+
+.ph-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.ph-bar .grow{flex:1;}
+.ph-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.ph-chips button{border:1px solid var(--line);background:var(--bg-pill);border-radius:99px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink);}
+.ph-chips button.on{background:var(--bg-dark);color:var(--ink-on-dark);border-color:var(--bg-dark);}
+.ph-drop{border:2px dashed var(--line);border-radius:var(--radius-card);padding:22px;text-align:center;color:var(--ink-soft);font-size:14px;margin-bottom:16px;background:var(--bg-pill);transition:.15s;}
+.ph-drop.over{border-color:var(--accent);background:#eaf1fb;color:var(--accent);}
+.ph-drop b{color:var(--ink);} .ph-drop .btn{margin-top:10px;}
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+.ph-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;}
+.ph-card.hid{opacity:.55;} .ph-card.dragging{opacity:.35;} .ph-card.dropat{outline:2px solid var(--accent);}
+.ph-img{position:relative;aspect-ratio:1/1;background:#e9e7e1;cursor:grab;}
+.ph-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.ph-tags{position:absolute;left:8px;top:8px;display:flex;gap:5px;}
+.ph-tag{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 8px;background:rgba(42,43,44,.85);color:#fff;}
+.ph-tag.h{background:var(--accent);} .ph-tag.u{background:#1f8a4c;}
+.ph-body{padding:10px;display:flex;flex-direction:column;gap:8px;}
+.ph-body input[type=text],.ph-body select{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 9px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink);min-width:0;}
+.ph-row{display:flex;gap:6px;} .ph-row select{flex:1;}
+.ph-chk{display:flex;gap:14px;font-size:13px;font-weight:600;} .ph-chk label{display:flex;gap:6px;align-items:center;cursor:pointer;}
+.ph-act{display:flex;gap:6px;} .ph-act button{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 0;font-size:14px;cursor:pointer;color:var(--ink);font-weight:700;}
+.ph-act button.rm{color:#c0392b;} .ph-act button:disabled{opacity:.35;cursor:default;}
+.ph-state{font-size:13px;font-weight:600;color:var(--ink-soft);} .ph-state.dirty{color:#b0640b;} .ph-state.ok{color:#1f8a4c;}
+.ph-msg{border-radius:14px;padding:12px 14px;font-size:14px;margin-bottom:14px;background:#fdf1dc;border:1px solid #f0d9a8;color:#6a4a0a;display:none;}
+.ph-msg.show{display:block;} .ph-msg.bad{background:#fbe4e1;border-color:#efb7b0;color:#8a2b20;}
+.ph-prog{height:8px;background:#e9e7e1;border-radius:99px;overflow:hidden;margin-top:10px;display:none;} .ph-prog i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s;}
+.ph-sticky{position:sticky;top:84px;z-index:20;background:var(--bg);padding:8px 0;}
+@media(max-width:520px){.ph-grid{grid-template-columns:repeat(2,1fr);gap:10px;}}
+</style>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="session.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="fom-splash" id="authCheck"><div class="in"><b>FOM STUDIOS</b><p>Checking session…</p></div></div>
+<script>setTimeout(function(){var a=document.getElementById("authCheck");if(a)a.style.display="none";},8000);</script>
+
+
+<div class="login-gate" id="loginGate">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close menu">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="leads.html">Leads</a></li>
+        <li><a href="content.html">Content Planner</a></li>
+        <li><a href="calculator.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="leads.html">Leads</a></li>
+                <li><a href="content.html">Content Planner</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+            </ul>
+        </div>
+    </nav>
+</div>
+
+<div class="page wrap">
+    <div class="dash-head">
+        <div style="display:flex;align-items:center;gap:18px;">
+            <span class="logo"><img src="assets/logo.png" alt="FOM Studios" onerror="this.style.display='none'"></span>
+            <div>
+                <span class="eyebrow">Website</span>
+                <h1>Photos</h1>
+                <p>Upload, order and caption the photos on your website</p>
+            </div>
+        </div>
+        <div class="head-actions">
+            <span class="badge local" id="syncBadge">Local only</span>
+            <button class="btn ghost" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </div>
+
+    <div class="ph-msg" id="phMsg"></div>
+    <div id="phApp" style="display:none">
+      <div class="ph-drop" id="phDrop">
+        <div><b>Drop photos here</b> or choose them from your device</div>
+        <div style="font-size:12.5px;margin-top:4px">They are shrunk to web size automatically and saved to your Cloudflare R2 bucket. New photos go to the top.</div>
+        <input type="file" id="phFile" accept="image/*" multiple style="display:none">
+        <button class="btn" id="phPick" type="button">Choose photos</button>
+        <div class="ph-prog" id="phProg"><i></i></div>
+        <div style="font-size:13px;margin-top:8px" id="phUp"></div>
+      </div>
+      <div class="ph-sticky"><div class="ph-bar">
+        <div class="ph-chips" id="phChips"></div>
+        <span class="grow"></span>
+        <span class="ph-state" id="phState"></span>
+        <button class="btn" id="phSave" type="button">Save changes</button>
+      </div></div>
+      <div class="ph-bar" style="margin-top:2px"><span class="ph-state" id="phCount"></span></div>
+      <div class="ph-grid" id="phGrid"></div>
+    </div>
+</div>
+
+<div class="mascot-corner"><img src="assets/mascot.png" alt="" onerror="this.parentElement.style.display='none'"></div>
+
+<script src="firebase-config.js"></script>
+<script>
+const WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
+const SITE = 'https://www.fomstudios.co.za/';
+const DEFAULTS = [{"id":"s1","src":"assets/work1.jpg","cap":"Match Day","cat":"sports","size":"big","alt":"Match day sports photography by FOM Studios, Johannesburg","home":true},{"id":"s2","src":"assets/work2.jpg","cap":"Action Shots","cat":"sports","size":"square","alt":"Sports action photography by FOM Studios, Johannesburg","home":true},{"id":"s3","src":"assets/work3.jpg","cap":"Interviews","cat":"sports","size":"square","alt":"Sports interview photography by FOM Studios, Johannesburg","home":true},{"id":"s4","src":"assets/work4.jpg","cap":"Event Coverage","cat":"sports","size":"wide","alt":"Event coverage photography by FOM Studios, Johannesburg","home":true},{"id":"s5","src":"assets/work5.jpg","cap":"Aerial Shot","cat":"other","size":"square","alt":"Aerial drone photography by FOM Studios, Johannesburg","home":true},{"id":"s6","src":"assets/work6.jpg","cap":"Motorbikes","cat":"automotive","size":"square","alt":"Motorbike photography by FOM Studios, Johannesburg","home":true},{"id":"s7","src":"assets/work7.jpg","cap":"Automotive","cat":"automotive","size":"tall","alt":"Automotive photography by FOM Studios, Johannesburg","home":true},{"id":"s8","src":"assets/work8.jpg","cap":"Automotive","cat":"automotive","size":"wide","alt":"Automotive photography by FOM Studios, Johannesburg","home":true},{"id":"s9","src":"assets/work9.jpg","cap":"Car Meets","cat":"automotive","size":"square","alt":"Car meet automotive photography by FOM Studios, Johannesburg","home":true},{"id":"s10","src":"assets/work10.jpg","cap":"Automotive","cat":"automotive","size":"square","alt":"Automotive photography by FOM Studios, Johannesburg","home":true},{"id":"s11","src":"assets/work11.jpg","cap":"Zaydaan","cat":"sports","size":"square","alt":"Portrait photography: Zaydaan by FOM Studios, Johannesburg","home":false},{"id":"s12","src":"assets/work12.jpg","cap":"Zaydaan","cat":"sports","size":"square","alt":"Portrait photography: Zaydaan by FOM Studios, Johannesburg","home":false},{"id":"s13","src":"assets/work13.jpg","cap":"Kyle Oliver","cat":"sports","size":"square","alt":"Portrait photography: Kyle Oliver by FOM Studios, Johannesburg","home":false},{"id":"s14","src":"assets/work14.jpg","cap":"Motion Blur","cat":"sports","size":"square","alt":"Sports motion-blur photography by FOM Studios, Johannesburg","home":false},{"id":"s15","src":"assets/work15.jpg","cap":"Team Spirit","cat":"sports","size":"wide","alt":"Team sports photography by FOM Studios, Johannesburg","home":false},{"id":"s16","src":"assets/work16.jpg","cap":"Details","cat":"sports","size":"square","alt":"Sports detail photography by FOM Studios, Johannesburg","home":false},{"id":"s17","src":"assets/work17.jpg","cap":"Pixel Stretch","cat":"sports","size":"square","alt":"Creative sports photography by FOM Studios, Johannesburg","home":false},{"id":"s18","src":"assets/work18.jpg","cap":"Zaydaan","cat":"sports","size":"wide","alt":"Portrait photography: Zaydaan by FOM Studios, Johannesburg","home":false},{"id":"s19","src":"assets/work19.jpg","cap":"Soccer","cat":"sports","size":"wide","alt":"Soccer photography by FOM Studios, Johannesburg","home":false},{"id":"s20","src":"assets/work20.jpg","cap":"Soccer","cat":"sports","size":"tall","alt":"Soccer photography by FOM Studios, Johannesburg","home":false},{"id":"s21","src":"assets/work21.jpg","cap":"Soccer","cat":"sports","size":"square","alt":"Soccer photography by FOM Studios, Johannesburg","home":false},{"id":"s22","src":"assets/work22.jpg","cap":"Soccer","cat":"sports","size":"square","alt":"Soccer photography by FOM Studios, Johannesburg","home":false},{"id":"s23","src":"assets/work23.jpg","cap":"BMW","cat":"automotive","size":"wide","alt":"BMW automotive photography by FOM Studios, Johannesburg","home":false},{"id":"s24","src":"assets/work24.jpg","cap":"Rotary","cat":"automotive","size":"tall","alt":"Mazda RX7 rotary automotive photography by FOM Studios, Johannesburg","home":false},{"id":"s25","src":"assets/work25.jpg","cap":"325i","cat":"automotive","size":"square","alt":"BMW 325i automotive photography by FOM Studios, Johannesburg","home":false},{"id":"s26","src":"assets/work26.jpg","cap":"RX7","cat":"automotive","size":"square","alt":"Mazda RX7 automotive photography by FOM Studios, Johannesburg","home":false},{"id":"s27","src":"assets/work27.jpg","cap":"S1000RR","cat":"automotive","size":"square","alt":"BMW S1000RR motorcycle photography by FOM Studios, Johannesburg","home":false},{"id":"s28","src":"assets/work28.jpg","cap":"Porsche","cat":"automotive","size":"square","alt":"Porsche automotive photography by FOM Studios, Johannesburg","home":false},{"id":"s29","src":"assets/work29.jpg","cap":"Benz","cat":"automotive","size":"square","alt":"Mercedes-Benz automotive photography by FOM Studios, Johannesburg","home":false},{"id":"s30","src":"assets/work30.jpg","cap":"BMW","cat":"automotive","size":"wide","alt":"BMW automotive photography by FOM Studios, Johannesburg","home":false},{"id":"s31","src":"assets/work31.jpg","cap":"Porsche","cat":"automotive","size":"tall","alt":"Porsche automotive photography by FOM Studios, Johannesburg","home":false},{"id":"s32","src":"assets/work32.jpg","cap":"Porsche","cat":"automotive","size":"tall","alt":"Porsche automotive photography by FOM Studios, Johannesburg","home":false},{"id":"s33","src":"assets/work33.jpg","cap":"Porsche","cat":"automotive","size":"tall","alt":"Porsche automotive photography by FOM Studios, Johannesburg","home":false},{"id":"s34","src":"assets/work34.jpg","cap":"BMW","cat":"automotive","size":"tall","alt":"BMW automotive photography by FOM Studios, Johannesburg","home":false},{"id":"s35","src":"assets/work35.jpg","cap":"Swimming","cat":"sports","size":"square","alt":"Swimming sports photography by FOM Studios, Johannesburg","home":false},{"id":"s36","src":"assets/work36.jpg","cap":"Swimming","cat":"sports","size":"square","alt":"Swimming sports photography by FOM Studios, Johannesburg","home":false},{"id":"s37","src":"assets/work37.jpg","cap":"Swimming","cat":"sports","size":"square","alt":"Swimming sports photography by FOM Studios, Johannesburg","home":false},{"id":"s38","src":"assets/work38.jpg","cap":"Swimming","cat":"sports","size":"square","alt":"Swimming sports photography by FOM Studios, Johannesburg","home":false},{"id":"s39","src":"assets/work39.jpg","cap":"Swimming","cat":"sports","size":"square","alt":"Swimming sports photography by FOM Studios, Johannesburg","home":false},{"id":"s40","src":"assets/work40.jpg","cap":"Swimming","cat":"sports","size":"square","alt":"Swimming sports photography by FOM Studios, Johannesburg","home":false},{"id":"s41","src":"assets/work41.jpeg","cap":"Basketball","cat":"sports","size":"square","alt":"Basketball sports photography by FOM Studios, Johannesburg","home":false},{"id":"s42","src":"assets/work42.png","cap":"Basketball","cat":"sports","size":"square","alt":"Basketball sports photography by FOM Studios, Johannesburg","home":false},{"id":"s43","src":"assets/work43.png","cap":"Basketball","cat":"sports","size":"square","alt":"Basketball sports photography by FOM Studios, Johannesburg","home":false},{"id":"s44","src":"assets/work44.png","cap":"Basketball","cat":"sports","size":"tall","alt":"Basketball sports photography by FOM Studios, Johannesburg","home":false},{"id":"s45","src":"assets/work45.png","cap":"Basketball","cat":"sports","size":"tall","alt":"Basketball sports photography by FOM Studios, Johannesburg","home":false},{"id":"s46","src":"assets/work46.png","cap":"Basketball","cat":"sports","size":"tall","alt":"Basketball sports photography by FOM Studios, Johannesburg","home":false},{"id":"s47","src":"assets/work47.png","cap":"Basketball","cat":"sports","size":"tall","alt":"Basketball sports photography by FOM Studios, Johannesburg","home":false},{"id":"s48","src":"assets/work48.png","cap":"Basketball","cat":"sports","size":"square","alt":"Basketball sports photography by FOM Studios, Johannesburg","home":false},{"id":"s49","src":"assets/work49.png","cap":"Basketball","cat":"sports","size":"square","alt":"Basketball sports photography by FOM Studios, Johannesburg","home":false}];
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const CATS = { sports:'Sports', automotive:'Automotive', other:'Other' };
+const SIZES = { square:'Square', wide:'Wide', tall:'Tall', big:'Big' };
+const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+async function loadFirebase(){ const b='https://www.gstatic.com/firebasejs/10.12.0/';
+  await loadScript(b+'firebase-app-compat.js');
+  await Promise.all([loadScript(b+'firebase-auth-compat.js'), loadScript(b+'firebase-firestore-compat.js')]); }
+
+let db = null, auth = null, photos = [], savedJson = '', usingDefaults = true, filter = 'all', dragId = null;
+const clean = a => (Array.isArray(a) ? a : []).slice(0,400).filter(p => p && p.src).map((p,i) => ({
+  id:String(p.id || 'p'+i).slice(0,40), src:String(p.src).slice(0,200), cap:String(p.cap||'').slice(0,80),
+  cat:CATS[p.cat] ? p.cat : 'other', size:SIZES[p.size] ? p.size : 'square', alt:String(p.alt||'').slice(0,160), hide:!!p.hide, home:!!p.home }));
+const url = p => p.src.indexOf('r2:') === 0 ? WORKER + '/file?g=portfolio%2F&n=' + encodeURIComponent(p.src.slice(3)) : SITE + p.src;
+const isR2 = p => p.src.indexOf('r2:') === 0;
+const dirty = () => JSON.stringify(photos) !== savedJson;
+
+function msg(t, bad){ const m = $('phMsg'); m.textContent = t || ''; m.className = 'ph-msg' + (t ? ' show' : '') + (bad ? ' bad' : ''); }
+function render(){
+  const list = photos.filter(p => filter === 'all' || (filter === 'hidden' ? p.hide : filter === 'home' ? p.home && !p.hide : p.cat === filter));
+  $('phChips').innerHTML = [['all','All'],['sports','Sports'],['automotive','Automotive'],['other','Other'],['home','Homepage'],['hidden','Hidden']]
+    .map(c => `<button data-f="${c[0]}" class="${filter===c[0]?'on':''}">${c[1]}</button>`).join('');
+  $('phCount').textContent = `${photos.length} photos, ${photos.filter(p=>p.hide).length} hidden, ${photos.filter(p=>p.home&&!p.hide).length} on the homepage`
+    + (usingDefaults ? '. Showing the photos built into your site. Save once to take control from here.' : '');
+  $('phGrid').innerHTML = list.map(p => `<div class="ph-card${p.hide?' hid':''}" data-id="${esc(p.id)}">
+    <div class="ph-img" draggable="true" title="Drag to reorder"><img loading="lazy" src="${esc(url(p))}" alt="">
+      <div class="ph-tags">${isR2(p)?'<span class="ph-tag u">Uploaded</span>':''}${p.home&&!p.hide?'<span class="ph-tag h">Home</span>':''}</div></div>
+    <div class="ph-body">
+      <input type="text" data-k="cap" value="${esc(p.cap)}" placeholder="Caption" maxlength="80">
+      <div class="ph-row"><select data-k="cat" aria-label="Category">${Object.keys(CATS).map(k=>`<option value="${k}"${p.cat===k?' selected':''}>${CATS[k]}</option>`).join('')}</select>
+        <select data-k="size" aria-label="Shape">${Object.keys(SIZES).map(k=>`<option value="${k}"${p.size===k?' selected':''}>${SIZES[k]}</option>`).join('')}</select></div>
+      <div class="ph-chk"><label><input type="checkbox" data-k="show"${p.hide?'':' checked'}> Show</label><label><input type="checkbox" data-k="home"${p.home?' checked':''}> Homepage</label></div>
+      <div class="ph-act"><button data-a="left" title="Move earlier">&larr;</button><button data-a="right" title="Move later">&rarr;</button><button data-a="top" title="Move to the top">&uarr;</button><button class="rm" data-a="rm" title="${isR2(p)?'Delete this photo':'Built-in photos can only be hidden'}"${isR2(p)?'':' disabled'}>&times;</button></div>
+    </div></div>`).join('') || '<p style="color:var(--ink-soft);padding:20px 0">No photos here.</p>';
+  setState();
+}
+function setState(){
+  const d = dirty(); const s = $('phState'); s.className = 'ph-state ' + (d ? 'dirty' : 'ok'); s.textContent = d ? 'Unsaved changes' : (usingDefaults ? '' : 'Saved');
+  $('phSave').disabled = !d; $('phSave').style.opacity = d ? '1' : '.5';
+}
+const byId = id => photos.find(p => p.id === id);
+function move(id, to){   // to: index in the full list
+  const i = photos.findIndex(p => p.id === id); if(i < 0) return;
+  const [x] = photos.splice(i, 1); photos.splice(Math.max(0, Math.min(photos.length, to)), 0, x);
+}
+async function save(){
+  if(!db){ msg('Photos save to your cloud database. Sign in first.', true); return false; }
+  try{
+    await db.collection('siteContent').doc('portfolio').set({ json:JSON.stringify(photos), updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
+    savedJson = JSON.stringify(photos); usingDefaults = false; msg(''); render();
+    $('phState').textContent = 'Saved. Live on your website within a minute.'; return true;
+  }catch(e){ console.warn(e); msg('Could not save. Publish the latest Firestore rules (siteContent must be writable by admins) and try again.', true); return false; }
+}
+async function token(){ return auth && auth.currentUser ? auth.currentUser.getIdToken() : ''; }
+function shrink(file){
+  return new Promise((res, rej) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const M = 2400, k = Math.min(1, M / Math.max(img.naturalWidth, img.naturalHeight)), w = Math.round(img.naturalWidth * k), h = Math.round(img.naturalHeight * k);
+      const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0,0,w,h); x.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(u); c.toBlob(b => b ? res({ blob:b, w, h }) : rej(new Error('encode')), 'image/jpeg', 0.86);
+    };
+    img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('Could not read ' + file.name)); };
+    img.src = u;
+  });
+}
+async function upload(files){
+  files = [].filter.call(files, f => /^image\//.test(f.type)); if(!files.length) return;
+  const bar = $('phProg'), fill = bar.firstElementChild; bar.style.display = 'block'; let ok = 0, fail = '';
+  for(let i = 0; i < files.length; i++){
+    $('phUp').textContent = `Uploading ${i+1} of ${files.length}: ${files[i].name}`; fill.style.width = (i / files.length * 100) + '%';
+    try{
+      const { blob, w, h } = await shrink(files[i]);
+      const name = Date.now().toString(36) + Math.random().toString(36).slice(2,6) + '.jpg';
+      const r = await fetch(WORKER + '/admin/upload?n=' + encodeURIComponent(name), { method:'POST', headers:{ 'Content-Type':'image/jpeg', Authorization:'Bearer ' + await token() }, body:blob });
+      if(r.status === 404 || r.status === 405){ fail = 'Your Worker does not have the upload feature yet. Redeploy gallery-worker.js in Cloudflare (see the deploy checklist).'; break; }
+      if(r.status === 401){ fail = 'The Worker did not accept your login. Sign out and in again, or check the Worker was redeployed with the latest file.'; break; }
+      if(!r.ok){ fail = 'Upload failed (' + r.status + ').'; break; }
+      const ar = w / h; photos.unshift({ id:'u' + name.replace(/\W/g,''), src:'r2:' + name, cap:files[i].name.replace(/\.[^.]+$/, '').replace(/[-_]+/g,' ').slice(0,60), cat:'other', size: ar > 1.4 ? 'wide' : ar < 0.8 ? 'tall' : 'square', alt:'', hide:false, home:false });
+      ok++;
+    }catch(e){ fail = e.message || 'Upload failed.'; break; }
+  }
+  fill.style.width = '100%'; setTimeout(() => { bar.style.display = 'none'; fill.style.width = '0'; }, 600);
+  $('phUp').textContent = ok ? `${ok} photo${ok>1?'s':''} uploaded.` : '';
+  if(ok){ filter = 'all'; render(); await save(); $('phUp').textContent = `${ok} photo${ok>1?'s':''} uploaded and saved. Give them captions below.`; }
+  if(fail) msg(fail, true);
+}
+
+$('phPick').onclick = () => $('phFile').click();
+$('phFile').onchange = e => { upload(e.target.files); e.target.value = ''; };
+['dragenter','dragover'].forEach(t => $('phDrop').addEventListener(t, e => { if(e.dataTransfer && [].indexOf.call(e.dataTransfer.types,'Files') >= 0){ e.preventDefault(); $('phDrop').classList.add('over'); } }));
+['dragleave','drop'].forEach(t => $('phDrop').addEventListener(t, () => $('phDrop').classList.remove('over')));
+$('phDrop').addEventListener('drop', e => { if(e.dataTransfer && e.dataTransfer.files.length){ e.preventDefault(); upload(e.dataTransfer.files); } });
+$('phSave').onclick = save;
+$('phChips').onclick = e => { const b = e.target.closest('button'); if(b){ filter = b.dataset.f; render(); } };
+$('phGrid').addEventListener('input', e => {
+  const t = e.target, c = t.closest('.ph-card'); if(!c || !t.dataset.k) return; const p = byId(c.dataset.id); if(!p) return;
+  if(t.dataset.k === 'cap') p.cap = t.value; setState();
+});
+$('phGrid').addEventListener('change', e => {
+  const t = e.target, c = t.closest('.ph-card'); if(!c || !t.dataset.k) return; const p = byId(c.dataset.id); if(!p) return;
+  if(t.dataset.k === 'cat') p.cat = t.value; else if(t.dataset.k === 'size') p.size = t.value;
+  else if(t.dataset.k === 'show') p.hide = !t.checked; else if(t.dataset.k === 'home') p.home = t.checked;
+  render();
+});
+$('phGrid').addEventListener('click', async e => {
+  const b = e.target.closest('[data-a]'), c = e.target.closest('.ph-card'); if(!b || !c || b.disabled) return;
+  const id = c.dataset.id, p = byId(id), i = photos.findIndex(x => x.id === id);
+  if(b.dataset.a === 'left') move(id, i - 1); else if(b.dataset.a === 'right') move(id, i + 1); else if(b.dataset.a === 'top') move(id, 0);
+  else if(b.dataset.a === 'rm'){
+    if(!confirm('Delete this uploaded photo from your website and from R2? This cannot be undone.')) return;
+    try{
+      const r = await fetch(WORKER + '/admin/delete', { method:'POST', headers:{ Authorization:'Bearer ' + await token() }, body:JSON.stringify({ n:p.src.slice(3) }) });
+      if(!r.ok && r.status !== 404){ msg('Could not delete the file (' + r.status + '). Is the Worker updated?', true); return; }
+    }catch(err){ msg('Could not reach the Worker.', true); return; }
+    photos = photos.filter(x => x.id !== id); render(); await save(); return;
+  }
+  render();
+});
+/* drag to reorder (desktop) */
+$('phGrid').addEventListener('dragstart', e => { const c = e.target.closest('.ph-card'); if(!c) return; dragId = c.dataset.id; c.classList.add('dragging'); try{ e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragId); }catch(x){} });
+$('phGrid').addEventListener('dragover', e => { if(!dragId) return; e.preventDefault(); const c = e.target.closest('.ph-card'); [].forEach.call($('phGrid').querySelectorAll('.dropat'), x => x.classList.remove('dropat')); if(c && c.dataset.id !== dragId) c.classList.add('dropat'); });
+$('phGrid').addEventListener('drop', e => { if(!dragId) return; e.preventDefault(); const c = e.target.closest('.ph-card'); if(c && c.dataset.id !== dragId){ move(dragId, photos.findIndex(x => x.id === c.dataset.id)); } dragId = null; render(); });
+$('phGrid').addEventListener('dragend', () => { dragId = null; render(); });
+addEventListener('beforeunload', e => { if(photos.length && dirty()){ e.preventDefault(); e.returnValue = ''; } });
+
+function start(){
+  photos = clean(DEFAULTS); savedJson = JSON.stringify(photos); usingDefaults = true;
+  $('phApp').style.display = 'block'; render();
+  if(!db) return;
+  db.collection('siteContent').doc('portfolio').get().then(s => {
+    if(s.exists && s.data().json){ try{ const l = clean(JSON.parse(s.data().json)); if(l.length){ photos = l; usingDefaults = false; } }catch(e){} }
+    savedJson = JSON.stringify(photos); render();
+  }).catch(e => { console.warn(e); msg('Could not read your saved photo list. Showing the built-in photos. Check the Firestore rules.', true); });
+}
+const mm=$('mobileMenu'), sc=$('scrim');
+$('navToggle').onclick=()=>{mm.classList.add('open');sc.classList.add('show');};
+$('closeMenu').onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
+
+function initCloud(){
+  firebase.initializeApp(firebaseConfig);
+  auth=firebase.auth();
+  try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+  if(window.FOM_SESSION)FOM_SESSION.attach(auth);
+  db=firebase.firestore();
+  db.settings({ experimentalAutoDetectLongPolling: true });
+  const badge=$('syncBadge'); badge.textContent='Cloud sync'; badge.className='badge cloud';
+  $('logoutBtn').style.display='inline-block';
+  $('logoutBtn').onclick=()=>auth.signOut();
+  const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value).catch(err=>{ $('lgErr').textContent=/password|user|credential|email/i.test(err.code||'')?'Incorrect email or password.':(err.message||'Login failed.'); }); };
+  $('lgBtn').onclick=login;
+  $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+  let started = false;
+  auth.onAuthStateChanged(u=>{
+    var ac=document.getElementById('authCheck'); if(ac)ac.style.display='none';
+    if(u){
+      db.collection('admins').doc(u.uid).get().then(adminDoc=>{
+        if(!adminDoc.exists){ $('lgErr').textContent='This account does not have admin access.'; auth.signOut(); return; }
+        $('loginGate').style.display='none';
+        if(!started){ started = true; start(); }
+      }).catch(err=>{ console.warn('Admin check failed:',err); $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
+    } else { $('loginGate').style.display='flex'; }
+  });
+}
+if(!configured){ $('loginGate').style.display='none'; var ac0=document.getElementById('authCheck'); if(ac0)ac0.style.display='none'; msg('Photos need your cloud login. Connect Firebase first.', true); }
+else loadFirebase().then(initCloud).catch(()=>{ msg('Could not reach the cloud. Check your connection and refresh.', true); var a=document.getElementById('authCheck'); if(a)a.style.display='none'; });
+</script>
+<script src="app.js"></script>
+</body>
+</html>

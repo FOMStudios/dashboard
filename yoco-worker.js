@@ -1,9 +1,9 @@
 /* =====================================================================
-   FOM STUDIOS — Yoco payment link generator (Cloudflare Worker)
+   FOM STUDIOS - Yoco payment link generator (Cloudflare Worker)
    ---------------------------------------------------------------------
    This tiny server creates a secure Yoco checkout for a given amount and
    returns its payment URL. Your Yoco SECRET key lives here as an encrypted
-   Worker secret — it is NEVER in your website or the PDF.
+   Worker secret - it is NEVER in your website or the PDF.
 
    SET UP (see SETUP_Yoco.md):
      1. Change ALLOWED_ORIGIN below to your site.

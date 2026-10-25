@@ -1,5 +1,5 @@
 /* =====================================================================
-   FOM STUDIOS — Firebase configuration
+   FOM STUDIOS - Firebase configuration
    ---------------------------------------------------------------------
    Paste the config from YOUR Firebase project below (you only do this once).
 
