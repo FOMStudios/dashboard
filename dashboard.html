@@ -135,6 +135,9 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .sg-t{font-size:16px;font-weight:700;} .sg-d{font-size:13.5px;color:var(--ink-soft);margin-top:4px;}
 .sg-links{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px;font-size:13px;}
 .sg-links a{font-weight:700;color:var(--accent);}
+.sd-item{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px;font-weight:600;cursor:pointer;}
+.sd-item:first-of-type{border-top:0;} .sd-item input{width:20px;height:20px;accent-color:var(--accent);flex:none;} .sd-item.done span{color:var(--ink-soft);text-decoration:line-through;}
+.sd-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 9px;background:#e0a100;color:#fff;margin-left:8px;vertical-align:middle;}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <script src="session.js"></script>
@@ -293,6 +296,21 @@ function cardSuggest(){
     <div class="sg-links">${top.link?`<a href="${esc(top.link)}"${/^https?:/.test(top.link)?' target="_blank" rel="noopener"':''}>${esc(top.label||'Open')}</a><span>·</span>`:''}<a href="advisor.html">${f.length>1?(bad+warn>1?bad+warn+' items to review':f.length+' items'):'Open Advisor'}</a></div></div>`;
 }
 
+let sdPick = '';
+function cardShoot(){
+  const H = window.FOM_HEALTH; if(!H) return '';
+  const t0 = new Date(); t0.setHours(0,0,0,0);
+  const due = orders.filter(o => !['Completed','Delivered','Cancelled'].includes(o.status) && H.parseDate(o.shootDate) && Math.round((H.parseDate(o.shootDate) - t0) / 86400000) >= 0 && Math.round((H.parseDate(o.shootDate) - t0) / 86400000) <= 1)
+    .sort((a,b) => H.parseDate(a.shootDate) - H.parseDate(b.shootDate));
+  if(!due.length) return '';
+  const cur = due.find(o => o.id === sdPick) || due[0], ck = cur.shootChecklist || {}, items = H.SHOOT_ITEMS;
+  const n = items.filter(i => ck[i[0]]).length, today = Math.round((H.parseDate(cur.shootDate) - t0) / 86400000) === 0;
+  return `<div class="card" style="margin-bottom:20px"><div class="ns-head"><h2>Shoot day checklist<span class="sd-tag">${today?'Today':'Tomorrow'}</span></h2>
+    ${due.length>1?`<select class="ns-sel" id="sdSel">${due.map(o=>`<option value="${esc(o.id)}"${o.id===cur.id?' selected':''}>${esc((o.orderId?o.orderId+' ':'')+(o.customer||'Unnamed'))}</option>`).join('')}</select>`:`<b>${esc((cur.orderId?cur.orderId+' ':'')+(cur.customer||''))}</b>`}</div>
+    <div class="ns-prog"><div class="ns-bar"><i style="width:${Math.round(n/items.length*100)}%"></i></div>${n} of ${items.length} packed</div>
+    ${items.map(i=>`<label class="sd-item${ck[i[0]]?' done':''}"><input type="checkbox" data-sd="${i[0]}" data-oid="${esc(cur.id)}"${ck[i[0]]?' checked':''}><span>${i[1]}</span></label>`).join('')}
+    <div class="ns-meta">${esc([cur.product, cur.shootDate ? 'Shoot ' + fmtDate(cur.shootDate) : ''].filter(Boolean).join('  ·  '))}</div></div>`;
+}
 function render(){
   const el=$('content');
   if(!orders.length){
@@ -327,6 +345,7 @@ function render(){
     return `<tr><td>${esc(o.orderId)}</td><td>${esc(o.customer)||'-'}</td><td>${esc(o.product)||'-'}</td><td><span class="tag" style="background:${col}">${esc(o.status)}</span></td><td style="text-align:right">${RZA(o.total)}</td><td style="text-align:right;color:var(--accent);font-weight:700">${RZA((+o.total||0)-(+o.paid||0))}</td></tr>`; }).join('');
 
   el.innerHTML=`
+    ${cardShoot()}
     <div class="grid2">${cardNext()}${cardSuggest()}</div>
     <div class="kpis">
       <div class="kpi"><div class="k-lbl">Total Orders</div><div class="k-val">${orders.length}</div><div class="k-sub">${statusMap['Completed']||0} completed</div></div>
@@ -355,7 +374,14 @@ function render(){
     </div>`;
 }
 
-$('content').addEventListener('change',e=>{ if(e.target.id==='nsSel'){ dashClient=e.target.value; try{localStorage.setItem('fom.dash.client',dashClient);}catch(x){} safeRender(); } });
+$('content').addEventListener('change',e=>{
+  if(e.target.id==='sdSel'){ sdPick=e.target.value; safeRender(); return; }
+  if(e.target.dataset && e.target.dataset.sd){
+    const o=orders.find(x=>x.id===e.target.dataset.oid); if(!o) return;
+    o.shootChecklist=Object.assign({},o.shootChecklist||{}); o.shootChecklist[e.target.dataset.sd]=e.target.checked; sdPick=o.id; safeRender();
+    if(window._db) window._db.collection('orders').doc(o.id).update({shootChecklist:o.shootChecklist}).catch(err=>console.warn('checklist save',err));
+    else { try{ localStorage.setItem('fom_orders',JSON.stringify(orders)); }catch(x){} }
+    return; } if(e.target.id==='nsSel'){ dashClient=e.target.value; try{localStorage.setItem('fom.dash.client',dashClient);}catch(x){} safeRender(); } });
 /* hamburger */
 const mm=$('mobileMenu'), sc=$('scrim');
 $('navToggle').onclick=()=>{mm.classList.add('open');sc.classList.add('show');};
@@ -384,7 +410,7 @@ function initCloud(){
   // Stays signed in for 10 days (see session.js); idle lock is optional in Settings.
   try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
   if(window.FOM_SESSION)FOM_SESSION.attach(auth);
-  const db=firebase.firestore();
+  const db=firebase.firestore(); window._db=db;
   db.settings({ experimentalAutoDetectLongPolling: true });  // works through VPNs/blockers; no stale cache
   const badge=$('syncBadge'); badge.textContent='☁ Cloud sync'; badge.className='badge cloud';
   $('logoutBtn').style.display='inline-block';

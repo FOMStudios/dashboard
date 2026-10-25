@@ -128,5 +128,37 @@
     return out;
   }
 
-  window.FOM_HEALTH = { run:run, nextFor:nextFor, STEPS:STEPS, parseDate:dt, money:money };
+
+  /* ---- payment reminders and shoot-day checklist ---- */
+  var SHOOT_ITEMS = [
+    ['batteries','Camera and drone batteries charged'], ['cards','Memory cards formatted and packed'], ['lenses','Lenses and sensors cleaned'],
+    ['drone','Drone checked and flight area confirmed'], ['shotlist','Shot list and locations confirmed'], ['client','Client messaged with time and place'],
+    ['travel','Fuel and route sorted'], ['backup','Backup drive and laptop packed']
+  ];
+  function owingList(orders, today){
+    today = today ? new Date(today) : new Date(); today.setHours(0,0,0,0);
+    var out = [];
+    (orders || []).forEach(function(o){
+      if(o.status === 'Cancelled') return;
+      var owe = (+o.total || 0) - (+o.paid || 0); if(owe <= 0) return;
+      var sh = dt(o.shootDate); if(!sh) return;
+      var days = Math.round((sh - today) / DAY);
+      if(days < 0) out.push({ o:o, owing:owe, days:days, kind:'overdue' });
+      else if(days <= 7) out.push({ o:o, owing:owe, days:days, kind:'soon' });
+    });
+    out.sort(function(a, b){ return a.days - b.days; });
+    return out;
+  }
+  function reminderText(o, owing, kind, biz){
+    biz = biz || {};
+    var first = String(o.customer || '').trim().split(/\s+/)[0] || 'there';
+    var ref = o.orderId ? ' Please use ' + o.orderId + ' as the payment reference.' : '';
+    var what = o.product ? ' for your ' + o.product + ' booking' : '';
+    var lead = kind === 'overdue' ? 'Hi ' + first + ', I hope you are well. A friendly reminder that ' + money(owing) + ' is still outstanding' + what + '.'
+                                  : 'Hi ' + first + ', looking forward to your shoot. A friendly reminder that ' + money(owing) + ' is due before the shoot date' + what + '.';
+    var bank = (biz.bank && biz.acc) ? ' EFT details: ' + biz.bank + ', account holder ' + (biz.holder || '') + ', branch code ' + (biz.branch || '') + ', account number ' + biz.acc + '.' : '';
+    return lead + bank + ref + ' Thank you! FOM Studios';
+  }
+
+  window.FOM_HEALTH = { SHOOT_ITEMS:SHOOT_ITEMS, owingList:owingList, reminderText:reminderText, run:run, nextFor:nextFor, STEPS:STEPS, parseDate:dt, money:money };
 })();

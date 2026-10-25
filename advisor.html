@@ -136,6 +136,11 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .adv-go:hover{background:var(--ink);color:var(--bg-pill);}
 .adv-clear{text-align:center;padding:34px 10px;} .adv-clear b{font-size:20px;display:block;margin-bottom:4px;}
 @media(max-width:560px){.adv-item{flex-wrap:wrap;} .adv-go{margin-left:26px;}}
+.rm-row{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+.rm-row:last-child{border-bottom:0;} .rm-main{flex:1;min-width:180px;} .rm-main b{display:block;font-size:15px;} .rm-main span{font-size:13px;color:var(--ink-soft);}
+.rm-amt{font-weight:800;font-size:16px;} .rm-amt.od{color:#c0392b;}
+.rm-btn{border:1px solid var(--ink);background:transparent;border-radius:99px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink);text-decoration:none;white-space:nowrap;font-family:inherit;}
+.rm-btn.wa{background:#1f8a4c;border-color:#1f8a4c;color:#fff;}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <script src="session.js"></script>
@@ -254,6 +259,19 @@ const groupCount = (arr,f)=>{ const m={}; arr.forEach(o=>{const k=o[f]||'-';m[k]
 
 let ADV = { calc:null, contract:null, site:null, errors:[] }, advTab = 'All';
 function parseJ(snap){ try{ return snap && snap.exists && snap.data().json ? JSON.parse(snap.data().json) : null; }catch(e){ return null; } }
+function remindersHTML(){
+  const H = FOM_HEALTH, rows = H.owingList(orders);
+  if(!rows.length) return '';
+  const biz = ADV.contract && ADV.contract.biz;
+  return `<div class="card" style="margin-bottom:16px"><h2>Payment reminders</h2>${rows.map((r,i) => {
+    const o = r.o, txt = H.reminderText(o, r.owing, r.kind, biz);
+    const when = r.kind === 'overdue' ? `Shot ${-r.days} day${-r.days===1?'':'s'} ago` : (r.days === 0 ? 'Shoot is today' : `Shoot in ${r.days} day${r.days===1?'':'s'}`);
+    return `<div class="rm-row"><div class="rm-main"><b>${esc((o.orderId?o.orderId+' ':'')+(o.customer||'Unnamed'))}</b><span>${esc(when)}${o.product?' · '+esc(o.product):''}</span></div>
+      <span class="rm-amt ${r.kind==='overdue'?'od':''}">${H.money(r.owing)}</span>
+      <a class="rm-btn wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(txt)}">WhatsApp</a>
+      <button class="rm-btn" data-copy="${i}" type="button">Copy</button></div>`; }).join('')}
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-top:10px">WhatsApp opens with the message ready, you pick the client's chat. Your bank details come from the Contract business details.</p></div>`;
+}
 function render(){
   const el = $('content');
   const f = FOM_HEALTH.run({ orders, calc:ADV.calc, contract:ADV.contract, site:ADV.site, errors:ADV.errors });
@@ -267,9 +285,11 @@ function render(){
       <div class="adv-pill ${n('warn')?'warn':'ok'}"><b>${n('warn')}</b><span>Worth a look</span></div>
       <div class="adv-pill"><b>${n('info')}</b><span>Tips</span></div>
     </div>
+    ${advTab==='All'?remindersHTML():''}
     <div class="adv-tabs">${areas.map(a => `<button data-a="${esc(a)}" class="${a===advTab?'on':''}">${esc(a)}</button>`).join('')}</div>
     <div class="card">${list.length ? list.map(x => `<div class="adv-item ${x.level}"><span class="adv-dot"></span><div class="adv-main"><div class="adv-area">${esc(x.area)}</div><b>${esc(x.title)}</b>${x.detail?`<p>${esc(x.detail)}</p>`:''}</div>${x.link?`<a class="adv-go" href="${esc(x.link)}"${/^https?:/.test(x.link)?' target="_blank" rel="noopener"':''}>${esc(x.label||'Open')}</a>`:''}</div>`).join('')
       : `<div class="adv-clear"><b>All clear</b><span style="color:var(--ink-soft)">Nothing needs your attention${advTab==='All'?'':' here'}.</span></div>`}</div>`;
+  [].forEach.call(el.querySelectorAll('[data-copy]'), b => b.onclick = () => { const r = FOM_HEALTH.owingList(orders)[+b.dataset.copy]; if(!r) return; const t = FOM_HEALTH.reminderText(r.o, r.owing, r.kind, ADV.contract && ADV.contract.biz); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy', 1500); }).catch(() => { prompt('Copy this message', t); }); });
   [].forEach.call(el.querySelectorAll('.adv-tabs button'), b => b.onclick = () => { advTab = b.dataset.a; render(); });
 }
 async function loadAdvisorData(db){
