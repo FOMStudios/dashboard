@@ -37,6 +37,7 @@ var PAGES = [
   {n:'Contract',        h:'contract.html',  e:'📄'},
   {n:'Client Reviews',  h:'reviews.html',   e:'⭐'},
   {n:'Website',         h:'website.html',   e:'🌐'},
+  {n:'Advisor',         h:'advisor.html',   e:'🩺'},
   {n:'Client Portal (view as client)', h:'https://www.fomstudios.co.za/client-portal.html', e:'👤', ext:true}
 ];
 var here = (location.pathname.split('/').pop() || 'dashboard.html').toLowerCase();

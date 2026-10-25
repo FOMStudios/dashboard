@@ -117,6 +117,24 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 @media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
 @media(max-width:720px){.grid2{grid-template-columns:1fr;}.mascot-corner{display:none;}}
 @media(max-width:520px){.kpis{grid-template-columns:1fr;}}
+
+.ns-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px;}
+.ns-head h2{margin:0 !important;}
+.ns-sel{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 10px;font-size:14px;font-family:inherit;color:var(--ink);max-width:100%;min-width:0;}
+.ns-prog{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft);margin-bottom:12px;font-weight:600;}
+.ns-bar{flex:1;height:8px;border-radius:99px;background:#e9e7e1;overflow:hidden;} .ns-bar i{display:block;height:100%;background:var(--accent);border-radius:99px;}
+.ns-step{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);}
+.ns-step:first-of-type{border-top:0;}
+.ns-who{flex:none;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 9px;}
+.ns-who.me{background:var(--accent);color:#fff;} .ns-who.client{background:#e9e7e1;color:var(--ink-soft);}
+.ns-t{flex:1;min-width:0;font-size:14.5px;font-weight:600;}
+.ns-go{flex:none;border:1px solid var(--ink);border-radius:99px;padding:5px 12px;font-size:12.5px;font-weight:600;white-space:nowrap;}
+.ns-meta{font-size:12.5px;color:var(--ink-soft);margin-top:10px;}
+.sg-lvl{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 9px;margin-bottom:8px;color:#fff;background:#5B9AE0;}
+.sg-lvl.bad{background:#c0392b;} .sg-lvl.warn{background:#e0a100;} .sg-lvl.ok{background:#1f8a4c;}
+.sg-t{font-size:16px;font-weight:700;} .sg-d{font-size:13.5px;color:var(--ink-soft);margin-top:4px;}
+.sg-links{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px;font-size:13px;}
+.sg-links a{font-weight:700;color:var(--accent);}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <script src="session.js"></script>
@@ -198,6 +216,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 
 <!-- Firebase config only (the SDK is loaded on demand, and only when configured) -->
 <script src="firebase-config.js"></script>
+<script src="health.js"></script>
 <script>
 const RZA = n => 'R' + (Math.round(+n||0)).toLocaleString('en-ZA');
 const $ = id => document.getElementById(id);
@@ -231,6 +250,48 @@ function donutSVG(segs, size=190, stroke=30){
     <text x="${cx}" y="${cx+18}" text-anchor="middle" font-size="12" fill="#6f6f6d" letter-spacing="1">ORDERS</text></svg>`;
 }
 const groupCount = (arr,f)=>{ const m={}; arr.forEach(o=>{const k=o[f]||'-';m[k]=(m[k]||0)+1;}); return m; };
+
+let ADV = { calc:null, contract:null, site:null, errors:[] }, dashClient = '';
+try{ dashClient = localStorage.getItem('fom.dash.client') || ''; }catch(e){}
+function parseJ(snap){ try{ return snap && snap.exists && snap.data().json ? JSON.parse(snap.data().json) : null; }catch(e){ return null; } }
+async function loadAdvisorData(db){
+  ADV.errors = [];
+  const get = async (col, id, label, fn) => { try{ return fn(await db.collection(col).doc(id).get()); }catch(e){ ADV.errors.push(label); return null; } };
+  ADV.calc = await get('settings','calculator','calculator settings', parseJ);
+  ADV.contract = await get('settings','contract','contract settings', parseJ);
+  ADV.site = await get('siteContent','site','website content', s => s.exists ? s.data() : null);
+  safeRender();
+}
+function cardNext(){
+  const act = orders.filter(o => !['Completed','Delivered','Cancelled'].includes(o.status));
+  const pool = act.length ? act : orders.slice(-8);
+  if(!pool.length) return '';
+  const H = window.FOM_HEALTH; if(!H) return '';
+  let cur = pool.find(o => o.id === dashClient);
+  if(!cur){   // default: the active order with the nearest upcoming shoot, else the newest
+    const t0 = new Date(); t0.setHours(0,0,0,0);
+    const up = pool.filter(o => H.parseDate(o.shootDate) && H.parseDate(o.shootDate) >= t0).sort((a,b) => H.parseDate(a.shootDate) - H.parseDate(b.shootDate));
+    cur = up[0] || pool[pool.length - 1];
+  }
+  const nf = H.nextFor(cur), pct = Math.round(nf.done / nf.total * 100);
+  const opts = pool.map(o => `<option value="${esc(o.id)}"${o.id===cur.id?' selected':''}>${esc((o.orderId?o.orderId+' ':'')+(o.customer||'Unnamed'))}</option>`).join('');
+  const steps = nf.complete ? '<div class="ns-t" style="padding:10px 0">Every step is done for this client.</div>' : nf.next.map((s,i) => `<div class="ns-step"><span class="ns-who ${s.who}">${s.who==='me'?'You':'Client'}</span><span class="ns-t">${esc(s.title)}</span>${s.link&&i===0&&s.who==='me'?`<a class="ns-go" href="${esc(s.link)}"${/^https?:/.test(s.link)?' target="_blank" rel="noopener"':''}>${esc(s.label||'Open')}</a>`:''}</div>`).join('');
+  const sh = H.parseDate(cur.shootDate);
+  const meta = [cur.product, sh ? 'Shoot ' + fmtDate(cur.shootDate) : '', (+cur.total||0)-(+cur.paid||0) > 0 ? RZA((+cur.total||0)-(+cur.paid||0)) + ' owing' : ''].filter(Boolean).join('  ·  ');
+  return `<div class="card"><div class="ns-head"><h2>Next steps</h2><select class="ns-sel" id="nsSel" aria-label="Choose a client">${opts}</select></div>
+    <div class="ns-prog"><div class="ns-bar"><i style="width:${pct}%"></i></div>${nf.done} of ${nf.total} steps</div>${steps}
+    ${meta?`<div class="ns-meta">${esc(meta)}</div>`:''}</div>`;
+}
+function cardSuggest(){
+  const H = window.FOM_HEALTH; if(!H) return '';
+  const f = H.run({ orders, calc:ADV.calc, contract:ADV.contract, site:ADV.site, errors:ADV.errors });
+  const bad = f.filter(x => x.level === 'bad').length, warn = f.filter(x => x.level === 'warn').length;
+  const top = f[0];
+  if(!top) return `<div class="card"><h2>Advisor</h2><span class="sg-lvl ok">All clear</span><div class="sg-t">Nothing needs your attention</div><div class="sg-d">Orders, contract, invoice, packages and website all look good.</div><div class="sg-links"><a href="advisor.html">Open Advisor</a></div></div>`;
+  const lab = { bad:'Fix now', warn:'Worth a look', info:'Tip' }[top.level];
+  return `<div class="card"><h2>Advisor suggestion</h2><span class="sg-lvl ${top.level}">${lab}</span><div class="sg-t">${esc(top.title)}</div>${top.detail?`<div class="sg-d">${esc(top.detail)}</div>`:''}
+    <div class="sg-links">${top.link?`<a href="${esc(top.link)}"${/^https?:/.test(top.link)?' target="_blank" rel="noopener"':''}>${esc(top.label||'Open')}</a><span>·</span>`:''}<a href="advisor.html">${f.length>1?(bad+warn>1?bad+warn+' items to review':f.length+' items'):'Open Advisor'}</a></div></div>`;
+}
 
 function render(){
   const el=$('content');
@@ -266,6 +327,7 @@ function render(){
     return `<tr><td>${esc(o.orderId)}</td><td>${esc(o.customer)||'-'}</td><td>${esc(o.product)||'-'}</td><td><span class="tag" style="background:${col}">${esc(o.status)}</span></td><td style="text-align:right">${RZA(o.total)}</td><td style="text-align:right;color:var(--accent);font-weight:700">${RZA((+o.total||0)-(+o.paid||0))}</td></tr>`; }).join('');
 
   el.innerHTML=`
+    <div class="grid2">${cardNext()}${cardSuggest()}</div>
     <div class="kpis">
       <div class="kpi"><div class="k-lbl">Total Orders</div><div class="k-val">${orders.length}</div><div class="k-sub">${statusMap['Completed']||0} completed</div></div>
       <div class="kpi"><div class="k-lbl">Total Revenue</div><div class="k-val">${RZA(totalRev)}</div><div class="k-sub">across all orders</div></div>
@@ -293,6 +355,7 @@ function render(){
     </div>`;
 }
 
+$('content').addEventListener('change',e=>{ if(e.target.id==='nsSel'){ dashClient=e.target.value; try{localStorage.setItem('fom.dash.client',dashClient);}catch(x){} safeRender(); } });
 /* hamburger */
 const mm=$('mobileMenu'), sc=$('scrim');
 $('navToggle').onclick=()=>{mm.classList.add('open');sc.classList.add('show');};
@@ -311,6 +374,7 @@ function startLocal(){ var _ac0=document.getElementById('authCheck'); if(_ac0)_a
   const badge=$('syncBadge'); badge.textContent='💾 Local only'; badge.className='badge local';
   $('logoutBtn').style.display='none';
   try{ orders=JSON.parse(localStorage.getItem('fom_orders'))||[]; }catch(e){ orders=[]; }
+  try{ ADV.calc=JSON.parse(localStorage.getItem('fom.calc.v1')); ADV.contract=JSON.parse(localStorage.getItem('fom.contract.v1')); }catch(e){}
   safeRender();
   window.addEventListener('storage',e=>{ if(e.key==='fom_orders'){ try{orders=JSON.parse(e.newValue)||[];}catch(x){orders=[];} safeRender(); } });
 }
@@ -338,6 +402,7 @@ function initCloud(){
           return;
         }
         $('loginGate').style.display='none';
+        loadAdvisorData(db);
         db.collection('orders').onSnapshot(snap=>{ orders=snap.docs.map(d=>({id:d.id,...d.data()})); orders.sort((a,b)=>tsMillis(a.createdAt)-tsMillis(b.createdAt)); safeRender(); }, err=>console.warn('Firestore:',err));
       }).catch(err=>{ console.warn('Admin check failed:',err); $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
     } else { orders=[]; safeRender(); $('loginGate').style.display='flex'; }

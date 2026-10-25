@@ -1757,7 +1757,13 @@ async function saveData(){
   const bad = D.extraPackages.find(p => !String(p.name).trim() || !(p.price > 0));
   if(bad){ dmToast('Give every package a name and a price first'); return; }
   resetConfig(); applySettings(D);
-  const j = JSON.stringify(clone(CONFIG));
+  const out = clone(CONFIG);
+  try{                                   // short summary so the Advisor page can warn about weak packages
+    const A = analyze(CONFIG), items = [];
+    Object.keys(A.res).forEach(k => { const r = A.res[k]; if(r && !r.ignored && (r.level === 'bad' || r.level === 'warn')) items.push({ n:String(TYPE_LABEL[k] || k).slice(0,60), l:r.level, t:String((r.msgs && r.msgs[0] && r.msgs[0].t) || '').slice(0,200) }); });
+    out.advSummary = { at:Date.now(), items:items.slice(0,30) };
+  }catch(e){}
+  const j = JSON.stringify(out);
   let cloudOk = true;
   try{ localStorage.setItem(LS_KEY, j); }catch(e){}
   if(CLOUD_DB){

@@ -1,5 +1,5 @@
 /* =====================================================================
-   FOM STUDIOS — payment settings
+   FOM STUDIOS - payment settings
    ---------------------------------------------------------------------
    Set these ONCE. This file is NOT overwritten when the calculator
    (index.html) is updated, so your Worker URL stays put.
