@@ -254,7 +254,8 @@ function donutSVG(segs, size=190, stroke=30){
 }
 const groupCount = (arr,f)=>{ const m={}; arr.forEach(o=>{const k=o[f]||'-';m[k]=(m[k]||0)+1;}); return m; };
 
-let ADV = { calc:null, contract:null, site:null, errors:[] }, dashClient = '';
+let ADV = { calc:null, contract:null, site:null, errors:[], checklist:null }, dashClient = '';
+try{ ADV.checklist = JSON.parse(localStorage.getItem('fom.checklist.v1')); }catch(e){}
 try{ dashClient = localStorage.getItem('fom.dash.client') || ''; }catch(e){}
 function parseJ(snap){ try{ return snap && snap.exists && snap.data().json ? JSON.parse(snap.data().json) : null; }catch(e){ return null; } }
 async function loadAdvisorData(db){
@@ -263,6 +264,7 @@ async function loadAdvisorData(db){
   ADV.calc = await get('settings','calculator','calculator settings', parseJ);
   ADV.contract = await get('settings','contract','contract settings', parseJ);
   ADV.site = await get('siteContent','site','website content', s => s.exists ? s.data() : null);
+  try{ const c = await db.collection('settings').doc('checklist').get(); if(c.exists && c.data().json){ ADV.checklist = JSON.parse(c.data().json); localStorage.setItem('fom.checklist.v1', c.data().json); } }catch(e){}
   safeRender();
 }
 function cardNext(){
@@ -303,7 +305,7 @@ function cardShoot(){
   const due = orders.filter(o => !['Completed','Delivered','Cancelled'].includes(o.status) && H.parseDate(o.shootDate) && Math.round((H.parseDate(o.shootDate) - t0) / 86400000) >= 0 && Math.round((H.parseDate(o.shootDate) - t0) / 86400000) <= 1)
     .sort((a,b) => H.parseDate(a.shootDate) - H.parseDate(b.shootDate));
   if(!due.length) return '';
-  const cur = due.find(o => o.id === sdPick) || due[0], ck = cur.shootChecklist || {}, items = H.SHOOT_ITEMS;
+  const cur = due.find(o => o.id === sdPick) || due[0], ck = cur.shootChecklist || {}, items = H.checklist(ADV.checklist);
   const n = items.filter(i => ck[i[0]]).length, today = Math.round((H.parseDate(cur.shootDate) - t0) / 86400000) === 0;
   return `<div class="card" style="margin-bottom:20px"><div class="ns-head"><h2>Shoot day checklist<span class="sd-tag">${today?'Today':'Tomorrow'}</span></h2>
     ${due.length>1?`<select class="ns-sel" id="sdSel">${due.map(o=>`<option value="${esc(o.id)}"${o.id===cur.id?' selected':''}>${esc((o.orderId?o.orderId+' ':'')+(o.customer||'Unnamed'))}</option>`).join('')}</select>`:`<b>${esc((cur.orderId?cur.orderId+' ':'')+(cur.customer||''))}</b>`}</div>

@@ -160,5 +160,10 @@
     return lead + bank + ref + ' Thank you! FOM Studios';
   }
 
-  window.FOM_HEALTH = { SHOOT_ITEMS:SHOOT_ITEMS, owingList:owingList, reminderText:reminderText, run:run, nextFor:nextFor, STEPS:STEPS, parseDate:dt, money:money };
+  function checklist(lines){
+    var def = {}; SHOOT_ITEMS.forEach(function(i){ def[i[1]] = i[0]; });
+    var a = (Array.isArray(lines) && lines.length ? lines : SHOOT_ITEMS.map(function(i){ return i[1]; })).map(function(s){ return String(s).trim(); }).filter(Boolean).slice(0,30), seen = {};
+    return a.map(function(t){ t = t.slice(0,80); var k = def[t] || (t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40) || 'x'); while(seen[k]) k += 'x'; seen[k] = 1; return [k, t]; });
+  }
+  window.FOM_HEALTH = { checklist:checklist, SHOOT_ITEMS:SHOOT_ITEMS, owingList:owingList, reminderText:reminderText, run:run, nextFor:nextFor, STEPS:STEPS, parseDate:dt, money:money };
 })();

@@ -77,6 +77,33 @@ function openMenu(){
   openSheet();
 }
 
+/* ---- shoot day checklist editor (one item per line, saved to settings/checklist) ---- */
+var CHK_DEFAULT = ['Camera and drone batteries charged','Memory cards formatted and packed','Lenses and sensors cleaned','Drone checked and flight area confirmed','Shot list and locations confirmed','Client messaged with time and place','Fuel and route sorted','Backup drive and laptop packed'];
+function openChecklist(){
+  var cur = CHK_DEFAULT; try{ var c = JSON.parse(LS.get('fom.checklist.v1','null')); if(Array.isArray(c) && c.length) cur = c; }catch(e){}
+  D.getElementById('fomSheetTitle').textContent = 'Shoot day checklist';
+  D.getElementById('fomSheetBody').innerHTML =
+    '<p class="fom-note" style="margin:6px 12px 10px">One item per line. Add things like "Second shooter confirmed" or remove what you do not need. It shows on your dashboard the day before and the day of each shoot.</p>'+
+    '<textarea id="fomChkTx" class="fom-ta" rows="10" maxlength="2400"></textarea>'+
+    '<button class="fom-logout" id="fomChkSave">Save checklist</button>'+
+    '<button class="fom-logout alt" id="fomChkReset">Reset to the standard list</button>'+
+    '<button class="fom-logout alt" id="fomChkBack">Back to settings</button><p class="fom-note" id="fomChkMsg"></p>';
+  var tx = D.getElementById('fomChkTx'); tx.value = cur.join('\n');
+  var msg = function(t){ D.getElementById('fomChkMsg').textContent = t; };
+  D.getElementById('fomChkBack').onclick = openSettings;
+  D.getElementById('fomChkReset').onclick = function(){ tx.value = CHK_DEFAULT.join('\n'); msg('Press Save to keep it.'); };
+  D.getElementById('fomChkSave').onclick = function(){
+    var list = tx.value.split('\n').map(function(s){ return s.trim().slice(0,80); }).filter(Boolean).slice(0,30);
+    if(!list.length){ msg('Add at least one item.'); return; }
+    var j = JSON.stringify(list); LS.set('fom.checklist.v1', j);
+    var f = fb();
+    if(!f){ msg('Saved on this device only (not signed in to the cloud on this page).'); return; }
+    f.firestore().collection('settings').doc('checklist').set({ json:j, updatedAt:f.firestore.FieldValue.serverTimestamp() })
+      .then(function(){ msg('Saved. Your dashboard will use it now.'); })
+      .catch(function(){ msg('Saved on this device only. Publish the Firestore rules so settings can sync.'); });
+  };
+}
+
 /* ---- mascot: profile + settings ---- */
 function openSettings(){
   D.getElementById('fomSheetTitle').textContent = 'Settings';
@@ -92,6 +119,8 @@ function openSettings(){
     '<div class="fom-set"><span><label>Auto-lock</label><small>Lock after this long with no activity</small></span>'+
       '<select class="fom-sel" id="fomLock">'+lockOpt(5,'5 min')+lockOpt(15,'15 min')+lockOpt(30,'30 min')+lockOpt(60,'1 hour')+lockOpt(0,'Never')+'</select></div>'+
     '<div class="fom-set"><span><label>Signed in</label><small id="fomExp">Stays signed in, even when the app is closed</small></span></div>'+
+    '<div class="fom-set"><span><label>Shoot day checklist</label><small>The items on your dashboard the day before a shoot</small></span>'+
+      '<button class="fom-mini" id="fomChk">Edit</button></div>'+
     '<button class="fom-logout" id="fomLogout">Log out this device</button>'+
     '<button class="fom-logout alt" id="fomLogoutAll">Log out of all devices</button>'+
     '<p class="fom-note">You stay signed in for 10 days, even if you close the app completely. Lost a phone? Use Log out of all devices and every device is locked.</p>';
@@ -106,6 +135,7 @@ function openSettings(){
     theme = b.getAttribute('data-theme-set'); LS.set('fom.theme',theme); applyTheme(theme);
     tw.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x===b); }); };
   D.getElementById('fomLock').onchange = function(e){ LS.set('fom.autolock', e.target.value); setIdleFromStore(); };
+  D.getElementById('fomChk').onclick = openChecklist;
   D.getElementById('fomLogout').onclick = logout;
   D.getElementById('fomLogoutAll').onclick = function(){
     if(!confirm('Log out of ALL devices, including this one? Everyone will need to sign in again.')) return;
