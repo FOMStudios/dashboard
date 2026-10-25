@@ -1,5 +1,5 @@
 /* ============================================================
-   FOM STUDIOS — shared admin app shell behaviour.
+   FOM STUDIOS, shared admin app shell behaviour.
    Bottom nav, hamburger page list, mascot Settings sheet,
    theme (light/dark/auto) and the shared idle-lock setting.
    Loaded on every admin page after its own scripts.
@@ -36,7 +36,8 @@ var PAGES = [
   {n:'Email',           h:'email.html',     e:'✉️'},
   {n:'Contract',        h:'contract.html',  e:'📄'},
   {n:'Client Reviews',  h:'reviews.html',   e:'⭐'},
-  {n:'Website',         h:'website.html',   e:'🌐'}
+  {n:'Website',         h:'website.html',   e:'🌐'},
+  {n:'Client Portal (view as client)', h:'https://www.fomstudios.co.za/client-portal.html', e:'👤', ext:true}
 ];
 var here = (location.pathname.split('/').pop() || 'dashboard.html').toLowerCase();
 if(here === '' ) here = 'dashboard.html';
@@ -69,7 +70,7 @@ function openMenu(){
   D.getElementById('fomSheetTitle').textContent = 'All pages';
   D.getElementById('fomSheetBody').innerHTML = PAGES.map(function(p){
     var active = p.h === here ? ' active' : '';
-    return '<a class="fom-row'+active+'" href="'+p.h+'"><span class="e">'+p.e+'</span><b>'+p.n+'</b></a>';
+    return '<a class="fom-row'+active+'" href="'+p.h+'"'+(p.ext?' target="_blank" rel="noopener"':'')+'><span class="e">'+p.e+'</span><b>'+p.n+'</b></a>';
   }).join('');
   openSheet();
 }
