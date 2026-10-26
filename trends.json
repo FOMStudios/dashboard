@@ -1,14 +1,16 @@
 {
-  "updated": "2026-10-25",
+  "updated": "2026-10-26",
   "source": "Weekly refresh by Claude (scheduled task). Edit freely; the next refresh replaces this file.",
   "items": [
-    { "title": "Send-worthy reels: make one reel people would DM to a friend", "type": "Reel", "why": "Instagram now weighs DM sends more than likes when showing reels to new people.", "tip": "End with a line like 'send this to the friend who always shoots on their phone'." },
-    { "title": "Longer story-led reel (1 to 3 minutes) of a full shoot day", "type": "Reel", "why": "Longer reels that hold attention are outperforming the old 15 to 30 second clips.", "tip": "Hook in the first 3 seconds, then keep shots under 3 seconds each." },
-    { "title": "Trial reel test: post a hook variation to non-followers first", "type": "Reel", "why": "Trial Reels show to non-followers first, so you can test hooks without spamming your followers.", "tip": "Compare watch time to your average before sharing it to everyone." },
-    { "title": "How I got the shot: BTS reel with camera settings on screen", "type": "Reel", "why": "Educational and behind the scenes content makes up most of what performs for creators.", "tip": "Show the phone BTS clip, then cut to the final image." },
-    { "title": "Captioned reel that works with the sound off", "type": "Reel", "why": "Most viewers watch muted, so on-screen text keeps them watching.", "tip": "Bold text in the first frame doubles as your hook." },
-    { "title": "Before and after colour grade carousel", "type": "Carousel", "why": "Transformation content is one of the most reliable formats for photographers.", "tip": "Put the after first so the cover image is your best frame." },
-    { "title": "Year-end function teaser for caterers and venues", "type": "Reel", "why": "November and December are peak event season in South Africa.", "tip": "Tag the venue and caterer so they reshare." },
-    { "title": "Client collab post (Instagram Collab) after every shoot", "type": "Carousel", "why": "Collab posts show on both accounts and act as social proof for new leads.", "tip": "Send the invite the same day you deliver the gallery." }
+    { "title": "Soweto Marathon (29 Nov): shoot the start at Nasrec and post a same-day reel", "type": "Reel", "why": "It is one of the biggest sport events in Joburg this season and runners love finding photos of themselves.", "tip": "Post a 'find yourself' carousel too and tell runners to tag their friends." },
+    { "title": "Springbok match day: shoot a pub or braai viewing crowd", "type": "Reel", "why": "The Boks play Italy, France and Ireland in November, so fan content will be everywhere in SA feeds.", "tip": "Capture reactions in slow motion at the big moments and cut on the crowd noise." },
+    { "title": "Black Friday mini-session offer for families and brands", "type": "Carousel", "why": "Black Friday is 27 November and people are already hunting for deals that double as Christmas gifts.", "tip": "Slide 1 is the offer, slide 2 sample photos, last slide is how to book with a deadline." },
+    { "title": "Slow motion 'entrance' reel for athletes and cars", "type": "Reel", "why": "Dramatic slow motion walk-ins and roll-ins keep showing up as a strong TikTok and Reels format.", "tip": "Shoot at 120fps, low angle, and drop the beat on the first full frame of the subject." },
+    { "title": "Camera flip reveal: BTS that turns around to show the final shot", "type": "Reel", "why": "Planned camera reveal transitions are trending and suit photographers who can time a clean cut.", "tip": "Rehearse the move twice so the flip lands on your best frame." },
+    { "title": "Send-worthy reel: one clip people would DM to a friend", "type": "Reel", "why": "DM sends are still one of the strongest signals for reaching people who do not follow you.", "tip": "End with a line like 'send this to the friend who needs new headshots'." },
+    { "title": "Post only your own original work, no reposted clips", "type": "Other", "why": "Instagram now cuts reach for accounts that mostly repost, and this applies to photos and carousels too.", "tip": "If you share a client's video, add your own edit or BTS so it counts as new." },
+    { "title": "Headshot vs candid split: 'who they show LinkedIn' vs real life", "type": "Reel", "why": "Before and after contrast edits work well and show off both your posed and candid skills.", "tip": "Use a hard cut on the beat and keep each half under 2 seconds." },
+    { "title": "Year-end function teaser for venues and caterers", "type": "Reel", "why": "November and December are peak work party and event season in South Africa.", "tip": "Tag the venue and caterer so they reshare to their audience." },
+    { "title": "Trial reel test: try a new hook on non-followers first", "type": "Reel", "why": "Trial Reels let you test ideas on new viewers without cluttering your main grid.", "tip": "Keep the one with the best watch time and share it to followers." }
   ]
 }
