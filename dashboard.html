@@ -300,6 +300,7 @@ function cardSuggest(){
 
 /* unread client messages (from the portal chat) */
 let CHATS = [];
+const CHAT_ON = false;   // client messages switched off for now (set true to bring the New messages card back)
 const chatUnread = c => c && c.lastFrom === 'client' && tsMillis(c.lastAt) > tsMillis(c.fomReadAt);
 function cardMessages(){
   const un = CHATS.filter(chatUnread).sort((a,b) => tsMillis(b.lastAt) - tsMillis(a.lastAt));
@@ -445,7 +446,7 @@ function initCloud(){
         $('loginGate').style.display='none';
         loadAdvisorData(db);
         db.collection('orders').onSnapshot(snap=>{ orders=snap.docs.map(d=>({id:d.id,...d.data()})); orders.sort((a,b)=>tsMillis(a.createdAt)-tsMillis(b.createdAt)); safeRender(); }, err=>console.warn('Firestore:',err));
-        db.collection('chat').onSnapshot(snap=>{ CHATS=snap.docs.map(d=>({id:d.id,...d.data()})); safeRender(); }, err=>console.warn('chat:',err));
+        if(CHAT_ON) db.collection('chat').onSnapshot(snap=>{ CHATS=snap.docs.map(d=>({id:d.id,...d.data()})); safeRender(); }, err=>console.warn('chat:',err));
       }).catch(err=>{ console.warn('Admin check failed:',err); $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
     } else { orders=[]; safeRender(); $('loginGate').style.display='flex'; }
   });

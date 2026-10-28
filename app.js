@@ -29,7 +29,7 @@ setIdleFromStore();
 var PAGES = [
   {n:'Dashboard',       h:'dashboard.html', e:'🏠'},
   {n:'Order Database',  h:'database.html',  e:'📋'},
-  {n:'Messages',        h:'messages.html',  e:'💬'},
+  // {n:'Messages',        h:'messages.html',  e:'💬'},   // client messages switched off for now
   {n:'Project Workflow',h:'workflow.html',  e:'✅'},
   {n:'Leads & Outreach',h:'leads.html',     e:'📣'},
   {n:'Content Planner', h:'content.html',   e:'🎬'},
