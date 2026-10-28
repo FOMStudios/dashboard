@@ -11,6 +11,13 @@
      POST /admin/delete               -> body {n:"<name>", f:"<folder>"}; removes <folder>/<name>
      <folder> is "portfolio" (website photos, the default) or "deck" (pitch deck images).
    Portfolio and deck images are public: GET /file?g=portfolio/&n=<name>  or  g=deck/
+   CLIENT CHAT EMAILS (needs a signed-in client or admin token):
+     POST /notify   body {o:"<order id>"}
+       client caller -> emails you (NOTIFY_TO) their newest messages
+       admin caller  -> emails the client your newest replies with a portal link
+     Throttled per booking (5 min per direction) so a burst of messages sends one email.
+     Needs the secret BREVO_KEY (Brevo API key). Optional variables: FROM_EMAIL, FROM_NAME,
+     NOTIFY_TO, PORTAL_URL, ADMIN_URL.
    Scheduled (Cron) run: deletes any folder whose expiry + graceDays has passed.
 
    SETUP
@@ -49,6 +56,19 @@ async function firebaseKeys() {
   return jwks.keys;
 }
 async function verifyAdmin(request, env) {
+  const u = await verifyUser(request, env);
+  return u && (await isAdminUser(u, env)) ? u.pay : null;
+}
+async function isAdminUser(u, env) {
+  try {
+    const pid = env.FIREBASE_PROJECT_ID || PROJECT;
+    // the Firestore rules only let a user read their own admins/<uid> doc, so a 200 proves they are an admin
+    const r = await fetch(`https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/admins/${encodeURIComponent(u.pay.sub)}`, { headers: { Authorization: 'Bearer ' + u.token } });
+    return r.ok;
+  } catch (e) { return false; }
+}
+/* any signed-in Firebase user (client or admin): returns {pay, token} when the token is genuine */
+async function verifyUser(request, env) {
   try {
     const m = /^Bearer (.+)$/.exec(request.headers.get('Authorization') || '');
     if (!m) return null;
@@ -63,11 +83,96 @@ async function verifyAdmin(request, env) {
     if (!jwk) return null;
     const key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
     const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, b64u(parts[2]), new TextEncoder().encode(parts[0] + '.' + parts[1]));
-    if (!ok) return null;
-    // the Firestore rules only let a user read their own admins/<uid> doc, so a 200 proves they are an admin
-    const r = await fetch(`https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/admins/${encodeURIComponent(pay.sub)}`, { headers: { Authorization: 'Bearer ' + token } });
-    return r.ok ? pay : null;
+    return ok ? { pay, token } : null;
   } catch (e) { return null; }
+}
+
+/* ---- Firestore REST helpers (always called with the caller's own token, so the security rules apply) ---- */
+function fsVal(v) {
+  if (!v) return null;
+  if ('stringValue' in v) return v.stringValue;
+  if ('booleanValue' in v) return v.booleanValue;
+  if ('integerValue' in v) return +v.integerValue;
+  if ('doubleValue' in v) return +v.doubleValue;
+  if ('timestampValue' in v) return v.timestampValue;
+  if ('nullValue' in v) return null;
+  if ('arrayValue' in v) return (v.arrayValue.values || []).map(fsVal);
+  if ('mapValue' in v) { const o = {}, f = v.mapValue.fields || {}; for (const k in f) o[k] = fsVal(f[k]); return o; }
+  return null;
+}
+const fsObj = d => { const o = {}, f = (d && d.fields) || {}; for (const k in f) o[k] = fsVal(f[k]); return o; };
+async function fsGet(env, token, path) {
+  const pid = env.FIREBASE_PROJECT_ID || PROJECT;
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/${path}`, { headers: { Authorization: 'Bearer ' + token } });
+  return r.ok ? r.json() : null;
+}
+const htmlEsc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+async function sendBrevo(env, to, toName, subject, html, replyTo) {
+  const body = {
+    sender: { name: env.FROM_NAME || 'FOM Studios', email: env.FROM_EMAIL || 'info@fomstudios.co.za' },
+    to: [{ email: to, name: toName || to }], subject, htmlContent: html
+  };
+  if (replyTo) body.replyTo = { email: replyTo };
+  const r = await fetch('https://api.brevo.com/v3/smtp/email', { method: 'POST', headers: { 'api-key': env.BREVO_KEY, 'Content-Type': 'application/json', accept: 'application/json' }, body: JSON.stringify(body) });
+  return r.ok;
+}
+function chatEmail(title, intro, msgs, who, btnText, btnUrl) {
+  const rows = msgs.map(m => `<tr><td style="padding:10px 14px;background:#f1f0ec;border-radius:12px;font-size:15px;line-height:1.55;color:#2a2b2c;white-space:pre-wrap">${htmlEsc(m.text)}<div style="font-size:11.5px;color:#8a8a88;margin-top:6px">${htmlEsc(who)} &middot; ${htmlEsc(new Date(m.at).toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))}</div></td></tr><tr><td style="height:8px"></td></tr>`).join('');
+  return `<div style="background:#f1f0ec;padding:24px 12px;font-family:-apple-system,Helvetica Neue,Arial,sans-serif"><table role="presentation" width="100%" style="max-width:560px;margin:0 auto;background:#fafaf9;border:1px solid #dcdad3;border-radius:18px"><tr><td style="padding:26px 26px 8px">
+    <div style="font-weight:800;letter-spacing:.08em;font-size:13px;color:#02367B">FOM STUDIOS</div>
+    <h1 style="font-size:22px;margin:10px 0 6px;color:#2a2b2c">${htmlEsc(title)}</h1>
+    <p style="font-size:14.5px;color:#6f6f6d;margin:0 0 16px;line-height:1.6">${intro}</p>
+    <table role="presentation" width="100%">${rows}</table>
+    <p style="margin:18px 0 24px"><a href="${htmlEsc(btnUrl)}" style="display:inline-block;background:#02367B;color:#fff;text-decoration:none;font-weight:700;font-size:14.5px;padding:13px 24px;border-radius:999px">${htmlEsc(btnText)}</a></p>
+  </td></tr></table><p style="text-align:center;font-size:12px;color:#8a8a88;margin-top:14px">FOM Studios &middot; Johannesburg &middot; www.fomstudios.co.za</p></div>`;
+}
+
+/* POST /notify {o}: emails the other side about new chat messages on a booking */
+const NOTIFY_GAP = 5 * 60 * 1000;
+async function handleNotify(request, env) {
+  if (request.method !== 'POST') return json({ error: 'POST only' }, 405);
+  if (!env.BREVO_KEY) return json({ ok: false, skipped: 'email not set up (add the BREVO_KEY secret)' });
+  const u = await verifyUser(request, env);
+  if (!u) return json({ error: 'not signed in' }, 401);
+  let body = {}; try { body = await request.json(); } catch (e) {}
+  const o = String(body.o || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 60);
+  if (!o) return json({ error: 'missing o' }, 400);
+  const admin = await isAdminUser(u, env);
+  // reading the order with the caller's token proves a client owns this booking
+  const od = await fsGet(env, u.token, 'orders/' + o);
+  if (!od) return json({ error: 'not allowed' }, 403);
+  const order = fsObj(od);
+  const dir = admin ? 'client' : 'fom', from = admin ? 'fom' : 'client';
+
+  const tKey = `_notify/${o}-${dir}.json`, otherKey = `_notify/${o}-${admin ? 'fom' : 'client'}.json`;
+  let last = 0;
+  try { const t = await env.BUCKET.get(tKey); if (t) last = (await t.json()).at || 0; } catch (e) {}
+  if (Date.now() - last < NOTIFY_GAP) return json({ ok: true, skipped: 'throttled' });
+
+  const list = await fsGet(env, u.token, `chat/${o}/messages?orderBy=${encodeURIComponent('at desc')}&pageSize=12`);
+  const msgs = ((list && list.documents) || []).map(fsObj)
+    .filter(m => m.from === from && m.at && m.text && Date.parse(m.at) > last).slice(0, 6).reverse();
+  if (!msgs.length) return json({ ok: true, skipped: 'nothing new' });
+
+  const name = order.customer || 'your client', booking = [order.orderId, order.product].filter(Boolean).join(' ');
+  let sent;
+  if (admin) {
+    if (!order.clientEmail) return json({ error: 'this booking has no client email' }, 400);
+    const first = String(order.customer || '').split(' ')[0] || 'there';
+    sent = await sendBrevo(env, order.clientEmail, order.customer, 'New message from FOM Studios',
+      chatEmail('You have a new message', `Hi ${htmlEsc(first)}, FOM Studios replied about your booking${booking ? ' (' + htmlEsc(booking) + ')' : ''}.`, msgs, 'FOM Studios', 'Open your portal to reply', (env.PORTAL_URL || 'https://www.fomstudios.co.za/client-portal.html') + '?o=' + encodeURIComponent(o)),
+      env.FROM_EMAIL || 'info@fomstudios.co.za');
+  } else {
+    sent = await sendBrevo(env, env.NOTIFY_TO || 'info@fomstudios.co.za', 'FOM Studios', `New message from ${name}${order.orderId ? ' (' + order.orderId + ')' : ''}`,
+      chatEmail('New client message', `<b>${htmlEsc(name)}</b> sent ${msgs.length === 1 ? 'a message' : msgs.length + ' messages'} in the client portal${booking ? ' about ' + htmlEsc(booking) : ''}.`, msgs, name, 'Reply in your dashboard', (env.ADMIN_URL || 'https://fomstudios.github.io/dashboard/messages.html') + '?o=' + encodeURIComponent(o)),
+      order.clientEmail || '');
+  }
+  if (!sent) return json({ ok: false, error: 'Brevo did not accept the email (check BREVO_KEY and that the sender address is verified in Brevo)' }, 502);
+  await env.BUCKET.put(tKey, JSON.stringify({ at: Date.now() }), { httpMetadata: { contentType: 'application/json' } });
+  // the other side just got a reply, so their next message should email straight away
+  try { await env.BUCKET.delete(otherKey); } catch (e) {}
+  return json({ ok: true, sent: msgs.length });
 }
 const safeName = n => String(n || '').toLowerCase().replace(/[^a-z0-9._-]/g, '-').replace(/^[.-]+/, '').slice(0, 80);
 const MAX_UPLOAD = 15 * 1024 * 1024;
@@ -85,6 +190,8 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const g = normPrefix(url.searchParams.get('g'));
+    if (g.startsWith('_notify')) return json({ error: 'not found' }, 404);   // internal email throttle records
+    if (path === '/notify') return handleNotify(request, env);
 
     // ---- list files in a folder ----
     if (path === '/list') {

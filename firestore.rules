@@ -2,7 +2,7 @@ rules_version = '2';
 
 // FOM Studios - Firestore security rules (project fom-studios)
 // Paste this WHOLE file into Firebase Console > Firestore Database > Rules, then Publish.
-// Last updated 25 Oct 2026: covers settings/outreach and settings/pitchDeck (pitch deck, email advisor).
+// Last updated 28 Oct 2026: adds chat (client portal messages). Earlier: settings/outreach and settings/pitchDeck.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -11,6 +11,10 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function isAdmin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
     function myEmail() { return signedIn() && request.auth.token.email != null ? request.auth.token.email : ''; }
+    // the signed-in client is the one on this booking (same email match as the orders rule)
+    function isOrderClient(orderId) {
+      return signedIn() && get(/databases/$(database)/documents/orders/$(orderId)).data.get('clientEmail', '') == myEmail();
+    }
 
     // ---- admins: you can only read your own admin doc (the Worker upload check relies on this).
     //      Add or remove admins in the Firebase Console, never from the app.
@@ -70,6 +74,45 @@ service cloud.firestore {
     }
     match /contentPlanner/{id} {
       allow read, write: if isAdmin();
+    }
+
+    // ---- chat: one conversation per booking (doc id = the order's id).
+    //      The chat doc only holds the latest-message summary and who has read it.
+    match /chat/{orderId} {
+      allow read: if isAdmin() || isOrderClient(orderId);
+      allow create: if isAdmin()
+                    || (
+                         isOrderClient(orderId)
+                         && request.resource.data.keys().hasOnly(['lastAt', 'lastFrom', 'lastText', 'clientReadAt'])
+                         && request.resource.data.get('lastFrom', 'client') == 'client'
+                         && request.resource.data.get('lastText', '') is string
+                         && request.resource.data.get('lastText', '').size() <= 300
+                       );
+      allow update: if isAdmin()
+                    || (
+                         isOrderClient(orderId)
+                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastAt', 'lastFrom', 'lastText', 'clientReadAt'])
+                         && (!('lastFrom' in request.resource.data.diff(resource.data).affectedKeys()) || request.resource.data.lastFrom == 'client')
+                         && request.resource.data.get('lastText', '') is string
+                         && request.resource.data.get('lastText', '').size() <= 300
+                       );
+      allow delete: if isAdmin();
+
+      match /messages/{msgId} {
+        allow read: if isAdmin() || isOrderClient(orderId);
+        allow create: if isAdmin()
+                      || (
+                           isOrderClient(orderId)
+                           && request.resource.data.keys().hasOnly(['from', 'text', 'at', 'name'])
+                           && request.resource.data.from == 'client'
+                           && request.resource.data.text is string
+                           && request.resource.data.text.size() > 0
+                           && request.resource.data.text.size() <= 2000
+                           && request.resource.data.at == request.time
+                         );
+        allow update: if false;
+        allow delete: if isAdmin();
+      }
     }
 
     // ---- everything else is closed by default ----

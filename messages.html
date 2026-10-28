@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOM Studios | Messages</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/mascot.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1320px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* pill header + hamburger */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:var(--container);margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:24px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.btn.block{width:100%;padding:13px;}
+
+/* page */
+.page{padding-top:108px;}
+.dash-head{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:24px;}
+.dash-head .logo img{max-height:64px;width:auto;}
+.dash-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.dash-head p{color:var(--ink-soft);font-size:14px;margin-top:2px;}
+.head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap;}
+.btn:hover{background:var(--accent-hover);}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink);}
+.btn.ghost:hover{background:var(--ink);color:var(--bg-pill);}
+.badge{font-size:12px;font-weight:600;border-radius:var(--radius-pill);padding:8px 14px;border:1px solid var(--line);}
+.badge.cloud{background:#e7f0ff;border-color:#bcd4f5;color:var(--accent);}
+.badge.local{background:#f3f1ea;color:var(--ink-soft);}
+
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
+.vchart{display:flex;align-items:flex-end;gap:14px;height:200px;overflow-x:auto;padding-top:6px;-webkit-overflow-scrolling:touch;}
+.vbar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;flex:1 0 44px;min-width:44px;}
+.vbar-c{width:100%;max-width:50px;background:var(--accent);border-radius:8px 8px 0 0;min-height:4px;}
+.vbar-v{font-size:11px;font-weight:700;color:var(--ink-soft);}
+.vbar-l{font-size:11px;color:var(--ink-soft);white-space:nowrap;}
+.kpi{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 22px;}
+.kpi .k-lbl{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:600;}
+.kpi .k-val{font-size:28px;font-weight:800;letter-spacing:-.01em;margin-top:6px;font-variant-numeric:tabular-nums;}
+.kpi .k-sub{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+.kpi.accent{background:var(--bg-dark);color:var(--ink-on-dark);border-color:var(--bg-dark);}
+.kpi.accent .k-lbl{color:var(--accent-on-dark);}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:22px;}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:700;margin-bottom:16px;}
+.donut-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.donut-wrap svg{flex:0 0 auto;}
+.legend{list-style:none;display:flex;flex-direction:column;gap:10px;flex:1;min-width:140px;}
+.legend li{display:flex;align-items:center;gap:10px;font-size:14px;}
+.legend .dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;}
+.legend .lv{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-soft);}
+.bars{display:flex;flex-direction:column;gap:12px;}
+.bar-row{display:grid;grid-template-columns:90px 1fr 48px;align-items:center;gap:12px;font-size:14px;}
+.bar-track{background:#e9e7e1;border-radius:var(--radius-pill);height:14px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:var(--radius-pill);background:var(--accent);}
+.bar-row .bv{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-soft);}
+.collect{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.collect .prog{flex:1;min-width:200px;}
+.prog-track{background:#e9e7e1;border-radius:var(--radius-pill);height:22px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--accent);border-radius:var(--radius-pill);display:flex;align-items:center;justify-content:flex-end;color:#fff;font-size:12px;font-weight:700;padding-right:10px;}
+.collect .legend2{font-size:13px;color:var(--ink-soft);}
+.collect .legend2 b{color:var(--ink);font-size:16px;}
+.recent-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.recent table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px;}
+.recent th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:600;padding:8px 8px;border-bottom:1px solid var(--line);}
+.recent td{padding:9px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);color:#fff;}
+.empty-card{text-align:center;padding:50px 20px;}
+.empty-card img{max-width:150px;margin:0 auto 16px;}
+.empty-card h3{font-size:20px;font-weight:800;margin-bottom:6px;}
+.empty-card p{color:var(--ink-soft);margin-bottom:18px;}
+.mascot-corner{position:fixed;right:18px;bottom:14px;width:78px;opacity:.9;z-index:1;pointer-events:none;}
+.mascot-corner img{width:100%;}
+
+@media(max-width:980px){.kpis{grid-template-columns:1fr 1fr;}}
+@media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
+@media(max-width:720px){.grid2{grid-template-columns:1fr;}.mascot-corner{display:none;}}
+@media(max-width:520px){.kpis{grid-template-columns:1fr;}}
+
+.adv-sum{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+.adv-pill{flex:1;min-width:150px;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:16px 18px;}
+.adv-pill b{display:block;font-size:30px;font-weight:800;line-height:1.1;}
+.adv-pill span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;}
+.adv-pill.bad b{color:#c0392b;} .adv-pill.warn b{color:#b0640b;} .adv-pill.ok b{color:#1f8a4c;}
+.adv-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.adv-tabs button{border:1px solid var(--line);background:var(--bg-pill);border-radius:var(--radius-pill);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink);}
+.adv-tabs button.on{background:var(--bg-dark);color:var(--ink-on-dark);border-color:var(--bg-dark);}
+.adv-item{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line);}
+.adv-item:last-child{border-bottom:0;}
+.adv-dot{flex:none;width:12px;height:12px;border-radius:50%;margin-top:6px;background:#cfcdc6;}
+.adv-item.bad .adv-dot{background:#c0392b;} .adv-item.warn .adv-dot{background:#e0a100;} .adv-item.info .adv-dot{background:#5B9AE0;}
+.adv-main{flex:1;min-width:0;} .adv-main b{display:block;font-size:15px;} .adv-main p{font-size:13.5px;color:var(--ink-soft);margin-top:2px;}
+.adv-area{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-bottom:2px;}
+.adv-go{flex:none;align-self:center;border:1px solid var(--ink);border-radius:var(--radius-pill);padding:7px 14px;font-size:13px;font-weight:600;white-space:nowrap;}
+.adv-go:hover{background:var(--ink);color:var(--bg-pill);}
+.adv-clear{text-align:center;padding:34px 10px;} .adv-clear b{font-size:20px;display:block;margin-bottom:4px;}
+@media(max-width:560px){.adv-item{flex-wrap:wrap;} .adv-go{margin-left:26px;}}
+.rm-row{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+.rm-row:last-child{border-bottom:0;} .rm-main{flex:1;min-width:180px;} .rm-main b{display:block;font-size:15px;} .rm-main span{font-size:13px;color:var(--ink-soft);}
+.rm-amt{font-weight:800;font-size:16px;} .rm-amt.od{color:#c0392b;}
+.rm-btn{border:1px solid var(--ink);background:transparent;border-radius:99px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink);text-decoration:none;white-space:nowrap;font-family:inherit;}
+.rm-btn.wa{background:#1f8a4c;border-color:#1f8a4c;color:#fff;}
+
+/* ===== messages ===== */
+.msg-wrap{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:stretch;height:calc(100dvh - 200px - var(--nav-h,64px) - var(--safe-b,0px));min-height:420px;}
+.inbox,.thread{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);overflow:hidden;display:flex;flex-direction:column;min-height:0;}
+.ib-head{padding:14px 16px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px;}
+.ib-tabs{display:flex;gap:6px;}
+.ib-tabs button{border:1px solid var(--line);background:var(--bg);border-radius:99px;padding:6px 13px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink-soft);font-family:inherit;}
+.ib-tabs button.on{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+.ib-new{width:100%;border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:13.5px;font-family:inherit;background:#fff;color:var(--ink);}
+.ib-list{overflow-y:auto;flex:1;}
+.ib-row{display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border-bottom:1px solid var(--line);cursor:pointer;width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0;font-family:inherit;color:var(--ink);}
+.ib-row:hover{background:var(--bg);}
+.ib-row.on{background:#e7f0ff;}
+.ib-av{flex:none;width:38px;height:38px;border-radius:50%;background:var(--bg-dark);color:var(--ink-on-dark);display:grid;place-items:center;font-weight:800;font-size:14px;}
+.ib-m{flex:1;min-width:0;display:block;}
+.ib-sub,.ib-last{display:block;}
+.ib-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;}
+.ib-top b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ib-top span{font-size:11.5px;color:var(--ink-soft);white-space:nowrap;}
+.ib-sub{font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ib-last{font-size:13px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.ib-row.unread .ib-top b,.ib-row.unread .ib-last{color:var(--ink);font-weight:800;}
+.ib-row.unread .ib-av{background:var(--accent);}
+.ib-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:none;margin-top:6px;}
+.ib-empty{padding:30px 18px;text-align:center;color:var(--ink-soft);font-size:13.5px;line-height:1.6;}
+.th-head{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;}
+.th-back{display:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:18px;flex:none;color:var(--ink);}
+.th-who{flex:1;min-width:0;}
+.th-who b{display:block;font-size:16px;}
+.th-who span{font-size:12.5px;color:var(--ink-soft);}
+.th-links{display:flex;gap:8px;flex-wrap:wrap;}
+.th-links a{font-size:12.5px;font-weight:700;color:var(--accent);border:1px solid var(--line);border-radius:99px;padding:6px 11px;white-space:nowrap;}
+.th-list{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;background:var(--bg);}
+.bub{max-width:78%;padding:10px 13px;border-radius:16px;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;position:relative;}
+.bub a{text-decoration:underline;}
+.bub small{display:block;font-size:11px;margin-top:4px;opacity:.7;}
+.bub.me{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:5px;}
+.bub.them{align-self:flex-start;background:var(--bg-pill);border:1px solid var(--line);border-bottom-left-radius:5px;}
+.bub .del{position:absolute;top:-8px;left:-8px;width:22px;height:22px;border-radius:50%;border:0;background:var(--bg-dark);color:#fff;font-size:13px;line-height:1;cursor:pointer;display:none;}
+.bub.me:hover .del{display:block;}
+@media (hover:none),(pointer:coarse){.bub.me .del{display:block;opacity:.55;}}
+.day{align-self:center;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:6px 0 2px;}
+.th-form{display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid var(--line);}
+.th-form textarea{flex:1;min-width:0;resize:none;border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:15px;font-family:inherit;line-height:1.4;max-height:160px;min-height:44px;background:#fff;color:var(--ink);}
+.th-form textarea:focus{outline:2px solid var(--accent);outline-offset:0;}
+.th-form .btn{height:44px;}
+.th-note{font-size:12px;color:var(--ink-soft);padding:0 14px 10px;}
+.th-note.err{color:#c0392b;}
+.th-none{flex:1;display:grid;place-items:center;text-align:center;color:var(--ink-soft);padding:30px;font-size:14px;line-height:1.6;}
+.th-none img{width:90px;margin:0 auto 12px;}
+@media(max-width:860px){
+  .msg-wrap{grid-template-columns:1fr;height:calc(100dvh - 190px - var(--nav-h,64px) - var(--safe-b,0px));}
+  body.reading .dash-head{display:none;}
+  body.reading .msg-wrap{height:calc(100dvh - 60px - var(--nav-h,64px) - var(--safe-b,0px));}
+  .msg-wrap.reading .inbox{display:none;}
+  .msg-wrap:not(.reading) .thread{display:none;}
+  .th-back{display:block;}
+  .th-links{display:none;}
+}
+</style>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="session.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="fom-splash" id="authCheck"><div class="in"><b>FOM STUDIOS</b><p>Checking session…</p></div></div>
+<script>setTimeout(function(){var a=document.getElementById("authCheck");if(a)a.style.display="none";},8000);</script>
+
+
+<div class="login-gate" id="loginGate">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close menu">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="leads.html">Leads</a></li>
+        <li><a href="content.html">Content Planner</a></li>
+        <li><a href="calculator.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="leads.html">Leads</a></li>
+                <li><a href="content.html">Content Planner</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+            </ul>
+        </div>
+    </nav>
+</div>
+
+<div class="page wrap">
+    <div class="dash-head">
+        <div>
+            <span class="eyebrow">Clients</span>
+            <h1>Messages</h1>
+            <p id="msgSub">Chats from the client portal, one per booking.</p>
+        </div>
+        <div class="head-actions">
+            <span class="badge local" id="syncBadge">Connecting...</span>
+            <button class="btn ghost" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </div>
+
+    <div class="msg-wrap" id="msgWrap">
+        <aside class="inbox">
+            <div class="ib-head">
+                <div class="ib-tabs" id="ibTabs"><button class="on" data-f="all" type="button">All</button><button data-f="unread" type="button">Unread</button></div>
+                <select class="ib-new" id="ibNew" aria-label="Message a client"><option value="">+ Message a client...</option></select>
+            </div>
+            <div class="ib-list" id="ibList"><div class="ib-empty">Loading...</div></div>
+        </aside>
+        <section class="thread" id="thread">
+            <div class="th-none"><div><img src="assets/mascot.png" alt="" onerror="this.style.display='none'">Pick a conversation, or message a client from the list.</div></div>
+        </section>
+    </div>
+</div>
+
+<script src="firebase-config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
+const tsMs = t => t && t.toMillis ? t.toMillis() : 0;
+const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+async function loadFirebase(){ const b='https://www.gstatic.com/firebasejs/10.12.0/';
+  await loadScript(b+'firebase-app-compat.js');
+  await Promise.all([loadScript(b+'firebase-auth-compat.js'), loadScript(b+'firebase-firestore-compat.js')]); }
+
+let db = null, auth = null, ORDERS = {}, CHATS = [], CUR = null, MSGS = [], stopMsgs = null, filter = 'all';
+const DRAFTS = {};
+const unread = c => c && c.lastFrom === 'client' && tsMs(c.lastAt) > tsMs(c.fomReadAt);
+const nameOf = id => { const o = ORDERS[id]; return (o && (o.customer || o.clientEmail)) || 'Unknown client'; };
+const initials = s => String(s||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase() || '?';
+const when = ms => { if(!ms) return ''; const d = new Date(ms), t = new Date(); if(d.toDateString() === t.toDateString()) return d.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
+  const y = new Date(); y.setDate(y.getDate()-1); if(d.toDateString() === y.toDateString()) return 'Yesterday'; return d.toLocaleDateString('en-ZA',{day:'numeric',month:'short'}); };
+const dayLbl = ms => { const d = new Date(ms), t = new Date(); t.setHours(0,0,0,0); const k = Math.round((new Date(d).setHours(0,0,0,0) - t) / 864e5);
+  return k === 0 ? 'Today' : k === -1 ? 'Yesterday' : d.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short'}); };
+const linkify = t => esc(t).replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)\]'"])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+const fmtD = d => { try{ return new Date(d+'T00:00:00').toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return d; } };
+
+function renderInbox(){
+  const n = CHATS.filter(unread).length;
+  $('msgSub').textContent = n ? n + ' unread conversation' + (n === 1 ? '' : 's') + '.' : 'Chats from the client portal, one per booking. All caught up.';
+  document.title = (n ? '(' + n + ') ' : '') + 'FOM Studios | Messages';
+  const list = CHATS.filter(c => filter === 'all' || unread(c));
+  $('ibList').innerHTML = list.length ? list.map(c => { const o = ORDERS[c.id] || {}, u = unread(c);
+    return `<button class="ib-row ${u ? 'unread' : ''} ${CUR === c.id ? 'on' : ''}" type="button" data-o="${esc(c.id)}">
+      <span class="ib-av">${esc(initials(nameOf(c.id)))}</span>
+      <span class="ib-m"><span class="ib-top"><b>${esc(nameOf(c.id))}</b><span>${esc(when(tsMs(c.lastAt)))}</span></span>
+        <span class="ib-sub">${esc([o.orderId, o.product].filter(Boolean).join(' · '))}</span>
+        <span class="ib-last">${c.lastFrom === 'fom' ? 'You: ' : ''}${esc(c.lastText || '')}</span></span>
+      ${u ? '<span class="ib-dot"></span>' : ''}</button>`; }).join('')
+    : `<div class="ib-empty">${filter === 'unread' ? 'No unread messages.' : 'No conversations yet. When a client writes from their portal it shows up here, and you get an email.'}</div>`;
+  const opts = Object.values(ORDERS).filter(o => o.clientEmail && o.status !== 'Cancelled').sort((a,b) => String(b.shootDate||'').localeCompare(String(a.shootDate||'')));
+  $('ibNew').innerHTML = '<option value="">+ Message a client...</option>' + opts.map(o => `<option value="${esc(o.id)}">${esc((o.orderId ? o.orderId + ' ' : '') + (o.customer || o.clientEmail))}</option>`).join('');
+}
+
+function openThread(id){
+  if(CUR && $('thText')) DRAFTS[CUR] = $('thText').value;
+  CUR = id; $('msgWrap').classList.add('reading'); document.body.classList.add('reading');
+  if(stopMsgs){ stopMsgs(); stopMsgs = null; }
+  MSGS = null; history.replaceState(null, '', '?o=' + encodeURIComponent(id));
+  const o = ORDERS[id] || {};
+  $('thread').innerHTML = `<div class="th-head"><button class="th-back" id="thBack" type="button" aria-label="Back to inbox">&lsaquo;</button>
+      <div class="th-who"><b>${esc(nameOf(id))}</b><span>${esc([o.orderId, o.product, o.shootDate ? 'Shoot ' + fmtD(o.shootDate) : '', o.status].filter(Boolean).join(' · '))}</span></div>
+      <div class="th-links"><a href="database.html">Database</a>${o.clientEmail ? `<a href="mailto:${esc(o.clientEmail)}">Email</a>` : ''}</div></div>
+    <div class="th-list" id="thList" aria-live="polite"><div class="day">Loading...</div></div>
+    <form class="th-form" id="thForm"><textarea id="thText" rows="1" maxlength="2000" placeholder="Reply to ${esc(String(nameOf(id)).split(' ')[0])}..." aria-label="Reply"></textarea><button class="btn" type="submit">Send</button></form>
+    <div class="th-note" id="thNote">${o.clientEmail ? 'They get an email when you reply (one per 5 minutes, so a few quick messages send one email).' : 'This booking has no client email, so they will only see replies in the portal.'}</div>`;
+  $('thText').value = DRAFTS[id] || '';
+  $('thBack').onclick = () => { $('msgWrap').classList.remove('reading'); document.body.classList.remove('reading'); };
+  stopMsgs = db.collection('chat').doc(id).collection('messages').orderBy('at').limitToLast(300).onSnapshot(s => {
+    MSGS = s.docs.map(d => { const m = d.data({ serverTimestamps:'estimate' }); return { id:d.id, from:m.from, text:m.text||'', ms:tsMs(m.at), pending:d.metadata.hasPendingWrites }; });
+    renderThread(); markRead();
+  }, e => { console.warn(e); $('thList').innerHTML = '<div class="day">Could not load messages. Publish the latest Firestore rules.</div>'; });
+  renderInbox();
+  if(matchMedia('(pointer:fine)').matches) $('thText').focus();
+}
+function renderThread(){
+  const box = $('thList'); if(!box) return;
+  if(!MSGS.length){ box.innerHTML = '<div class="day">No messages yet. Say hi!</div>'; return; }
+  let last = '';
+  box.innerHTML = MSGS.map(m => { const ms = m.ms || Date.now(), k = new Date(ms).toDateString(), day = k !== last ? `<div class="day">${dayLbl(ms)}</div>` : ''; last = k;
+    const t = new Date(ms).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
+    return day + (m.from === 'fom'
+      ? `<div class="bub me">${m.pending ? '' : `<button class="del" type="button" data-del="${esc(m.id)}" title="Delete this message">&times;</button>`}${linkify(m.text)}<small>${m.pending ? 'Sending...' : 'You · ' + t}</small></div>`
+      : `<div class="bub them">${linkify(m.text)}<small>${esc(String(nameOf(CUR)).split(' ')[0])} · ${t}</small></div>`); }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+function markRead(){
+  const c = CHATS.find(x => x.id === CUR);
+  if(c && unread(c) && document.visibilityState === 'visible') db.collection('chat').doc(CUR).set({ fomReadAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge:true }).catch(e => console.warn(e));
+}
+document.addEventListener('visibilitychange', markRead);
+
+async function send(e){
+  e.preventDefault();
+  const ta = $('thText'), text = ta.value.trim(), id = CUR; if(!text || !id) return;
+  const btn = e.target.querySelector('button'); btn.disabled = true;
+  const FV = firebase.firestore.FieldValue, b = db.batch();
+  b.set(db.collection('chat').doc(id), { lastAt:FV.serverTimestamp(), lastFrom:'fom', lastText:text.slice(0,140), fomReadAt:FV.serverTimestamp() }, { merge:true });
+  b.set(db.collection('chat').doc(id).collection('messages').doc(), { from:'fom', text:text.slice(0,2000), at:FV.serverTimestamp(), name:'FOM Studios' });
+  try{
+    await b.commit(); ta.value = ''; DRAFTS[id] = ''; ta.style.height = '';
+    const note = $('thNote'); note.classList.remove('err');
+    try{
+      const r = await fetch(WORKER + '/notify', { method:'POST', headers:{ Authorization:'Bearer ' + await auth.currentUser.getIdToken(), 'Content-Type':'application/json' }, body:JSON.stringify({ o:id }) });
+      const j = await r.json().catch(() => ({}));
+      note.textContent = j.sent ? 'Sent, and ' + nameOf(id).split(' ')[0] + ' was emailed.' : j.skipped === 'throttled' ? 'Sent. They were emailed a few minutes ago, so no new email this time.' : j.skipped ? 'Sent. No email: ' + j.skipped + '.' : j.error ? 'Sent, but the email failed: ' + j.error : 'Sent.';
+      if(j.error || (j.skipped && /BREVO/.test(j.skipped))) note.classList.add('err');
+    }catch(err){ note.textContent = 'Sent. The email notification could not reach the Worker (paste the latest gallery-worker.js into Cloudflare).'; note.classList.add('err'); }
+  }catch(err){ console.warn(err); $('thNote').textContent = 'Could not send. Publish the latest Firestore rules and try again.'; $('thNote').classList.add('err'); }
+  btn.disabled = false;
+}
+$('thread').addEventListener('submit', e => { if(e.target.id === 'thForm') send(e); });
+$('thread').addEventListener('input', e => { if(e.target.id === 'thText'){ const t = e.target; DRAFTS[CUR] = t.value; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 160) + 'px'; } });
+$('thread').addEventListener('keydown', e => { if(e.target.id === 'thText' && e.key === 'Enter' && !e.shiftKey && !matchMedia('(pointer:coarse)').matches){ e.preventDefault(); $('thForm').requestSubmit(); } });
+$('thread').addEventListener('click', e => { const d = e.target.closest('[data-del]'); if(d && confirm('Delete this message for you and the client?')) db.collection('chat').doc(CUR).collection('messages').doc(d.dataset.del).delete().catch(err => alert('Could not delete: ' + err.message)); });
+$('ibList').addEventListener('click', e => { const r = e.target.closest('[data-o]'); if(r) openThread(r.dataset.o); });
+$('ibTabs').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if(!b) return; filter = b.dataset.f; document.querySelectorAll('#ibTabs button').forEach(x => x.classList.toggle('on', x === b)); renderInbox(); });
+$('ibNew').addEventListener('change', e => { const v = e.target.value; e.target.value = ''; if(v) openThread(v); });
+
+function showConnError(){ $('authCheck') && ($('authCheck').style.display='none'); $('ibList').innerHTML = '<div class="ib-empty">Could not reach the cloud database. Check your connection and refresh.</div>'; }
+function initCloud(){
+  firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  try{ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); }catch(e){}
+  if(window.FOM_SESSION) FOM_SESSION.attach(auth);
+  db = firebase.firestore(); db.settings({ experimentalAutoDetectLongPolling: true });
+  const badge = $('syncBadge'); badge.textContent = '☁ Cloud sync'; badge.className = 'badge cloud';
+  $('logoutBtn').style.display = 'inline-block'; $('logoutBtn').onclick = () => auth.signOut();
+  const login = () => { $('lgErr').textContent = ''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(), $('lgPass').value)
+    .catch(err => { $('lgErr').textContent = /password|user|credential|email/i.test(err.code||'') ? 'Incorrect email or password.' : (err.message||'Login failed.'); }); };
+  $('lgBtn').onclick = login; $('lgPass').addEventListener('keydown', e => { if(e.key === 'Enter') login(); });
+  auth.onAuthStateChanged(u => {
+    const ac = $('authCheck'); if(ac) ac.style.display = 'none';
+    if(!u){ $('loginGate').style.display = 'flex'; return; }
+    db.collection('admins').doc(u.uid).get().then(a => {
+      if(!a.exists){ $('lgErr').textContent = 'This account does not have admin access.'; auth.signOut(); return; }
+      $('loginGate').style.display = 'none';
+      let first = true;
+      db.collection('orders').onSnapshot(s => { ORDERS = {}; s.docs.forEach(d => ORDERS[d.id] = Object.assign({ id:d.id }, d.data())); renderInbox(); if(CUR) renderThread(); }, e => console.warn(e));
+      db.collection('chat').orderBy('lastAt', 'desc').onSnapshot(s => {
+        CHATS = s.docs.map(d => Object.assign({ id:d.id }, d.data())); renderInbox(); if(CUR) markRead();
+        if(first){ first = false; const want = new URLSearchParams(location.search).get('o'); if(want) openThread(want); }
+      }, e => { console.warn(e); $('ibList').innerHTML = '<div class="ib-empty">Could not load messages. Publish the latest Firestore rules (the chat rule).</div>'; });
+    }).catch(e => { console.warn(e); $('lgErr').textContent = 'Could not verify admin access.'; auth.signOut(); });
+  });
+}
+if(configured) loadFirebase().then(initCloud).catch(showConnError); else showConnError();
+</script>
+<script src="app.js"></script>
+</body>
+</html>

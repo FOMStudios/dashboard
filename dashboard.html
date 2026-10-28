@@ -298,6 +298,18 @@ function cardSuggest(){
     <div class="sg-links">${top.link?`<a href="${esc(top.link)}"${/^https?:/.test(top.link)?' target="_blank" rel="noopener"':''}>${esc(top.label||'Open')}</a><span>·</span>`:''}<a href="advisor.html">${f.length>1?(bad+warn>1?bad+warn+' items to review':f.length+' items'):'Open Advisor'}</a></div></div>`;
 }
 
+/* unread client messages (from the portal chat) */
+let CHATS = [];
+const chatUnread = c => c && c.lastFrom === 'client' && tsMillis(c.lastAt) > tsMillis(c.fomReadAt);
+function cardMessages(){
+  const un = CHATS.filter(chatUnread).sort((a,b) => tsMillis(b.lastAt) - tsMillis(a.lastAt));
+  if(!un.length) return '';
+  const nm = id => { const o = orders.find(x => x.id === id); return o ? (o.customer || o.clientEmail || o.orderId) : 'A client'; };
+  return `<div class="card" style="margin-bottom:20px"><div class="ns-head"><h2>New messages<span class="sd-tag">${un.length}</span></h2><a class="ns-go" href="messages.html">Open inbox</a></div>
+    ${un.slice(0,3).map(c => `<a class="ns-step" href="messages.html?o=${encodeURIComponent(c.id)}"><span class="ns-who client">${esc(String(nm(c.id)).split(' ')[0])}</span><span class="ns-t">${esc(c.lastText || '')}</span></a>`).join('')}
+    ${un.length > 3 ? `<div class="ns-meta">and ${un.length - 3} more</div>` : ''}</div>`;
+}
+
 let sdPick = '';
 function cardShoot(){
   const H = window.FOM_HEALTH; if(!H) return '';
@@ -347,6 +359,7 @@ function render(){
     return `<tr><td>${esc(o.orderId)}</td><td>${esc(o.customer)||'-'}</td><td>${esc(o.product)||'-'}</td><td><span class="tag" style="background:${col}">${esc(o.status)}</span></td><td style="text-align:right">${RZA(o.total)}</td><td style="text-align:right;color:var(--accent);font-weight:700">${RZA((+o.total||0)-(+o.paid||0))}</td></tr>`; }).join('');
 
   el.innerHTML=`
+    ${cardMessages()}
     ${cardShoot()}
     <div class="grid2">${cardNext()}${cardSuggest()}</div>
     <div class="kpis">
@@ -432,6 +445,7 @@ function initCloud(){
         $('loginGate').style.display='none';
         loadAdvisorData(db);
         db.collection('orders').onSnapshot(snap=>{ orders=snap.docs.map(d=>({id:d.id,...d.data()})); orders.sort((a,b)=>tsMillis(a.createdAt)-tsMillis(b.createdAt)); safeRender(); }, err=>console.warn('Firestore:',err));
+        db.collection('chat').onSnapshot(snap=>{ CHATS=snap.docs.map(d=>({id:d.id,...d.data()})); safeRender(); }, err=>console.warn('chat:',err));
       }).catch(err=>{ console.warn('Admin check failed:',err); $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
     } else { orders=[]; safeRender(); $('loginGate').style.display='flex'; }
   });
