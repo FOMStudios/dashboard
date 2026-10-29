@@ -165,4 +165,36 @@ nav.querySelector('.js-prof').onclick = openSettings;
 
 /* close the sheet with Escape */
 addEventListener('keydown', function(e){ if(e.key==='Escape') closeSheet(); });
+
+/* ---- drag down to close: every bottom sheet (menu, settings, page sheets) and the big panels
+       (Calculator Data, Edit contract). Grab the handle or the header and pull down. ---- */
+function dragClose(panelSel, handleSel, closeBtnSel){
+  D.addEventListener('pointerdown', function(e){
+    var h = e.target.closest ? e.target.closest(handleSel) : null; if(!h) return;
+    var p = h.closest(panelSel); if(!p) return;
+    if(e.target.closest('button,a,input,select,textarea,label,[contenteditable]')) return;
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    var y0 = e.clientY, t0 = Date.now(), dy = 0, id = e.pointerId, moved = false;
+    function mv(ev){ if(ev.pointerId !== id) return; dy = Math.max(0, ev.clientY - y0);
+      if(!moved && dy > 4){ moved = true; p.style.transition = 'none'; }
+      if(moved){ p.style.translate = '0 ' + dy + 'px'; ev.preventDefault(); } }
+    function up(ev){ if(ev.pointerId !== id) return;
+      D.removeEventListener('pointermove', mv); D.removeEventListener('pointerup', up); D.removeEventListener('pointercancel', up);
+      if(!moved) return;
+      var fast = dy > 40 && dy / Math.max(1, Date.now() - t0) > 0.5;
+      var back = function(){ p.style.transition = 'translate .22s ease'; p.style.translate = ''; setTimeout(function(){ p.style.transition = ''; }, 240); };
+      if(dy > 110 || fast){
+        p.style.transition = '';
+        var btn = p.querySelector(closeBtnSel); if(btn) btn.click();
+        // if the page asked "close without saving?" and you said no, the panel is still open: glide back
+        if(isOpen(p)) back();
+        else setTimeout(function(){ p.style.transition = 'none'; p.style.translate = ''; requestAnimationFrame(function(){ p.style.transition = ''; }); }, 330);
+      } else back();
+    }
+    D.addEventListener('pointermove', mv, { passive:false }); D.addEventListener('pointerup', up); D.addEventListener('pointercancel', up);
+  });
+}
+function isOpen(p){ return p.classList.contains('on') || p.classList.contains('show'); }
+dragClose('.fom-sheet', '.grab, .fom-sheet-h', '.fom-x');
+dragClose('.dm', '.dm-head, .dm-grab', '.dm-x');
 })();
