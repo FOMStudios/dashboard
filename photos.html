@@ -166,6 +166,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 @media(max-width:520px){.ph-grid{grid-template-columns:repeat(2,1fr);gap:10px;}}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -229,6 +230,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
                 <span class="eyebrow">Website</span>
                 <h1>Photos</h1>
                 <p>Upload, order and caption the photos on your website</p>
+                <script>if(window.FOM_BIZ&&FOM_BIZ.isSba)document.currentScript.previousElementSibling.textContent='Shot by A portfolio photos, used in her pitch deck (and her website once she has one)';</script>
             </div>
         </div>
         <div class="head-actions">
@@ -265,7 +267,9 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 <script>
 const WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
 const SITE = 'https://www.fomstudios.co.za/';
-const DEFAULTS = window.FOM_PHOTO_DEFAULTS || [];
+// Shot by A keeps her own photo list (siteContent/portfolio_sba): used by her pitch deck now and her website later
+const PHOTO_DOC = FOM_BIZ.isSba ? 'portfolio_sba' : 'portfolio';
+const DEFAULTS = FOM_BIZ.isSba ? [] : (window.FOM_PHOTO_DEFAULTS || []);
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const CATS = { sports:'Sports', automotive:'Automotive', other:'Other' };
@@ -290,7 +294,7 @@ function render(){
   $('phChips').innerHTML = [['all','All'],['sports','Sports'],['automotive','Automotive'],['other','Other'],['home','Homepage'],['hidden','Hidden']]
     .map(c => `<button data-f="${c[0]}" class="${filter===c[0]?'on':''}">${c[1]}</button>`).join('');
   $('phCount').textContent = `${photos.length} photos, ${photos.filter(p=>p.hide).length} hidden, ${photos.filter(p=>p.home&&!p.hide).length} on the homepage`
-    + (usingDefaults ? '. Showing the photos built into your site. Save once to take control from here.' : '');
+    + (FOM_BIZ.isSba ? '. Shot by A has no website yet: these photos feed her pitch deck now, and her website later.' : (usingDefaults ? '. Showing the photos built into your site. Save once to take control from here.' : ''));
   $('phGrid').innerHTML = list.map(p => `<div class="ph-card${p.hide?' hid':''}" data-id="${esc(p.id)}">
     <div class="ph-img" draggable="true" title="Drag to reorder"><img loading="lazy" src="${esc(url(p))}" alt="">
       <div class="ph-tags">${isR2(p)?'<span class="ph-tag u">Uploaded</span>':''}${p.home&&!p.hide?'<span class="ph-tag h">Home</span>':''}</div></div>
@@ -315,7 +319,7 @@ function move(id, to){   // to: index in the full list
 async function save(){
   if(!db){ msg('Photos save to your cloud database. Sign in first.', true); return false; }
   try{
-    await db.collection('siteContent').doc('portfolio').set({ json:JSON.stringify(photos), updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
+    await db.collection('siteContent').doc(PHOTO_DOC).set({ json:JSON.stringify(photos), updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
     savedJson = JSON.stringify(photos); usingDefaults = false; msg(''); render();
     $('phState').textContent = 'Saved. Live on your website within a minute.'; return true;
   }catch(e){ console.warn(e); msg('Could not save. Publish the latest Firestore rules (siteContent must be writable by admins) and try again.', true); return false; }
@@ -340,7 +344,7 @@ async function upload(files){
     $('phUp').textContent = `Uploading ${i+1} of ${files.length}: ${files[i].name}`; fill.style.width = (i / files.length * 100) + '%';
     try{
       const { blob, w, h } = await shrink(files[i]);
-      const name = Date.now().toString(36) + Math.random().toString(36).slice(2,6) + '.jpg';
+      const name = (FOM_BIZ.isSba ? 'sba-' : '') + Date.now().toString(36) + Math.random().toString(36).slice(2,6) + '.jpg';
       const r = await fetch(WORKER + '/admin/upload?n=' + encodeURIComponent(name), { method:'POST', headers:{ 'Content-Type':'image/jpeg', Authorization:'Bearer ' + await token() }, body:blob });
       if(r.status === 404 || r.status === 405){ fail = 'Your Worker does not have the upload feature yet. Redeploy gallery-worker.js in Cloudflare (see the deploy checklist).'; break; }
       if(r.status === 401){ fail = 'The Worker did not accept your login. Sign out and in again, or check the Worker was redeployed with the latest file.'; break; }
@@ -397,7 +401,7 @@ function start(){
   photos = clean(DEFAULTS); savedJson = JSON.stringify(photos); usingDefaults = true;
   $('phApp').style.display = 'block'; render();
   if(!db) return;
-  db.collection('siteContent').doc('portfolio').get().then(s => {
+  db.collection('siteContent').doc(PHOTO_DOC).get().then(s => {
     if(s.exists && s.data().json){ try{ const l = clean(JSON.parse(s.data().json)); if(l.length){ photos = l; usingDefaults = false; } }catch(e){} }
     savedJson = JSON.stringify(photos); render();
   }).catch(e => { console.warn(e); msg('Could not read your saved photo list. Showing the built-in photos. Check the Firestore rules.', true); });

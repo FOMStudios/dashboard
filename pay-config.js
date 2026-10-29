@@ -9,4 +9,5 @@
    to show EFT-only (no card buttons).
    ===================================================================== */
 var PAY_WORKER_URL  = "https://fom-yoco.cold-moon-d65c.workers.dev/";   // e.g. "https://fom-yoco.yourname.workers.dev"
+var PAY_WORKER_URL_SBA = "";   // Shot by A card payments: leave blank (EFT only) until she has her own Yoco account and Worker
 var PAY_DEPOSIT_PCT = 50;   // default deposit %

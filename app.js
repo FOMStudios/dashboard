@@ -25,6 +25,7 @@ window.FOM = window.FOM || {};
 function setIdleFromStore(){ var m = +LS.get('fom.autolock','0'); window.FOM.idleMs = m>0 ? m*60000 : 0; }
 setIdleFromStore();
 
+var BZ = window.FOM_BIZ || { id:'fom', isSba:false, b:{ name:'FOM Studios', icon:'assets/mascot.png', portal:'https://www.fomstudios.co.za/client-portal.html' }, sid:function(x){ return x; } };
 /* ---- full page list (hamburger) ---- */
 var PAGES = [
   {n:'Dashboard',       h:'dashboard.html', e:'🏠'},
@@ -37,10 +38,10 @@ var PAGES = [
   {n:'Email',           h:'email.html',     e:'✉️'},
   {n:'Contract',        h:'contract.html',  e:'📄'},
   {n:'Client Reviews',  h:'reviews.html',   e:'⭐'},
-  {n:'Website',         h:'website.html',   e:'🌐'},
+  {n:'Website',         h:'website.html',   e:'🌐', fomOnly:true},   // Shot by A has no website yet
   {n:'Photos',          h:'photos.html',    e:'📸'},
   {n:'Advisor',         h:'advisor.html',   e:'🩺'},
-  {n:'Client Portal (view as client)', h:'https://www.fomstudios.co.za/client-portal.html', e:'👤', ext:true}
+  {n:'Client Portal (view as client)', h:BZ.b.portal, e:'👤', ext:true}
 ];
 var here = (location.pathname.split('/').pop() || 'dashboard.html').toLowerCase();
 if(here === '' ) here = 'dashboard.html';
@@ -71,7 +72,7 @@ function logout(){ var f=fb(); try{ if(f) f.auth().signOut(); }catch(e){} closeS
 /* ---- hamburger: full page list ---- */
 function openMenu(){
   D.getElementById('fomSheetTitle').textContent = 'All pages';
-  D.getElementById('fomSheetBody').innerHTML = PAGES.map(function(p){
+  D.getElementById('fomSheetBody').innerHTML = PAGES.filter(function(p){ return !(p.fomOnly && BZ.isSba); }).map(function(p){
     var active = p.h === here ? ' active' : '';
     return '<a class="fom-row'+active+'" href="'+p.h+'"'+(p.ext?' target="_blank" rel="noopener"':'')+'><span class="e">'+p.e+'</span><b>'+p.n+'</b></a>';
   }).join('');
@@ -99,9 +100,27 @@ function openChecklist(){
     var j = JSON.stringify(list); LS.set('fom.checklist.v1', j);
     var f = fb();
     if(!f){ msg('Saved on this device only (not signed in to the cloud on this page).'); return; }
-    f.firestore().collection('settings').doc('checklist').set({ json:j, updatedAt:f.firestore.FieldValue.serverTimestamp() })
+    f.firestore().collection('settings').doc(BZ.sid('checklist')).set({ json:j, updatedAt:f.firestore.FieldValue.serverTimestamp() })
       .then(function(){ msg('Saved. Your dashboard will use it now.'); })
       .catch(function(){ msg('Saved on this device only. Publish the Firestore rules so settings can sync.'); });
+  };
+}
+
+/* ---- business details for the current business (used in invoices, contracts, emails, deck) ---- */
+function openBrand(){
+  var b = BZ.b, L = { name:'Business name', owner:'Your name (signs emails and the contract)', email:'Email', phone:'Phone', site:'Website (or Instagram link until there is one)', instagram:'Instagram handle (no @)', role:'Role on the contract' };
+  D.getElementById('fomSheetTitle').textContent = b.name + ' details';
+  D.getElementById('fomSheetBody').innerHTML = '<p class="fom-note" data-norebrand style="margin:6px 12px 10px">These replace FOM Studios\'s details wherever '+b.name+' documents are made. Bank details live in Contract, Edit contract.</p>'+
+    (BZ.EDITABLE || []).map(function(k){ return '<label class="fom-note" style="display:block;margin:10px 12px 4px;font-weight:700">'+L[k]+'</label><input class="fom-ta" style="min-height:0;height:44px" data-bk="'+k+'" value="'+String(b[k]||'').replace(/"/g,'&quot;')+'">'; }).join('')+
+    '<button class="fom-logout" id="fomBrSave">Save details</button><button class="fom-logout alt" id="fomBrBack">Back to settings</button><p class="fom-note" id="fomBrMsg"></p>';
+  D.getElementById('fomBrBack').onclick = openSettings;
+  D.getElementById('fomBrSave').onclick = function(){
+    var v = {}; D.querySelectorAll('[data-bk]').forEach(function(i){ v[i.getAttribute('data-bk')] = i.value; });
+    var f = fb();
+    BZ.saveBrand(BZ.id, v, f ? f.firestore() : null).then(function(ok){
+      D.getElementById('fomBrMsg').textContent = ok ? 'Saved. Reloading so every page uses them...' : 'Saved on this device only (not signed in to the cloud on this page).';
+      setTimeout(function(){ location.reload(); }, 900);
+    });
   };
 }
 
@@ -112,9 +131,14 @@ function openSettings(){
   var lock = LS.get('fom.autolock','0');
   var seg = function(val,label){ return '<button data-theme-set="'+val+'" class="'+(theme===val?'on':'')+'">'+label+'</button>'; };
   var lockOpt = function(v,label){ return '<option value="'+v+'"'+(lock===String(v)?' selected':'')+'>'+label+'</option>'; };
+  var bb = function(id, label, icon){ return '<button type="button" data-biz-set="'+id+'" class="'+(BZ.id===id?'on':'')+'"><img src="'+icon+'" alt="">'+label+'</button>'; };
   D.getElementById('fomSheetBody').innerHTML =
-    '<div class="fom-prof"><span class="pic"><img src="assets/mascot.png" alt=""></span>'+
-      '<div><b>FOM Studios</b><small>'+(email ? email : 'Admin')+'</small></div></div>'+
+    '<div class="fom-prof"><span class="pic"><img src="'+BZ.b.icon+'" alt=""></span>'+
+      '<div><b>'+BZ.b.name+'</b><small>'+(email ? email : 'Admin')+'</small></div></div>'+
+    '<div class="fom-set" data-norebrand style="flex-direction:column;align-items:stretch"><span><label>Business</label><small>Switches the theme, data and documents. Both share one login.</small></span>'+
+      '<div class="biz-seg" id="fomBiz">'+bb('fom','FOM Studios','assets/mascot.png')+bb('sba','Shot by A','assets/shotbya-icon.png')+'</div></div>'+
+    '<div class="fom-set"><span><label>Business details</label><small>Name, email, phone and links used in '+BZ.b.name+' documents</small></span>'+
+      '<button class="fom-mini" id="fomBrand">Edit</button></div>'+
     '<div class="fom-set"><span><label>Appearance</label><small>Light, dark, or follow your phone</small></span>'+
       '<div class="fom-seg" id="fomTheme">'+seg('auto','Auto')+seg('light','Light')+seg('dark','Dark')+'</div></div>'+
     '<div class="fom-set"><span><label>Auto-lock</label><small>Lock after this long with no activity</small></span>'+
@@ -137,6 +161,8 @@ function openSettings(){
     tw.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x===b); }); };
   D.getElementById('fomLock').onchange = function(e){ LS.set('fom.autolock', e.target.value); setIdleFromStore(); };
   D.getElementById('fomChk').onclick = openChecklist;
+  D.getElementById('fomBiz').onclick = function(e){ var b = e.target.closest('[data-biz-set]'); if(!b || b.getAttribute('data-biz-set') === BZ.id) return; if(BZ.setBiz) BZ.setBiz(b.getAttribute('data-biz-set')); };
+  D.getElementById('fomBrand').onclick = openBrand;
   D.getElementById('fomLogout').onclick = logout;
   D.getElementById('fomLogoutAll').onclick = function(){
     if(!confirm('Log out of ALL devices, including this one? Everyone will need to sign in again.')) return;
@@ -156,7 +182,7 @@ nav.innerHTML =
   '<button class="js-menu" aria-label="All pages">'+IC.menu+'</button>'+
   '<button class="js-home'+(here==='dashboard.html'?' active':'')+'" aria-label="Dashboard">'+IC.home+'</button>'+
   '<button class="js-calc'+(here==='calculator.html'?' active':'')+'" aria-label="Price Calculator">'+IC.calc+'</button>'+
-  '<button class="js-prof" aria-label="Profile and settings"><span class="av"><img src="assets/mascot.png" alt=""></span></button>';
+  '<button class="js-prof" aria-label="Profile and settings"><span class="av"><img src="'+BZ.b.icon+'" alt=""></span></button>';
 D.body.appendChild(nav);
 nav.querySelector('.js-menu').onclick = openMenu;
 nav.querySelector('.js-home').onclick = function(){ if(here!=='dashboard.html') location.href='dashboard.html'; };

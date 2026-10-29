@@ -172,6 +172,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 .dm-foot .btn{padding:10px 16px;}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -392,6 +393,7 @@ const CT_DEFAULT = {
     { id:'force', title:'Force Majeure', on:true, body:`{biz} shall not be liable for failure to perform due to events beyond its reasonable control, including but not limited to natural disasters, government restrictions, illness, or emergencies. In the event that {biz} is unable to attend or complete a scheduled shoot due to illness or emergency, the Client will be notified as soon as reasonably possible and the booking will be rescheduled to the next mutually available date. Where rescheduling is not possible, alternative arrangements will be discussed between both parties.` },
   ]
 };
+if(window.FOM_BIZ && FOM_BIZ.isSba){ const _d = JSON.parse(FOM_BIZ.rebrand(JSON.stringify(CT_DEFAULT), { role:true, colors:false })); Object.keys(_d).forEach(k => { CT_DEFAULT[k] = _d[k]; }); }
 let CT = JSON.parse(JSON.stringify(CT_DEFAULT)), CT_DB = null;
 const CT_KEY = 'fom.contract.v1';
 const cclone = o => JSON.parse(JSON.stringify(o));
@@ -456,7 +458,7 @@ function ctDiff(a, b){
 function ctBoot(){ try{ const j = localStorage.getItem(CT_KEY); if(j) applyCT(JSON.parse(j)); }catch(e){} }
 function ctCloudLoad(db){
   CT_DB = db;
-  db.collection('settings').doc('contract').get().then(snap => {
+  FOM_BIZ.getSettings(db, 'contract').then(snap => {
     if(!snap.exists || !snap.data().json) return;
     let s; try{ s = JSON.parse(snap.data().json); }catch(e){ return; }
     applyCT(s); try{ localStorage.setItem(CT_KEY, snap.data().json); }catch(e){}
@@ -589,14 +591,14 @@ async function saveCT(){
   payload.version = (CT.version || 1) + 1; payload.versionAt = now; payload.history = hist;
   applyCT(payload); const j = JSON.stringify(CT); let ok = !!CT_DB;
   try{ localStorage.setItem(CT_KEY, j); }catch(e){}
-  if(CT_DB){ try{ await CT_DB.collection('settings').doc('contract').set({ json:j, updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); }catch(e){ ok = false; console.warn(e); } }
+  if(CT_DB){ try{ await CT_DB.collection('settings').doc(FOM_BIZ.sid('contract')).set({ json:j, updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); }catch(e){ ok = false; console.warn(e); } }
   CTD = cclone(CT); ctSaved = JSON.stringify(CTD); ctDefaults(); refreshPreview(); ctDraw(true);
   ctToast(ok ? 'Saved as version ' + CT.version + '. New contracts use this wording.' : 'Saved on this device only. Add the settings rule in Firestore to sync it.');
 }
 function resetCT(){
   if(!confirm('Reset all wording, terms and business details back to the originals? Your edits and added clauses will be removed.')) return;
   CT = cclone(CT_DEFAULT); try{ localStorage.removeItem(CT_KEY); }catch(e){}
-  if(CT_DB) CT_DB.collection('settings').doc('contract').set({ json:JSON.stringify(CT), updatedAt:firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {});
+  if(CT_DB) CT_DB.collection('settings').doc(FOM_BIZ.sid('contract')).set({ json:JSON.stringify(CT), updatedAt:firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {});
   CTD = cclone(CT); ctSaved = JSON.stringify(CTD); ctDefaults(); refreshPreview(); ctDraw(); ctToast('Back to the original contract');
 }
 function previewDraft(){
@@ -660,7 +662,9 @@ function fields(){
     };
 }
 
-function buildContract(f, ct){
+/* each business's contract, with any leftover FOM details and colours swapped for the business you are working in */
+function buildContract(f, ct){ return FOM_BIZ.rebrand(buildContractRaw(f, ct), { role:true }); }
+function buildContractRaw(f, ct){
     ct = ct || CT;
     const balance = Math.max(0, f.total - f.deposit);
     const depositDisplay = f.deposit > 0 ? RZA(f.deposit) : RZA(f.total * ct.terms.depositPct / 100);

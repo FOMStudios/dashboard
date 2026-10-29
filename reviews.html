@@ -207,6 +207,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 @media(max-width:640px){.rv-summary{grid-template-columns:minmax(0,1fr);}}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -358,6 +359,8 @@ $('rvList').addEventListener('click', async e=>{
     const txt='\u201C'+(r.message||'').trim()+'\u201D\n'+(r.name||'Anonymous')+', '+'\u2605'.repeat(Math.max(1,+r.rating||5));
     try{ await navigator.clipboard.writeText(txt); toast('Testimonial copied'); }
     catch(_){ prompt('Copy this testimonial:', txt); }
+  } else if(act==='feat' && FOM_BIZ.isSba){
+    toast('Featuring puts a review on a website. Shot by A has no website yet, so use Copy for now.');
   } else if(act==='feat'){
     // Featured reviews are copied to the public "testimonials" collection that the website reads.
     // Only name, rating and message are copied, so nothing private ever becomes public.
@@ -418,9 +421,12 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
     db=firebase.firestore();
 
     const start=()=>{
-      db.collection('orders').onSnapshot(s=>{ orders=s.docs.map(d=>({id:d.id,...d.data()})); render(); }, e=>console.warn('orders:',e));
+      FOM_BIZ.syncBrand(db);
+      db.collection('orders').onSnapshot(s=>{ orders=FOM_BIZ.mine(s.docs.map(d=>({id:d.id,...d.data()}))); render(); }, e=>console.warn('orders:',e));
       db.collection('feedback').onSnapshot(s=>{
-        reviews=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>tsMs(b.createdAt)-tsMs(a.createdAt));
+        // Shot by A reviews carry biz:'sba' (or come from a shotbya/ gallery folder); everything else is FOM
+        const rvBiz = r => (r.biz === 'sba' || /^shotbya\//i.test(String(r.orderId||''))) ? 'sba' : 'fom';
+        reviews=s.docs.map(d=>({id:d.id,...d.data()})).filter(r=>rvBiz(r)===FOM_BIZ.id).sort((a,b)=>tsMs(b.createdAt)-tsMs(a.createdAt));
         render();
       }, e=>{ console.warn('feedback:',e); $('rvList').innerHTML='<div class="rv-empty">Could not load reviews. Check the Firestore rules allow admins to read the feedback collection.</div>'; });
     };

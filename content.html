@@ -200,6 +200,7 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
 .pk-row{margin-top:14px;display:flex;gap:8px;}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -432,7 +433,7 @@ const STATUSES = ['Idea','Planned','Shot','Editing','Ready to Post','Posted'];
 const TYPES = ['Video','Photo','Reel','Carousel','Story','Other'];
 const PLATFORMS = ['Instagram','TikTok','YouTube','Website / Portfolio','Multiple','Other'];
 const STATUS_CLASS = { 'Idea':'st-idea','Planned':'st-planned','Shot':'st-shot','Editing':'st-editing','Ready to Post':'st-ready','Posted':'st-posted' };
-const STATUS_DOT   = { 'Idea':'#6f6f6d','Planned':'#02367B','Shot':'#6a3fa0','Editing':'#c98a1f','Ready to Post':'#1f8a4c','Posted':'#146c37' };
+const STATUS_DOT   = { 'Idea':'#6f6f6d','Planned':(window.FOM_BIZ?FOM_BIZ.b.accent:'#02367B'),'Shot':'#6a3fa0','Editing':'#c98a1f','Ready to Post':'#1f8a4c','Posted':'#146c37' };
 const TYPE_CLASS   = { 'Video':'type-video','Photo':'type-photo','Reel':'type-reel','Carousel':'type-carousel','Story':'type-story','Other':'type-other' };
 
 let items = [];
@@ -461,12 +462,12 @@ function cloudItemStore(db){
     return {
         start(){
             col().onSnapshot(snap=>{
-                items = snap.docs.map(d=>({id:d.id, ...d.data()}));
+                items = FOM_BIZ.mine(snap.docs.map(d=>({id:d.id, ...d.data()})));
                 items.sort((a,b)=> tsMillis(b.createdAt) - tsMillis(a.createdAt));
                 if(editingCell){ pendingRender=true; } else safeRender();
             }, err=>{ console.warn('Firestore:',err); toast('Could not load content - ' + (err.code==='permission-denied' ? 'check your Firestore rules allow the "contentPlanner" collection.' : (err.message||'connection error'))); });
         },
-        add(o){ o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)).catch(err=>{ console.error(err); toast('Could not save - ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "contentPlanner" collection.' : (err.message||'try again.'))); }); },
+        add(o){ FOM_BIZ.tag(o); o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)).catch(err=>{ console.error(err); toast('Could not save - ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "contentPlanner" collection.' : (err.message||'try again.'))); }); },
         update(id){ clearTimeout(timers[id]); timers[id]=setTimeout(()=>{ const o=items.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}).catch(err=>{ console.error(err); toast('Could not save changes - '+(err.message||'try again.')); }); },500); },
         updateNow(id){ const o=items.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}).catch(err=>{ console.error(err); toast('Could not save - '+(err.message||'try again.')); }); },
         remove(id){ col().doc(id).delete().catch(err=>{ console.error(err); toast('Could not delete - '+(err.message||'try again.')); }); },
@@ -779,7 +780,7 @@ $('tabAdvisor').addEventListener('click', e => {
 
 async function loadAdvisor(db){
   OCFG = await OUT.load(db);
-  try{ const s = await db.collection('leads').get(); ADV_LEADS = s.docs.map(d => Object.assign({ id:d.id }, d.data())); }catch(e){ console.warn('leads for advisor', e); }
+  try{ const s = await db.collection('leads').get(); ADV_LEADS = FOM_BIZ.mine(s.docs.map(d => Object.assign({ id:d.id }, d.data()))); }catch(e){ console.warn('leads for advisor', e); }
   renderAdvisor();
 }
 fetch('trends.json?d=' + OUT.iso(new Date()), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(j => { TRENDS = j || { items:[] }; renderAdvisor(); }).catch(() => { TRENDS = { items:[] }; renderAdvisor(); });

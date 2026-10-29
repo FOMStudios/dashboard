@@ -174,3 +174,50 @@ html.fom-authed .fom-splash,html.fom-authed .auth-check{display:none!important;}
 .fom-sheet .grab::after{content:"";position:absolute;inset:-12px -40px;}   /* bigger, invisible hit area */
 @media (pointer:coarse){ .dm-head{position:relative;padding-top:22px !important;}
   .dm-head::before{content:"";position:absolute;top:8px;left:50%;width:42px;height:5px;margin-left:-21px;border-radius:9px;background:var(--line);} }
+
+/* ============================================================
+   SHOT BY A theme (html[data-biz="sba"], set by brand.js)
+   Palette: Dark red #780000, Vivid red #C1121F, Moss #B9BAA3,
+            Stone #D6D5C9, Black #0A100D, Maroon #630606
+   ============================================================ */
+:root[data-biz="sba"]{
+  --bg:#E4E3D9; --bg-pill:#F3F2EC; --bg-dark:#0A100D; --surface-2:#D6D5C9;
+  --ink:#0A100D; --ink-soft:#5E5F55; --ink-on-dark:#F3F2EC;
+  --line:#C9C8BA; --accent:#780000; --accent-hover:#630606; --accent-on-dark:#D6D5C9;
+  --btn:#780000; --btn-ink:#ffffff; --btn-ink-soft:#e9c9c9;
+  --input-bg:#ffffff; --track:#D6D5C9; --hover:#ECEBE3; --th-bg:#D6D5C9;
+}
+@media (prefers-color-scheme:dark){ :root[data-biz="sba"]:not([data-theme="light"]){
+  --bg:#0A100D; --bg-pill:#141A16; --bg-dark:#D6D5C9; --surface-2:#1F2520;
+  --ink:#ECEBE3; --ink-soft:#A9AA98; --ink-on-dark:#0A100D;
+  --line:rgba(214,213,201,.14); --accent:#E0606A; --accent-hover:#C1121F; --accent-on-dark:#E0606A;
+  --btn:#C1121F; --btn-ink:#ffffff; --btn-ink-soft:#5a2a2a;
+  --input-bg:#0E1411; --track:#262C27; --hover:#1B211D; --th-bg:#1F2520;
+}}
+:root[data-biz="sba"][data-theme="dark"]{
+  --bg:#0A100D; --bg-pill:#141A16; --bg-dark:#D6D5C9; --surface-2:#1F2520;
+  --ink:#ECEBE3; --ink-soft:#A9AA98; --ink-on-dark:#0A100D;
+  --line:rgba(214,213,201,.14); --accent:#E0606A; --accent-hover:#C1121F; --accent-on-dark:#E0606A;
+  --btn:#C1121F; --btn-ink:#ffffff; --btn-ink-soft:#5a2a2a;
+  --input-bg:#0E1411; --track:#262C27; --hover:#1B211D; --th-bg:#1F2520;
+}
+/* the dark-red logo turns stone on dark backgrounds */
+@media (prefers-color-scheme:dark){ :root[data-biz="sba"]:not([data-theme="light"]) img.sba-logo{filter:brightness(0) invert(.88) sepia(.15);} }
+:root[data-biz="sba"][data-theme="dark"] img.sba-logo{filter:brightness(0) invert(.88) sepia(.15);}
+img.sba-logo{object-fit:contain;}
+/* the round icon already has its own stone background */
+:root[data-biz="sba"] .fom-nav .av img,:root[data-biz="sba"] .fom-prof .pic img{padding:0;background:transparent;object-fit:cover;}
+
+/* business switch (Settings sheet + Dashboard chip) */
+.biz-seg{display:flex;gap:6px;background:var(--surface-2);border-radius:16px;padding:5px;margin:2px 0 6px;}
+.biz-seg button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:transparent;border-radius:12px;padding:10px 8px;font:inherit;font-weight:700;font-size:14px;color:var(--ink-soft);cursor:pointer;}
+.biz-seg button img{width:24px;height:24px;border-radius:50%;object-fit:cover;background:#fff;}
+.biz-seg button.on{background:var(--bg-pill);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.biz-dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;}
+.biz-dot.fom{background:#02367B;} .biz-dot.sba{background:#780000;}
+.biz-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;border-radius:99px;padding:2px 8px;color:#fff;white-space:nowrap;}
+.biz-tag.fom{background:#02367B;} .biz-tag.sba{background:#780000;}
+.vbar-c.fom{background:#02367B !important;} .vbar-c.sba{background:#780000 !important;}
+/* Shot by A invoice: one logo only, and never tinted for dark mode on the white page */
+:root[data-biz="sba"] #ivMascot{display:none !important;}
+#invoiceSheet img.sba-logo,.is-page img.sba-logo,.inv-sheet img.sba-logo{filter:none !important;}

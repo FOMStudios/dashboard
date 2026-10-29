@@ -104,7 +104,8 @@
 
     /* ---------- website ---------- */
     var s = d.site;
-    if(!s){ add('Website', 'info', 'Website details have not been saved yet', 'The site is showing the details built into its files. Open the Website page and save once.', 'website.html', 'Website'); }
+    if(window.FOM_BIZ && FOM_BIZ.isSba){ /* Shot by A has no website yet, so no website checks */ }
+    else if(!s){ add('Website', 'info', 'Website details have not been saved yet', 'The site is showing the details built into its files. Open the Website page and save once.', 'website.html', 'Website'); }
     else {
       if(!String(s.phone || '').trim()) add('Website', 'warn', 'No phone number on the website page', '', 'website.html', 'Website');
       if(!String(s.email || '').trim()) add('Website', 'warn', 'No email on the website page', '', 'website.html', 'Website');
@@ -157,7 +158,7 @@
     var lead = kind === 'overdue' ? 'Hi ' + first + ', I hope you are well. A friendly reminder that ' + money(owing) + ' is still outstanding' + what + '.'
                                   : 'Hi ' + first + ', looking forward to your shoot. A friendly reminder that ' + money(owing) + ' is due before the shoot date' + what + '.';
     var bank = (biz.bank && biz.acc) ? ' EFT details: ' + biz.bank + ', account holder ' + (biz.holder || '') + ', branch code ' + (biz.branch || '') + ', account number ' + biz.acc + '.' : '';
-    return lead + bank + ref + ' Thank you! FOM Studios';
+    return lead + bank + ref + ' Thank you! ' + (biz.name || (window.FOM_BIZ ? FOM_BIZ.b.name : 'FOM Studios'));
   }
 
   function checklist(lines){

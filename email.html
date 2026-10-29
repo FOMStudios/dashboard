@@ -95,6 +95,7 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
 @media(max-width:560px){.row2{grid-template-columns:1fr;}}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -247,7 +248,7 @@ function fields(){
     total, paid, balance,
     due:  $('fDue')  ? $('fDue').value  : '',
     expiry: $('fExpiry') ? $('fExpiry').value : '',
-    portal: $('fPortal').value.trim() || 'https://www.fomstudios.co.za/client-portal.html',
+    portal: $('fPortal').value.trim() || (window.FOM_BIZ ? FOM_BIZ.b.portal : 'https://www.fomstudios.co.za/client-portal.html'),
     full: balance <= 0,
   };
 }
@@ -548,6 +549,15 @@ function plainText(){
   return t;
 }
 
+/* Shot by A: the same emails with her name, logo, colours, links and details */
+if(window.FOM_BIZ && FOM_BIZ.isSba){
+  const _html = buildEmailHtml, _text = plainText, _ics = icsText, _gcal = gcalUrl;
+  buildEmailHtml = function(){ return FOM_BIZ.rebrand(_html.apply(this, arguments)); };
+  plainText = function(){ return FOM_BIZ.rebrand(_text.apply(this, arguments), { colors:false }); };
+  icsText = function(){ return FOM_BIZ.rebrand(_ics.apply(this, arguments), { colors:false }); };
+  gcalUrl = function(f){ return _gcal.call(this, f).replace(/FOM(%20|\+| )Studios/g, encodeURIComponent(FOM_BIZ.b.name)); };
+  { const p = document.getElementById('fPortal'); if(p && /fomstudios\.co\.za\/client-portal/.test(p.value)) p.value = FOM_BIZ.b.portal; }
+}
 function refresh(){
   const f = fields();
   const isReady = (f.type === 'ready' || f.type === 'expiring');
@@ -610,7 +620,7 @@ $('gmailBtn').onclick = () => {
     : 'Your FOM Studios booking is confirmed';
   const url = 'https://mail.google.com/mail/?view=cm&fs=1'
     + '&to=' + encodeURIComponent(f.email)
-    + '&su=' + encodeURIComponent(subject);
+    + '&su=' + encodeURIComponent(window.FOM_BIZ ? FOM_BIZ.rebrand(subject, { colors:false }) : subject);
   window.open(url, '_blank');
 };
 $('icsBtn').onclick = () => {

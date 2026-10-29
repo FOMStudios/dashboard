@@ -57,6 +57,22 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .page{padding-top:108px;}
 .dash-head{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:24px;}
 .dash-head .logo img{max-height:64px;width:auto;}
+.biz-view{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-6px 0 18px;}
+.biz-view .bv-l{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
+.biz-view .bv-c{display:flex;gap:6px;flex-wrap:wrap;}
+.biz-view .bv-c button{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--bg-pill);border-radius:99px;padding:7px 14px;font:inherit;font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer;}
+.biz-view .bv-c button.on{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+.biz-view .bv-sw{margin-left:auto;border:0;background:none;font:inherit;font-size:13px;color:var(--ink-soft);cursor:pointer;}
+.biz-view .bv-sw b{color:var(--accent);}
+@media(max-width:560px){.biz-view .bv-sw{margin-left:0;}}
+.k-split{display:flex;flex-direction:column;gap:2px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;font-weight:600;}
+.k-split .biz-dot{width:8px;height:8px;margin-right:6px;}
+.kpi.accent .k-split{border-color:rgba(255,255,255,.18);}
+.vbar-stack{display:flex;flex-direction:column;justify-content:flex-end;width:100%;max-width:50px;}
+.vbar-stack .vbar-c{max-width:none;border-radius:0;}
+.vbar-stack .vbar-c:first-child{border-radius:8px 8px 0 0;}
+.rv-key{display:flex;gap:14px;font-size:12px;font-weight:600;color:var(--ink-soft);}
+.rv-key .biz-dot{width:9px;height:9px;margin-right:6px;}
 .dash-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
 .dash-head p{color:var(--ink-soft);font-size:14px;margin-top:2px;}
 .head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -140,6 +156,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .sd-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 9px;background:#e0a100;color:#fff;margin-left:8px;vertical-align:middle;}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -223,7 +240,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 <script>
 const RZA = n => 'R' + (Math.round(+n||0)).toLocaleString('en-ZA');
 const $ = id => document.getElementById(id);
-const STATUS_COLORS = { Pending:'#5B9AE0', Editing:'#02367B', Completed:'#2a2b2c', Delivered:'#7aa6c9', Cancelled:'#cd7f32' };
+const STATUS_COLORS = (window.FOM_BIZ && FOM_BIZ.isSba) ? { Pending:'#B9BAA3', Editing:'#780000', Completed:'#0A100D', Delivered:'#C1121F', Cancelled:'#8a6d3b' } : { Pending:'#5B9AE0', Editing:'#02367B', Completed:'#2a2b2c', Delivered:'#7aa6c9', Cancelled:'#cd7f32' };
 const PRODUCT_COLORS = { Bronze:'#cd7f32', Silver:'#a9b2bd', Gold:'#e0a93b' };
 const PALETTE = ['#02367B','#5B9AE0','#2a2b2c','#6f6f6d','#cd7f32','#a9b2bd','#7aa6c9'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -261,10 +278,11 @@ function parseJ(snap){ try{ return snap && snap.exists && snap.data().json ? JSO
 async function loadAdvisorData(db){
   ADV.errors = [];
   const get = async (col, id, label, fn) => { try{ return fn(await db.collection(col).doc(id).get()); }catch(e){ ADV.errors.push(label); return null; } };
-  ADV.calc = await get('settings','calculator','calculator settings', parseJ);
-  ADV.contract = await get('settings','contract','contract settings', parseJ);
+  const getS = async (id, label) => { try{ return parseJ(await BZ.getSettings(db, id)); }catch(e){ ADV.errors.push(label); return null; } };
+  ADV.calc = await getS('calculator','calculator settings');
+  ADV.contract = await getS('contract','contract settings');
   ADV.site = await get('siteContent','site','website content', s => s.exists ? s.data() : null);
-  try{ const c = await db.collection('settings').doc('checklist').get(); if(c.exists && c.data().json){ ADV.checklist = JSON.parse(c.data().json); localStorage.setItem('fom.checklist.v1', c.data().json); } }catch(e){}
+  try{ const c = await BZ.getSettings(db, 'checklist'); if(c.exists && c.data().json){ ADV.checklist = JSON.parse(c.data().json); localStorage.setItem('fom.checklist.v1', c.data().json); } }catch(e){}
   safeRender();
 }
 function cardNext(){
@@ -326,48 +344,67 @@ function cardShoot(){
     ${items.map(i=>`<label class="sd-item${ck[i[0]]?' done':''}"><input type="checkbox" data-sd="${i[0]}" data-oid="${esc(cur.id)}"${ck[i[0]]?' checked':''}><span>${i[1]}</span></label>`).join('')}
     <div class="ns-meta">${esc([cur.product, cur.shootDate ? 'Shoot ' + fmtDate(cur.shootDate) : ''].filter(Boolean).join('  ·  '))}</div></div>`;
 }
+/* combined view: Both / FOM / Shot by A (cards above the figures always follow the business you are working in) */
+let ALL = [], VIEW = 'both';
+try{ VIEW = localStorage.getItem('fom.dash.view') || 'both'; }catch(e){}
+const BZ = window.FOM_BIZ, BNAME = BZ.NAMES, BCOL = BZ.COLORS;
+const bizOf = o => BZ.bizOf(o);
+function viewChips(){
+  const c = (v, label, dot) => `<button type="button" class="${VIEW===v?'on':''}" data-view="${v}">${dot?`<span class="biz-dot ${dot}"></span>`:''}${label}</button>`;
+  return `<div class="biz-view" data-norebrand><span class="bv-l">Show figures for</span><div class="bv-c">${c('both','Both')}${c('fom','FOM Studios','fom')}${c('sba','Shot by A','sba')}</div>
+    <button type="button" class="bv-sw" id="bizSwitch">Working in <b>${BNAME[BZ.id]}</b> &middot; switch</button></div>`;
+}
 function render(){
   const el=$('content');
-  if(!orders.length){
-    el.innerHTML=`<div class="card empty-card"><img src="assets/mascot.png" alt="" onerror="this.style.display='none'">
+  const vo = VIEW === 'both' ? ALL : ALL.filter(o => bizOf(o) === VIEW);
+  if(!ALL.length){
+    el.innerHTML=viewChips()+`<div class="card empty-card"><img src="assets/mascot.png" alt="" onerror="this.style.display='none'">
       <h3>No orders yet</h3><p>Add some bookings in the database and they’ll show up here.</p>
       <a href="database.html" class="btn">Go to Database →</a></div>`;
     return;
   }
-  const totalRev=orders.reduce((a,o)=>a+(+o.total||0),0);
-  const totalPaid=orders.reduce((a,o)=>a+(+o.paid||0),0);
+  const both = VIEW === 'both';
+  const sum = (arr, f) => arr.reduce((a,o)=>a+(+f(o)||0),0);
+  const per = (f) => ({ fom: sum(ALL.filter(o=>bizOf(o)==='fom'), f), sba: sum(ALL.filter(o=>bizOf(o)==='sba'), f) });
+  const split = (f, fmt) => { if(!both) return ''; const p = per(f); return `<div class="k-split" data-norebrand><span><i class="biz-dot fom"></i>FOM ${fmt(p.fom)}</span><span><i class="biz-dot sba"></i>Shot by A ${fmt(p.sba)}</span></div>`; };
+  const totalRev=sum(vo,o=>o.total);
+  const totalPaid=sum(vo,o=>o.paid);
   const outstanding=totalRev-totalPaid;
   const pctPaid=totalRev?Math.round(totalPaid/totalRev*100):0;
 
   const today=new Date(); today.setHours(0,0,0,0);
   const active=s=>!['Completed','Delivered','Cancelled'].includes(s);
-  const upcoming=orders.filter(o=>o.deadline&&active(o.status)&&new Date(o.deadline)>=today).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+  const upcoming=vo.filter(o=>o.deadline&&active(o.status)&&new Date(o.deadline)>=today).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
   const nextDue=upcoming.length?fmtDate(upcoming[0].deadline):'-';
 
+  // revenue by month, stacked by business
   const monthMap={};
-  orders.forEach(o=>{ if(o.shootDate&&o.shootDate.length>=7){ const k=o.shootDate.slice(0,7); monthMap[k]=(monthMap[k]||0)+(+o.total||0); }});
+  vo.forEach(o=>{ if(o.shootDate&&o.shootDate.length>=7){ const k=o.shootDate.slice(0,7); const m=monthMap[k]=monthMap[k]||{fom:0,sba:0}; m[bizOf(o)]+=(+o.total||0); }});
   const months=Object.keys(monthMap).sort();
-  const monthMax=Math.max(...Object.values(monthMap),1);
-  const monthBars=months.map(k=>{ const v=monthMap[k]; const h=Math.round(v/monthMax*150); return `<div class="vbar"><div class="vbar-v">${Rk(v)}</div><div class="vbar-c" style="height:${h}px"></div><div class="vbar-l">${monthLabel(k)}</div></div>`; }).join('');
+  const monthMax=Math.max(...months.map(k=>monthMap[k].fom+monthMap[k].sba),1);
+  const monthBars=months.map(k=>{ const m=monthMap[k], v=m.fom+m.sba, hf=Math.round(m.fom/monthMax*150), hs=Math.round(m.sba/monthMax*150);
+    return `<div class="vbar" title="${esc(monthLabel(k))}: FOM ${RZA(m.fom)}, Shot by A ${RZA(m.sba)}" data-norebrand><div class="vbar-v">${Rk(v)}</div><div class="vbar-stack">${hs?`<div class="vbar-c sba" style="height:${hs}px"></div>`:''}${hf?`<div class="vbar-c fom" style="height:${hf}px"></div>`:''}</div><div class="vbar-l">${monthLabel(k)}</div></div>`; }).join('');
 
-  const statusMap=groupCount(orders,'status');
+  const statusMap=groupCount(vo,'status');
   const statusSegs=Object.keys(statusMap).map((k,i)=>({label:k,value:statusMap[k],color:colorFor(k,STATUS_COLORS,i)}));
-  const prodMap=groupCount(orders,'product');
+  const prodMap=groupCount(vo,'product');
   const prodMax=Math.max(...Object.values(prodMap),1);
   const legend=statusSegs.map(s=>`<li><span class="dot" style="background:${s.color}"></span>${esc(s.label)}<span class="lv">${s.value}</span></li>`).join('');
   const bars=Object.keys(prodMap).map((k,i)=>`<div class="bar-row"><span>${esc(k)}</span><div class="bar-track"><div class="bar-fill" style="width:${prodMap[k]/prodMax*100}%;background:${colorFor(k,PRODUCT_COLORS,i)}"></div></div><span class="bv">${prodMap[k]}</span></div>`).join('');
-  const recent=orders.slice(-5).reverse().map(o=>{ const col=colorFor(o.status,STATUS_COLORS,0);
-    return `<tr><td>${esc(o.orderId)}</td><td>${esc(o.customer)||'-'}</td><td>${esc(o.product)||'-'}</td><td><span class="tag" style="background:${col}">${esc(o.status)}</span></td><td style="text-align:right">${RZA(o.total)}</td><td style="text-align:right;color:var(--accent);font-weight:700">${RZA((+o.total||0)-(+o.paid||0))}</td></tr>`; }).join('');
+  const recent=vo.slice(-6).reverse().map(o=>{ const col=colorFor(o.status,STATUS_COLORS,0);
+    return `<tr><td>${esc(o.orderId)}</td>${both?`<td data-norebrand><span class="biz-tag ${bizOf(o)}">${bizOf(o)==='sba'?'Shot by A':'FOM'}</span></td>`:''}<td>${esc(o.customer)||'-'}</td><td>${esc(o.product)||'-'}</td><td><span class="tag" style="background:${col}">${esc(o.status)}</span></td><td style="text-align:right">${RZA(o.total)}</td><td style="text-align:right;color:var(--accent);font-weight:700">${RZA((+o.total||0)-(+o.paid||0))}</td></tr>`; }).join('');
+  const cnt = arr => arr.length;
 
   el.innerHTML=`
+    ${viewChips()}
     ${cardMessages()}
     ${cardShoot()}
     <div class="grid2">${cardNext()}${cardSuggest()}</div>
     <div class="kpis">
-      <div class="kpi"><div class="k-lbl">Total Orders</div><div class="k-val">${orders.length}</div><div class="k-sub">${statusMap['Completed']||0} completed</div></div>
-      <div class="kpi"><div class="k-lbl">Total Revenue</div><div class="k-val">${RZA(totalRev)}</div><div class="k-sub">across all orders</div></div>
-      <div class="kpi"><div class="k-lbl">Collected</div><div class="k-val">${RZA(totalPaid)}</div><div class="k-sub">${pctPaid}% of revenue</div></div>
-      <div class="kpi accent"><div class="k-lbl">Outstanding</div><div class="k-val">${RZA(outstanding)}</div><div class="k-sub">still to be paid</div></div>
+      <div class="kpi"><div class="k-lbl">Total Orders</div><div class="k-val">${vo.length}</div><div class="k-sub">${statusMap['Completed']||0} completed</div>${both?`<div class="k-split" data-norebrand><span><i class="biz-dot fom"></i>FOM ${cnt(ALL.filter(o=>bizOf(o)==='fom'))}</span><span><i class="biz-dot sba"></i>Shot by A ${cnt(ALL.filter(o=>bizOf(o)==='sba'))}</span></div>`:''}</div>
+      <div class="kpi"><div class="k-lbl">Total Revenue</div><div class="k-val">${RZA(totalRev)}</div><div class="k-sub">${both?'both businesses':'across all orders'}</div>${split(o=>o.total,RZA)}</div>
+      <div class="kpi"><div class="k-lbl">Collected</div><div class="k-val">${RZA(totalPaid)}</div><div class="k-sub">${pctPaid}% of revenue</div>${split(o=>o.paid,RZA)}</div>
+      <div class="kpi accent"><div class="k-lbl">Outstanding</div><div class="k-val">${RZA(outstanding)}</div><div class="k-sub">still to be paid</div>${split(o=>(+o.total||0)-(+o.paid||0),RZA)}</div>
       <div class="kpi"><div class="k-lbl">Upcoming Deadlines</div><div class="k-val">${upcoming.length}</div><div class="k-sub">${upcoming.length?'next: '+nextDue:'none pending'}</div></div>
     </div>
     <div class="grid2">
@@ -375,7 +412,7 @@ function render(){
       <div class="card"><h2>Orders by Product</h2><div class="bars">${bars}</div></div>
     </div>
     <div class="card" style="margin-bottom:20px;">
-      <h2>Revenue by Month</h2>
+      <div class="ns-head"><h2>Revenue by Month</h2>${both?`<span class="rv-key" data-norebrand><span><i class="biz-dot fom"></i>FOM Studios</span><span><i class="biz-dot sba"></i>Shot by A</span></span>`:''}</div>
       ${months.length?`<div class="vchart">${monthBars}</div>`:`<p style="color:var(--ink-soft);font-size:14px;">Add shoot dates to your orders to see monthly revenue here.</p>`}
     </div>
     <div class="card" style="margin-bottom:20px;">
@@ -385,11 +422,15 @@ function render(){
     </div>
     <div class="card recent">
       <h2>Recent Orders</h2>
-      <div class="recent-scroll"><table><thead><tr><th>ID</th><th>Customer</th><th>Product</th><th>Status</th><th style="text-align:right">Total</th><th style="text-align:right">Outstanding</th></tr></thead>
+      <div class="recent-scroll"><table><thead><tr><th>ID</th>${both?'<th>Business</th>':''}<th>Customer</th><th>Product</th><th>Status</th><th style="text-align:right">Total</th><th style="text-align:right">Outstanding</th></tr></thead>
       <tbody>${recent}</tbody></table></div>
     </div>`;
 }
 
+$('content').addEventListener('click',e=>{
+  const v=e.target.closest('[data-view]'); if(v){ VIEW=v.dataset.view; try{localStorage.setItem('fom.dash.view',VIEW);}catch(x){} safeRender(); return; }
+  if(e.target.closest('#bizSwitch')) BZ.setBiz(BZ.id==='sba'?'fom':'sba');
+});
 $('content').addEventListener('change',e=>{
   if(e.target.id==='sdSel'){ sdPick=e.target.value; safeRender(); return; }
   if(e.target.dataset && e.target.dataset.sd){
@@ -416,6 +457,7 @@ function startLocal(){ var _ac0=document.getElementById('authCheck'); if(_ac0)_a
   const badge=$('syncBadge'); badge.textContent='💾 Local only'; badge.className='badge local';
   $('logoutBtn').style.display='none';
   try{ orders=JSON.parse(localStorage.getItem('fom_orders'))||[]; }catch(e){ orders=[]; }
+  ALL=orders.slice();
   try{ ADV.calc=JSON.parse(localStorage.getItem('fom.calc.v1')); ADV.contract=JSON.parse(localStorage.getItem('fom.contract.v1')); }catch(e){}
   safeRender();
   window.addEventListener('storage',e=>{ if(e.key==='fom_orders'){ try{orders=JSON.parse(e.newValue)||[];}catch(x){orders=[];} safeRender(); } });
@@ -445,8 +487,9 @@ function initCloud(){
         }
         $('loginGate').style.display='none';
         loadAdvisorData(db);
-        db.collection('orders').onSnapshot(snap=>{ orders=snap.docs.map(d=>({id:d.id,...d.data()})); orders.sort((a,b)=>tsMillis(a.createdAt)-tsMillis(b.createdAt)); safeRender(); }, err=>console.warn('Firestore:',err));
-        if(CHAT_ON) db.collection('chat').onSnapshot(snap=>{ CHATS=snap.docs.map(d=>({id:d.id,...d.data()})); safeRender(); }, err=>console.warn('chat:',err));
+        db.collection('orders').onSnapshot(snap=>{ ALL=snap.docs.map(d=>({id:d.id,...d.data()})); ALL.sort((a,b)=>tsMillis(a.createdAt)-tsMillis(b.createdAt)); orders=BZ.mine(ALL); safeRender(); }, err=>console.warn('Firestore:',err));
+        BZ.syncBrand(db);
+        if(CHAT_ON) db.collection('chat').onSnapshot(snap=>{ CHATS=snap.docs.map(d=>({id:d.id,...d.data()})).filter(c=>orders.some(o=>o.id===c.id)); safeRender(); }, err=>console.warn('chat:',err));
       }).catch(err=>{ console.warn('Admin check failed:',err); $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
     } else { orders=[]; safeRender(); $('loginGate').style.display='flex'; }
   });

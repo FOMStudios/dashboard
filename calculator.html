@@ -317,6 +317,7 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
 }
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -737,7 +738,8 @@ const CONFIG = {
    The Worker URL now lives in pay-config.js so it survives calculator updates.
    (Set PAY_WORKER_URL there.) mode is chosen per-invoice via the dropdown. */
 const PAY = {
-  workerUrl:  (typeof PAY_WORKER_URL  !== 'undefined') ? PAY_WORKER_URL  : "",
+  // card payments go to the Yoco account behind this Worker; Shot by A stays EFT-only until she has her own (PAY_WORKER_URL_SBA)
+  workerUrl:  (window.FOM_BIZ && FOM_BIZ.isSba) ? ((typeof PAY_WORKER_URL_SBA !== 'undefined') ? PAY_WORKER_URL_SBA : "") : ((typeof PAY_WORKER_URL  !== 'undefined') ? PAY_WORKER_URL  : ""),
   depositPct: (typeof PAY_DEPOSIT_PCT !== 'undefined') ? PAY_DEPOSIT_PCT : 50,
   mode: "both",       // "both" = Deposit + Full ; "balance" = remaining balance only
   device: /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
@@ -1254,7 +1256,7 @@ function packageLabel(){
     : (TIERED.includes(state.type) ? `${state.tier} - ${TYPE_LABEL[state.type]}` : TYPE_LABEL[state.type]);
 }
 let lastAutoMsg = '';
-function defaultWaMsg(){ return `Hi! Here's your FOM Studios invoice for ${packageLabel()} - ${RZA(liveTotal)}. Pay securely below:`; }
+function defaultWaMsg(){ return `Hi! Here's your ${FOM_BIZ.b.name} invoice for ${packageLabel()} - ${RZA(liveTotal)}. Pay securely below:`; }
 function refreshWaMsg(){
   const ta = document.getElementById('waMsg'); if(!ta) return;
   const def = defaultWaMsg();
@@ -1443,7 +1445,7 @@ function dataBoot(){
 }
 function calcCloudLoad(db){            // called once you are logged in
   CLOUD_DB = db;
-  db.collection('settings').doc('calculator').get().then(snap => {
+  FOM_BIZ.getSettings(db, 'calculator').then(snap => {
     if(!snap.exists) return;
     const j = snap.data().json; if(!j) return;
     let s; try{ s = JSON.parse(j); }catch(e){ return; }
@@ -1451,7 +1453,7 @@ function calcCloudLoad(db){            // called once you are logged in
     try{ localStorage.setItem(LS_KEY, j); }catch(e){}
     buildTypeOptions(); buildExtraOptions(); render(); renderInvoiceExtras();
   }).catch(e => console.warn('calculator settings:', e));
-  db.collection('settings').doc('contract').get().then(snap => {
+  FOM_BIZ.getSettings(db, 'contract').then(snap => {
     if(!snap.exists || !snap.data().json) return;
     try{ const s = JSON.parse(snap.data().json); applyBiz(s); localStorage.setItem('fom.contract.v1', snap.data().json); }catch(e){}
   }).catch(e => console.warn('contract settings:', e));
@@ -1767,7 +1769,7 @@ async function saveData(){
   let cloudOk = true;
   try{ localStorage.setItem(LS_KEY, j); }catch(e){}
   if(CLOUD_DB){
-    try{ await CLOUD_DB.collection('settings').doc('calculator').set({ json:j, updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); }
+    try{ await CLOUD_DB.collection('settings').doc(FOM_BIZ.sid('calculator')).set({ json:j, updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); }
     catch(e){ cloudOk = false; console.warn('calculator save:', e); }
   } else cloudOk = false;
   buildTypeOptions(); buildExtraOptions(); render(); renderInvoiceExtras();
@@ -1777,7 +1779,7 @@ async function saveData(){
 function resetData(){
   if(!confirm('Reset every price and package back to the original defaults? Your own packages will be removed.')) return;
   resetConfig(); try{ localStorage.removeItem(LS_KEY); }catch(e){}
-  if(CLOUD_DB) CLOUD_DB.collection('settings').doc('calculator').set({ json:JSON.stringify(clone(CONFIG)), updatedAt:firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {});
+  if(CLOUD_DB) CLOUD_DB.collection('settings').doc(FOM_BIZ.sid('calculator')).set({ json:JSON.stringify(clone(CONFIG)), updatedAt:firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {});
   buildTypeOptions(); buildExtraOptions(); render(); renderInvoiceExtras();
   D = clone(CONFIG); dmSavedJson = JSON.stringify(D); drawTab(); dmToast('Back to defaults');
 }

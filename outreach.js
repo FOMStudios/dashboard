@@ -76,7 +76,9 @@
   var DEF_ME = { name:'Ishaaq Adam', phone:'+27 73 755 3136', email:'info@fomstudios.co.za', website:'www.fomstudios.co.za', instagram:'fom_studios_' };
 
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
-  function defaults(){ return { categories:clone(DEF_CATS), templates:clone(DEF_TEMPLATES), me:clone(DEF_ME) }; }
+  function defaults(){ var d = { categories:clone(DEF_CATS), templates:clone(DEF_TEMPLATES), me:clone(DEF_ME) };
+    // Shot by A starts from the same playbook with her details swapped in
+    return (window.FOM_BIZ && FOM_BIZ.isSba) ? JSON.parse(FOM_BIZ.rebrand(JSON.stringify(d), { owner:true })) : d; }
 
   /* keep saved data well-formed, fill gaps from the defaults */
   function clean(c){
@@ -101,7 +103,8 @@
   function load(db){
     var c = cached();
     if(!db) return Promise.resolve(c);
-    return db.collection('settings').doc('outreach').get().then(function(s){
+    var get = window.FOM_BIZ ? FOM_BIZ.getSettings(db, 'outreach') : db.collection('settings').doc('outreach').get();
+    return get.then(function(s){
       if(s.exists && s.data().json){ try{ c = clean(JSON.parse(s.data().json)); cache(c); }catch(e){} }
       return c;
     }).catch(function(e){ console.warn('outreach load', e); return c; });
@@ -109,7 +112,7 @@
   function save(db, c){
     c = clean(c); cache(c);
     if(!db) return Promise.resolve(false);
-    return db.collection('settings').doc('outreach').set({ json: JSON.stringify(c), updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
+    return db.collection('settings').doc(window.FOM_BIZ ? FOM_BIZ.sid('outreach') : 'outreach').set({ json: JSON.stringify(c), updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
       .then(function(){ return true; }).catch(function(e){ console.warn('outreach save', e); return false; });
   }
 

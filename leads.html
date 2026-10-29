@@ -262,6 +262,7 @@ td .deck-lnk small{display:block;color:var(--ink-soft);font-weight:500;font-size
 @media(max-width:640px){.kpis{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}.chip-grid{grid-template-columns:repeat(2,1fr);}}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -524,7 +525,7 @@ sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
    ================================================================ */
 const STATUSES = ['Not Emailed','Emailed','Responded','Accepted','Rejected'];
 const STATUS_CLASS = { 'Not Emailed':'st-notemailed','Emailed':'st-emailed','Responded':'st-responded','Accepted':'st-accepted','Rejected':'st-rejected' };
-const STATUS_DOT   = { 'Not Emailed':'#6f6f6d','Emailed':'#02367B','Responded':'#c98a1f','Accepted':'#1f8a4c','Rejected':'#c0392b' };
+const STATUS_DOT   = { 'Not Emailed':'#6f6f6d','Emailed':(window.FOM_BIZ?FOM_BIZ.b.accent:'#02367B'),'Responded':'#c98a1f','Accepted':'#1f8a4c','Rejected':'#c0392b' };
 
 let leads = [];
 let store, editingCell=false, pendingRender=false;
@@ -552,12 +553,12 @@ function cloudLeadStore(db){
     return {
         start(){
             col().onSnapshot(snap=>{
-                leads = snap.docs.map(d=>({id:d.id, ...d.data()}));
+                leads = FOM_BIZ.mine(snap.docs.map(d=>({id:d.id, ...d.data()})));
                 leads.sort((a,b)=> tsMillis(a.createdAt) - tsMillis(b.createdAt));
                 if(editingCell){ pendingRender=true; } else safeRenderLeads();
             }, err=>{ console.warn('Firestore:',err); toast('Could not load leads - ' + (err.code==='permission-denied' ? 'check your Firestore rules allow the "leads" collection.' : (err.message||'connection error'))); });
         },
-        add(o){ o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)).catch(err=>{ console.error(err); toast('Could not save - ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "leads" collection.' : (err.message||'try again.'))); }); },
+        add(o){ FOM_BIZ.tag(o); o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)).catch(err=>{ console.error(err); toast('Could not save - ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "leads" collection.' : (err.message||'try again.'))); }); },
         update(id){ clearTimeout(timers[id]); timers[id]=setTimeout(()=>{ const o=leads.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}).catch(err=>{ console.error(err); toast('Could not save changes - '+(err.message||'try again.')); }); },500); },
         remove(id){ col().doc(id).delete().catch(err=>{ console.error(err); toast('Could not delete - '+(err.message||'try again.')); }); },
         clear(){ leads.slice().forEach(o=>col().doc(o.id).delete()); }
@@ -693,7 +694,8 @@ let OCFG = OUT.cached();
 let DB = null;
 const SITE = 'https://www.fomstudios.co.za/';
 const WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
-let PHOTOS = (window.FOM_PHOTO_DEFAULTS || []).map(p => Object.assign({}, p));
+// Shot by A has no built-in website photos: her deck uses the photos she adds on the Photos page, or uploads
+let PHOTOS = FOM_BIZ.isSba ? [] : (window.FOM_PHOTO_DEFAULTS || []).map(p => Object.assign({}, p));
 const photoUrl = p => p.src.indexOf('r2:') === 0 ? WORKER + '/file?g=portfolio%2F&n=' + encodeURIComponent(p.src.slice(3)) : SITE + p.src;
 const visiblePhotos = () => PHOTOS.filter(p => p && p.src && !p.hide);
 const catNames = () => OCFG.categories.map(c => c.name);
@@ -713,7 +715,7 @@ const DEFAULT_ABOUT = "Frames Of Motion (FOM) Studios is a creative media brand 
 const DEFAULT_WHAT = ["Sports & Event Photography","Cinematic Videography & Reels","Aerial / Drone Coverage","Automotive & Lifestyle Content","Content Editing & Colour Grading"].join('\n');
 const DEFAULT_WHY = ["Fast turnaround on edited deliverables","Cinematic, story-driven visual style","Reliable, professional on-site presence","Flexible packages tailored to your needs","Based in Johannesburg, available to travel"].join('\n');
 const DEFAULT_CLIENTS = ["Hyde Park Falcons","Party Bubbles Events","Momsi Mather - Professional Padel Player"].join('\n');
-const MASCOT = 'u:assets/mascot-head-color.png';
+const MASCOT = FOM_BIZ.isSba ? 'u:shotbya/logo.png' : 'u:assets/mascot-head-color.png';
 
 const PAGE_TYPES = {
   cover:    { label:'Cover', slots:1, slotNames:['Corner badge'] },
@@ -741,6 +743,14 @@ const NUMBERED = ['about','what','portfolio','why','clients','textimg'];
 const TEXT_KEYS = ['top1','top2','script','big','pill','kicker','title','body','list','labels'];
 
 function originalDeck(){
+  const d = fomDeck();
+  if(!FOM_BIZ.isSba) return d;
+  // Shot by A: same layout and wording with her details, and empty photo slots until she has photos
+  const o = JSON.parse(FOM_BIZ.rebrand(JSON.stringify(d), { owner:true }));
+  o.pages.forEach(p => { if(p.img) p.img = p.img.map(r => r.indexOf('g:') === 0 ? '' : r); });
+  return o;
+}
+function fomDeck(){
   return { client:'', contact:{ phone:'+27 73 755 3136', email:'info@fomstudios.co.za', web:'www.fomstudios.co.za' }, pages:[
     { id:'cover', type:'cover', top1:'ISHAAQ ADAM', top2:'FRAMES OF MOTION', script:'creative', big:'PORTFOLIO', pill:'BY FOM STUDIOS', img:[MASCOT] },
     { id:'about', type:'about', kicker:'Who we are', title:'About Us', body:DEFAULT_ABOUT, labels:'FOM STUDIOS', img:['g:s1'] },
@@ -795,7 +805,7 @@ function markDirty(){ deckDirty = true; saveDraft(); renderDeckBar(); schedulePr
 async function persistDecks(){
   try{ localStorage.setItem(DECKS_KEY, JSON.stringify(DECKS)); }catch(e){}
   if(!DB) return false;
-  try{ await DB.collection('settings').doc('pitchDeck').set({ json:JSON.stringify(DECKS), updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); return true; }
+  try{ await DB.collection('settings').doc(FOM_BIZ.sid('pitchDeck')).set({ json:JSON.stringify(DECKS), updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); return true; }
   catch(e){ console.warn(e); toast('Saved on this device only. Publish the Firestore rules so "settings" can sync.'); return false; }
 }
 function useDeck(d, base, dirty){
@@ -855,7 +865,7 @@ function slotInfo(ref){
   if(!ref) return { url:'', label:'Empty', empty:true };
   if(ref.indexOf('g:') === 0){ const p = PHOTOS.find(x => x.id === ref.slice(2)); return p ? { url:photoUrl(p), label:(p.cap || 'Photo') + (p.hide ? ' (hidden)' : '') } : { url:'', label:'Removed photo', missing:true }; }
   if(ref.indexOf('d:') === 0) return { url:WORKER + '/file?g=deck%2F&n=' + encodeURIComponent(ref.slice(2)), label:'Your upload' };
-  if(ref.indexOf('u:') === 0) return { url:SITE + ref.slice(2), label:'Mascot' };
+  if(ref.indexOf('u:') === 0) return { url:SITE + ref.slice(2), label:FOM_BIZ.isSba ? 'Logo' : 'Mascot' };
   return { url:'', label:'Empty', empty:true };
 }
 function pageTitle(p){ return (p.title || p.big || PAGE_TYPES[p.type].label || '').replace(/\n/g, ' '); }
@@ -959,7 +969,7 @@ function renderPicker(open){
     body = `<div class="pk-up">Upload your own image for this spot. It is resized for print and saved to your R2 <b>deck/</b> folder.<br><button class="btn sm" id="pkUpload" type="button">Upload image</button><div id="pkMsg" class="hint"></div></div>
       <div class="pk-grid">${ups.map(u => `<button type="button" class="pk-item ${cur === 'd:' + u.n ? 'on' : ''}" data-pick="d:${esc(u.n)}"><span class="pk-del" data-del="${esc(u.n)}" title="Delete this upload">&times;</span><img src="${esc(slotInfo('d:' + u.n).url)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span class="cap">${esc(niceDate(u.at))}</span></button>`).join('')}</div>`;
   }
-  const foot = `<div class="pk-foot">${p.type === 'cover' ? `<button class="btn ghost sm" data-pick="${MASCOT}" type="button">Use the mascot</button>` : ''}<button class="btn ghost sm" data-pick="" type="button">Leave empty</button></div>`;
+  const foot = `<div class="pk-foot">${p.type === 'cover' ? `<button class="btn ghost sm" data-pick="${MASCOT}" type="button">Use the ${FOM_BIZ.isSba ? 'logo' : 'mascot'}</button>` : ''}<button class="btn ghost sm" data-pick="" type="button">Leave empty</button></div>`;
   const html = tabs + body + foot;
   if(open) openSheet('Choose image: ' + pageTitle(p) + ', ' + slotName(p, pk.si), html); else $('xBody').innerHTML = html;
 }
@@ -1108,7 +1118,7 @@ let prevT;
 function schedulePreview(){ clearTimeout(prevT); prevT = setTimeout(refreshDeckPreview, 350); }
 function refreshDeckPreview(){
   const frame = $('deckFrame'), doc = frame.contentDocument || frame.contentWindow.document;
-  doc.open(); doc.write(buildDeckHTML()); doc.close();
+  doc.open(); doc.write(FOM_BIZ.rebrand(buildDeckHTML())); doc.close();
 }
 $('deckRefreshBtn').onclick = refreshDeckPreview;
 $('deckPrintBtn').onclick = () => {
@@ -1386,12 +1396,12 @@ function showTab(name){ const chip = document.querySelector(`.tab-chip[data-tab=
 async function loadOutreachAndDeck(db){
   DB = db;
   OCFG = await OUT.load(db); fillCategorySelects(); regen();
-  try{ const s = await db.collection('settings').doc('pitchDeck').get();
+  try{ const s = await FOM_BIZ.getSettings(db, 'pitchDeck');
     if(s.exists && s.data().json){ DECKS = cleanDecks(JSON.parse(s.data().json)); try{ localStorage.setItem(DECKS_KEY, JSON.stringify(DECKS)); }catch(e){} }
     let draftExists = false; try{ draftExists = !!localStorage.getItem(DRAFT_KEY); }catch(e){}
     if(!draftExists){ deck = versionDeck(DECKS.liveId) || versionDeck('original'); deckBase = { id:DECKS.liveId, name:versionName(DECKS.liveId) || 'Original' }; syncDeckInputs(); }
   }catch(e){ console.warn('pitchDeck load', e); }
-  try{ const s = await db.collection('siteContent').doc('portfolio').get();
+  try{ const s = await db.collection('siteContent').doc(FOM_BIZ.isSba ? 'portfolio_sba' : 'portfolio').get();
     if(s.exists && s.data().json){ const l = JSON.parse(s.data().json); if(Array.isArray(l) && l.length) PHOTOS = l.filter(p => p && p.src && p.id); }
   }catch(e){ console.warn('portfolio load', e); }
   renderDeckBar(); renderDeckEditor(); refreshDeckPreview();

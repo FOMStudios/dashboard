@@ -245,6 +245,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 @media(max-width:640px){.ws-grid{grid-template-columns:minmax(0,1fr);}.ws-bar{top:66px;}}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -522,5 +523,17 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
 })();
 </script>
 <script src="app.js"></script>
+<script>
+/* this page edits fomstudios.co.za only; Shot by A has no website yet */
+if(window.FOM_BIZ && FOM_BIZ.isSba){
+  var pg = document.querySelector('.page') || document.body;
+  var n = document.createElement('div'); n.setAttribute('data-norebrand','');
+  n.style.cssText = 'background:var(--bg-pill);border:1px solid var(--line);border-radius:20px;padding:22px;margin:0 0 20px;';
+  n.innerHTML = '<b style="font-size:17px">Shot by A has no website yet</b><p style="color:var(--ink-soft);margin:6px 0 14px;font-size:14px">This page edits fomstudios.co.za. When Shot by A gets her own domain we can build her site and this page will edit it. For now, switch to FOM Studios to change the FOM website.</p><button class="btn" type="button" id="wsSwitch">Switch to FOM Studios</button>';
+  pg.insertBefore(n, pg.firstChild);
+  document.getElementById('wsSwitch').onclick = function(){ FOM_BIZ.setBiz('fom'); };
+  var sv = document.getElementById('wsSave'); if(sv){ sv.disabled = true; sv.title = 'Switch to FOM Studios to publish'; }
+}
+</script>
 </body>
 </html>

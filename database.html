@@ -103,6 +103,7 @@ thead th.portal-col{background:#dce8ff;color:var(--accent);}
 @media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -263,12 +264,12 @@ function cloudStore(db){
   return {
     start(){
       col().onSnapshot(snap=>{
-        orders = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        orders = FOM_BIZ.mine(snap.docs.map(d=>({id:d.id, ...d.data()})));   // only the business you are working in
         orders.sort((a,b)=> tsMillis(a.createdAt) - tsMillis(b.createdAt));
         if(editingCell){ pendingRender=true; } else safeRender();
       }, err=>console.warn('Firestore:',err));
     },
-    add(o){ o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)); },
+    add(o){ FOM_BIZ.tag(o); o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)); },
     update(id){ clearTimeout(timers[id]); timers[id]=setTimeout(()=>{ const o=orders.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}); },500); },
     remove(id){ col().doc(id).delete(); },
     clear(){ orders.slice().forEach(o=>col().doc(o.id).delete()); }
@@ -311,7 +312,7 @@ function render(){
         <option value="true" ${o.deliverablesReady?'selected':''}>✓ Ready</option>
       </select></td>
       <td class="col-portal"><input data-i="${i}" data-f="portalMessage" value="${esc(o.portalMessage||'')}" placeholder="Message to client…"></td>
-      <td class="col-portal"><input data-i="${i}" data-f="galleryFolder" value="${esc(o.galleryFolder||'')}" placeholder="e.g. jane-smith/"></td>
+      <td class="col-portal"><input data-i="${i}" data-f="galleryFolder" value="${esc(o.galleryFolder||'')}" placeholder="e.g. ${FOM_BIZ.b.galleryPrefix}jane-smith/"></td>
       <td class="col-date"><input type="date" data-i="${i}" data-f="galleryExpiry" value="${esc(o.galleryExpiry||'')}"></td>
       <td class="col-portal-sm" style="text-align:center;">${o.contractSigned?`<span title="${esc(o.signedName||'')}${o.signedAt&&o.signedAt.toDate?' · '+o.signedAt.toDate().toLocaleDateString('en-ZA'):''}${o.contractVersion?' · wording v'+o.contractVersion:''}" style="color:#1f8a4c;font-weight:700;white-space:nowrap;">✓ Signed</span>`:`<button data-signlink="${i}" type="button" title="Copy the signing link to send the client" style="font:inherit;font-size:11px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:#eef2fb;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap;">Copy sign link</button>`}</td>
       <td class="rm-col"><button class="rm" data-rm="${i}" title="Delete">✕</button></td>`;
@@ -353,7 +354,7 @@ tbody.addEventListener('click',e=>{ const rm=e.target.dataset.rm; if(rm!==undefi
   const sl=e.target.dataset.signlink;
   if(sl!==undefined){
     const o=orders[+sl];
-    const link='https://www.fomstudios.co.za/sign.html'+'?o='+encodeURIComponent(o.id)+'&name='+encodeURIComponent(o.customer||'')+'&c='+encodeURIComponent(o.contractUrl||'');
+    const link=FOM_BIZ.clientUrl('sign.html','o='+encodeURIComponent(o.id)+'&name='+encodeURIComponent(o.customer||'')+'&c='+encodeURIComponent(o.contractUrl||''));
     // remember which contract wording version this client is being sent
     try{ const cv=JSON.parse(localStorage.getItem('fom.contract.v1')||'{}'); o.contractVersion=Math.max(1,Math.round(+cv.version)||1); o.contractVersionAt=new Date().toISOString(); store.update(o.id); }catch(err){}
     const btn=e.target, orig=btn.textContent;
@@ -403,7 +404,7 @@ function offerImport(db){
     '<button class="btn ghost" id="impX" style="padding:7px 14px;">Dismiss</button>';
   document.querySelector('.toolbar').insertAdjacentElement('afterend', bar);
   $('impBtn').onclick=async()=>{ $('impBtn').textContent='Importing…';
-    for(const o of local){ const {id,...r}=o; r.createdAt=firebase.firestore.FieldValue.serverTimestamp(); await db.collection('orders').add(r); }
+    for(const o of local){ const {id,...r}=o; FOM_BIZ.tag(r); r.createdAt=firebase.firestore.FieldValue.serverTimestamp(); await db.collection('orders').add(r); }
     localStorage.removeItem('fom_orders'); bar.remove();
   };
   $('impX').onclick=()=>bar.remove();
@@ -433,7 +434,8 @@ function initCloud(){
           return;
         }
         $('loginGate').style.display='none'; store.start(); setTimeout(()=>offerImport(db),1800);
-        db.collection('settings').doc('contract').get().then(s=>{ if(s.exists&&s.data().json){ try{ localStorage.setItem('fom.contract.v1', s.data().json); }catch(e){} } }).catch(()=>{});   // so the sign link can stamp the live contract wording version
+        FOM_BIZ.syncBrand(db);
+        FOM_BIZ.getSettings(db,'contract').then(s=>{ if(s.exists&&s.data().json){ try{ localStorage.setItem('fom.contract.v1', s.data().json); }catch(e){} } }).catch(()=>{});   // so the sign link can stamp the live contract wording version
       }).catch(err=>{ console.warn('Admin check failed:',err); $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
     }
     else { orders=[]; safeRender(); $('loginGate').style.display='flex'; }

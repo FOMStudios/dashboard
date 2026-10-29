@@ -143,6 +143,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .rm-btn.wa{background:#1f8a4c;border-color:#1f8a4c;color:#fff;}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -226,7 +227,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 <script>
 const RZA = n => 'R' + (Math.round(+n||0)).toLocaleString('en-ZA');
 const $ = id => document.getElementById(id);
-const STATUS_COLORS = { Pending:'#5B9AE0', Editing:'#02367B', Completed:'#2a2b2c', Delivered:'#7aa6c9', Cancelled:'#cd7f32' };
+const STATUS_COLORS = (window.FOM_BIZ && FOM_BIZ.isSba) ? { Pending:'#B9BAA3', Editing:'#780000', Completed:'#0A100D', Delivered:'#C1121F', Cancelled:'#8a6d3b' } : { Pending:'#5B9AE0', Editing:'#02367B', Completed:'#2a2b2c', Delivered:'#7aa6c9', Cancelled:'#cd7f32' };
 const PRODUCT_COLORS = { Bronze:'#cd7f32', Silver:'#a9b2bd', Gold:'#e0a93b' };
 const PALETTE = ['#02367B','#5B9AE0','#2a2b2c','#6f6f6d','#cd7f32','#a9b2bd','#7aa6c9'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -295,9 +296,11 @@ function render(){
 async function loadAdvisorData(db){
   ADV.errors = [];
   const get = async (col, id, label, fn) => { try{ return fn(await db.collection(col).doc(id).get()); }catch(e){ ADV.errors.push(label); return null; } };
-  ADV.calc = await get('settings','calculator','calculator settings', parseJ);
-  ADV.contract = await get('settings','contract','contract settings', parseJ);
-  ADV.site = await get('siteContent','site','website content', s => s.exists ? s.data() : null);
+  const getS = async (id, label) => { try{ return parseJ(await FOM_BIZ.getSettings(db, id)); }catch(e){ ADV.errors.push(label); return null; } };
+  ADV.calc = await getS('calculator','calculator settings');
+  ADV.contract = await getS('contract','contract settings');
+  // the website checks are for fomstudios.co.za only (Shot by A has no website yet)
+  ADV.site = FOM_BIZ.isSba ? null : await get('siteContent','site','website content', s => s.exists ? s.data() : null);
   safeRender();
 }
 $('rerun').onclick = () => { if(window._db) loadAdvisorData(window._db); else safeRender(); };
@@ -349,7 +352,8 @@ function initCloud(){
         }
         $('loginGate').style.display='none';
         loadAdvisorData(db);
-        db.collection('orders').onSnapshot(snap=>{ orders=snap.docs.map(d=>({id:d.id,...d.data()})); orders.sort((a,b)=>tsMillis(a.createdAt)-tsMillis(b.createdAt)); safeRender(); }, err=>console.warn('Firestore:',err));
+        FOM_BIZ.syncBrand(db);
+        db.collection('orders').onSnapshot(snap=>{ orders=FOM_BIZ.mine(snap.docs.map(d=>({id:d.id,...d.data()}))); orders.sort((a,b)=>tsMillis(a.createdAt)-tsMillis(b.createdAt)); safeRender(); }, err=>console.warn('Firestore:',err));
       }).catch(err=>{ console.warn('Admin check failed:',err); $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
     } else { orders=[]; safeRender(); $('loginGate').style.display='flex'; }
   });

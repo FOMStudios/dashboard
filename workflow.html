@@ -176,6 +176,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 }
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -453,13 +454,14 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
 
         store = {
             start(){
+                FOM_BIZ.syncBrand(db);
                 db.collection('orders').orderBy('createdAt','desc').onSnapshot(snap => {
-                    orders = snap.docs.map(d => ({id:d.id, ...d.data()}));
+                    orders = FOM_BIZ.mine(snap.docs.map(d => ({id:d.id, ...d.data()})));
                     render();
                 }, err => {
                     // fall back to unordered if createdAt is missing on old docs
                     db.collection('orders').onSnapshot(s2 => {
-                        orders = s2.docs.map(d => ({id:d.id, ...d.data()}));
+                        orders = FOM_BIZ.mine(s2.docs.map(d => ({id:d.id, ...d.data()})));
                         render();
                     }, e2 => console.warn('Firestore:', e2));
                 });
