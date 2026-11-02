@@ -2,7 +2,7 @@ rules_version = '2';
 
 // FOM Studios - Firestore security rules (project fom-studios)
 // Paste this WHOLE file into Firebase Console > Firestore Database > Rules, then Publish.
-// Last updated 28 Oct 2026: adds chat (client portal messages). Earlier: settings/outreach and settings/pitchDeck.
+// Last updated 2 Nov 2026: clients can save gallery favourites on their own booking. Earlier: chat, settings/outreach, settings/pitchDeck.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -30,6 +30,14 @@ service cloud.firestore {
                   || (signedIn() && resource.data.clientEmail == myEmail());
       allow create, delete: if isAdmin();
       allow update: if isAdmin()
+                    // the signed-in client saves their gallery favourites (a list of file names) on their own booking
+                    || (
+                         signedIn() && resource.data.get('clientEmail', '') == myEmail()
+                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['favourites', 'favouritesAt'])
+                         && request.resource.data.favourites is list
+                         && request.resource.data.favourites.size() <= 1000
+                         && request.resource.data.favouritesAt == request.time
+                       )
                     || (
                          resource.data.get('contractSigned', false) != true
                          && request.resource.data.diff(resource.data).affectedKeys()

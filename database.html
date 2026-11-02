@@ -85,6 +85,16 @@ td input:focus,td select:focus{outline:none;border-color:var(--accent);backgroun
 td.amount input{text-align:right;font-variant-numeric:tabular-nums;}
 td.outstanding{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;padding-right:14px;color:var(--accent);white-space:nowrap;}
 td.rm-col{width:38px;text-align:center;}
+.fav-btn{border:1px solid #f3c2d0;background:#fdeef3;color:#c2185b;border-radius:99px;padding:5px 11px;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.fav-scrim{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:2500;display:none;align-items:flex-end;justify-content:center;}
+.fav-scrim.on{display:flex;}
+.fav-box{background:var(--bg-pill);width:100%;max-width:560px;max-height:84dvh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;padding:18px 20px calc(16px + env(safe-area-inset-bottom,0px));}
+@media(min-width:620px){.fav-scrim{align-items:center;}.fav-box{border-radius:22px;}}
+.fav-box h3{font-size:18px;margin-bottom:2px;} .fav-box .sub{color:var(--ink-soft);font-size:13px;margin-bottom:12px;}
+.fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;overflow-y:auto;flex:1;min-height:0;}
+.fav-grid figure{margin:0;} .fav-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:var(--track);display:block;}
+.fav-grid figcaption{font-size:10.5px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.fav-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;} .fav-acts .btn{flex:1;min-width:130px;text-align:center;}
 .rm{background:none;border:none;color:#b85;cursor:pointer;font-size:16px;opacity:.6;}
 .rm:hover{opacity:1;color:#d55;}
 td select.status{font-weight:600;}
@@ -201,6 +211,7 @@ thead th.portal-col{background:#dce8ff;color:var(--accent);}
                         <th class="col-portal portal-col">Gallery Folder</th>
                         <th class="col-date portal-col">Gallery Expiry</th>
                         <th class="col-portal-sm portal-col">Signed?</th>
+                        <th class="col-portal-sm portal-col">Favourites</th>
                         <th class="rm-col"></th>
                     </tr>
                 </thead>
@@ -315,6 +326,7 @@ function render(){
       <td class="col-portal"><input data-i="${i}" data-f="galleryFolder" value="${esc(o.galleryFolder||'')}" placeholder="e.g. ${FOM_BIZ.b.galleryPrefix}jane-smith/"></td>
       <td class="col-date"><input type="date" data-i="${i}" data-f="galleryExpiry" value="${esc(o.galleryExpiry||'')}"></td>
       <td class="col-portal-sm" style="text-align:center;">${o.contractSigned?`<span title="${esc(o.signedName||'')}${o.signedAt&&o.signedAt.toDate?' · '+o.signedAt.toDate().toLocaleDateString('en-ZA'):''}${o.contractVersion?' · wording v'+o.contractVersion:''}" style="color:#1f8a4c;font-weight:700;white-space:nowrap;">✓ Signed</span>`:`<button data-signlink="${i}" type="button" title="Copy the signing link to send the client" style="font:inherit;font-size:11px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:#eef2fb;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap;">Copy sign link</button>`}</td>
+      <td class="col-portal-sm" style="text-align:center;">${(o.favourites&&o.favourites.length)?`<button class="fav-btn" type="button" data-favs="${i}" title="See the photos the client loved">&#9829; ${o.favourites.length}</button>`:'<span style="color:var(--ink-soft);font-size:12px">-</span>'}</td>
       <td class="rm-col"><button class="rm" data-rm="${i}" title="Delete">✕</button></td>`;
     tbody.appendChild(tr);
   });
@@ -350,7 +362,7 @@ tbody.addEventListener('change',e=>{
   store.update(orders[i].id);
   if(f==='galleryExpiry' || f==='galleryFolder') syncGalleryMeta(orders[i]);
 });
-tbody.addEventListener('click',e=>{ const rm=e.target.dataset.rm; if(rm!==undefined){ store.remove(orders[+rm].id); return; }
+tbody.addEventListener('click',e=>{ const fb=e.target.closest('[data-favs]'); if(fb){ showFavs(orders[+fb.dataset.favs]); return; } const rm=e.target.dataset.rm; if(rm!==undefined){ store.remove(orders[+rm].id); return; }
   const sl=e.target.dataset.signlink;
   if(sl!==undefined){
     const o=orders[+sl];
@@ -369,8 +381,9 @@ $('addBtn').onclick=()=>{ if(store) store.add(blankOrder()); };
 $('clearBtn').onclick=()=>{ if(store && confirm('Delete ALL orders? This cannot be undone.')) store.clear(); };
 search.addEventListener('input',render);
 $('csvBtn').onclick=()=>{
-  const head=['Order ID','Customer Name','Product','Shoot Date','Order Status','Total Amount','Amount Paid','Outstanding Balance','Payment Method','Deadline','Order Notes','Client Email','Shoot Time','Contract URL','Invoice URL','Deliverables URL','Files Ready','Portal Message','Gallery Folder','Gallery Expiry','Signed'];
+  const head=['Order ID','Customer Name','Product','Shoot Date','Order Status','Total Amount','Amount Paid','Outstanding Balance','Payment Method','Deadline','Order Notes','Client Email','Shoot Time','Contract URL','Invoice URL','Deliverables URL','Files Ready','Portal Message','Gallery Folder','Gallery Expiry','Signed','Favourites'];
   const rows=orders.map(o=>[o.orderId,o.customer,o.product,o.shootDate,o.status,o.total,o.paid,(+o.total||0)-(+o.paid||0),o.payment,o.deadline,o.notes,o.clientEmail||'',o.shootTime||'',o.contractUrl||'',o.invoiceUrl||'',o.deliverablesUrl||'',o.deliverablesReady?'Yes':'No',o.portalMessage||'',o.galleryFolder||'',o.galleryExpiry||'',o.contractSigned?('Signed'+(o.signedName?' by '+o.signedName:'')):'No']);
+  rows.forEach((r,k)=>r.push((orders[k].favourites||[]).join(' | ')));
   const csv=[head,...rows].map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='fom_orders.csv'; a.click(); URL.revokeObjectURL(a.href);
 };
@@ -446,6 +459,32 @@ if(!configured){
 } else {
   loadFirebase().then(initCloud).catch(showConnError);   // cloud only - no local fallback (avoids mixing datasets)
 }
+</script>
+<div class="fav-scrim" id="favScrim"><div class="fav-box" role="dialog" aria-modal="true" aria-labelledby="favTitle">
+  <h3 id="favTitle">Favourites</h3><p class="sub" id="favSub"></p>
+  <div class="fav-grid" id="favGrid"></div>
+  <div class="fav-acts"><button class="btn" type="button" id="favCopy">Copy file names</button><button class="btn ghost" type="button" id="favClose">Close</button></div>
+</div></div>
+<script>
+/* the photos a client hearted in their gallery (saved on the order as favourites) */
+function showFavs(o){
+  if(!o) return;
+  const list = (o.favourites || []).slice(), folder = o.galleryFolder || '';
+  const W = (typeof GALLERY_WORKER !== 'undefined' && GALLERY_WORKER) ? GALLERY_WORKER.replace(/\/$/, '') : '';
+  const when = o.favouritesAt && o.favouritesAt.toDate ? ' · last changed ' + o.favouritesAt.toDate().toLocaleDateString('en-ZA', { day:'numeric', month:'short' }) : '';
+  document.getElementById('favTitle').textContent = (o.customer || 'Client') + "'s favourites";
+  document.getElementById('favSub').textContent = list.length + ' photo' + (list.length === 1 ? '' : 's') + (folder ? ' in ' + folder : '') + when;
+  const esc2 = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  document.getElementById('favGrid').innerHTML = list.map(n => `<figure>${W && folder ? `<img loading="lazy" alt="" src="${esc2(W + '/file?g=' + encodeURIComponent(folder) + '&n=' + encodeURIComponent(n))}" onerror="this.style.visibility='hidden'">` : ''}<figcaption title="${esc2(n)}">${esc2(n)}</figcaption></figure>`).join('');
+  document.getElementById('favCopy').onclick = async () => {
+    const t = list.join('\n'), b = document.getElementById('favCopy');
+    try{ await navigator.clipboard.writeText(t); b.textContent = 'Copied ' + list.length + ' names'; }catch(e){ prompt('Copy the file names', list.join(', ')); }
+    setTimeout(() => { b.textContent = 'Copy file names'; }, 1800);
+  };
+  document.getElementById('favScrim').classList.add('on');
+}
+document.getElementById('favClose').onclick = () => document.getElementById('favScrim').classList.remove('on');
+document.getElementById('favScrim').onclick = e => { if(e.target.id === 'favScrim') e.target.classList.remove('on'); };
 </script>
 <script src="app.js"></script>
 </body>
