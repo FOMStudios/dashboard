@@ -793,6 +793,7 @@ async function loadAdvisor(db){
 fetch('trends.json?d=' + OUT.iso(new Date()), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(j => { TRENDS = j || { items:[] }; renderAdvisor(); }).catch(() => { TRENDS = { items:[] }; renderAdvisor(); });
 renderAdvisor();
 </script>
+<script src="activity.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

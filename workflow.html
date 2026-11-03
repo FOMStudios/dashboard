@@ -181,6 +181,11 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
     .checklist{padding:2px 14px 18px;}
     .ph-right{width:100%;justify-content:space-between;}
 }
+.wf-act{margin:14px 0 4px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--bg);}
+.wf-act-h{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+.wf-act-r{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;padding:5px 0;}
+.wf-act-t{flex:1;min-width:0;} .wf-act-t small{color:var(--ink-soft);}
+.wf-act-w{flex:none;font-size:12px;color:var(--ink-soft);white-space:nowrap;}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <script src="brand.js"></script>
@@ -315,6 +320,7 @@ function doneCount(o){
 }
 function isComplete(o){ return doneCount(o) === STEPS.length; }
 
+if(window.FOM_ACT) setTimeout(()=>FOM_ACT.on(()=>{ try{ render(); }catch(e){} }),0);
 function render(){
     const list = $('projectList');
     let visible = orders;
@@ -345,7 +351,7 @@ function render(){
             <div class="check-step ${isDone ? 'done' : ''} ${isAuto ? 'auto' : ''}" data-oid="${esc(o.id)}" data-step="${s.key}" ${isAuto ? 'data-auto="1"' : ''}>
                 <div class="check-box"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
                 <div class="check-text">
-                    <div class="check-title">${esc(s.title)}<span class="check-who ${s.who}">${s.who === 'me' ? 'You' : 'Client'}</span>${isAuto ? '<span class="check-who auto-badge">Auto</span>' : ''}</div>
+                    <div class="check-title">${esc(s.title)}<span class="check-who ${s.who}">${s.who === 'me' ? 'You' : 'Client'}</span>${isAuto ? '<span class="check-who auto-badge">Auto</span>' : ''}${(!isAuto && o.workflowAuto && o.workflowAuto[s.key]) ? `<span class="check-who auto-badge" title="Ticked from client activity">Client &middot; ${esc(fmtDate(o.workflowAuto[s.key]))}</span>` : ''}</div>
                     <div class="check-note">${s.note}</div>
                 </div>
             </div>`;
@@ -371,6 +377,8 @@ function render(){
                 <div class="project-body-inner">
                     <div class="checklist">
                         ${steps}
+                        ${(function(){ const A = window.FOM_ACT; if(!A) return ''; const ev = A.forOrder(o); if(!ev.length) return '';
+                          return `<div class="wf-act"><div class="wf-act-h">Client activity</div>${ev.slice(0, 12).map(e => { const l = A.line(e); return `<div class="wf-act-r"><span>${l.icon}</span><span class="wf-act-t">${esc(l.what)}${l.detail ? ` <small>${esc(l.detail)}</small>` : ''}</span><span class="wf-act-w">${esc(l.when)}</span></div>`; }).join('')}</div>`; })()}
                         <div class="quick-links">
                             <a class="quick-link" href="database.html">Open Database</a>
                             <a class="quick-link" href="email.html">Open Email</a>
@@ -498,6 +506,7 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
     }
 })();
 </script>
+<script src="activity.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

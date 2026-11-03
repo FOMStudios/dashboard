@@ -40,7 +40,7 @@ const ext   = n => (n.split('.').pop() || '').toLowerCase();
 const kind  = n => VIDEO.includes(ext(n)) ? 'video' : IMAGE.includes(ext(n)) ? 'image' : 'file';
 const cors  = {
   'Access-Control-Allow-Origin': ALLOW_ORIGIN,
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization'
 };
 const json = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json', ...cors } });
@@ -180,17 +180,170 @@ const ADMIN_FOLDERS = ['portfolio', 'deck'];
 const PUBLIC_FOLDERS = ['portfolio/', 'deck/'];
 const adminFolder = f => ADMIN_FOLDERS.includes(f) ? f : 'portfolio';
 
+
+/* ============================================================
+   CLIENT ACTIVITY + PUSH NOTIFICATIONS (to your phone)
+   ------------------------------------------------------------
+   POST /event                 (client pages) {t:type, o:order id, n:name, b:'fom'|'sba', d:detail}
+                               logs the event and pushes it to your subscribed devices
+   GET  /push/key              the public key phones subscribe with (made once, kept in R2)
+   POST /push/sub    (admin)   {sub, device}  save this device;  DELETE removes it
+   POST /push/test   (admin)   send a test notification to every device
+   POST /push/orders (admin)   {orders:{id:{n,b,o}}}  known bookings, so names come from your data
+   GET  /events      (admin)   ?since=<ms>  the activity log (newest first, last 400)
+   Private records live in R2 under _push/ and _events/, which /file and /list never serve.
+   ============================================================ */
+const EV_TYPES = {
+  signed:   { once: true,  title: 'Contract signed',      body: (n, d) => n + ' signed the contract' + (d ? ' (' + d + ')' : '') + '.' },
+  portal:   { once: true,  title: 'Portal sign-in',       body: (n) => n + ' signed in to the client portal for the first time.' },
+  gallery:  { once: true,  title: 'Gallery opened',       body: (n) => n + ' opened their gallery.' },
+  download: { gap: 3600e3, title: 'Files downloaded',     body: (n, d) => n + ' is downloading ' + (d || 'their files') + '.' },
+  favs:     { gap: 1800e3, title: 'Favourites picked',    body: (n, d) => n + ' picked ' + (d || 'their') + ' favourites.' },
+  review:   { gap: 60e3,   title: 'New review',           body: (n, d) => n + ' left a review' + (d ? ': ' + d : '') + '.' },
+  paid:     { gap: 300e3,  title: 'Card payment',         body: (n, d) => n + ' paid ' + (d || 'by card') + ' (check Yoco to confirm).' }
+};
+const R2J = async (env, key, def) => { try { const o = await env.BUCKET.get(key); return o ? await o.json() : def; } catch (e) { return def; } };
+const R2P = (env, key, val) => env.BUCKET.put(key, JSON.stringify(val), { httpMetadata: { contentType: 'application/json' } });
+const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const cat = (...a) => { const n = a.reduce((s, x) => s + x.length, 0), o = new Uint8Array(n); let i = 0; for (const x of a) { o.set(x, i); i += x.length; } return o; };
+const te = new TextEncoder();
+
+async function vapid(env) {
+  let v = await R2J(env, '_push/vapid.json', null);
+  if (v && v.pub && v.jwk) return v;
+  const kp = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  v = { jwk: await crypto.subtle.exportKey('jwk', kp.privateKey), pub: b64url(await crypto.subtle.exportKey('raw', kp.publicKey)) };
+  await R2P(env, '_push/vapid.json', v);
+  return v;
+}
+async function vapidHeader(env, endpoint) {
+  const v = await vapid(env), aud = new URL(endpoint).origin;
+  const head = b64url(te.encode(JSON.stringify({ typ: 'JWT', alg: 'ES256' })));
+  const body = b64url(te.encode(JSON.stringify({ aud, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: 'mailto:' + (env.FROM_EMAIL || 'info@fomstudios.co.za') })));
+  const key = await crypto.subtle.importKey('jwk', v.jwk, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, te.encode(head + '.' + body));
+  return 'vapid t=' + head + '.' + body + '.' + b64url(sig) + ', k=' + v.pub;
+}
+/* RFC 8291 message encryption (aes128gcm) */
+async function hkdf(salt, ikm, info, len) {
+  const k = await crypto.subtle.importKey('raw', ikm, 'HKDF', false, ['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt, info }, k, len * 8));
+}
+async function encryptPush(sub, payload) {
+  const ua = b64u(sub.keys.p256dh), auth = b64u(sub.keys.auth);
+  const uaKey = await crypto.subtle.importKey('raw', ua, { name: 'ECDH', namedCurve: 'P-256' }, false, []);
+  const eph = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+  const asPub = new Uint8Array(await crypto.subtle.exportKey('raw', eph.publicKey));
+  const secret = new Uint8Array(await crypto.subtle.deriveBits({ name: 'ECDH', public: uaKey }, eph.privateKey, 256));
+  const ikm = await hkdf(auth, secret, cat(te.encode('WebPush: info\0'), ua, asPub), 32);
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const cek = await hkdf(salt, ikm, te.encode('Content-Encoding: aes128gcm\0'), 16);
+  const nonce = await hkdf(salt, ikm, te.encode('Content-Encoding: nonce\0'), 12);
+  const k = await crypto.subtle.importKey('raw', cek, 'AES-GCM', false, ['encrypt']);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, k, cat(te.encode(payload), new Uint8Array([2]))));
+  const rs = new Uint8Array([0, 0, 16, 0]);   // record size 4096
+  return cat(salt, rs, new Uint8Array([asPub.length]), asPub, ct);
+}
+async function sendPush(env, sub, msg) {
+  const body = await encryptPush(sub, JSON.stringify(msg));
+  return fetch(sub.endpoint, { method: 'POST', body, headers: {
+    Authorization: await vapidHeader(env, sub.endpoint), 'Content-Encoding': 'aes128gcm', 'Content-Type': 'application/octet-stream', TTL: '86400', Urgency: 'high' } });
+}
+async function pushAll(env, msg) {
+  const subs = await R2J(env, '_push/subs.json', []);
+  if (!subs.length) return { sent: 0, devices: 0 };
+  let sent = 0; const keep = [];
+  for (const s of subs) {
+    try {
+      const r = await sendPush(env, s.sub, msg);
+      if (r.status === 404 || r.status === 410) continue;   // that phone unsubscribed: forget it
+      if (r.ok) sent++;
+      keep.push(s);
+    } catch (e) { keep.push(s); }
+  }
+  if (keep.length !== subs.length) await R2P(env, '_push/subs.json', keep);
+  return { sent, devices: keep.length };
+}
+const clean = (s, n) => String(s == null ? '' : s).replace(/[\u0000-\u001f<>]/g, ' ').trim().slice(0, n || 80);
+
+async function handlePush(path, request, env) {
+  if (path === '/push/key') return json({ key: (await vapid(env)).pub });
+  if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+  let body = {}; try { body = await request.json(); } catch (e) {}
+  if (path === '/push/sub') {
+    let subs = await R2J(env, '_push/subs.json', []);
+    if (request.method === 'DELETE') { subs = subs.filter(s => s.sub.endpoint !== body.endpoint); await R2P(env, '_push/subs.json', subs); return json({ ok: true }); }
+    const sub = body.sub;
+    if (!sub || !sub.endpoint || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) return json({ error: 'bad subscription' }, 400);
+    subs = subs.filter(s => s.sub.endpoint !== sub.endpoint);
+    subs.push({ sub, device: clean(body.device, 30), at: Date.now() });
+    await R2P(env, '_push/subs.json', subs.slice(-12));
+    return json({ ok: true, devices: subs.length });
+  }
+  if (path === '/push/test') {
+    const r = await pushAll(env, { title: 'Notifications are on', body: 'You will hear from FOM Studios and Shot by A clients here.', url: 'dashboard.html', tag: 'fom-test' });
+    return json({ ok: r.sent > 0, ...r });
+  }
+  if (path === '/push/orders') {
+    const src = (body && body.orders) || {}, out = {};
+    Object.keys(src).slice(0, 3000).forEach(id => { const o = src[id] || {}; out[clean(id, 60)] = { n: clean(o.n, 60), b: o.b === 'sba' ? 'sba' : 'fom', o: clean(o.o, 30) }; });
+    await R2P(env, '_push/orders.json', out);
+    return json({ ok: true, count: Object.keys(out).length });
+  }
+  return json({ error: 'not found' }, 404);
+}
+
+async function handleEvent(request, env, ctx) {
+  if (request.method !== 'POST') return json({ error: 'POST only' }, 405);
+  let b = {}; try { b = JSON.parse(await request.text()); } catch (e) { return json({ error: 'bad body' }, 400); }
+  const type = clean(b.t, 12), def = EV_TYPES[type];
+  if (!def) return json({ error: 'unknown event' }, 400);
+  const o = clean(b.o, 60).replace(/[^A-Za-z0-9_-]/g, '');
+  const known = o ? (await R2J(env, '_push/orders.json', {}))[o] : null;
+  const name = (known && known.n) || clean(b.n, 60) || 'A client';
+  const biz = known ? known.b : (b.b === 'sba' ? 'sba' : 'fom');
+  const detail = clean(b.d, 120);
+  const now = Date.now();
+  // once-only and throttled events (per booking, or per name when there is no booking)
+  const marks = await R2J(env, '_events/marks.json', {});
+  const mk = type + ':' + (o || name.toLowerCase());
+  if (def.once && marks[mk]) return json({ ok: true, skipped: 'already' });
+  if (def.gap && marks[mk] && now - marks[mk] < def.gap) return json({ ok: true, skipped: 'throttled' });
+  // bookings we do not know yet: cap so the link cannot be used to spam you
+  if (!known) { const k = 'unknown:' + Math.floor(now / 3600e3); marks[k] = (marks[k] || 0) + 1; if (marks[k] > 30) return json({ ok: true, skipped: 'busy' }); }
+  marks[mk] = now;
+  Object.keys(marks).forEach(k => { if (k.startsWith('unknown:') && +k.split(':')[1] < Math.floor(now / 3600e3) - 2) delete marks[k]; });
+  await R2P(env, '_events/marks.json', marks);
+  const ev = { id: now.toString(36) + Math.random().toString(36).slice(2, 6), t: type, o, n: name, b: biz, d: detail, at: now, known: !!known };
+  const log = await R2J(env, '_events/log.json', []);
+  log.unshift(ev); await R2P(env, '_events/log.json', log.slice(0, 400));
+  const label = biz === 'sba' ? 'Shot by A: ' : '';
+  const msg = { title: label + def.title, body: def.body(name, detail), url: 'dashboard.html#activity', tag: 'fom-' + type + '-' + (o || name) };
+  if (ctx && ctx.waitUntil) ctx.waitUntil(pushAll(env, msg)); else await pushAll(env, msg);
+  return json({ ok: true });
+}
+async function handleEvents(request, env, url) {
+  if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+  const since = +url.searchParams.get('since') || 0;
+  const log = await R2J(env, '_events/log.json', []);
+  const subs = await R2J(env, '_push/subs.json', []);
+  return json({ events: log.filter(e => e.at > since), devices: subs.map(s => ({ device: s.device, at: s.at, endpoint: s.sub.endpoint })) });
+}
+
 const normPrefix = g => { g = (g || '').replace(/^\/+/, ''); if (g && !g.endsWith('/')) g += '/'; return g; };
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
     if (!env.BUCKET) return json({ error: 'R2 bucket not bound (name it BUCKET).' }, 500);
 
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const g = normPrefix(url.searchParams.get('g'));
-    if (g.startsWith('_notify')) return json({ error: 'not found' }, 404);   // internal email throttle records
+    if (/^_(notify|push|events)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log)
+    if (path === '/event') return handleEvent(request, env, ctx);
+    if (path === '/events') return handleEvents(request, env, url);
+    if (path.startsWith('/push/')) return handlePush(path, request, env);
     if (path === '/notify') return handleNotify(request, env);
 
     // ---- list files in a folder ----

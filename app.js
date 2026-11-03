@@ -134,6 +134,33 @@ function openBrand(){
   };
 }
 
+/* ---- notifications (client activity pushed by the gallery Worker) ---- */
+function openPush(){
+  var A = window.FOM_ACT; D.getElementById('fomSheetTitle').textContent = 'Notifications';
+  var b = D.getElementById('fomSheetBody');
+  if(!A){ b.innerHTML = '<p class="fom-note">Notifications are not loaded on this page. Refresh and try again.</p>'; openSheet(); return; }
+  var s = A.support(), on = s.on && s.permission === 'granted';
+  var devs = (A.state.devices || []).map(function(d){ return '<li>'+d.device+' · added '+new Date(d.at).toLocaleDateString('en-ZA',{day:'numeric',month:'short'})+'</li>'; }).join('');
+  b.innerHTML = '<p class="fom-note" data-norebrand style="margin:6px 12px 12px">Get a notification when a client signs the contract, signs in to the portal for the first time, opens or downloads their gallery, picks favourites, leaves a review or pays by card. Works for FOM Studios and Shot by A clients (hers start with "Shot by A").</p>'+
+    (s.needsInstall ? '<p class="fom-note" style="margin:0 12px 12px;color:#b0640b"><b>On iPhone:</b> open FOM from its home screen icon (Share, Add to Home Screen), then come back here.</p>' : '')+
+    (s.permission === 'denied' ? '<p class="fom-note" style="margin:0 12px 12px;color:#c0392b">Notifications are blocked for FOM. Allow them in your phone Settings, Notifications, FOM.</p>' : '')+
+    (on ? '<button class="fom-logout" id="fomPTest">Send a test notification</button><button class="fom-logout alt" id="fomPOff">Turn off on this phone</button>'
+        : '<button class="fom-logout" id="fomPOn"'+(s.needsInstall||!s.ok?' disabled':'')+'>Turn on for this phone</button>')+
+    '<p class="fom-note" id="fomPMsg" style="margin:10px 12px"></p>'+
+    (devs ? '<p class="fom-note" style="margin:6px 12px 2px"><b>Devices getting notifications</b></p><ul class="fom-note" style="margin:0 12px 10px 30px">'+devs+'</ul>' : '')+
+    '<button class="fom-logout alt" id="fomPBack">Back to settings</button>';
+  var msg = function(t){ D.getElementById('fomPMsg').textContent = t; };
+  D.getElementById('fomPBack').onclick = openSettings;
+  var onB = D.getElementById('fomPOn'), off = D.getElementById('fomPOff'), t = D.getElementById('fomPTest');
+  if(onB) onB.onclick = function(){ onB.disabled = true; onB.textContent = 'Turning on...';
+    A.enable().then(function(){ return A.test(); }).then(function(){ A.refresh(); openPush(); msg('On. A test notification is on its way.'); })
+     .catch(function(e){ onB.disabled = false; onB.textContent = 'Turn on for this phone'; msg(e.message || 'Could not turn on notifications'); }); };
+  if(off) off.onclick = function(){ A.disable().then(function(){ A.refresh(); openPush(); msg('Off on this phone.'); }); };
+  if(t) t.onclick = function(){ t.disabled = true; A.test().then(function(r){ t.disabled = false; msg(r.ok ? 'Sent. It should pop up in a few seconds.' : 'Your phone did not accept it. Turn notifications off and on again.'); })
+     .catch(function(e){ t.disabled = false; msg(e.message); }); };
+  openSheet();
+}
+
 /* ---- mascot: profile + settings ---- */
 function openSettings(){
   D.getElementById('fomSheetTitle').textContent = 'Settings';
@@ -147,6 +174,8 @@ function openSettings(){
       '<div><b>'+BZ.b.name+'</b><small>'+(email ? email : 'Admin')+'</small></div></div>'+
     '<div class="fom-set" data-norebrand style="flex-direction:column;align-items:stretch"><span><label>Business</label><small>Switches the theme, data and documents. Both share one login.</small></span>'+
       '<div class="biz-seg" id="fomBiz">'+bb('fom','FOM Studios','assets/mascot.png')+bb('sba','Shot by A','assets/shotbya-icon.png')+'</div></div>'+
+    '<div class="fom-set"><span><label>Notifications</label><small id="fomPushSt">Client activity on this phone</small></span>'+
+      '<button class="fom-mini" id="fomPush">Set up</button></div>'+
     '<div class="fom-set"><span><label>Business details</label><small>Name, email, phone and links used in '+BZ.b.name+' documents</small></span>'+
       '<button class="fom-mini" id="fomBrand">Edit</button></div>'+
     '<div class="fom-set"><span><label>Appearance</label><small>Light, dark, or follow your phone</small></span>'+
@@ -173,6 +202,9 @@ function openSettings(){
   D.getElementById('fomChk').onclick = openChecklist;
   D.getElementById('fomBiz').onclick = function(e){ var b = e.target.closest('[data-biz-set]'); if(!b || b.getAttribute('data-biz-set') === BZ.id) return; if(BZ.setBiz) BZ.setBiz(b.getAttribute('data-biz-set')); };
   D.getElementById('fomBrand').onclick = openBrand;
+  D.getElementById('fomPush').onclick = openPush;
+  (function(){ var A = window.FOM_ACT, el = D.getElementById('fomPushSt'); if(!A || !el) return; var s = A.support();
+    el.textContent = s.on && s.permission === 'granted' ? 'On for this phone' : 'Off on this phone'; D.getElementById('fomPush').textContent = s.on ? 'Manage' : 'Set up'; })();
   D.getElementById('fomLogout').onclick = logout;
   D.getElementById('fomLogoutAll').onclick = function(){
     if(!confirm('Log out of ALL devices, including this one? Everyone will need to sign in again.')) return;

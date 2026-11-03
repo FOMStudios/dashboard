@@ -64,6 +64,13 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .page{padding-top:108px;}
 .dash-head{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:24px;}
 .dash-head .logo img{max-height:64px;width:auto;}
+.act-row{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);font-size:14px;}
+.act-row:first-of-type{border-top:0;}
+.act-ic{flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface-2,#e7e5df);display:grid;place-items:center;font-size:14px;}
+.act-t{flex:1;min-width:0;line-height:1.45;} .act-t small{display:block;color:var(--ink-soft);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.act-w{flex:none;font-size:12px;color:var(--ink-soft);text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px;white-space:nowrap;}
+.act-on{font-size:12.5px;font-weight:700;color:#1f8a4c;}
+.act-more{margin-top:8px;border:0;background:none;font:inherit;font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;padding:4px 0;}
 .biz-view{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-6px 0 18px;}
 .biz-view .bv-l{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
 .biz-view .bv-c{display:flex;gap:6px;flex-wrap:wrap;}
@@ -336,6 +343,21 @@ function cardMessages(){
     ${un.length > 3 ? `<div class="ns-meta">and ${un.length - 3} more</div>` : ''}</div>`;
 }
 
+/* client activity (sent by the gallery Worker): newest first, both businesses */
+let ACT_MORE = false;
+function cardActivity(){
+  const A = window.FOM_ACT; if(!A) return '';
+  const st = A.state, ev = (st.events || []);
+  if(!st.ready && !st.error) return '';
+  const rows = ev.slice(0, ACT_MORE ? 25 : 5).map(e => { const l = A.line(e);
+    return `<div class="act-row"><span class="act-ic">${l.icon}</span><span class="act-t"><b>${esc(l.name)}</b> ${esc(l.what)}${l.detail ? `<small>${esc(l.detail)}</small>` : ''}</span><span class="act-w" data-norebrand>${l.biz === 'sba' ? '<span class="biz-tag sba">Shot by A</span>' : ''}${esc(l.when)}</span></div>`; }).join('');
+  const s = A.support(), on = s.on && s.permission === 'granted';
+  return `<div class="card" id="activity" style="margin-bottom:20px"><div class="ns-head"><h2>Client activity</h2>${on ? '<span class="act-on">&#128276; On</span>' : '<button class="ns-go" type="button" id="actPush">Turn on notifications</button>'}</div>
+    ${st.error ? `<div class="ns-meta">Could not load activity: ${esc(st.error)}. Paste the latest gallery-worker.js into Cloudflare.</div>` : (rows || '<div class="ns-t" style="padding:8px 0;color:var(--ink-soft)">Nothing yet. When a client signs, opens their gallery, downloads, picks favourites, reviews or pays, it shows here.</div>')}
+    ${st.ticked ? `<div class="ns-meta">${st.ticked} Workflow step${st.ticked === 1 ? '' : 's'} ticked from client activity.</div>` : ''}
+    ${ev.length > 5 ? `<button class="act-more" type="button" id="actMore">${ACT_MORE ? 'Show less' : 'Show more (' + Math.min(ev.length, 25) + ')'}</button>` : ''}</div>`;
+}
+
 let sdPick = '';
 function cardShoot(){
   const H = window.FOM_HEALTH; if(!H) return '';
@@ -405,6 +427,7 @@ function render(){
   el.innerHTML=`
     ${viewChips()}
     ${cardMessages()}
+    ${cardActivity()}
     ${cardShoot()}
     <div class="grid2">${cardNext()}${cardSuggest()}</div>
     <div class="kpis">
@@ -434,7 +457,10 @@ function render(){
     </div>`;
 }
 
+if(window.FOM_ACT){ FOM_ACT.on(()=>{ safeRender(); if(location.hash==='#activity'){ const a=document.getElementById('activity'); if(a) a.scrollIntoView({block:'start'}); } }); }
 $('content').addEventListener('click',e=>{
+  if(e.target.closest('#actMore')){ ACT_MORE=!ACT_MORE; safeRender(); return; }
+  if(e.target.closest('#actPush')){ const p=document.querySelector('.fom-nav .js-prof'); if(p) p.click(); setTimeout(()=>{ const b=document.getElementById('fomPush'); if(b) b.click(); },60); return; }
   const v=e.target.closest('[data-view]'); if(v){ VIEW=v.dataset.view; try{localStorage.setItem('fom.dash.view',VIEW);}catch(x){} safeRender(); return; }
   if(e.target.closest('#bizSwitch')) BZ.setBiz(BZ.id==='sba'?'fom':'sba');
 });
@@ -507,6 +533,7 @@ if(!configured){
   loadFirebase().then(initCloud).catch(showConnError);
 }
 </script>
+<script src="activity.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -42,7 +42,10 @@ export default {
       const payload = {
         amount: amountCents,
         currency: "ZAR",
-        successUrl: SUCCESS_URL,
+        // the thank-you page tells FOM Studios who paid (push notification + activity log)
+        successUrl: SUCCESS_URL + "?c=" + encodeURIComponent(String(body.client || "").slice(0, 60))
+          + "&k=" + encodeURIComponent(String(body.kind || "")) + "&a=" + Math.round(amountCents / 100)
+          + "&i=" + encodeURIComponent(String(body.invoice || "").slice(0, 30)),
         cancelUrl: CANCEL_URL,
         failureUrl: CANCEL_URL,
         metadata: {
