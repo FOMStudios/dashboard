@@ -120,7 +120,7 @@ function fixNode(n){
 }
 function swapIcons(){
   var links = document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"]');
-  for(var i = 0; i < links.length; i++) links[i].href = B.icon;
+  for(var i = 0; i < links.length; i++) links[i].href = links[i].rel === 'apple-touch-icon' ? 'assets/sba-icon-180.png' : B.icon;
 }
 if(cur === 'sba'){
   document.title = rebrand(document.title, { colors:false });

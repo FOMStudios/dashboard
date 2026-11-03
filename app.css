@@ -59,7 +59,7 @@ img,table,iframe,video,pre{max-width:100%;}
 .fom-splash .in p{color:var(--ink-soft);font-size:13px;}
 
 /* ---- Login gate ---- */
-.fom-gate{position:fixed;inset:0;background:var(--bg);z-index:5000;display:none;align-items:center;justify-content:center;padding:20px;}
+.fom-gate{position:fixed;inset:0;background:var(--bg);z-index:5000;display:none;align-items:center;justify-content:center;padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));}
 .fom-gate.on{display:flex;}
 .fom-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 28px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.14);}
 .fom-card .mark{font-weight:800;letter-spacing:.04em;font-size:22px;color:var(--ink);display:block;}
@@ -69,7 +69,7 @@ img,table,iframe,video,pre{max-width:100%;}
 .fom-card .err{color:#c0392b;font-size:13px;min-height:16px;margin-top:6px;}
 
 /* ---- Bottom nav bar ---- */
-.fom-nav{position:fixed;left:50%;bottom:calc(12px + var(--safe-b));transform:translateX(-50%);z-index:1200;
+.fom-nav{position:fixed;left:50%;bottom:calc(14px + var(--safe-b));transform:translateX(-50%);z-index:1200;
   width:min(92vw,420px);height:var(--nav-h);border-radius:var(--radius-pill);background:var(--bg-pill);
   border:1px solid var(--line);box-shadow:0 12px 32px -14px rgba(0,0,0,.4);display:flex;align-items:center;
   justify-content:space-around;padding:0 10px;}
@@ -126,7 +126,8 @@ img,table,iframe,video,pre{max-width:100%;}
    These run only once .fom-ready is on <html> (set by app.js),
    so pages look right in dark mode and clear the bottom nav.
    ============================================================ */
-.fom-ready .page{padding-top:22px!important;}
+/* clear the clock and battery now that the app runs full screen (like HQ) */
+.fom-ready .page{padding-top:max(22px, calc(env(safe-area-inset-top) + 10px))!important;}
 /* form inputs that were hardcoded white -> theme-aware (table-cell inputs stay transparent) */
 .fom-ready .login-card input,.fom-ready .toolbar input.search,.fom-ready .search input,
 .fom-ready .panel input,.fom-ready .panel select,.fom-ready .panel textarea,

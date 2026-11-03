@@ -16,7 +16,17 @@ var LS = {
 };
 
 /* ---- theme ---- */
-function applyTheme(t){ if(t==='light'||t==='dark') root.setAttribute('data-theme',t); else root.removeAttribute('data-theme'); }
+function applyTheme(t){ if(t==='light'||t==='dark') root.setAttribute('data-theme',t); else root.removeAttribute('data-theme'); syncBar(); }
+/* the phone's status bar takes the page background (light, dark, FOM or Shot by A) */
+function syncBar(){
+  try{
+    var bg = getComputedStyle(root).getPropertyValue('--bg').trim(); if(!bg) return;
+    var m = D.querySelectorAll('meta[name="theme-color"]');
+    if(!m.length){ var n = D.createElement('meta'); n.name = 'theme-color'; D.head.appendChild(n); m = [n]; }
+    for(var i = 0; i < m.length; i++){ m[i].removeAttribute('media'); m[i].content = bg; }
+  }catch(e){}
+}
+try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){ setTimeout(syncBar, 50); }); }catch(e){}
 var theme = LS.get('fom.theme','auto');
 applyTheme(theme);
 
