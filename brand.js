@@ -15,15 +15,18 @@
 'use strict';
 var KEY = 'fom.biz';
 var ls = window.localStorage;
+/* Phone numbers (Nov 2026): FOM WhatsApp Business 068 690 1120, Shot by A 084 445 6657.
+   Old FOM number, kept in case you switch back: 073 755 3136 (WhatsApp 27737553136). */
+var OLD_FOM_PHONES = ['+27 73 755 3136','073 755 3136','0737553136'];
 var DEF = {
   fom: { id:'fom', name:'FOM Studios', upper:'FOM STUDIOS', legal:'Frames Of Motion (FOM) Studios', tagline:'FRAMES OF MOTION',
-    owner:'Ishaaq Adam', email:'info@fomstudios.co.za', phone:'073 755 3136', site:'www.fomstudios.co.za',
+    owner:'Ishaaq Adam', email:'info@fomstudios.co.za', phone:'068 690 1120', site:'www.fomstudios.co.za',
     siteUrl:'https://www.fomstudios.co.za', instagram:'fom_studios_', role:'Photographer / Videographer',
     portal:'https://www.fomstudios.co.za/client-portal.html', clientQS:'',
     logo:'assets/mascot.png', logoAbs:'https://www.fomstudios.co.za/assets/mascot.png', icon:'assets/mascot.png',
     accent:'#02367B', accent2:'#5B9AE0', galleryPrefix:'' },
   sba: { id:'sba', name:'Shot by A', upper:'SHOT BY A', legal:'Shot by A Photography', tagline:'PHOTOGRAPHY',
-    owner:'Amarah Rangraze', email:'amarah.rangraze@gmail.com', phone:'073 755 3136', site:'instagram.com/shotbya_photography',
+    owner:'Amarah Rangraze', email:'amarah.rangraze@gmail.com', phone:'084 445 6657', site:'instagram.com/shotbya_photography',
     siteUrl:'https://instagram.com/shotbya_photography', instagram:'shotbya_photography', role:'Photographer',
     portal:'https://www.fomstudios.co.za/shotbya/', clientQS:'b=sba',
     logo:'assets/shotbya-logo.png', logoAbs:'https://www.fomstudios.co.za/shotbya/logo.png', icon:'assets/shotbya-icon.png',
@@ -39,6 +42,8 @@ try{ cur = ls.getItem(KEY) === 'sba' ? 'sba' : 'fom'; }catch(e){}
 function brandOf(id){
   var b = Object.assign({}, DEF[id]), o = readJSON('fom.brand.' + id);
   if(o) EDITABLE.forEach(function(k){ if(typeof o[k] === 'string' && o[k].trim()) b[k] = o[k].trim(); });
+  // Nov 2026: details saved with the old shared number show the new ones (FOM 068 690 1120, Shot by A 084 445 6657)
+  if(String(b.phone).replace(/\D/g, '').replace(/^27/, '0') === '0737553136') b.phone = DEF[id].phone;
   b.upper = b.name.toUpperCase();
   b.siteUrl = /^https?:/i.test(b.site) ? b.site : 'https://' + b.site.replace(/^\/+/, '');
   return b;
@@ -75,7 +80,15 @@ function rules(opts){
   add('FOM Studios', b.name); add('FOM STUDIOS', b.upper); add('FOM studios', b.name);
   add(F.tagline, b.tagline);
   add(/@?fom_studios_/g, (function(){ return '@' + b.instagram; })());
-  if(b.phone !== F.phone){ ['+27 73 755 3136','073 755 3136','0737553136','27737553136'].forEach(function(p){ add(p, b.phone); }); }
+  if(b.phone !== F.phone){
+    // FOM's number in any format (current and old) becomes this business's number; WhatsApp links get the 27... digits
+    var fp = F.phone, d = String(fp).replace(/\D/g, ''), loc = d.replace(/^27/, '0'), intl = '27' + loc.slice(1);
+    var bw = '27' + String(b.phone).replace(/\D/g, '').replace(/^27/, '0').slice(1);
+    add('+27 ' + loc.slice(1, 3) + ' ' + loc.slice(3, 6) + ' ' + loc.slice(6), b.phone);
+    add(loc.slice(0, 3) + ' ' + loc.slice(3, 6) + ' ' + loc.slice(6), b.phone);
+    add(intl, bw); add(loc, String(b.phone).replace(/\s/g, ''));
+    OLD_FOM_PHONES.forEach(function(p){ add(p, b.phone); }); add('27737553136', bw);
+  }
   if(opts && opts.owner){ add(F.owner, b.owner); add(F.owner.toUpperCase(), b.owner.toUpperCase()); add('Ishaaq', b.owner.split(' ')[0]); }
   if(opts && opts.colors !== false){ add(/#02367B/gi, b.accent); add(/#5B9AE0/gi, b.accent2); }
   if(opts && opts.role){ add(F.role, b.role); }
@@ -109,7 +122,7 @@ var SKIP = { SCRIPT:1, STYLE:1, TEXTAREA:1, INPUT:1, SELECT:1, OPTION:0, CODE:1 
 function fixNode(n){
   if(n.nodeType === 3){
     var p = n.parentNode; if(!p || SKIP[p.nodeName] || (p.closest && p.closest('[data-norebrand],[contenteditable]'))) return;
-    var v = n.nodeValue; if(!/FOM|fomstudios|fom_studios_|Frames Of Motion|FRAMES OF MOTION|755 3136/.test(v)) return;
+    var v = n.nodeValue; if(!/FOM|fomstudios|fom_studios_|Frames Of Motion|FRAMES OF MOTION|755 3136|690 1120|6901120/.test(v)) return;
     var nv = rebrand(v, { colors:false }); if(nv !== v) n.nodeValue = nv;
   } else if(n.nodeType === 1){
     if(SKIP[n.nodeName] || n.hasAttribute('data-norebrand') || (n.closest && n.closest('[data-norebrand]'))) return;

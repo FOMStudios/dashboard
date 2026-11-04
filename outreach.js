@@ -73,7 +73,7 @@
       body:"Hi {recipient},\n\nI'm just following up on my earlier email about working together{event| on }{event}. I know inboxes get busy, so I thought I'd bring it back to the top.\n\n{angle}\n\nMy portfolio is attached again for easy reference, and you can see recent work at {website}.\n\nLet me know if it would help to chat for 10 minutes this week." + SIGN }
   ];
 
-  var DEF_ME = { name:'Ishaaq Adam', phone:'+27 73 755 3136', email:'info@fomstudios.co.za', website:'www.fomstudios.co.za', instagram:'fom_studios_' };
+  var DEF_ME = { name:'Ishaaq Adam', phone:'+27 68 690 1120', email:'info@fomstudios.co.za', website:'www.fomstudios.co.za', instagram:'fom_studios_' };
 
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
   function defaults(){ var d = { categories:clone(DEF_CATS), templates:clone(DEF_TEMPLATES), me:clone(DEF_ME) };
