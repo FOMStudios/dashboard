@@ -92,6 +92,20 @@ td input:focus,td select:focus{outline:none;border-color:var(--accent);backgroun
 td.amount input{text-align:right;font-variant-numeric:tabular-nums;}
 td.outstanding{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;padding-right:14px;color:var(--accent);white-space:nowrap;}
 td.rm-col{width:38px;text-align:center;}
+.col-wa{width:190px;}
+.wa-cell{display:flex;gap:6px;align-items:center;} .wa-cell input{min-width:0;flex:1;}
+.wa-btn{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:#25D366;color:#fff;display:grid;place-items:center;cursor:pointer;}
+.wa-btn svg{width:19px;height:19px;} .wa-btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+.wa-last{font-size:11px;color:var(--ink-soft);margin-top:3px;white-space:nowrap;}
+.wa-box textarea{width:100%;min-height:170px;border:1px solid var(--line,#d9dde5);border-radius:12px;padding:12px;font:inherit;font-size:16px;line-height:1.45;resize:vertical;background:var(--bg,#fff);color:inherit;}
+.wa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.wa-chip{border:1px solid var(--line,#d9dde5);background:transparent;color:inherit;border-radius:99px;padding:6px 11px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;}
+.wa-chip.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.wa-chip .sg{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-left:5px;opacity:.85;}
+.wa-acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.wa-go{flex:1;min-width:160px;text-align:center;background:#25D366;color:#fff;border-radius:99px;padding:12px 16px;font-weight:800;text-decoration:none;}
+.wa-sec{border:1px solid var(--line,#d9dde5);background:transparent;color:inherit;border-radius:99px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer;}
+.wa-note{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;}
 .fav-btn{border:1px solid #f3c2d0;background:#fdeef3;color:#c2185b;border-radius:99px;padding:5px 11px;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .fav-scrim{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:2500;display:none;align-items:flex-end;justify-content:center;}
 .fav-scrim.on{display:flex;}
@@ -203,7 +217,7 @@ thead th.portal-col{background:#dce8ff;color:var(--accent);}
             <table>
                 <thead>
                     <tr>
-                        <th class="col-id">Order ID</th><th>Customer Name</th><th>Product</th>
+                        <th class="col-id">Order ID</th><th>Customer Name</th><th class="col-wa">Client WhatsApp</th><th>Product</th>
                         <th class="col-date">Shoot Date</th><th>Order Status</th>
                         <th class="col-amt">Total Amount</th><th class="col-amt">Amount Paid</th>
                         <th class="col-amt">Outstanding</th><th class="col-pay">Payment Method</th>
@@ -296,7 +310,7 @@ function cloudStore(db){
 
 /* ================= RENDER ================= */
 const tbody=$('tbody'), search=$('search');
-function blankOrder(){ return {orderId:'#'+(orders.length+1),customer:'',product:'',shootDate:'',status:'Pending',total:0,paid:0,payment:'EFT',deadline:'',notes:'',clientEmail:'',shootTime:'',contractUrl:'',invoiceUrl:'',deliverablesUrl:'',deliverablesReady:false,portalMessage:'',galleryFolder:'',galleryExpiry:''}; }
+function blankOrder(){ return {orderId:'#'+(orders.length+1),customer:'',clientPhone:'',product:'',shootDate:'',status:'Pending',total:0,paid:0,payment:'EFT',deadline:'',notes:'',clientEmail:'',shootTime:'',contractUrl:'',invoiceUrl:'',deliverablesUrl:'',deliverablesReady:false,portalMessage:'',galleryFolder:'',galleryExpiry:''}; }
 
 function render(){
   const q=search.value.trim().toLowerCase();
@@ -311,6 +325,7 @@ function render(){
     tr.innerHTML=`
       <td class="col-id"><input data-i="${i}" data-f="orderId" value="${esc(o.orderId)}"></td>
       <td><input data-i="${i}" data-f="customer" value="${esc(o.customer)}" placeholder="Name"></td>
+      <td class="col-wa"><div class="wa-cell"><input data-i="${i}" data-f="clientPhone" value="${esc(o.clientPhone||'')}" placeholder="082 123 4567" inputmode="tel" autocomplete="off"><button type="button" class="wa-btn" data-wa="${i}" title="Message this client on WhatsApp" aria-label="Message ${esc(o.customer||'client')} on WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3z"/></svg></button></div>${o.waLast&&o.waLast.t?`<div class="wa-last">Sent: ${esc(o.waLast.t)}${o.waLast.at?', '+new Date(o.waLast.at).toLocaleDateString('en-ZA',{day:'numeric',month:'short'}):''}</div>`:''}</td>
       <td><input data-i="${i}" data-f="product" value="${esc(o.product)}" placeholder="e.g. Gold"></td>
       <td class="col-date"><input type="date" data-i="${i}" data-f="shootDate" value="${esc(o.shootDate)}"></td>
       <td><select class="status" data-i="${i}" data-f="status">${STATUSES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></td>
@@ -369,7 +384,7 @@ tbody.addEventListener('change',e=>{
   store.update(orders[i].id);
   if(f==='galleryExpiry' || f==='galleryFolder') syncGalleryMeta(orders[i]);
 });
-tbody.addEventListener('click',e=>{ const fb=e.target.closest('[data-favs]'); if(fb){ showFavs(orders[+fb.dataset.favs]); return; } const rm=e.target.dataset.rm; if(rm!==undefined){ store.remove(orders[+rm].id); return; }
+tbody.addEventListener('click',e=>{ const fb=e.target.closest('[data-favs]'); if(fb){ showFavs(orders[+fb.dataset.favs]); return; } const wb=e.target.closest('[data-wa]'); if(wb){ openWa(orders[+wb.dataset.wa]); return; } const rm=e.target.dataset.rm; if(rm!==undefined){ store.remove(orders[+rm].id); return; }
   const sl=e.target.dataset.signlink;
   if(sl!==undefined){
     const o=orders[+sl];
@@ -388,8 +403,8 @@ $('addBtn').onclick=()=>{ if(store) store.add(blankOrder()); };
 $('clearBtn').onclick=()=>{ if(store && confirm('Delete ALL orders? This cannot be undone.')) store.clear(); };
 search.addEventListener('input',render);
 $('csvBtn').onclick=()=>{
-  const head=['Order ID','Customer Name','Product','Shoot Date','Order Status','Total Amount','Amount Paid','Outstanding Balance','Payment Method','Deadline','Order Notes','Client Email','Shoot Time','Contract URL','Invoice URL','Deliverables URL','Files Ready','Portal Message','Gallery Folder','Gallery Expiry','Signed','Favourites'];
-  const rows=orders.map(o=>[o.orderId,o.customer,o.product,o.shootDate,o.status,o.total,o.paid,(+o.total||0)-(+o.paid||0),o.payment,o.deadline,o.notes,o.clientEmail||'',o.shootTime||'',o.contractUrl||'',o.invoiceUrl||'',o.deliverablesUrl||'',o.deliverablesReady?'Yes':'No',o.portalMessage||'',o.galleryFolder||'',o.galleryExpiry||'',o.contractSigned?('Signed'+(o.signedName?' by '+o.signedName:'')):'No']);
+  const head=['Order ID','Customer Name','Client WhatsApp','Product','Shoot Date','Order Status','Total Amount','Amount Paid','Outstanding Balance','Payment Method','Deadline','Order Notes','Client Email','Shoot Time','Contract URL','Invoice URL','Deliverables URL','Files Ready','Portal Message','Gallery Folder','Gallery Expiry','Signed','Favourites'];
+  const rows=orders.map(o=>[o.orderId,o.customer,o.clientPhone||'',o.product,o.shootDate,o.status,o.total,o.paid,(+o.total||0)-(+o.paid||0),o.payment,o.deadline,o.notes,o.clientEmail||'',o.shootTime||'',o.contractUrl||'',o.invoiceUrl||'',o.deliverablesUrl||'',o.deliverablesReady?'Yes':'No',o.portalMessage||'',o.galleryFolder||'',o.galleryExpiry||'',o.contractSigned?('Signed'+(o.signedName?' by '+o.signedName:'')):'No']);
   rows.forEach((r,k)=>r.push((orders[k].favourites||[]).join(' | ')));
   const csv=[head,...rows].map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='fom_orders.csv'; a.click(); URL.revokeObjectURL(a.href);
@@ -467,6 +482,14 @@ if(!configured){
   loadFirebase().then(initCloud).catch(showConnError);   // cloud only - no local fallback (avoids mixing datasets)
 }
 </script>
+<div class="fav-scrim" id="waScrim"><div class="fav-box wa-box" role="dialog" aria-modal="true" aria-labelledby="waTitle">
+  <h3 id="waTitle">WhatsApp</h3><p class="sub" id="waSub"></p>
+  <div class="wa-chips" id="waChips"></div>
+  <label for="waText" class="sub" style="display:block;margin-bottom:6px">Message (edit before sending)</label>
+  <textarea id="waText"></textarea>
+  <p class="wa-note" id="waNote"></p>
+  <div class="wa-acts"><a class="wa-go" id="waGo" href="#" target="_blank" rel="noopener">Open in WhatsApp</a><button type="button" class="wa-sec" id="waCopy">Copy</button><button type="button" class="wa-sec" id="waClose">Close</button></div>
+</div></div>
 <div class="fav-scrim" id="favScrim"><div class="fav-box" role="dialog" aria-modal="true" aria-labelledby="favTitle">
   <h3 id="favTitle">Favourites</h3><p class="sub" id="favSub"></p>
   <div class="fav-grid" id="favGrid"></div>
@@ -490,6 +513,69 @@ function showFavs(o){
   };
   document.getElementById('favScrim').classList.add('on');
 }
+/* ================= WHATSAPP MESSAGES ================= */
+function waNum(p){ let d=String(p||'').replace(/\D/g,''); if(!d) return ''; if(d.startsWith('00')) d=d.slice(2); if(d.startsWith('0')) d='27'+d.slice(1); else if(d.length===9) d='27'+d; return d.length>=11?d:''; }
+function waDay(v){ if(!v) return ''; const d=new Date(v+'T00:00:00'); return isNaN(d)?v:d.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long'}); }
+function waDaysTo(v){ if(!v) return null; const d=new Date(v+'T00:00:00'); if(isNaN(d)) return null; const t=new Date(); t.setHours(0,0,0,0); return Math.round((d-t)/864e5); }
+function waTemplates(o){
+  const B=FOM_BIZ.b, me=(B.owner||'').split(' ')[0]||'', biz=B.name, f=(String(o.customer||'').trim().split(/\s+/)[0])||'there';
+  const out=Math.max(0,(+o.total||0)-(+o.paid||0)), day=waDay(o.shootDate), at=o.shootTime?' at '+o.shootTime:'';
+  const sign=FOM_BIZ.clientUrl('sign.html','o='+encodeURIComponent(o.id)+'&name='+encodeURIComponent(o.customer||'')+'&c='+encodeURIComponent(o.contractUrl||''));
+  const review=FOM_BIZ.clientUrl('feedback.html','o='+encodeURIComponent(o.id));
+  const portal=B.portal, inv=o.invoiceUrl?'\n\nInvoice: '+o.invoiceUrl:'';
+  const hi='Hi '+f+', it\'s '+me+' from '+biz+'.';
+  return [
+    {k:'sign', t:'Contract', m:hi+' Thanks for booking'+(day?' for '+day:'')+'! Here is your contract to read and sign online. It takes about 2 minutes:\n'+sign},
+    {k:'deposit', t:'Deposit', m:hi+' Thank you for signing! To lock in '+(day||'your date')+', please pay the deposit by EFT using the details on your invoice.'+inv+'\n\nSend me the proof of payment here once done.'},
+    {k:'booked', t:'Booked', m:hi+' Payment received, thank you! You\'re booked'+(day?' for '+day+at:'')+'. I\'ll send a reminder with the shoot plan a few days before.'},
+    {k:'prep', t:'Shoot reminder', m:hi+' Quick reminder of your shoot'+(day?' on '+day+at:'')+'. Tip: bring a change of outfit and arrive 10 minutes early. Any questions, just ask.'},
+    {k:'editing', t:'Editing', m:hi+' Thanks again for the shoot! Your photos are being edited now'+(o.deadline?' and will be ready by '+waDay(o.deadline):'')+'. I\'ll message you the moment they\'re up.'},
+    {k:'balance', t:'Balance', m:hi+' Friendly reminder that R'+out.toLocaleString('en-ZA')+' is still outstanding for your shoot. You can pay by EFT using the details on your invoice.'+inv},
+    {k:'ready', t:'Gallery ready', m:hi+' Your photos are ready! Sign in to your client portal to view, favourite and download them:\n'+portal+(o.galleryExpiry?'\n\nThe gallery stays up until '+waDay(o.galleryExpiry)+'.':'')},
+    {k:'review', t:'Review', m:hi+' I hope you love your photos! If you have a minute, a quick review means a lot to a small studio:\n'+review},
+    {k:'expiry', t:'Expiry reminder', m:hi+' Friendly reminder that your gallery closes'+(o.galleryExpiry?' on '+waDay(o.galleryExpiry):' soon')+'. Please download everything before then:\n'+portal},
+    {k:'custom', t:'Blank', m:hi+' '}
+  ];
+}
+function waSuggest(o){
+  const out=(+o.total||0)-(+o.paid||0), dShoot=waDaysTo(o.shootDate), dExp=waDaysTo(o.galleryExpiry);
+  if(!o.contractSigned) return 'sign';
+  if(!(+o.paid>0)) return 'deposit';
+  if(o.deliverablesReady){
+    if(dExp!==null && dExp>=0 && dExp<=5) return 'expiry';
+    if(out>0) return 'balance';
+    return (o.workflow&&o.workflow.s13)?'review':'ready';
+  }
+  if(dShoot!==null && dShoot>=0) return dShoot<=3?'prep':'booked';
+  if(dShoot!==null && dShoot<0) return out>0?'balance':'editing';
+  return 'booked';
+}
+let waOrder=null, waKey='';
+function openWa(o){
+  if(!o) return; waOrder=o;
+  const T=waTemplates(o), sug=waSuggest(o), num=waNum(o.clientPhone);
+  document.getElementById('waTitle').textContent='Message '+(o.customer||'client');
+  document.getElementById('waSub').textContent=num?('+'+num.replace(/^27(\d{2})(\d{3})(\d{4})$/,'27 $1 $2 $3')):'No WhatsApp number saved yet';
+  document.getElementById('waNote').textContent=num?'Opens your chat with this client. Check the message, then press send in WhatsApp.':'Add their number in the Client WhatsApp column, or WhatsApp will ask you to pick the contact.';
+  const chips=document.getElementById('waChips');
+  chips.innerHTML=T.map(x=>`<button type="button" class="wa-chip" data-k="${x.k}">${esc(x.t)}${x.k===sug?'<span class="sg">Suggested</span>':''}</button>`).join('');
+  const pick=k=>{ waKey=k; const x=T.find(y=>y.k===k)||T[0]; document.getElementById('waText').value=x.m; chips.querySelectorAll('.wa-chip').forEach(b=>b.classList.toggle('on',b.dataset.k===k)); waLink(); };
+  chips.onclick=e=>{ const b=e.target.closest('.wa-chip'); if(b) pick(b.dataset.k); };
+  pick(sug);
+  document.getElementById('waScrim').classList.add('on');
+}
+function waLink(){ const o=waOrder, t=document.getElementById('waText').value, num=waNum(o&&o.clientPhone);
+  document.getElementById('waGo').href='https://wa.me/'+(num||'')+'?text='+encodeURIComponent(t); }
+document.getElementById('waText').addEventListener('input',waLink);
+function waSent(){ const o=waOrder; if(!o) return; const T=waTemplates(o), x=T.find(y=>y.k===waKey);
+  o.waLast={t:x?x.t:'Message', k:waKey, at:Date.now()};
+  if(waKey==='sign'){ try{ const cv=JSON.parse(localStorage.getItem('fom.contract.v1')||'{}'); o.contractVersion=Math.max(1,Math.round(+cv.version)||1); o.contractVersionAt=new Date().toISOString(); }catch(err){} }
+  if(store) store.update(o.id); setTimeout(()=>document.getElementById('waScrim').classList.remove('on'),300); safeRender(); }
+document.getElementById('waGo').addEventListener('click',waSent);
+document.getElementById('waCopy').onclick=async()=>{ const b=document.getElementById('waCopy'), t=document.getElementById('waText').value;
+  try{ await navigator.clipboard.writeText(t); b.textContent='Copied'; }catch(e){ document.getElementById('waText').select(); b.textContent='Selected'; } setTimeout(()=>{b.textContent='Copy';},1600); };
+document.getElementById('waClose').onclick=()=>document.getElementById('waScrim').classList.remove('on');
+document.getElementById('waScrim').onclick=e=>{ if(e.target.id==='waScrim') e.target.classList.remove('on'); };
 document.getElementById('favClose').onclick = () => document.getElementById('favScrim').classList.remove('on');
 document.getElementById('favScrim').onclick = e => { if(e.target.id === 'favScrim') e.target.classList.remove('on'); };
 </script>

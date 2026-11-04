@@ -350,10 +350,10 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 
     <section class="ws-card">
         <h2>Social links</h2>
-        <p class="ws-help">Instagram replaces the existing links. The others appear in the footer once filled in.</p>
+        <p class="ws-help">Instagram replaces the existing links. The others appear in the footer once filled in. The WhatsApp Channel button and email line use your channel (whatsapp.com/channel/0029Vb8y9mxAYlURQF4cUD3h) unless you paste a different link here.</p>
         <div class="ws-grid">
             <div class="ws-f"><label for="fIg">Instagram</label><input id="fIg" placeholder="@fom_studios_ or full link"></div>
-            <div class="ws-f"><label for="fWac">WhatsApp Community link</label><input id="fWac" placeholder="https://chat.whatsapp.com/..."></div>
+            <div class="ws-f"><label for="fWac">WhatsApp Channel link</label><input id="fWac" inputmode="url" placeholder="https://whatsapp.com/channel/..."></div>
             <div class="ws-f"><label for="fFb">Facebook</label><input id="fFb" placeholder="https://facebook.com/..."></div>
             <div class="ws-f"><label for="fTt">TikTok</label><input id="fTt" placeholder="https://tiktok.com/@..."></div>
             <div class="ws-f ws-wide"><label for="fYt">YouTube</label><input id="fYt" placeholder="https://youtube.com/@..."></div>
@@ -391,7 +391,7 @@ function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('sho
 const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 
 let db=null, saved={}, dirty=false, loaded=false;
-const F={phone:'fPhone',whatsapp:'fWa',email:'fEmail',instagram:'fIg',whatsappCommunity:'fWac',facebook:'fFb',tiktok:'fTt',youtube:'fYt',area:'fArea',serviceArea:'fCover',hours:'fHours'};
+const F={phone:'fPhone',whatsapp:'fWa',email:'fEmail',instagram:'fIg',whatsappChannel:'fWac',facebook:'fFb',tiktok:'fTt',youtube:'fYt',area:'fArea',serviceArea:'fCover',hours:'fHours'};
 
 function readForm(){
   const d={}; Object.keys(F).forEach(k=>{ const v=$(F[k]).value.trim(); if(v) d[k]=v; });
@@ -452,7 +452,7 @@ function validate(d){
   mark('fPhone', !d.phone || digits(d.phone).length>=9);
   mark('fWa', !d.whatsapp || digits(d.whatsapp).length>=9);
   mark('fEmail', !d.email || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email));
-  ['whatsappCommunity','facebook','tiktok','youtube'].forEach(k=>mark(F[k], !d[k] || /^https?:\/\//i.test(d[k])));
+  ['whatsappChannel','facebook','tiktok','youtube'].forEach(k=>mark(F[k], !d[k] || /^https?:\/\//i.test(d[k])));
   mark('bLink', !d.banner.link || /^(https?:\/\/|\/|[a-z0-9_-]+\.html)/i.test(d.banner.link));
   mark('bText', !d.banner.on || !!d.banner.text);
   [].forEach.call($('bdList').querySelectorAll('.bd-row'),r=>{ const f=r.querySelector('[data-bd=from]'),t=r.querySelector('[data-bd=to]'); const okF=!!f.value, okT=!t.value||t.value>=f.value; f.classList.toggle('bad',!okF); t.classList.toggle('bad',!okT); if(!okF||!okT) bad.push('bd'); });

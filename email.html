@@ -236,6 +236,7 @@ const BRAND = {
   phone: "068 690 1120",
   instagram: "https://instagram.com/fom_studios_",
   instaHandle: "@fom_studios_",
+  channel: "https://whatsapp.com/channel/0029Vb8y9mxAYlURQF4cUD3h",   // WhatsApp Channel; the Website page link replaces it after sign-in
 };
 
 function fields(){
@@ -428,10 +429,10 @@ function buildEmailHtml(){
         </td></tr>
       </table>
     </td></tr>
-    <!-- WhatsApp Community mention -->
-    <tr><td align="center" style="padding:16px 34px 4px;">
-      <div style="color:${SOFT};font-size:13px;">Want first look at future promos and behind-the-scenes? <a href="https://chat.whatsapp.com/HoXSAFe5QM32vAIMtcIIA3" target="_blank" style="color:${A};font-weight:700;text-decoration:none;">Follow our WhatsApp Community</a></div>
-    </td></tr>
+    <!-- WhatsApp Channel mention (only when the channel link is set on the Website page) -->
+    ${BRAND.channel ? `<tr><td align="center" style="padding:16px 34px 4px;">
+      <div style="color:${SOFT};font-size:13px;">Want first look at future promos and behind-the-scenes? <a href="${BRAND.channel}" target="_blank" style="color:${A};font-weight:700;text-decoration:none;">Follow our WhatsApp Channel</a></div>
+    </td></tr>` : ''}
     <tr><td style="padding:24px 34px 30px;">
       <table width="100%" cellpadding="0" cellspacing="0" style="background:${INK};border-radius:16px;">
         <tr><td style="padding:24px 22px;text-align:center;">
@@ -506,10 +507,10 @@ function buildEmailHtml(){
         </td></tr>
       </table>
     </td></tr>
-    <!-- WhatsApp Community mention -->
-    <tr><td align="center" style="padding:16px 34px 4px;">
-      <div style="color:${SOFT};font-size:13px;">Want first look at future promos and behind-the-scenes? <a href="https://chat.whatsapp.com/HoXSAFe5QM32vAIMtcIIA3" target="_blank" style="color:${A};font-weight:700;text-decoration:none;">Follow our WhatsApp Community</a></div>
-    </td></tr>
+    <!-- WhatsApp Channel mention (only when the channel link is set on the Website page) -->
+    ${BRAND.channel ? `<tr><td align="center" style="padding:16px 34px 4px;">
+      <div style="color:${SOFT};font-size:13px;">Want first look at future promos and behind-the-scenes? <a href="${BRAND.channel}" target="_blank" style="color:${A};font-weight:700;text-decoration:none;">Follow our WhatsApp Channel</a></div>
+    </td></tr>` : ''}
     <tr><td style="padding:24px 34px 30px;">
       <table width="100%" cellpadding="0" cellspacing="0" style="background:${INK};border-radius:16px;">
         <tr><td style="padding:24px 22px;text-align:center;">
@@ -684,6 +685,7 @@ refresh();
             }
             gate.style.display = 'none';
             if(logoutBtn) logoutBtn.style.display = 'inline-block';
+            db.collection('siteContent').doc('site').get().then(function(d){ var c = String((d.exists && d.data().whatsappChannel) || '').trim(); if(/^https:\/\//i.test(c)){ BRAND.channel = c; try{ refresh(); }catch(e){} } }).catch(function(){});
           }).catch(function(err){ console.warn('Admin check failed:',err); gate.style.display = 'flex'; auth.signOut(); });
         } else {
           gate.style.display = 'flex';
