@@ -126,6 +126,9 @@ td.rm-col{width:38px;text-align:center;}
 .fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;overflow-y:auto;flex:1;min-height:0;}
 .fav-grid figure{margin:0;} .fav-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:var(--track);display:block;}
 .fav-grid figcaption{font-size:10.5px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.tc-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;} .tc-row span{color:var(--ink-soft);font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;flex:none;} .tc-row b{word-break:break-all;text-align:right;} .tc-row button{flex:none;}
+.tc-body{overflow-y:auto;min-height:0;} .tc-body p{font-size:14px;color:var(--ink-soft);margin:6px 0;} .tc-body ol{font-size:14px;margin:8px 0 4px 18px;color:var(--ink-soft);} .tc-body li{margin:3px 0;}
+.tc-log{font-size:13px;color:var(--ink-soft);margin-top:8px;min-height:18px;}
 .fav-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;} .fav-acts .btn{flex:1;min-width:130px;text-align:center;}
 .rm{background:none;border:none;color:#b85;cursor:pointer;font-size:16px;opacity:.6;}
 .rm:hover{opacity:1;color:#d55;}
@@ -217,6 +220,7 @@ thead th.portal-col{background:#dce8ff;color:var(--accent);}
         <button class="btn" id="addBtn">+ Add order</button>
         <button class="btn ghost" id="csvBtn">Export CSV</button>
         <button class="btn ghost" id="clearBtn">Clear all</button>
+        <button class="btn ghost" id="testBtn" type="button" title="Make or remove a test client for the business you are working in">🧪 Test client</button>
         <input type="text" class="search" id="search" placeholder="Search customer, product, status…">
         <span class="count-pill" id="countPill">0 orders</span>
         <span class="badge local" id="syncBadge">Local only</span>
@@ -488,6 +492,124 @@ async function createClientLogin(o, btn){
   }
   btn.disabled=false;
 }
+
+/* ================= TEST CLIENT =================
+   One tap makes a full test client for the business you are working in: a R0 order marked test:true,
+   a portal login with a password shown here (no emails sent), a 4 photo gallery in R2 and a sign link.
+   Remove deletes all of it. Needs the gallery Worker with the test-client folders (deploy checklist, section C). */
+const TC_FOLDER = () => FOM_BIZ.isSba ? 'shotbya/test-client' : 'test-client';
+const tcOrder = () => orders.find(o => o.test === true);
+const tcEmail = () => { const m = String((auth && auth.currentUser && auth.currentUser.email) || '').toLowerCase(); const at = m.indexOf('@'); return at > 0 ? m.slice(0, at).replace(/\+.*$/, '') + '+' + (FOM_BIZ.isSba ? 'sbatest' : 'fomtest') + m.slice(at) : ''; };
+const tcLog = t => { $('tcLog').textContent = t || ''; };
+const tcDay = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+async function tcToken(){ return auth.currentUser.getIdToken(); }
+function tcSecAuth(){ const a = firebase.apps.find(x => x.name === 'clientLogin') || firebase.initializeApp(firebaseConfig, 'clientLogin'); const sa = a.auth(); return sa.setPersistence(firebase.auth.Auth.Persistence.NONE).then(() => sa); }
+function tcPhoto(k){
+  // a simple photo-like test image in the business colours, made on the spot
+  const c = document.createElement('canvas'), w = k % 2 ? 1200 : 900, h = k % 2 ? 800 : 1200; c.width = w; c.height = h;
+  const x = c.getContext('2d'), A = FOM_BIZ.b.accent || '#02367B', B2 = FOM_BIZ.isSba ? '#B9BAA3' : '#5B9AE0';
+  const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, A); g.addColorStop(1, B2); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  for(let i = 0; i < 7; i++){ x.globalAlpha = .18; x.fillStyle = i % 2 ? '#fff' : '#000'; x.beginPath(); x.arc(Math.random() * w, Math.random() * h, 80 + Math.random() * 260, 0, 7); x.fill(); }
+  x.globalAlpha = 1; x.fillStyle = '#fff'; x.textAlign = 'center'; x.font = '700 ' + Math.round(w / 12) + 'px -apple-system,Arial,sans-serif';
+  x.fillText('Test photo ' + k, w / 2, h / 2); x.font = '500 ' + Math.round(w / 30) + 'px -apple-system,Arial,sans-serif'; x.fillText(FOM_BIZ.b.name + ' test gallery', w / 2, h / 2 + w / 14);
+  return new Promise(r => c.toBlob(r, 'image/jpeg', .82));
+}
+async function tcCreate(){
+  if(!auth || !auth.currentUser){ tcLog('Sign in to the cloud first.'); return; }
+  if(tcOrder()){ tcDraw(); return; }
+  const email = tcEmail(), pw = 'Test-' + Math.random().toString(36).slice(2, 8) + '!' + Math.floor(Math.random() * 90 + 10);
+  const db = firebase.firestore(), folder = TC_FOLDER();
+  $('tcActs').querySelectorAll('button').forEach(b => b.disabled = true);
+  try{
+    // 1. gallery photos (checks the Worker knows the test folder first, so nothing lands in your portfolio)
+    tcLog('Uploading 4 test photos…');
+    const W = GALLERY_WORKER.replace(/\/$/, ''), tok = await tcToken();
+    for(let k = 1; k <= 4; k++){
+      const r = await fetch(W + '/admin/upload?f=' + encodeURIComponent(folder) + '&n=test-photo-' + k + '.jpg', { method:'POST', headers:{ 'Content-Type':'image/jpeg', Authorization:'Bearer ' + tok }, body: await tcPhoto(k) });
+      const j = await r.json().catch(() => ({}));
+      if(r.status === 401) throw new Error('The Worker did not accept your login. Sign out and in again.');
+      if(!r.ok) throw new Error('Upload failed (' + r.status + ').');
+      if(j.folder !== folder){
+        fetch(W + '/admin/delete', { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + tok }, body: JSON.stringify({ n:'test-photo-' + k + '.jpg', f:'portfolio' }) }).catch(() => {});
+        throw new Error('Your gallery Worker needs the latest gallery-worker.js for test galleries (deploy checklist, section C). Paste it in Cloudflare, Deploy, then try again.');
+      }
+    }
+    // 2. portal login with a known password (no email)
+    tcLog('Creating the portal login…');
+    const sa = await tcSecAuth();
+    try{ await sa.createUserWithEmailAndPassword(email, pw); }
+    catch(err){
+      if(/already|exists/i.test(err.code || '')) throw new Error(email + ' already has a login from an earlier test. Delete it in Firebase Console (Authentication, Users), then try again.');
+      if(/admin-restricted|operation-not-allowed/.test(err.code || '')) throw new Error('Firebase blocked creating the login. Authentication, Settings, User actions: tick "Enable create (sign-up)".');
+      throw err;
+    }
+    await sa.signOut().catch(() => {});
+    // 3. the order, R0 so your figures stay clean
+    tcLog('Adding the test order…');
+    const o = { test:true, testPassword:pw, orderId:'TEST', customer:'Test Client', clientPhone:'', product:'Test package', shootDate:tcDay(7), shootTime:'10:00', status:'Pending', total:0, paid:0, payment:'EFT', deadline:tcDay(14),
+      notes:'Test mode: remove with Test client, Remove', clientEmail:email, contractUrl:'', invoiceUrl:'', deliverablesUrl:'', deliverablesReady:true, portalMessage:'This is a test booking.', galleryFolder:folder + '/', galleryExpiry:tcDay(3) };
+    FOM_BIZ.tag(o); o.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    const ref = await db.collection('orders').add(o);
+    syncGalleryMeta(Object.assign({ id:ref.id }, o));
+    try{ localStorage.setItem('fom.test.' + FOM_BIZ.id, JSON.stringify({ email, pw })); }catch(e){}
+    tcLog('Test client ready.');
+    setTimeout(tcDraw, 600);
+  }catch(err){ console.warn('Test client:', err); tcLog(err.message || String(err)); }
+  $('tcActs').querySelectorAll('button').forEach(b => b.disabled = false);
+}
+async function tcRemove(){
+  const o = tcOrder(); let saved = {}; try{ saved = JSON.parse(localStorage.getItem('fom.test.' + FOM_BIZ.id)) || {}; }catch(e){}
+  const email = (o && o.clientEmail) || saved.email, pw = (o && o.testPassword) || saved.pw;
+  if(!confirm('Remove the ' + FOM_BIZ.b.name + ' test client? This deletes the test order, its login and its test photos.')) return;
+  $('tcActs').querySelectorAll('button').forEach(b => b.disabled = true);
+  const problems = [];
+  try{
+    tcLog('Deleting test photos…');
+    const W = GALLERY_WORKER.replace(/\/$/, ''), tok = await tcToken(), folder = TC_FOLDER();
+    const l = await fetch(W + '/list?g=' + encodeURIComponent(folder + '/')).then(r => r.json()).catch(() => ({ files:[] }));
+    for(const f of (l.files || [])) await fetch(W + '/admin/delete', { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + tok }, body: JSON.stringify({ n:f.name, f:folder }) }).catch(() => problems.push('photo ' + f.name));
+  }catch(e){ problems.push('photos'); }
+  if(email && pw){
+    tcLog('Deleting the test login…');
+    try{ const sa = await tcSecAuth(); const c = await sa.signInWithEmailAndPassword(email, pw); await c.user.delete(); await sa.signOut().catch(() => {}); }
+    catch(e){ if(!/user-not-found/.test(e.code || '')) problems.push('the login ' + email + ' (delete it in Firebase Console, Authentication, Users)'); }   // user-not-found: already gone
+  }
+  tcLog('Deleting the test order…');
+  for(const t of orders.filter(x => x.test === true)){ try{ await firebase.firestore().collection('orders').doc(t.id).delete(); }catch(e){ problems.push('order'); } }
+  try{ localStorage.removeItem('fom.test.' + FOM_BIZ.id); }catch(e){}
+  tcLog(problems.length ? 'Removed, except: ' + problems.join(', ') + '.' : 'Test client removed.');
+  $('tcActs').querySelectorAll('button').forEach(b => b.disabled = false);
+  setTimeout(tcDraw, 500);
+}
+function tcCopy(t, b){ const done = () => { const o = b.textContent; b.textContent = 'Copied'; setTimeout(() => b.textContent = o, 1400); }; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(done).catch(() => { prompt('Copy:', t); }); }
+function tcDraw(){
+  const o = tcOrder(), B = FOM_BIZ.b;
+  $('tcSub').textContent = 'For ' + B.name + ' (switch business in Settings to test the other one)';
+  if(!o){
+    $('tcBody').innerHTML = '<p>Makes a full test client in one tap, with no emails sent:</p><ol><li>A test order (R0, marked TEST) on this Database</li><li>A portal login: <b>' + esc(tcEmail() || 'your email +test') + '</b> with a password shown here</li><li>A 4 photo test gallery, ready to open from the portal</li><li>A contract sign link to try</li></ol><p>Emails with a +tag land in your own inbox. Remove takes everything away again.</p>';
+    $('tcActs').innerHTML = '<button class="btn" type="button" id="tcMake">Create test client</button><button class="btn ghost" type="button" id="tcClose">Close</button>';
+    $('tcMake').onclick = tcCreate;
+  } else {
+    const portal = B.portal, sign = FOM_BIZ.clientUrl('sign.html', 'o=' + encodeURIComponent(o.id) + '&name=' + encodeURIComponent(o.customer || '') + '&c=');
+    const row = (k, v, btn) => '<div class="tc-row"><span>' + k + '</span><b>' + esc(v) + '</b>' + (btn || '') + '</div>';
+    $('tcBody').innerHTML = row('Email', o.clientEmail, '<button class="lg-btn" type="button" data-tcc="' + esc(o.clientEmail) + '">Copy</button>')
+      + row('Password', o.testPassword || '(changed)', o.testPassword ? '<button class="lg-btn" type="button" data-tcc="' + esc(o.testPassword) + '">Copy</button>' : '')
+      + row('Portal', portal.replace(/^https:\/\/(www\.)?/, ''), '<a class="lg-btn" href="' + esc(portal) + '" target="_blank" rel="noopener">Open</a>')
+      + row('Sign link', o.contractSigned ? 'Signed' : 'Not signed yet', o.contractSigned ? '' : '<button class="lg-btn" type="button" data-tcc="' + esc(sign) + '">Copy</button>')
+      + row('Gallery', o.galleryFolder || '', '')
+      + '<p>Open the portal in a private window and sign in with the email and password above. Try the gallery, favourites, downloads and the review form; each one sends you a notification.</p>';
+    $('tcActs').innerHTML = '<button class="btn ghost" type="button" id="tcDel" style="color:#c0392b;border-color:#c0392b;">Remove test client</button><button class="btn" type="button" id="tcClose">Done</button>';
+    $('tcDel').onclick = tcRemove;
+    $('tcBody').querySelectorAll('[data-tcc]').forEach(b => b.onclick = () => tcCopy(b.dataset.tcc, b));
+  }
+  $('tcClose').onclick = () => $('tcScrim').classList.remove('on');
+}
+$('testBtn').onclick = () => {
+  const sc = $('tcScrim'); if(!sc) return;
+  if(!sc.dataset.on){ sc.dataset.on = '1'; sc.addEventListener('click', e => { if(e.target === sc) sc.classList.remove('on'); }); }
+  tcLog(''); tcDraw(); sc.classList.add('on');
+};
+
 function recalcFoot(){ let t=0,p=0,o=0; orders.forEach(r=>{t+=+r.total||0;p+=+r.paid||0;o+=(+r.total||0)-(+r.paid||0);}); $('sumTotal').textContent=RZA(t);$('sumPaid').textContent=RZA(p);$('sumOut').textContent=RZA(o); }
 
 $('addBtn').onclick=()=>{ if(store) store.add(blankOrder()); };
@@ -580,6 +702,12 @@ if(!configured){
   <textarea id="waText"></textarea>
   <p class="wa-note" id="waNote"></p>
   <div class="wa-acts"><a class="wa-go" id="waGo" href="#" target="_blank" rel="noopener">Open in WhatsApp</a><button type="button" class="wa-sec" id="waCopy">Copy</button><button type="button" class="wa-sec" id="waClose">Close</button></div>
+</div></div>
+<div class="fav-scrim" id="tcScrim"><div class="fav-box" role="dialog" aria-modal="true" aria-labelledby="tcTitle">
+  <h3 id="tcTitle">Test client</h3><p class="sub" id="tcSub"></p>
+  <div class="tc-body" id="tcBody"></div>
+  <p class="tc-log" id="tcLog" role="status"></p>
+  <div class="fav-acts" id="tcActs"></div>
 </div></div>
 <div class="fav-scrim" id="favScrim"><div class="fav-box" role="dialog" aria-modal="true" aria-labelledby="favTitle">
   <h3 id="favTitle">Favourites</h3><p class="sub" id="favSub"></p>

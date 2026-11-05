@@ -7,7 +7,7 @@
      POST /meta?g=<folder>/           -> body {expiry:"yyyy-mm-dd", graceDays:7}
                                          writes <folder>/_gallery.json (drives auto-delete)
    ADMIN ONLY (needs the signed-in Firebase admin token, used by the dashboard Photos page):
-     POST /admin/upload?n=<name>&f=<folder>  -> body = the image; saved as <folder>/<name>
+     POST /admin/upload?n=<name>&f=<folder>  -> body = the image; saved as <folder>/<name> (folders: portfolio, deck, test-client, shotbya/test-client)
      POST /admin/delete               -> body {n:"<name>", f:"<folder>"}; removes <folder>/<name>
      <folder> is "portfolio" (website photos, the default) or "deck" (pitch deck images).
    Portfolio and deck images are public: GET /file?g=portfolio/&n=<name>  or  g=deck/
@@ -176,7 +176,7 @@ async function handleNotify(request, env) {
 }
 const safeName = n => String(n || '').toLowerCase().replace(/[^a-z0-9._-]/g, '-').replace(/^[.-]+/, '').slice(0, 80);
 const MAX_UPLOAD = 15 * 1024 * 1024;
-const ADMIN_FOLDERS = ['portfolio', 'deck'];
+const ADMIN_FOLDERS = ['portfolio', 'deck', 'test-client', 'shotbya/test-client'];   // test-client folders: the dashboard's Test client (Database page)
 const PUBLIC_FOLDERS = ['portfolio/', 'deck/'];
 const adminFolder = f => ADMIN_FOLDERS.includes(f) ? f : 'portfolio';
 
@@ -407,7 +407,7 @@ export default {
         const buf = await request.arrayBuffer();
         if (buf.byteLength > MAX_UPLOAD || !buf.byteLength) return json({ error: 'bad file size' }, 413);
         await env.BUCKET.put(adminFolder(url.searchParams.get('f')) + '/' + n, buf, { httpMetadata: { contentType: type } });
-        return json({ ok: true, name: n });
+        return json({ ok: true, name: n, folder: adminFolder(url.searchParams.get('f')) });
       }
       let body = {}; try { body = await request.json(); } catch (e) {}
       const n = safeName(body.n);
