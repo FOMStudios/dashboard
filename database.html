@@ -424,6 +424,29 @@ tbody.addEventListener('input',e=>{
 });
 // Paste your deployed gallery Worker URL here to auto-sync expiry dates for cleanup (optional).
 const GALLERY_WORKER='https://fom-gallery.cold-moon-d65c.workers.dev';
+function cleanFolder(v){
+  v=String(v||'').trim().replace(/\\/g,'/').replace(/^https?:\/\/[^/]+\//i,'').replace(/^\/+/,'').replace(/\/{2,}/g,'/');
+  v=v.replace(/^[a-z0-9-]*deliverables\//i,'');   // a bucket name typed in front of the folder
+  if(v && !v.endsWith('/')) v+='/';
+  if(FOM_BIZ.isSba && v && !/^shotbya\//i.test(v)) v='shotbya/'+v;   // her galleries live under shotbya/
+  return v;
+}
+/* Tells you straight away if the Gallery Folder is empty, so the client never sees "Your gallery is being prepared" by mistake */
+async function checkGalleryFolder(o){
+  if(!o || !GALLERY_WORKER) return;
+  const folder=cleanFolder(o.galleryFolder || ((FOM_BIZ.isSba?'shotbya/':'') + String(o.customer||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '/'));
+  try{
+    const W=GALLERY_WORKER.replace(/\/$/,''), j=await fetch(W+'/list?g='+encodeURIComponent(folder)).then(r=>r.json());
+    const files=(j.files||[]), media=files.filter(x=>x.kind==='image'||x.kind==='video');
+    if(media.length) return;
+    let near='';
+    try{ const up=folder.split('/').filter(Boolean).slice(0,-1).join('/'); const p=await fetch(W+'/list?g='+encodeURIComponent(up?up+'/':'')).then(r=>r.json());
+      const subs=[...new Set((p.files||[]).map(x=>x.name.split('/')[0]+'/').filter(n=>n.toLowerCase().includes(folder.split('/').filter(Boolean).pop().slice(0,4).toLowerCase())))].slice(0,4);
+      if(subs.length) near='\n\nFolders with a similar name: '+subs.map(n=>(up?up+'/':'')+n).join(', ');
+    }catch(e){}
+    alert('No photos found in "'+folder+'" for '+(o.customer||'this client')+'.\n\nThe client will see "Your gallery is being prepared" until there are. Check:\n1. The folder name matches R2 exactly (capitals and spaces count).\n2. They are in the deliverables bucket the gallery Worker uses (not a new bucket).'+(files.length?'\n\nThat folder only has '+files.length+' other file(s) (contract, invoice or zip).':'')+near);
+  }catch(e){ /* offline: say nothing */ }
+}
 function syncGalleryMeta(o){
   if(!GALLERY_WORKER || !o.galleryFolder || !o.galleryExpiry) return;
   try{
@@ -439,9 +462,12 @@ tbody.addEventListener('change',e=>{
   // coerce deliverablesReady select value to actual boolean for Firestore
   // Firebase logins are lower case; the portal only finds a booking when Client Email matches exactly
   if(f==='clientEmail' && e.type==='change'){ const v=el.value.trim().toLowerCase(); if(v!==el.value) el.value=v; }
+  // Gallery Folder: tidy what was typed (no bucket name, no leading slash, ends in /)
+  if(f==='galleryFolder'){ const v=cleanFolder(el.value); if(v!==el.value) el.value=v; }
   orders[i][f] = (f==='deliverablesReady') ? (el.value==='true') : el.value;
   store.update(orders[i].id);
   if(f==='galleryExpiry' || f==='galleryFolder') syncGalleryMeta(orders[i]);
+  if((f==='galleryFolder' && el.value) || (f==='deliverablesReady' && orders[i].deliverablesReady)) checkGalleryFolder(orders[i]);
 });
 tbody.addEventListener('click',e=>{ const ml=e.target.closest('[data-meetlink]'); if(ml){ linkMeeting(ml.dataset.meetlink, ml.dataset.oid); return; } const fb=e.target.closest('[data-favs]'); if(fb){ showFavs(orders[+fb.dataset.favs]); return; } const wb=e.target.closest('[data-wa]'); if(wb){ openWa(orders[+wb.dataset.wa]); return; } const rm=e.target.dataset.rm; if(rm!==undefined){ store.remove(orders[+rm].id); return; }
   const lb=e.target.closest('[data-login]'); if(lb){ createClientLogin(orders[+lb.dataset.login], lb); return; }

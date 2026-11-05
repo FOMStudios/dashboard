@@ -49,7 +49,7 @@ var PAGES = [
   {n:'Email',           h:'email.html',     e:'✉️'},
   {n:'Contract',        h:'contract.html',  e:'📄'},
   {n:'Client Reviews',  h:'reviews.html',   e:'⭐'},
-  {n:'Website',         h:'website.html',   e:'🌐', fomOnly:true},   // Shot by A has no website yet
+  {n:'Website',         h:'website.html',   e:'🌐'},   // edits fomstudios.co.za, or fomstudios.co.za/shotbya in Shot by A mode
   {n:'Photos',          h:'photos.html',    e:'📸'},
   {n:'Advisor',         h:'advisor.html',   e:'🩺'},
   {n:'Client Portal (view as client)', h:BZ.b.portal, e:'👤', ext:true}
