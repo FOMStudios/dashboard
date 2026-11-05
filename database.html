@@ -95,6 +95,10 @@ td.rm-col{width:38px;text-align:center;}
 .col-wa{width:190px;}
 .wa-cell{display:flex;gap:6px;align-items:center;} .wa-cell input{min-width:0;flex:1;}
 .wa-btn{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:#25D366;color:#fff;display:grid;place-items:center;cursor:pointer;}
+.em-cell{display:flex;flex-direction:column;align-items:flex-start;gap:4px;} .em-cell input{width:100%;}
+.lg-btn{flex:none;font:inherit;font-size:11px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap;}
+.lg-btn.ok{border-color:#1f8a4c;color:#1f8a4c;}
+.lg-btn:disabled{opacity:.6;cursor:wait;}
 .wa-btn svg{width:19px;height:19px;} .wa-btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
 .wa-last{font-size:11px;color:var(--ink-soft);margin-top:3px;white-space:nowrap;}
 .wa-box textarea{width:100%;min-height:170px;border:1px solid var(--line,#d9dde5);border-radius:12px;padding:12px;font:inherit;font-size:16px;line-height:1.45;resize:vertical;background:var(--bg,#fff);color:inherit;}
@@ -335,7 +339,7 @@ function render(){
       <td><select data-i="${i}" data-f="payment">${PAYMENTS.map(p=>`<option ${p===o.payment?'selected':''}>${p}</option>`).join('')}</select></td>
       <td class="col-date"><input type="date" data-i="${i}" data-f="deadline" value="${esc(o.deadline)}"></td>
       <td><input data-i="${i}" data-f="notes" value="${esc(o.notes)}" placeholder="No add ons"></td>
-      <td class="col-portal"><input data-i="${i}" data-f="clientEmail" value="${esc(o.clientEmail||'')}" placeholder="client@email.com" type="email"></td>
+      <td class="col-portal"><div class="em-cell"><input data-i="${i}" data-f="clientEmail" value="${esc(o.clientEmail||'')}" placeholder="client@email.com" type="email"><button type="button" class="lg-btn${o.portalLoginAt?' ok':''}" data-login="${i}" title="${o.portalLoginAt?'Login made '+esc(String(o.portalLoginAt).slice(0,10))+'. Tap to send the set-password email again':'Create this client\'s portal login and email them a link to set their password'}">${o.portalLoginAt?'✓ Login':'Create login'}</button></div></td>
       <td class="col-date"><input data-i="${i}" data-f="shootTime" value="${esc(o.shootTime||'')}" placeholder="e.g. 10:00"></td>
       <td class="col-portal"><input data-i="${i}" data-f="contractUrl" value="${esc(o.contractUrl||'')}" placeholder="Cloudflare R2 link"></td>
       <td class="col-portal"><input data-i="${i}" data-f="invoiceUrl" value="${esc(o.invoiceUrl||'')}" placeholder="Cloudflare R2 link"></td>
@@ -385,6 +389,7 @@ tbody.addEventListener('change',e=>{
   if(f==='galleryExpiry' || f==='galleryFolder') syncGalleryMeta(orders[i]);
 });
 tbody.addEventListener('click',e=>{ const fb=e.target.closest('[data-favs]'); if(fb){ showFavs(orders[+fb.dataset.favs]); return; } const wb=e.target.closest('[data-wa]'); if(wb){ openWa(orders[+wb.dataset.wa]); return; } const rm=e.target.dataset.rm; if(rm!==undefined){ store.remove(orders[+rm].id); return; }
+  const lb=e.target.closest('[data-login]'); if(lb){ createClientLogin(orders[+lb.dataset.login], lb); return; }
   const sl=e.target.dataset.signlink;
   if(sl!==undefined){
     const o=orders[+sl];
@@ -397,6 +402,46 @@ tbody.addEventListener('click',e=>{ const fb=e.target.closest('[data-favs]'); if
     else { prompt('Copy this signing link:',link); done(true); }
   }
 });
+/* ---- Create client login: makes the portal login and emails a set-password link, without signing you out.
+   A second Firebase app (memory only) creates the user, so your admin session is never touched. ---- */
+async function createClientLogin(o, btn){
+  if(!o || !auth) return;
+  const email=String(o.clientEmail||'').trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ alert('Add the client\'s email in the Client Email box first.'); return; }
+  const again=!!o.portalLoginAt, B=FOM_BIZ.b;
+  if(!confirm(again
+    ? `Send ${email} the set-password email again?`
+    : `Create a ${B.name} portal login for ${email}?\n\nThey get an email with a link to set their own password, which then opens ${B.name}'s portal.`)) return;
+  const orig=btn.textContent; btn.disabled=true; btn.textContent='Working…';
+  let existed=again;
+  try{
+    // Firebase saves login emails in lower case; the portal only finds bookings when the Client Email matches exactly
+    if(o.clientEmail!==email){ o.clientEmail=email; store.update(o.id); }
+    if(!again){
+      const sec=firebase.apps.find(a=>a.name==='clientLogin') || firebase.initializeApp(firebaseConfig,'clientLogin');
+      const sa=sec.auth();
+      await sa.setPersistence(firebase.auth.Auth.Persistence.NONE);
+      const pw=Array.from(crypto.getRandomValues(new Uint8Array(24)),b=>('0'+b.toString(16)).slice(-2)).join('')+'Aa1!';
+      try{ await sa.createUserWithEmailAndPassword(email,pw); }
+      catch(err){ if(/already|exists/i.test(err.code||'')) existed=true; else throw err; }
+      await sa.signOut().catch(()=>{});
+    }
+    try{ await auth.sendPasswordResetEmail(email,{url:B.portal}); }
+    catch(err){ if(/continue-uri|unauthorized/i.test(err.code||'')) await auth.sendPasswordResetEmail(email); else throw err; }
+    o.portalLoginAt=new Date().toISOString(); store.update(o.id);
+    btn.classList.add('ok'); btn.textContent='✓ Login';
+    alert((existed?`${email} already had a login, so `:`Login created. `)+`A set-password email is on its way to ${email}.\n\nNext: send the Booking Confirmation email (Email page). Their portal: ${B.portal}`);
+  }catch(err){
+    console.warn('Create login:',err); btn.textContent=orig;
+    const c=err.code||'';
+    alert(c==='auth/admin-restricted-operation'||c==='auth/operation-not-allowed'
+      ? 'Firebase blocked creating the login. In Firebase Console, Authentication, Settings, User actions, tick "Enable create (sign-up)", then try again. (Email/Password must also be on under Sign-in method.)'
+      : c==='auth/invalid-email' ? 'That email address is not valid.'
+      : c==='auth/too-many-requests' ? 'Firebase is limiting requests. Wait a few minutes and try again.'
+      : 'Could not create the login: '+(err.message||c||'unknown error'));
+  }
+  btn.disabled=false;
+}
 function recalcFoot(){ let t=0,p=0,o=0; orders.forEach(r=>{t+=+r.total||0;p+=+r.paid||0;o+=(+r.total||0)-(+r.paid||0);}); $('sumTotal').textContent=RZA(t);$('sumPaid').textContent=RZA(p);$('sumOut').textContent=RZA(o); }
 
 $('addBtn').onclick=()=>{ if(store) store.add(blankOrder()); };
