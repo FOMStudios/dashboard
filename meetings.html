@@ -811,7 +811,38 @@ function drawWaOut(r){
   if(r && r.text && r.type) $('stType').value = r.type;
 }
 
-function startMeeting(){
+/* ---------- a meeting with a lead or new person adds the client to the Database ----------
+   If an order already matches (same email, phone or name) the meeting is linked to it instead,
+   so nobody gets a second row. The new row is a normal Pending order with R0; Update order on
+   the summary fills the shoot date, package and total later. */
+function nextOrderId(){ let mx = 0; ORDERS.forEach(o => { const n = parseInt(String(o.orderId || '').replace(/\D/g, ''), 10); if(n > mx) mx = n; }); return '#' + (mx + 1); }
+async function ensureOrder(m){
+  if(m.orderId) return 'has';
+  const match = suggestOrder(m);
+  if(match){ m.orderId = match.id; return 'linked'; }
+  const sd = (m.dates || []).find(d => d.date && /shoot|event/i.test(d.label));
+  const when = m.status === 'planned' ? shortDay(m.plannedAt) + ' ' + hhmm(new Date(m.plannedAt)) : shortDay(m.startedAt || new Date().toISOString());
+  const o = { orderId:nextOrderId(), customer:m.client.name || 'New client', clientPhone:m.client.phone || '',
+    product:m.client.type && m.client.type !== 'General' ? m.client.type : '', shootDate:sd ? sd.date : '', status:'Pending',
+    total:0, paid:0, payment:'EFT', deadline:'', notes:(m.leadId ? 'Lead' : m.source === 'whatsapp' ? 'WhatsApp enquiry' : 'Enquiry') + ', meeting ' + when,
+    clientEmail:String(m.client.email || '').toLowerCase().trim(), shootTime:sd ? (sd.time || '') : '', contractUrl:'', invoiceUrl:'', deliverablesUrl:'',
+    deliverablesReady:false, portalMessage:'', galleryFolder:'', galleryExpiry:'', fromMeeting:m.id, leadId:m.leadId || '' };
+  BZ.tag(o);
+  if(CLOUD){ o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); const ref = await DB.collection('orders').add(o); o.id = ref.id; }
+  else { o.id = 'loc_' + Date.now() + Math.random().toString(36).slice(2, 6); const all = readLS('fom_orders', []); all.push(o); writeLS('fom_orders', all); }
+  ORDERS.push(o); m.orderId = o.id;
+  return 'created';
+}
+async function addToDatabase(m, quiet){
+  try{
+    const r = await ensureOrder(m);
+    const o = ORDERS.find(x => x.id === m.orderId);
+    if(!quiet || r !== 'has') toast(r === 'created' ? 'Added to your Database as ' + (o ? o.orderId : 'a new client') : r === 'linked' ? 'Linked to ' + (o ? (o.customer || o.orderId) : 'the matching client') + ' in your Database' : 'Already in your Database');
+    return true;
+  }catch(e){ console.warn('add to Database', e); toast('Could not add the client to your Database. You can add them from the summary later.'); return false; }
+}
+
+async function startMeeting(){
   const m = blankMeeting();
   m.client.type = $('stType').value;
   if(startSeg === 'new'){
@@ -835,9 +866,13 @@ function startMeeting(){
     const d = $('stDate').value, t = $('stTime').value || '10:00';
     if(!d){ toast('Pick the meeting date'); return; }
     m.status = 'planned'; m.startedAt = null; m.plannedAt = new Date(d + 'T' + t).toISOString(); m.where = $('stWhere').value.trim();
-    MEETS.unshift(m); saveM(m); closeSheet(); toast('Scheduled: ' + planLabel(m));
+    $('stGo').disabled = true;
+    if(startSeg !== 'order') await addToDatabase(m, true);
+    MEETS.unshift(m); saveM(m); closeSheet(); setTimeout(() => toast('Scheduled: ' + planLabel(m)), startSeg !== 'order' ? 2600 : 0);
     renderHome(); return;
   }
+  $('stGo').disabled = true;
+  if(startSeg !== 'order') await addToDatabase(m, true);
   MEETS.unshift(m); closeSheet();
   cur = m; Store.touch(); Store.flush();
   tab = 'board'; boardFilter = autoCat(m.client.type);
@@ -1262,6 +1297,7 @@ function renderSummary(m){
       <button class="btn ghost" data-sact="edit">Edit</button>
       ${q.lines.length ? `<button class="btn ghost" data-sact="invoice">Make invoice</button>` : ''}
       ${o ? `<button class="btn ghost" data-sact="apply">Update order</button>` : ''}
+      ${o ? '' : `<button class="btn ghost" data-sact="mkorder">Add to Database</button>`}
       <button class="btn ghost" data-sact="link">${o ? 'Change link' : 'Link to order'}</button>
       <button class="btn ghost" data-sact="copy">Copy recap</button>
       <button class="btn ghost" data-sact="print">PDF</button>
@@ -1323,6 +1359,7 @@ function sumAct(e, m){
   if(a === 'copy'){ const t = recap(m); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Recap copied'), () => { prompt('Copy the recap:', t); }); }
   if(a === 'wa') waSheet(m);
   if(a === 'link') linkSheet(m);
+  if(a === 'mkorder'){ b.disabled = true; addToDatabase(m).then(ok => { if(ok) saveM(m).then(() => renderSummary(m)); else b.disabled = false; }); }
   if(a === 'linkMatch'){ m.orderId = b.dataset.id; saveM(m).then(() => { toast('Linked to the order'); renderSummary(m); }); }
   if(a === 'apply') applySheet(m);
   if(a === 'share') shareSheet(m);
