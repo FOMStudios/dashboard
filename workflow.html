@@ -320,7 +320,9 @@ function doneCount(o){
 }
 function isComplete(o){ return doneCount(o) === STEPS.length; }
 
-if(window.FOM_ACT) setTimeout(()=>FOM_ACT.on(()=>{ try{ render(); }catch(e){} }),0);
+/* activity.js loads after this script, so hook in once it exists */
+(function hookActivity(){ let done=false; const go=()=>{ if(done || !window.FOM_ACT) return; done=true; FOM_ACT.on(()=>{ try{ render(); }catch(e){} }); };
+  go(); document.addEventListener('DOMContentLoaded', go); addEventListener('load', go); })();
 function render(){
     const list = $('projectList');
     let visible = orders;

@@ -487,7 +487,9 @@ function render(){
     </div>`;
 }
 
-if(window.FOM_ACT){ FOM_ACT.on(()=>{ safeRender(); if(location.hash==='#activity'){ const a=document.getElementById('activity'); if(a) a.scrollIntoView({block:'start'}); } }); }
+/* activity.js loads after this script, so hook in once it exists (it was missed before, and the card only showed after a business switch) */
+(function hookActivity(){ let done=false; const go=()=>{ if(done || !window.FOM_ACT) return; done=true; FOM_ACT.on(()=>{ safeRender(); if(location.hash==='#activity'){ const a=document.getElementById('activity'); if(a) a.scrollIntoView({block:'start'}); } }); };
+  go(); document.addEventListener('DOMContentLoaded', go); addEventListener('load', go); })();
 $('content').addEventListener('click',e=>{
   if(e.target.closest('#actMore')){ ACT_MORE=!ACT_MORE; safeRender(); return; }
   if(e.target.closest('#actPush')){ const p=document.querySelector('.fom-nav .js-prof'); if(p) p.click(); setTimeout(()=>{ const b=document.getElementById('fomPush'); if(b) b.click(); },60); return; }
