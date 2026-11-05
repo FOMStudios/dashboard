@@ -1037,7 +1037,7 @@ async function deleteUpload(n){
    ================================================================ */
 function buildDeckHTML(d){
   d = d || deck;
-  const fallbackImg = SITE + 'assets/mascot-head-color.png';
+  const fallbackImg = SITE + (FOM_BIZ.isSba ? 'shotbya/logo.png' : 'assets/mascot-head-color.png');
   const src = r => slotInfo(r).url || fallbackImg;
   const L = s => String(s || '').split('\n').map(x => x.trim()).filter(Boolean);
   const page = (inner, dark) => `<section class="pd-page" style="${dark ? 'background:#1a1a18;color:#f1f0ec;' : 'background:#f1f0ec;color:#1a1a18;'}">${inner}</section>`;

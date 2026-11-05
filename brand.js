@@ -173,8 +173,16 @@ function getSettings(db, id){
 function setSettings(db, id, json){
   return db.collection('settings').doc(sid(id)).set({ json: json, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
 }
-/* client links: Shot by A's portal pages carry ?b=sba until she has her own domain */
+/* client links: Shot by A's portal pages carry ?b=sba until she has her own domain.
+   Her links use her own addresses under /shotbya/ (portfolio repo shotbya/<page>), which carry her logo and
+   name in the WhatsApp / iMessage preview (preview bots read the page's tags and never run scripts), then
+   open the shared page in her branding. Add a page here only once shotbya/<page> exists in the portfolio repo. */
+var SBA_LINK_PAGES = { 'sign.html':1, 'signed.html':1, 'contract-view.html':1, 'feedback.html':1, 'moodboard.html':1, 'client-gallery.html':1, 'paid.html':1 };
 function clientUrl(page, qs){
+  if(cur === 'sba' && SBA_LINK_PAGES[String(page).split('?')[0]]){
+    var u = 'https://www.fomstudios.co.za/shotbya/' + page;
+    return u + (qs ? (u.indexOf('?') >= 0 ? '&' : '?') + qs : '');
+  }
   var base = 'https://www.fomstudios.co.za/' + page;
   var q = [qs, B.clientQS].filter(Boolean).join('&');
   return base + (q ? (base.indexOf('?') >= 0 ? '&' : '?') + q : '');

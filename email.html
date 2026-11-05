@@ -236,7 +236,8 @@ const BRAND = {
   phone: "068 690 1120",
   instagram: "https://instagram.com/fom_studios_",
   instaHandle: "@fom_studios_",
-  channel: "https://whatsapp.com/channel/0029Vb8y9mxAYlURQF4cUD3h",   // WhatsApp Channel; the Website page link replaces it after sign-in
+  // FOM's WhatsApp Channel; the Website page link replaces it after sign-in. Shot by A has none unless her Website page sets one.
+  channel: (window.FOM_BIZ && FOM_BIZ.isSba) ? "" : "https://whatsapp.com/channel/0029Vb8y9mxAYlURQF4cUD3h",
 };
 
 function fields(){
@@ -685,7 +686,7 @@ refresh();
             }
             gate.style.display = 'none';
             if(logoutBtn) logoutBtn.style.display = 'inline-block';
-            db.collection('siteContent').doc('site').get().then(function(d){ var c = String((d.exists && d.data().whatsappChannel) || '').trim(); if(/^https:\/\//i.test(c)){ BRAND.channel = c; try{ refresh(); }catch(e){} } }).catch(function(){});
+            db.collection('siteContent').doc((window.FOM_BIZ && FOM_BIZ.isSba) ? 'site_sba' : 'site').get().then(function(d){ var c = String((d.exists && d.data().whatsappChannel) || '').trim(); if(/^https:\/\//i.test(c)){ BRAND.channel = c; try{ refresh(); }catch(e){} } }).catch(function(){});
           }).catch(function(err){ console.warn('Admin check failed:',err); gate.style.display = 'flex'; auth.signOut(); });
         } else {
           gate.style.display = 'flex';
