@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f1f0ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FOM">
+<link rel="manifest" href="manifest.webmanifest">
+<title>FOM Studios | Client Meetings</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/fom-icon-180.png">
+<!--
+  CLIENT MEETINGS (FOM Studios and Shot by A)
+  - Mood board library: settings/moodboard (FOM) or settings/moodboard_sba (Shot by A).
+    Uploads go to the R2 deck/ folder as mood-*.jpg (no Worker change needed).
+  - Meetings: Firestore collection "meetings" (needs the meetings rule in firestore.rules).
+    Every meeting is tagged biz:'fom' or biz:'sba'. A local backup of the open meeting
+    is kept on the device so nothing is lost if the signal drops mid-meeting.
+  - Start and end times are captured automatically (startedAt when you start, endedAt when you end).
+  - The Database shows a Meeting column per order that opens the summary (meetings.html?m=<id>).
+-->
+<style>
+:root{
+  --bg:#f1f0ec; --bg-pill:#fafaf9; --ink:#2a2b2c; --ink-soft:#6f6f6d; --line:#dcdad3;
+  --accent:#02367B; --radius-pill:999px; --radius-card:20px; --heart:#e60023;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;margin-bottom:12px;background:var(--input-bg,#fff);color:var(--ink);}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.auth-check{position:fixed;inset:0;background:var(--bg);z-index:3100;display:flex;align-items:center;justify-content:center;text-align:center;}
+.auth-check p{color:var(--ink-soft);font-size:13px;margin-top:6px;}
+
+.page{max-width:1320px;margin:0 auto;padding:22px clamp(14px,4vw,48px) calc(120px + env(safe-area-inset-bottom));}
+.head h1{font-size:clamp(26px,4vw,36px);font-weight:800;letter-spacing:-.01em;}
+.head p{color:var(--ink-soft);font-size:14px;margin-top:2px;}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.btn{height:44px;padding:0 20px;border-radius:var(--radius-pill);border:1px solid var(--btn,#1a1a1a);background:var(--btn,#1a1a1a);color:var(--btn-ink,#fff);font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
+.btn.ghost{background:transparent!important;color:var(--ink)!important;border-color:var(--line)!important;}
+.btn.sm{height:36px;padding:0 14px;font-size:13px;}
+.btn.red{background:#c0392b!important;border-color:#c0392b!important;color:#fff!important;}
+.btn[disabled]{opacity:.45;pointer-events:none;}
+.mini{border:1px solid var(--line);background:var(--bg-pill);color:var(--ink);border-radius:99px;padding:6px 13px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.mini.on{background:var(--btn,#1a1a1a);color:var(--btn-ink,#fff);border-color:var(--btn,#1a1a1a);}
+.muted{color:var(--ink-soft);}
+.small{font-size:12.5px;}
+.card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:18px;}
+.sec-t{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin:26px 0 10px;}
+.inp,.sel,.ta{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-size:16px;background:var(--input-bg,#fff);color:var(--ink);}
+.ta{min-height:110px;resize:vertical;line-height:1.55;}
+.inp:focus,.sel:focus,.ta:focus{outline:2px solid var(--ink);outline-offset:1px;}
+label.lb{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin:0 0 5px 2px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr;}}
+.empty{border:1.5px dashed var(--line);border-radius:18px;padding:26px;text-align:center;color:var(--ink-soft);font-size:14px;}
+.bar{background:#fff4e5;border:1px solid #f1d29a;color:#7a4b00;border-radius:14px;padding:12px 16px;font-size:13.5px;margin:12px 0;display:none;}
+.bar.on{display:block;}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:700;background:var(--surface-2,#e7e5df);color:var(--ink);}
+.chip.acc{background:var(--accent);color:#fff;}
+.chip.live{background:#e8f6ee;color:#1f8a4c;}
+.chip.live::before{content:"";width:7px;height:7px;border-radius:50%;background:#1f8a4c;animation:pulse 1.4s infinite;}
+@keyframes pulse{50%{opacity:.25}}
+
+/* ---------- home ---------- */
+.mlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.mcard{background:var(--bg-pill);border:1px solid var(--line);border-radius:18px;padding:15px 16px;cursor:pointer;display:flex;gap:12px;align-items:flex-start;transition:transform .15s;}
+.mcard:hover{transform:translateY(-2px);}
+.mcard .thumbs{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:62px;height:62px;border-radius:12px;overflow:hidden;flex:none;background:var(--surface-2,#e7e5df);}
+.mcard .thumbs img{width:100%;height:100%;object-fit:cover;}
+.mcard .thumbs.one{grid-template-columns:1fr;}
+.mcard b{display:block;font-size:15.5px;}
+.mcard .meta{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+.mcard .tags{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap;}
+.search{height:40px;border-radius:99px;border:1px solid var(--line);background:var(--bg-pill);padding:0 16px;font-size:15px;min-width:200px;flex:1;max-width:340px;color:var(--ink);}
+
+/* ---------- pinterest board ---------- */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.chips::-webkit-scrollbar{display:none;}
+.masonry{column-count:2;column-gap:12px;}
+@media(min-width:620px){.masonry{column-count:3;}}
+@media(min-width:960px){.masonry{column-count:4;}}
+@media(min-width:1280px){.masonry{column-count:5;}}
+.masonry.sm{column-count:3;}
+@media(min-width:760px){.masonry.sm{column-count:5;}}
+.pin{break-inside:avoid;margin-bottom:14px;cursor:zoom-in;}
+.pimg{position:relative;border-radius:16px;overflow:hidden;background:var(--surface-2,#e7e5df);}
+.pimg img{width:100%;height:100%;object-fit:cover;transition:transform .35s,filter .2s;}
+.pin:hover .pimg img{filter:brightness(.88);}
+.pcap{font-size:13px;font-weight:600;padding:6px 4px 0;line-height:1.3;}
+.pcat{font-size:11.5px;color:var(--ink-soft);padding:1px 4px 0;}
+.heart{position:absolute;top:8px;right:8px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#2a2b2c;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);opacity:0;transition:opacity .15s,transform .15s;}
+.heart svg{width:19px;height:19px;}
+.pin:hover .heart,.heart.on{opacity:1;}
+@media (hover:none),(pointer:coarse){.heart{opacity:1;}}
+.heart.on{background:var(--heart);color:#fff;}
+.heart.pop{animation:pop .35s;}
+@keyframes pop{40%{transform:scale(1.3)}}
+.lovedtag{position:absolute;left:8px;bottom:8px;background:var(--heart);color:#fff;border-radius:99px;font-size:11px;font-weight:700;padding:2px 8px;}
+
+/* ---------- lightbox ---------- */
+.lbx{position:fixed;inset:0;z-index:2600;background:rgba(10,10,10,.97);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;touch-action:none;}
+.lbx.on{display:flex;}
+.lbx .stage{flex:1;width:100%;display:flex;align-items:center;justify-content:center;padding:calc(56px + env(safe-area-inset-top)) 14px 8px;min-height:0;}
+.lbx .stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:14px;user-select:none;-webkit-user-drag:none;transition:transform .2s;}
+.lbx .top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:calc(12px + env(safe-area-inset-top)) 16px 10px;}
+.lbx .x{width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:24px;cursor:pointer;}
+.lbx .nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:24px;cursor:pointer;}
+.lbx .nav.l{left:14px;} .lbx .nav.r{right:14px;}
+@media (hover:none),(pointer:coarse){.lbx .nav{display:none;}}
+.lbx .foot{width:100%;max-width:640px;padding:10px 16px calc(18px + env(safe-area-inset-bottom));text-align:center;}
+.lbx .cap{font-size:15px;font-weight:600;min-height:22px;}
+.lbx .bigheart{margin:10px auto 0;height:50px;padding:0 24px;border-radius:99px;border:0;background:#fff;color:#111;font-weight:800;font-size:15px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;}
+.lbx .bigheart svg{width:20px;height:20px;}
+.lbx .bigheart.on{background:var(--heart);color:#fff;}
+.lbx .edit{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:center;}
+.lbx .edit input,.lbx .edit select{height:40px;border-radius:99px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;padding:0 14px;font-size:14px;}
+.lbx .edit select option{color:#111;}
+.lbx .edit button{height:40px;border-radius:99px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;padding:0 14px;font-weight:700;cursor:pointer;}
+
+/* ---------- live meeting ---------- */
+.lbar{position:sticky;top:0;z-index:50;background:var(--bg);padding:calc(8px + env(safe-area-inset-top)) 0 8px;margin:-22px 0 6px;}
+.lbar .r1{display:flex;align-items:center;gap:10px;}
+.lbar .who{flex:1;min-width:0;}
+.lbar .who b{display:block;font-size:19px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lbar .who small{color:var(--ink-soft);font-size:12.5px;}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:15px;background:var(--bg-pill);border:1px solid var(--line);border-radius:99px;padding:7px 13px;white-space:nowrap;}
+.back{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--bg-pill);font-size:20px;cursor:pointer;flex:none;}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-top:10px;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tabs button{height:38px;padding:0 15px;border-radius:99px;border:1px solid var(--line);background:var(--bg-pill);font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap;}
+.tabs button.on{background:var(--btn,#1a1a1a);color:var(--btn-ink,#fff);border-color:var(--btn,#1a1a1a);}
+.tabs .n{display:inline-block;min-width:18px;height:18px;border-radius:9px;background:var(--heart);color:#fff;font-size:11px;line-height:18px;margin-left:5px;padding:0 5px;}
+.list{display:flex;flex-direction:column;gap:8px;}
+.li{display:flex;gap:8px;align-items:center;background:var(--bg-pill);border:1px solid var(--line);border-radius:14px;padding:8px 10px;}
+.li input[type=text],.li input:not([type]),.li input[type=date],.li input[type=time],.li select{border:0;background:transparent;padding:6px 4px;font-size:15px;min-width:0;color:var(--ink);}
+.li input:focus,.li select:focus{outline:none;background:var(--input-bg,#fff);border-radius:8px;}
+.li .grow{flex:1;}
+.li .x{border:0;background:none;color:var(--ink-soft);font-size:17px;cursor:pointer;padding:4px 6px;}
+.li.done .grow{text-decoration:line-through;color:var(--ink-soft);}
+.ck{width:22px;height:22px;accent-color:var(--btn,#1a1a1a);flex:none;cursor:pointer;}
+.star{border:0;background:none;font-size:18px;cursor:pointer;color:#c9c6bd;padding:2px;}
+.star.on{color:#e0a100;}
+.qrow{background:var(--bg-pill);border:1px solid var(--line);border-radius:14px;padding:10px 12px;}
+.qrow .q{display:flex;gap:10px;align-items:flex-start;font-weight:600;font-size:14.5px;}
+.qrow .q span{flex:1;}
+.qrow input.ans{margin-top:7px;width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:15px;background:var(--input-bg,#fff);color:var(--ink);}
+.qrow.done{opacity:.72;}
+.sugg{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.sugg button{border:1px dashed var(--line);background:transparent;border-radius:99px;padding:5px 11px;font-size:12.5px;cursor:pointer;color:var(--ink);}
+.qt{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start;}
+@media(max-width:860px){.qt{grid-template-columns:1fr;}}
+.menu-g{margin-bottom:12px;}
+.menu-g h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin:0 0 6px 2px;}
+.menu-g .items{display:flex;gap:6px;flex-wrap:wrap;}
+.menu-g button{border:1px solid var(--line);background:var(--bg-pill);border-radius:12px;padding:7px 11px;font-size:13px;cursor:pointer;text-align:left;color:var(--ink);}
+.menu-g button small{display:block;color:var(--ink-soft);font-size:11.5px;}
+.qline{display:grid;grid-template-columns:1fr 92px 96px 28px;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);}
+@media(max-width:560px){.qline{grid-template-columns:1fr 96px 28px;}.qline > input:first-child{grid-column:1/-1;font-weight:700;}}
+.qline input{border:1px solid transparent;background:transparent;border-radius:8px;padding:7px 6px;font-size:15px;width:100%;color:var(--ink);}
+.qline input:focus{border-color:var(--line);background:var(--input-bg,#fff);outline:none;}
+.qline .qty{display:flex;align-items:center;gap:2px;}
+.qline .qty button{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--bg-pill);cursor:pointer;font-weight:800;line-height:1;}
+.qline .qty span{min-width:22px;text-align:center;font-weight:700;}
+.qtot{display:flex;justify-content:space-between;padding:7px 2px;font-size:14.5px;}
+.qtot.big{font-size:20px;font-weight:800;border-top:2px solid var(--ink);margin-top:6px;padding-top:10px;}
+.cv-only{display:none!important;}
+body.cv .priv{display:none!important;}
+body.cv .cv-only{display:flex!important;}
+body.cv .lbar{background:var(--bg);}
+body.cv .fom-nav,body.cv .fom-sheet,body.cv .fom-scrim{display:none!important;}
+.cvhead{align-items:center;gap:12px;}
+.cvhead img{height:40px;width:auto;}
+.hold{position:relative;overflow:hidden;}
+.hold i{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(127,127,127,.3);}
+.hold.go i{width:100%;transition:width 1s linear;}
+
+/* ---------- summary ---------- */
+.sum-hero{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+.sum-hero .t{flex:1;min-width:240px;}
+.sum-hero h1{font-size:clamp(26px,4vw,36px);font-weight:800;line-height:1.15;}
+.when{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.when .chip{font-size:12.5px;padding:5px 12px;}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 4px;}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:820px){.sgrid{grid-template-columns:1fr;}}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14.5px;}
+.kv:last-child{border-bottom:0;}
+.kv span:first-child{color:var(--ink-soft);}
+.pre{white-space:pre-wrap;font-size:14.5px;}
+.edit-times{display:none;margin-top:12px;}
+.edit-times.on{display:grid;}
+
+/* ---------- sheet + toast ---------- */
+.scr{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:2300;opacity:0;pointer-events:none;transition:opacity .2s;}
+.scr.on{opacity:1;pointer-events:auto;}
+.sh{position:fixed;left:50%;bottom:0;z-index:2400;width:100%;max-width:620px;max-height:90dvh;background:var(--bg-pill);color:var(--ink);border-radius:24px 24px 0 0;transform:translate(-50%,105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;box-shadow:0 -10px 40px rgba(0,0,0,.2);}
+.sh:not(.on){visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s .28s;}
+.sh.on{transform:translate(-50%,0);}
+.sh .grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:10px auto 2px;flex:none;}
+.sh .hd{display:flex;justify-content:space-between;align-items:center;padding:6px 20px 10px;touch-action:none;flex:none;}
+.sh .hd h2{font-size:19px;font-weight:800;}
+.sh .hd button{width:36px;height:36px;border-radius:50%;border:0;background:var(--surface-2,#e7e5df);font-size:20px;cursor:pointer;}
+.sh .bd{overflow-y:auto;padding:2px 20px calc(22px + env(safe-area-inset-bottom));}
+@media(min-width:700px){.sh{bottom:50%;border-radius:24px;transform:translate(-50%,60%) scale(.96);opacity:0;pointer-events:none;transition:transform .22s,opacity .22s;}.sh.on{transform:translate(-50%,50%);opacity:1;pointer-events:auto;}.sh .grab{display:none;}}
+.pick{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:12px;cursor:pointer;border:1px solid transparent;}
+.pick:hover{background:var(--hover,#f4f3ef);}
+.pick b{display:block;font-size:14.5px;}
+.pick small{color:var(--ink-soft);font-size:12px;}
+.pick .badge{margin-left:auto;}
+.seg{display:flex;background:var(--bg);border-radius:99px;padding:4px;gap:4px;margin-bottom:14px;}
+.seg button{flex:1;border:0;background:none;height:36px;border-radius:99px;font-weight:700;font-size:13px;color:var(--ink-soft);cursor:pointer;}
+.seg button.on{background:var(--btn,#1a1a1a);color:var(--btn-ink,#fff);}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+@media(min-width:560px){.pgrid{grid-template-columns:repeat(4,1fr);}}
+.pgrid div{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;background:var(--surface-2,#e7e5df);}
+.pgrid img{width:100%;height:100%;object-fit:cover;}
+.pgrid div.sel::after{content:"\2713";position:absolute;inset:0;background:rgba(0,0,0,.45);color:#fff;font-size:28px;font-weight:800;display:grid;place-items:center;}
+.pgrid div.has::before{content:"On board";position:absolute;left:4px;bottom:4px;z-index:1;background:rgba(0,0,0,.6);color:#fff;font-size:10px;border-radius:99px;padding:1px 6px;}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--btn,#1a1a1a);color:var(--btn-ink,#fff);padding:11px 18px;border-radius:99px;font-size:14px;font-weight:600;z-index:2700;opacity:0;pointer-events:none;transition:all .25s;max-width:92vw;text-align:center;}
+.toast.on{opacity:1;transform:translateX(-50%);}
+.hide{display:none!important;}
+@media print{
+  .fom-nav,.actions,.back,.lbar,.toast,.sh,.scr,.no-print{display:none!important;}
+  body{background:#fff;} .page{padding:0;} .card{border-color:#ccc;break-inside:avoid;}
+  .masonry.sm{column-count:4;}
+}
+</style>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
+<script src="session.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="auth-check" id="authCheck"><div><span class="brand-mark">FOM STUDIOS</span><p>Checking session...</p></div></div>
+<div class="login-gate" id="loginGate">
+  <div class="login-card">
+    <span class="brand-mark">FOM STUDIOS</span>
+    <p class="lg-sub">Admin sign in</p>
+    <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+    <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+    <button class="btn" style="width:100%;justify-content:center" id="lgBtn">Log in</button>
+    <p class="lg-err" id="lgErr"></p>
+  </div>
+</div>
+
+<main class="page">
+  <div class="bar" id="rulesBar">Meetings are only saving on this device. Publish the latest Firestore rules (they now include <b>meetings</b>), see Deploy checklist section B, then refresh.</div>
+
+  <!-- ===================== HOME ===================== -->
+  <section id="vHome">
+    <div class="head">
+      <h1>Client Meetings</h1>
+      <p>Mood board, notes, questions and a live quote for every client meeting. The summary saves to the client in your Database.</p>
+    </div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn" data-act="startSheet">+ Start meeting</button>
+      <button class="btn ghost" data-act="openLib">Mood board library</button>
+    </div>
+    <div id="homeOpen"></div>
+    <div class="row" style="margin-top:26px;justify-content:space-between">
+      <div class="sec-t" style="margin:0" id="recentTitle">Recent meetings</div>
+      <input class="search" id="mSearch" placeholder="Search client, notes...">
+    </div>
+    <div id="homeFilter" style="margin-top:8px"></div>
+    <div class="mlist" id="homeList" style="margin-top:12px"></div>
+  </section>
+
+  <!-- ===================== LIBRARY ===================== -->
+  <section id="vLib" class="hide">
+    <div class="row" style="gap:12px">
+      <button class="back" data-act="home" aria-label="Back">&#8249;</button>
+      <div style="flex:1"><h1 style="font-size:clamp(24px,4vw,32px);font-weight:800">Mood board</h1><p class="muted small" id="libCount"></p></div>
+      <button class="btn" data-act="addSheet">+ Add ideas</button>
+    </div>
+    <div class="row" style="margin-top:14px;flex-wrap:nowrap">
+      <div class="chips" id="libChips" style="flex:1"></div>
+      <button class="mini" data-act="catSheet" style="margin-bottom:10px">Edit categories</button>
+    </div>
+    <div class="masonry" id="libBoard"></div>
+  </section>
+
+  <!-- ===================== LIVE / EDIT MEETING ===================== -->
+  <section id="vLive" class="hide">
+    <div class="lbar">
+      <div class="r1 priv">
+        <button class="back" data-act="leaveLive" aria-label="Back">&#8249;</button>
+        <div class="who"><b id="lvName"></b><small id="lvSub"></small></div>
+        <span class="timer" id="lvTimer">00:00</span>
+      </div>
+      <div class="r1 cv-only cvhead">
+        <img src="assets/logo.png" alt="" id="cvLogo">
+        <div class="who"><b id="cvName"></b><small>Your shoot ideas</small></div>
+        <button class="mini hold" id="cvExit"><i></i>Hold to exit</button>
+      </div>
+      <div class="row priv" style="margin-top:10px;gap:8px">
+        <button class="btn sm ghost" data-act="cvOn" id="cvBtn">Client view</button>
+        <button class="btn sm" data-act="endSheet" id="endBtn">End meeting</button>
+      </div>
+      <div class="tabs" id="lvTabs"></div>
+    </div>
+    <div id="lvPanel" style="margin-top:12px"></div>
+  </section>
+
+  <!-- ===================== SUMMARY ===================== -->
+  <section id="vSum" class="hide"></section>
+</main>
+
+<!-- lightbox -->
+<div class="lbx" id="lb" aria-modal="true" role="dialog">
+  <div class="top"><span id="lbCount" style="font-size:13px;opacity:.75"></span><button class="x" id="lbX" aria-label="Close">&times;</button></div>
+  <button class="nav l" id="lbPrev" aria-label="Previous">&#8249;</button>
+  <button class="nav r" id="lbNext" aria-label="Next">&#8250;</button>
+  <div class="stage" id="lbStage"><img id="lbImg" alt=""></div>
+  <div class="foot">
+    <div class="cap" id="lbCap"></div>
+    <button class="bigheart" id="lbHeart"></button>
+    <div class="edit priv" id="lbEdit"></div>
+  </div>
+</div>
+
+<div class="scr" id="scr"></div>
+<div class="sh" id="sh" role="dialog" aria-modal="true"><div class="grab"></div><div class="hd"><h2 id="shT"></h2><button id="shX" aria-label="Close">&times;</button></div><div class="bd" id="shB"></div></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="upFile" accept="image/*" multiple hidden>
+
+<script src="firebase-config.js"></script>
+<script src="photo-defaults.js"></script>
+<script src="pay-config.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   SETUP
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const BZ = window.FOM_BIZ, BIZ = BZ.id;
+const WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
+const SITE = 'https://www.fomstudios.co.za/';
+const DEPOSIT_PCT = (typeof PAY_DEPOSIT_PCT !== 'undefined') ? PAY_DEPOSIT_PCT : 50;
+const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const RZA = n => 'R ' + Math.round(+n || 0).toLocaleString('en-ZA').replace(/,/g,' ');
+const pad = n => String(n).padStart(2,'0');
+const isoDay = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+const hhmm = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
+const niceDay = s => { if(!s) return ''; const d = new Date(String(s).length > 10 ? s : s + 'T00:00:00'); return isNaN(d) ? s : d.toLocaleDateString('en-ZA', { weekday:'short', day:'numeric', month:'short', year:'numeric' }); };
+const shortDay = s => { if(!s) return ''; const d = new Date(String(s).length > 10 ? s : s + 'T00:00:00'); return isNaN(d) ? s : d.toLocaleDateString('en-ZA', { day:'numeric', month:'short' }); };
+const durTxt = min => { min = Math.max(0, Math.round(min || 0)); const h = Math.floor(min / 60), m = min % 60; return h ? h + ' h ' + (m ? m + ' min' : '') : m + ' min'; };
+const HEART = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+const HEART_O = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 20.3l-1.2-1.1C6 14.9 3 12.1 3 8.6 3 6 5 4 7.6 4c1.6 0 3.2.8 4.4 2.1C13.2 4.8 14.8 4 16.4 4 19 4 21 6 21 8.6c0 3.5-3 6.3-7.8 10.6L12 20.3z"/></svg>';
+function toast(t){ const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 2400); }
+function waNum(p){ let d = String(p||'').replace(/\D/g,''); if(!d) return ''; if(d.startsWith('00')) d = d.slice(2); if(d.startsWith('0')) d = '27' + d.slice(1); else if(d.length === 9) d = '27' + d; return d.length >= 11 ? d : ''; }
+const first = n => String(n || '').trim().split(/\s+/)[0] || 'there';
+const nrm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g,'');
+const phoneKey = p => String(p || '').replace(/\D/g,'').replace(/^27/,'0').slice(-9);
+
+/* ---------- shoot types, question templates, shot suggestions ---------- */
+const TYPES = ['General','Wedding','Birthday / Party','Corporate / Event','Family / Portrait','Sports','Product / Brand'];
+const BASE_Q = ['What is the occasion, and what do you want to remember most?','Date, start and finish times?','Venue or location (indoor or outdoor)?','How many guests or people?','Who are the must-have people?','Which style do you love (natural, posed, bright, moody)?','Photos, video or both?','Where will the photos or video be used?','When do you need the final files by?','Budget range?','How did you hear about us?'];
+const TYPE_Q = {
+  'Wedding':['Ceremony and reception venues?','Getting ready location and time?','Bridal party size?','Religious or cultural moments to capture?','First look planned?','Family group photo list?','Planner or coordinator contact?','Venue rules (flash, drone, ceremony restrictions)?'],
+  'Birthday / Party':['Whose celebration, which age or theme?','Key moments (cake, speeches, games, surprise)?','Decor and setup to capture before guests arrive?','Will kids be there?'],
+  'Corporate / Event':['Company and on the day contact person?','Brand guidelines or logo use?','Speakers or VIPs to cover?','Headshots needed?','Same day edits for social media?','Usage rights (internal, ads, press)?'],
+  'Family / Portrait':['Who is in the session?','Outfit colours and coordination?','Location ideas (home, park, studio)?','Pets joining?','Prints or an album wanted?'],
+  'Sports':['Sport, team and fixture?','Players or positions to focus on?','Sideline or pitch access?','Highlight reel needed, and how fast?'],
+  'Product / Brand':['Products and how many?','Brand look and colours?','Lifestyle, flat lay or studio white?','Where will they be used (site, ads, socials)?']
+};
+const SHOT_SUGG = {
+  'General':['Wide venue shot','Candids','Group photo','Details and decor','Arrivals'],
+  'Wedding':['Getting ready','First look','Ring close up','Walking down the aisle','Vows','First kiss','Family groups','Couple portraits at golden hour','First dance','Cake cutting','Grand exit'],
+  'Birthday / Party':['Birthday person portraits','Cake and candles','Decor before guests','Games and activities','Speeches','Family group','Gifts opening'],
+  'Corporate / Event':['Venue and branding','Speakers on stage','Audience reactions','Networking candids','Headshots','Team photo','Sponsor boards'],
+  'Family / Portrait':['Whole family','Parents only','Kids individually','Siblings together','Candid play','Pets'],
+  'Sports':['Team line up','Action shots','Celebrations','Coach and bench','Fans','Trophy moment'],
+  'Product / Brand':['Hero product shot','Detail close ups','Lifestyle in use','Flat lay','Packaging','Team or founder portrait']
+};
+const DATE_LABELS = ['Shoot day','Event day','Second meeting','Deposit due','Balance due','Venue walkthrough','Delivery date','Follow-up call','Other'];
+const TASK_SUGG = ['Send quote','Send contract and sign link','Deposit to secure the date','Send mood board picks','Confirm venue and times','Share shot list','Book venue walkthrough'];
+const DEF_CATS = BZ.isSba ? ['Events','Birthdays','Corporate & wellness','Family & portraits','Other']
+                          : ['Weddings','Events','Corporate','Sports','Portraits','Video ideas'];
+
+/* ---------- calculator prices (merged with your saved Calculator settings) ---------- */
+let CALC = {
+  packagePrice:{ photo:{Bronze:800,Silver:1300,Gold:1800}, video:{Bronze:1000,Silver:1700,Gold:3000}, combo:{Bronze:1500,Silver:2700,Gold:4500} },
+  specialPrice:{ padel:2500, mini:500 }, hourly:{ photographer:400, videographer:500 }, revision:75, secondShooter:500,
+  deliverable:{"30-60s Reel":200,"2-3min Reel":300,"30-40 Photos":250,"40-50 Photos":350,"50-60 Photos":450,"Single Photo":10,"Drone":800},
+  normal:{"30-60s Reel":250,"2-3min Reel":380,"30-40 Photos":320,"40-50 Photos":440,"50-60 Photos":570,"Single Photo":20,"Drone":1000},
+  fuel:{ consumption:8, price:28.06 }, extraPackages:[]
+};
+function applyCalc(s){
+  if(!s || typeof s !== 'object') return;
+  const n = (v,d) => (typeof v === 'number' && isFinite(v) && v >= 0) ? v : d;
+  const sub = (a,b) => { if(b && typeof b === 'object') Object.keys(a).forEach(k => { a[k] = n(b[k], a[k]); }); };
+  if(s.packagePrice) Object.keys(CALC.packagePrice).forEach(t => sub(CALC.packagePrice[t], s.packagePrice[t]));
+  sub(CALC.specialPrice, s.specialPrice); sub(CALC.hourly, s.hourly);
+  CALC.revision = n(s.revision, CALC.revision); CALC.secondShooter = n(s.secondShooter, CALC.secondShooter);
+  ['deliverable','normal'].forEach(m => { if(s[m] && typeof s[m] === 'object') Object.keys(s[m]).forEach(k => { if(typeof s[m][k] === 'number') CALC[m][k] = s[m][k]; }); });
+  if(s.fuel){ CALC.fuel.price = n(s.fuel.price, CALC.fuel.price); CALC.fuel.consumption = n(s.fuel.consumption, CALC.fuel.consumption) || 8; }
+  if(Array.isArray(s.extraPackages)) CALC.extraPackages = s.extraPackages.filter(p => p && p.name).map(p => ({ name:String(p.name), price:n(+p.price,0) }));
+}
+
+/* =====================================================================
+   STATE + STORAGE
+   ===================================================================== */
+let DB = null, CLOUD = false;
+let LIB = { cats: DEF_CATS.slice(), items: [] };
+let MEETS = [], ORDERS = [], LEADS = [], PHOTOS = [], QEXTRA = {};
+let cur = null;          // meeting open in the editor
+let libFilter = 'All', boardFilter = 'All', tab = 'board';
+const LIB_KEY = 'fom.mood.v1.' + BIZ, M_KEY = 'fom_meetings', BK_KEY = 'fom.meet.backup', Q_KEY = 'fom.meetq.v1.' + BIZ;
+const readLS = (k, d) => { try{ const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; }catch(e){ return d; } };
+const writeLS = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+const strip = o => { const { id, ...r } = o; return JSON.parse(JSON.stringify(r)); };
+function rulesProblem(e){ console.warn(e); if(e && /permission/i.test(e.code || e.message || '')) $('rulesBar').classList.add('on'); }
+
+const Store = {
+  saveTimer: null,
+  touch(){
+    if(!cur) return;
+    cur.updated = new Date().toISOString();
+    writeLS(BK_KEY, cur);                                   // device backup, always
+    const i = MEETS.findIndex(m => m.id === cur.id); if(i >= 0) MEETS[i] = cur; else MEETS.unshift(cur);
+    clearTimeout(this.saveTimer); this.saveTimer = setTimeout(() => this.saveMeeting(cur), 600);
+  },
+  saveMeeting(m){
+    if(!m) return Promise.resolve();
+    if(!CLOUD){ const all = readLS(M_KEY, []).filter(x => x.id !== m.id); all.push(m); writeLS(M_KEY, all); return Promise.resolve(); }
+    return DB.collection('meetings').doc(m.id).set(strip(m)).then(() => { $('rulesBar').classList.remove('on'); }).catch(rulesProblem);
+  },
+  flush(){ clearTimeout(this.saveTimer); return this.saveMeeting(cur); },
+  deleteMeeting(id){
+    MEETS = MEETS.filter(m => m.id !== id);
+    if(!CLOUD){ writeLS(M_KEY, readLS(M_KEY, []).filter(x => x.id !== id)); return Promise.resolve(); }
+    return DB.collection('meetings').doc(id).delete().catch(rulesProblem);
+  },
+  saveLib(){
+    writeLS(LIB_KEY, LIB);
+    if(!CLOUD) return Promise.resolve(true);
+    return DB.collection('settings').doc(BZ.sid('moodboard')).set({ json: JSON.stringify(LIB), updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
+      .then(() => true).catch(e => { console.warn(e); toast('Mood board saved on this device only'); return false; });
+  },
+  saveQ(){
+    writeLS(Q_KEY, QEXTRA);
+    if(CLOUD) DB.collection('settings').doc(BZ.sid('meetingQs')).set({ json: JSON.stringify(QEXTRA), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(e => console.warn(e));
+  },
+  updateOrder(id, fields){
+    const o = ORDERS.find(x => x.id === id); if(o) Object.assign(o, fields);
+    if(!CLOUD){ const all = readLS('fom_orders', []); const x = all.find(r => r.id === id); if(x){ Object.assign(x, fields); writeLS('fom_orders', all); } return Promise.resolve(); }
+    return DB.collection('orders').doc(id).set(fields, { merge:true });
+  }
+};
+
+function loadLocal(){
+  MEETS = BZ.mine(readLS(M_KEY, []));
+  ORDERS = readLS('fom_orders', []);
+  LEADS = BZ.mine(readLS('fom_leads', []));
+  LIB = readLS(LIB_KEY, LIB);
+  QEXTRA = readLS(Q_KEY, {});
+  PHOTOS = BZ.isSba ? [] : (window.FOM_PHOTO_DEFAULTS || []).slice();
+  try{ applyCalc(JSON.parse(localStorage.getItem('fom.calc.v1'))); }catch(e){}
+  restoreBackup(); boot();
+}
+function loadCloud(db){
+  LIB = readLS(LIB_KEY, LIB); QEXTRA = readLS(Q_KEY, {});
+  PHOTOS = BZ.isSba ? [] : (window.FOM_PHOTO_DEFAULTS || []).slice();
+  try{ applyCalc(JSON.parse(localStorage.getItem('fom.calc.v1'))); }catch(e){}
+  const jobs = [
+    db.collection('settings').doc(BZ.sid('moodboard')).get().then(s => { if(s.exists && s.data().json){ const v = JSON.parse(s.data().json); if(v && Array.isArray(v.items)){ LIB = v; writeLS(LIB_KEY, LIB); } } }).catch(e => console.warn('moodboard', e)),
+    db.collection('settings').doc(BZ.sid('meetingQs')).get().then(s => { if(s.exists && s.data().json){ QEXTRA = JSON.parse(s.data().json) || {}; writeLS(Q_KEY, QEXTRA); } }).catch(() => {}),
+    BZ.getSettings(db, 'calculator').then(s => { if(s && s.exists && s.data().json) applyCalc(JSON.parse(s.data().json)); }).catch(() => {}),
+    db.collection('orders').get().then(s => { ORDERS = BZ.mine(s.docs.map(d => ({ id:d.id, ...d.data() }))); }).catch(e => console.warn('orders', e)),
+    db.collection('leads').get().then(s => { LEADS = BZ.mine(s.docs.map(d => ({ id:d.id, ...d.data() }))); }).catch(e => console.warn('leads', e)),
+    db.collection('siteContent').doc(BZ.isSba ? 'portfolio_sba' : 'portfolio').get().then(s => { if(s.exists && s.data().json){ const v = JSON.parse(s.data().json); if(Array.isArray(v) && v.length) PHOTOS = v; } }).catch(() => {}),
+    db.collection('meetings').get().then(s => { MEETS = BZ.mine(s.docs.map(d => ({ id:d.id, ...d.data() }))); }).catch(e => { rulesProblem(e); MEETS = BZ.mine(readLS(M_KEY, [])); })
+  ];
+  Promise.all(jobs).then(() => { restoreBackup(); boot(); });
+}
+/* a meeting edited offline (or before the rules were published) wins over the older cloud copy */
+function restoreBackup(){
+  const b = readLS(BK_KEY, null);
+  if(!b || !b.id || BZ.bizOf(b) !== BIZ) return;
+  const m = MEETS.find(x => x.id === b.id);
+  if(!m || String(b.updated || '') > String(m.updated || '')){
+    if(m) Object.assign(m, b); else MEETS.unshift(b);
+    Store.saveMeeting(b);
+  }
+}
+
+/* =====================================================================
+   IMAGES
+   ===================================================================== */
+const photoUrl = src => String(src).indexOf('r2:') === 0 ? WORKER + '/file?g=portfolio%2F&n=' + encodeURIComponent(src.slice(3)) : (/^https?:/.test(src) ? src : SITE + src);
+function imgUrl(it){
+  const r = it.ref || '';
+  if(r.indexOf('d:') === 0) return WORKER + '/file?g=deck%2F&n=' + encodeURIComponent(r.slice(2));
+  if(r.indexOf('g:') === 0) return photoUrl(r.slice(2));
+  return r.slice(2);
+}
+function ratio(url){ return new Promise(res => { const i = new Image(); i.onload = () => res(i.naturalWidth && i.naturalHeight ? +(i.naturalWidth / i.naturalHeight).toFixed(3) : 1); i.onerror = () => res(0.8); i.src = url; setTimeout(() => res(0.8), 8000); }); }
+function shrink(file, max){
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => { const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)); const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); c.toBlob(b => b ? res({ blob:b, ar:+(c.width / c.height).toFixed(3) }) : rej(new Error('could not read image')), 'image/jpeg', 0.88); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('could not read image')); };
+    img.src = url;
+  });
+}
+async function token(){ const u = window.firebase && firebase.apps.length && firebase.auth().currentUser; if(!u) throw new Error('not signed in'); return u.getIdToken(); }
+
+/* =====================================================================
+   PINTEREST BOARD (used by the library, the meeting and the summary)
+   ===================================================================== */
+let LBLIST = [], LBI = 0, LBMODE = 'lib';     // lib | meet | sum
+function pinHtml(it, mode){
+  const loved = mode === 'meet' && cur && cur.hearts.some(h => h.id === it.id);
+  const ar = it.ar || 0.8;
+  return `<div class="pin" data-pin="${esc(it.id)}">
+    <div class="pimg" style="aspect-ratio:${ar}"><img src="${esc(it.url || imgUrl(it))}" alt="${esc(it.cap || 'Idea')}" loading="lazy">
+      ${mode === 'meet' ? `<button class="heart${loved ? ' on' : ''}" data-heart="${esc(it.id)}" aria-label="Love this idea">${HEART}</button>` : ''}
+      ${mode === 'sum' ? `<span class="lovedtag">&#9829; Loved</span>` : ''}
+    </div>
+    ${it.cap ? `<div class="pcap">${esc(it.cap)}</div>` : ''}
+    ${mode === 'lib' && it.cat ? `<div class="pcat">${esc(it.cat)}</div>` : ''}
+  </div>`;
+}
+function chipsHtml(active, extra){
+  const used = LIB.cats.filter(c => LIB.items.some(i => i.cat === c));
+  const list = ['All'].concat(extra || []).concat(used);
+  return list.map(c => `<button class="mini${c === active ? ' on' : ''}" data-chip="${esc(c)}">${c === 'Loved' ? '&#9829; Loved' : esc(c)}${c === 'Loved' && cur ? ' ' + cur.hearts.length : ''}</button>`).join('');
+}
+function openLB(list, idx, mode){ LBLIST = list; LBI = idx; LBMODE = mode; $('lb').classList.add('on'); document.body.style.overflow = 'hidden'; drawLB(); }
+function closeLB(){ $('lb').classList.remove('on'); document.body.style.overflow = ''; if(LBMODE === 'meet') renderPanel(); if(LBMODE === 'lib') renderLib(); }
+function drawLB(){
+  const it = LBLIST[LBI]; if(!it){ closeLB(); return; }
+  $('lbImg').src = it.url || imgUrl(it); $('lbImg').style.transform = '';
+  $('lbCap').textContent = it.cap || '';
+  $('lbCount').textContent = (LBI + 1) + ' of ' + LBLIST.length;
+  const h = $('lbHeart');
+  if(LBMODE === 'meet'){ const on = cur.hearts.some(x => x.id === it.id); h.style.display = ''; h.className = 'bigheart' + (on ? ' on' : ''); h.innerHTML = (on ? HEART + ' Loved' : HEART_O + ' Love this'); }
+  else h.style.display = 'none';
+  const ed = $('lbEdit');
+  if(LBMODE === 'lib'){
+    ed.innerHTML = `<input id="lbCapIn" placeholder="Caption" value="${esc(it.cap || '')}"><select id="lbCatIn">${LIB.cats.map(c => `<option${c === it.cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select><button id="lbDel">Remove</button>`;
+    $('lbCapIn').onchange = e => { it.cap = e.target.value.trim(); $('lbCap').textContent = it.cap; Store.saveLib(); };
+    $('lbCatIn').onchange = e => { it.cat = e.target.value; Store.saveLib(); };
+    $('lbDel').onclick = () => { if(!confirm('Remove this idea from the mood board? Meeting summaries that loved it keep their copy.')) return; LIB.items = LIB.items.filter(x => x.id !== it.id); Store.saveLib(); LBLIST.splice(LBI, 1); if(LBI >= LBLIST.length) LBI = LBLIST.length - 1; LBLIST.length ? drawLB() : closeLB(); };
+  } else ed.innerHTML = '';
+}
+function toggleHeart(id){
+  if(!cur) return false;
+  const i = cur.hearts.findIndex(h => h.id === id);
+  if(i >= 0){ cur.hearts.splice(i, 1); Store.touch(); return false; }
+  const it = LIB.items.find(x => x.id === id); if(!it) return false;
+  cur.hearts.push({ id:it.id, url:imgUrl(it), cap:it.cap || '', cat:it.cat || '', ar:it.ar || 0.8, at:new Date().toISOString() });
+  Store.touch(); return true;
+}
+$('lbX').onclick = closeLB;
+$('lbPrev').onclick = () => { LBI = (LBI - 1 + LBLIST.length) % LBLIST.length; drawLB(); };
+$('lbNext').onclick = () => { LBI = (LBI + 1) % LBLIST.length; drawLB(); };
+$('lbHeart').onclick = () => { const it = LBLIST[LBI]; const on = toggleHeart(it.id); drawLB(); if(on){ $('lbHeart').classList.add('pop'); setTimeout(() => $('lbHeart').classList.remove('pop'), 400); } updateTabs(); };
+$('lbStage').addEventListener('dblclick', () => { if(LBMODE === 'meet') $('lbHeart').click(); });
+document.addEventListener('keydown', e => { if(!$('lb').classList.contains('on')) return; if(e.key === 'Escape') closeLB(); if(e.key === 'ArrowLeft') $('lbPrev').click(); if(e.key === 'ArrowRight') $('lbNext').click(); });
+(function swipe(){
+  let x0 = null, y0 = null, dx = 0, dy = 0;
+  const st = $('lbStage');
+  st.addEventListener('touchstart', e => { if(e.touches.length !== 1) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = dy = 0; }, { passive:true });
+  st.addEventListener('touchmove', e => { if(x0 == null) return; dx = e.touches[0].clientX - x0; dy = e.touches[0].clientY - y0; $('lbImg').style.transform = Math.abs(dy) > Math.abs(dx) && dy > 0 ? `translateY(${dy}px) scale(${Math.max(.8, 1 - dy / 1200)})` : `translateX(${dx}px)`; }, { passive:true });
+  st.addEventListener('touchend', () => { if(x0 == null) return; x0 = null; $('lbImg').style.transform = '';
+    if(dy > 110 && Math.abs(dy) > Math.abs(dx)) closeLB(); else if(dx < -60) $('lbNext').click(); else if(dx > 60) $('lbPrev').click(); });
+  let tap = 0; st.addEventListener('touchend', () => { const t = Date.now(); if(t - tap < 300 && Math.abs(dx) < 10 && Math.abs(dy) < 10 && LBMODE === 'meet') $('lbHeart').click(); tap = t; });
+})();
+
+/* =====================================================================
+   SHEET
+   ===================================================================== */
+function sheet(title, html, onOpen){ $('shT').textContent = title; $('shB').innerHTML = html; $('sh').classList.add('on'); $('scr').classList.add('on'); if(onOpen) onOpen($('shB')); }
+function closeSheet(){ $('sh').classList.remove('on'); $('scr').classList.remove('on'); }
+$('shX').onclick = closeSheet; $('scr').onclick = closeSheet;
+(function drag(){
+  let y0 = null, dy = 0; const sh = $('sh');
+  const st = e => { if(innerWidth >= 700) return; y0 = e.touches[0].clientY; dy = 0; sh.style.transition = 'none'; };
+  const mv = e => { if(y0 == null) return; dy = Math.max(0, e.touches[0].clientY - y0); sh.style.transform = `translate(-50%, ${dy}px)`; };
+  const en = () => { if(y0 == null) return; y0 = null; sh.style.transition = ''; sh.style.transform = ''; if(dy > 90) closeSheet(); };
+  sh.querySelectorAll('.grab,.hd').forEach(h => { h.addEventListener('touchstart', st, { passive:true }); h.addEventListener('touchmove', mv, { passive:true }); h.addEventListener('touchend', en); });
+})();
+
+/* =====================================================================
+   VIEWS + ROUTING
+   ===================================================================== */
+let timerInt = null;
+function show(v){
+  ['vHome','vLib','vLive','vSum'].forEach(id => $(id).classList.toggle('hide', id !== v));
+  if(v !== 'vLive'){ clearInterval(timerInt); document.body.classList.remove('cv'); }
+  window.scrollTo(0, 0);
+}
+function go(qs){ history.pushState(null, '', 'meetings.html' + (qs ? '?' + qs : '')); route(); }
+window.addEventListener('popstate', route);
+function route(){
+  const p = new URLSearchParams(location.search);
+  if(p.get('m')){
+    const m = MEETS.find(x => x.id === p.get('m'));
+    if(!m){ show('vHome'); renderHome(); toast('That meeting could not be found in ' + BZ.b.name + '. Check the business switch.'); return; }
+    if(m.status === 'open' || p.get('edit')) openEditor(m); else renderSummary(m);
+    return;
+  }
+  if(p.get('lib')){ show('vLib'); renderLib(); return; }
+  show('vHome'); renderHome();
+  const nw = p.get('new');
+  if(nw){ history.replaceState(null, '', 'meetings.html' + (p.get('order') ? '?order=' + p.get('order') : '')); startSheet(nw); }
+}
+function boot(){ route(); }
+
+/* =====================================================================
+   HOME
+   ===================================================================== */
+function thumbs(m){
+  const h = (m.hearts || []).slice(0, 4);
+  if(!h.length) return `<div class="thumbs one" style="display:grid;place-items:center;font-size:24px">&#129309;</div>`;
+  return `<div class="thumbs${h.length === 1 ? ' one' : ''}">${h.map(x => `<img src="${esc(x.url)}" alt="" loading="lazy">`).join('')}</div>`;
+}
+function linkChip(m){
+  if(m.orderId){ const o = ORDERS.find(x => x.id === m.orderId); return `<span class="chip acc">Order ${esc(o ? o.orderId : '')}</span>`; }
+  if(m.leadId) return `<span class="chip">Lead</span>`;
+  return `<span class="chip">Not linked</span>`;
+}
+function renderHome(){
+  const p = new URLSearchParams(location.search), ord = p.get('order');
+  const open = MEETS.filter(m => m.status === 'open');
+  $('homeOpen').innerHTML = open.length ? `<div class="sec-t">In progress</div><div class="mlist">${open.map(m => `
+    <div class="mcard" data-open="${esc(m.id)}">${thumbs(m)}<div style="flex:1;min-width:0"><b>${esc(m.client.name || 'Unnamed client')}</b>
+      <div class="meta">Started ${shortDay(m.startedAt)} at ${hhmm(new Date(m.startedAt))}</div>
+      <div class="tags"><span class="chip live">Live</span>${linkChip(m)}</div></div><span class="btn sm">Resume</span></div>`).join('')}</div>` : '';
+  const q = $('mSearch').value.trim().toLowerCase();
+  let list = MEETS.filter(m => m.status !== 'open');
+  if(ord) list = list.filter(m => m.orderId === ord);
+  if(q) list = list.filter(m => JSON.stringify([m.client, m.notes, m.qs]).toLowerCase().includes(q));
+  list.sort((a, b) => String(b.startedAt).localeCompare(String(a.startedAt)));
+  const o = ord && ORDERS.find(x => x.id === ord);
+  $('homeFilter').innerHTML = ord ? `<span class="chip acc">Showing ${esc(o ? (o.customer || o.orderId) : 'one order')}</span> <button class="mini" data-act="clearFilter">Show all</button> <button class="mini" data-act="startOrder" data-id="${esc(ord)}">+ New meeting for this client</button>` : '';
+  $('homeList').innerHTML = list.length ? list.map(m => `
+    <div class="mcard" data-open="${esc(m.id)}">${thumbs(m)}<div style="flex:1;min-width:0"><b>${esc(m.client.name || 'Unnamed client')}</b>
+      <div class="meta">${niceDay(m.startedAt)}, ${hhmm(new Date(m.startedAt))}${m.durationMin != null ? ' · ' + durTxt(m.durationMin) : ''}</div>
+      <div class="tags">${linkChip(m)}${m.client.type && m.client.type !== 'General' ? `<span class="chip">${esc(m.client.type)}</span>` : ''}${m.hearts.length ? `<span class="chip" style="background:#fde8ec;color:#c0002a">&#9829; ${m.hearts.length}</span>` : ''}${openTasks(m) ? `<span class="chip">${openTasks(m)} to do</span>` : ''}</div></div></div>`).join('')
+    : `<div class="empty" style="grid-column:1/-1">${q || ord ? 'No meetings match.' : 'No meetings yet. Tap <b>Start meeting</b> when you sit down with a client.'}</div>`;
+}
+const openTasks = m => (m.tasks || []).filter(t => !t.done).length;
+$('mSearch').addEventListener('input', renderHome);
+
+/* =====================================================================
+   START A MEETING
+   ===================================================================== */
+function blankMeeting(){
+  const now = new Date();
+  return { id:'m' + uid(), biz:BIZ, status:'open', startedAt:now.toISOString(), endedAt:null, durationMin:null,
+    orderId:'', leadId:'', client:{ name:'', phone:'', email:'', type:'General', venue:'', guests:'', budget:'' },
+    notes:'', dates:[], qs:[], quote:{ lines:[], discType:'R', disc:0, km:0, showClient:false }, shots:[], people:[], tasks:[], hearts:[],
+    created:now.toISOString(), updated:now.toISOString() };
+}
+function questionsFor(type){
+  const extra = (QEXTRA[type] || []).concat(type !== 'General' ? (QEXTRA.General || []) : []);
+  return BASE_Q.concat(TYPE_Q[type] || []).concat(extra).filter((q, i, a) => a.indexOf(q) === i).map(q => ({ id:uid(), q, a:'', done:false }));
+}
+function guessType(txt){
+  const t = String(txt || '').toLowerCase();
+  if(/wedd|nikah|bride/.test(t)) return 'Wedding';
+  if(/birth|party|kids/.test(t)) return 'Birthday / Party';
+  if(/corp|event|confer|launch|pilates|wellness/.test(t)) return 'Corporate / Event';
+  if(/family|portrait|matern|newborn/.test(t)) return 'Family / Portrait';
+  if(/sport|padel|match|game|football|rugby/.test(t)) return 'Sports';
+  if(/product|brand|menu|food/.test(t)) return 'Product / Brand';
+  return 'General';
+}
+let startSeg = 'order', startPre = null;
+function startSheet(pre){
+  startPre = null;
+  if(typeof pre === 'string' && pre.indexOf(':') > 0){ const [k, id] = pre.split(':'); startSeg = k === 'lead' ? 'lead' : 'order'; startPre = { k:startSeg, id }; }
+  sheet('Start a meeting', `
+    <div class="seg"><button data-seg="order">Booked client</button><button data-seg="lead">Lead</button><button data-seg="new">New person</button></div>
+    <div id="stBody"></div>
+    <label class="lb" style="margin-top:14px">Shoot type</label>
+    <select class="sel" id="stType">${TYPES.map(t => `<option>${t}</option>`).join('')}</select>
+    <p class="muted small" style="margin:10px 2px 0">The start time is saved automatically. Questions load for the shoot type you pick.</p>
+    <button class="btn" style="width:100%;justify-content:center;margin-top:14px" id="stGo">Start meeting now</button>`, drawStart);
+}
+let stPick = null;
+function drawStart(){
+  $('shB').querySelectorAll('[data-seg]').forEach(b => b.classList.toggle('on', b.dataset.seg === startSeg));
+  stPick = null;
+  const body = $('stBody');
+  if(startSeg === 'new'){
+    body.innerHTML = `<div class="grid2"><div><label class="lb">Name</label><input class="inp" id="nwName" placeholder="Client name"></div><div><label class="lb">WhatsApp</label><input class="inp" id="nwPhone" inputmode="tel" placeholder="082 123 4567"></div></div><div style="margin-top:10px"><label class="lb">Email</label><input class="inp" id="nwEmail" type="email" placeholder="Optional"></div>`;
+    return;
+  }
+  const src = startSeg === 'order' ? ORDERS.slice().reverse() : LEADS.slice().reverse();
+  body.innerHTML = `<input class="inp" id="stSearch" placeholder="Search ${startSeg === 'order' ? 'orders' : 'leads'}..."><div id="stList" style="max-height:38dvh;overflow:auto;margin-top:8px"></div>`;
+  const draw = () => {
+    const q = $('stSearch').value.trim().toLowerCase();
+    const rows = src.filter(r => !q || JSON.stringify([r.customer, r.orderId, r.product, r.company, r.contact, r.email]).toLowerCase().includes(q)).slice(0, 60);
+    $('stList').innerHTML = rows.length ? rows.map(r => startSeg === 'order'
+      ? `<div class="pick" data-pick="${esc(r.id)}"><div><b>${esc(r.customer || 'No name')} <span class="muted small">${esc(r.orderId || '')}</span></b><small>${esc(r.product || '')}${r.shootDate ? ' · ' + shortDay(r.shootDate) : ''} · ${esc(r.status || '')}</small></div></div>`
+      : `<div class="pick" data-pick="${esc(r.id)}"><div><b>${esc(r.company || r.contact || 'No name')}</b><small>${esc(r.contact || '')} ${esc(r.category || '')} · ${esc(r.status || '')}</small></div></div>`).join('')
+      : `<p class="muted small" style="padding:10px">${src.length ? 'No match.' : 'Nothing here yet in ' + esc(BZ.b.name) + '.'}</p>`;
+    if(stPick) { const el = $('stList').querySelector(`[data-pick="${CSS.escape(stPick)}"]`); if(el) el.style.borderColor = 'var(--ink)'; }
+  };
+  $('stSearch').oninput = draw; draw();
+  if(startPre && startPre.k === startSeg) { selectPick(startPre.id); startPre = null; }
+}
+function selectPick(id){
+  stPick = id;
+  $('stList').querySelectorAll('.pick').forEach(p => p.style.borderColor = p.dataset.pick === id ? 'var(--ink)' : 'transparent');
+  const r = (startSeg === 'order' ? ORDERS : LEADS).find(x => x.id === id);
+  if(r) $('stType').value = guessType([r.product, r.notes, r.category, r.company].join(' '));
+}
+function startMeeting(){
+  const m = blankMeeting();
+  m.client.type = $('stType').value;
+  if(startSeg === 'new'){
+    m.client.name = ($('nwName').value || '').trim(); m.client.phone = ($('nwPhone').value || '').trim(); m.client.email = ($('nwEmail').value || '').trim();
+    if(!m.client.name){ toast('Add the client name first'); return; }
+  } else {
+    if(!stPick){ toast('Pick a ' + (startSeg === 'order' ? 'client' : 'lead') + ' first'); return; }
+    if(startSeg === 'order'){ const o = ORDERS.find(x => x.id === stPick); m.orderId = o.id; Object.assign(m.client, { name:o.customer || '', phone:o.clientPhone || '', email:o.clientEmail || '' });
+      if(o.shootDate) m.dates.push({ id:uid(), label:'Shoot day', date:o.shootDate, time:o.shootTime || '', note:'' }); }
+    else { const l = LEADS.find(x => x.id === stPick); m.leadId = l.id; Object.assign(m.client, { name:l.contact ? l.contact + (l.company ? ' (' + l.company + ')' : '') : (l.company || ''), email:l.email || '', phone:l.phone || '', venue:l.location || '' }); }
+  }
+  m.qs = questionsFor(m.client.type);
+  MEETS.unshift(m); closeSheet();
+  cur = m; Store.touch(); Store.flush();
+  tab = 'board'; boardFilter = autoCat(m.client.type);
+  go('m=' + m.id);
+}
+function autoCat(type){
+  const map = { 'Wedding':/wedd/i, 'Birthday / Party':/birth|party/i, 'Corporate / Event':/corp|event/i, 'Family / Portrait':/family|portrait/i, 'Sports':/sport/i, 'Product / Brand':/product|brand/i };
+  const re = map[type]; if(!re) return 'All';
+  const c = LIB.cats.find(x => re.test(x) && LIB.items.some(i => i.cat === x));
+  return c || 'All';
+}
+
+/* =====================================================================
+   LIBRARY
+   ===================================================================== */
+function libItems(){ return libFilter === 'All' ? LIB.items : LIB.items.filter(i => i.cat === libFilter); }
+function renderLib(){
+  if(libFilter !== 'All' && !LIB.items.some(i => i.cat === libFilter)) libFilter = 'All';
+  $('libCount').textContent = LIB.items.length + (LIB.items.length === 1 ? ' idea' : ' ideas') + ' in ' + BZ.b.name + '’s board. Tap a picture to caption, move or remove it.';
+  $('libChips').innerHTML = chipsHtml(libFilter);
+  const items = libItems();
+  $('libBoard').innerHTML = items.length ? items.map(i => pinHtml(i, 'lib')).join('') : `<div class="empty" style="column-span:all">No ideas yet. Tap <b>+ Add ideas</b> to upload pictures, pick from your Photos page or paste links.</div>`;
+}
+$('libChips').addEventListener('click', e => { const c = e.target.closest('[data-chip]'); if(c){ libFilter = c.dataset.chip; renderLib(); } });
+$('libBoard').addEventListener('click', e => { const p = e.target.closest('[data-pin]'); if(!p) return; const list = libItems(); openLB(list, list.findIndex(i => i.id === p.dataset.pin), 'lib'); });
+
+let addSeg = 'up', addPicks = new Set();
+function addSheet(){
+  addPicks = new Set();
+  const cats = LIB.cats.map(c => `<option${c === (libFilter !== 'All' && libFilter !== 'Loved' ? libFilter : (boardFilter !== 'All' && boardFilter !== 'Loved' ? boardFilter : '')) ? ' selected' : ''}>${esc(c)}</option>`).join('');
+  sheet('Add ideas', `
+    <div class="seg"><button data-aseg="up">Upload</button><button data-aseg="ph">My photos</button><button data-aseg="ln">Paste links</button></div>
+    <label class="lb">Category</label>
+    <div class="row" style="flex-wrap:nowrap"><select class="sel" id="adCat">${cats}<option value="__new">+ New category...</option></select></div>
+    <input class="inp hide" id="adNewCat" placeholder="New category name" style="margin-top:8px">
+    <div id="adBody" style="margin-top:14px"></div>
+    <p class="muted small" id="adMsg" style="margin-top:10px"></p>`, drawAdd);
+}
+function adCategory(){
+  let c = $('adCat').value;
+  if(c === '__new'){ c = ($('adNewCat').value || '').trim(); if(!c){ toast('Name the new category'); return null; } if(!LIB.cats.includes(c)) LIB.cats.push(c); }
+  return c;
+}
+function drawAdd(){
+  $('shB').querySelectorAll('[data-aseg]').forEach(b => b.classList.toggle('on', b.dataset.aseg === addSeg));
+  $('adCat').onchange = () => $('adNewCat').classList.toggle('hide', $('adCat').value !== '__new');
+  const b = $('adBody');
+  if(addSeg === 'up'){
+    b.innerHTML = `<button class="btn" style="width:100%;justify-content:center;height:56px" id="adPick">Choose pictures</button><p class="muted small" style="margin-top:8px">Pick as many as you like. They are resized and saved to your R2 storage.</p>`;
+    $('adPick').onclick = () => { if(!adCategory()) return; $('upFile').click(); };
+  } else if(addSeg === 'ph'){
+    const vis = PHOTOS.filter(p => p && p.src && !p.hide);
+    const onBoard = new Set(LIB.items.map(i => i.ref));
+    b.innerHTML = vis.length ? `<div class="pgrid">${vis.map(p => `<div data-ph="${esc(p.src)}" class="${onBoard.has('g:' + p.src) ? 'has' : ''}"><img src="${esc(photoUrl(p.src))}" alt="" loading="lazy"></div>`).join('')}</div>
+      <button class="btn" style="width:100%;justify-content:center;margin-top:12px" id="adPhGo" disabled>Add selected</button>`
+      : `<div class="empty">No photos on your Photos page for ${esc(BZ.b.name)} yet.</div>`;
+    b.querySelectorAll('[data-ph]').forEach(d => d.onclick = () => { const s = d.dataset.ph; addPicks.has(s) ? addPicks.delete(s) : addPicks.add(s); d.classList.toggle('sel'); const g = $('adPhGo'); g.disabled = !addPicks.size; g.textContent = addPicks.size ? 'Add ' + addPicks.size + ' to the board' : 'Add selected'; });
+    const g = $('adPhGo'); if(g) g.onclick = async () => {
+      const cat = adCategory(); if(!cat) return; g.disabled = true; g.textContent = 'Adding...';
+      for(const s of addPicks){ const p = vis.find(x => x.src === s); const ar = await ratio(photoUrl(s)); LIB.items.unshift({ id:'i' + uid(), ref:'g:' + s, cat, cap:(p && p.cap) || '', ar, at:new Date().toISOString() }); }
+      await Store.saveLib(); afterAdd(addPicks.size);
+    };
+  } else {
+    b.innerHTML = `<textarea class="ta" id="adLinks" placeholder="Paste image links, one per line.&#10;Tip: on Pinterest, open the pin, press and hold the picture, then Copy image address."></textarea>
+      <input class="inp" id="adCap" placeholder="Caption (optional)" style="margin-top:8px">
+      <button class="btn" style="width:100%;justify-content:center;margin-top:12px" id="adLnGo">Add to the board</button>`;
+    $('adLnGo').onclick = async () => {
+      const cat = adCategory(); if(!cat) return;
+      const urls = $('adLinks').value.split(/\s+/).map(s => s.trim()).filter(s => /^https?:\/\//i.test(s));
+      if(!urls.length){ toast('Paste at least one link that starts with https://'); return; }
+      $('adLnGo').disabled = true; $('adMsg').textContent = 'Checking pictures...';
+      let bad = 0;
+      for(const u of urls){ const ar = await ratio(u); if(ar === 0.8) bad++; LIB.items.unshift({ id:'i' + uid(), ref:'u:' + u, cat, cap:$('adCap').value.trim(), ar, at:new Date().toISOString() }); }
+      await Store.saveLib(); afterAdd(urls.length);
+      if(bad) toast(bad + ' link(s) may not be a picture. If they show blank, use Copy image address instead of the page link.');
+    };
+  }
+}
+$('shB').addEventListener('click', e => {
+  const s = e.target.closest('[data-seg]'); if(s){ startSeg = s.dataset.seg; drawStart(); return; }
+  const a = e.target.closest('[data-aseg]'); if(a){ addSeg = a.dataset.aseg; drawAdd(); return; }
+  const p = e.target.closest('[data-pick]'); if(p){ selectPick(p.dataset.pick); return; }
+  if(e.target.id === 'stGo') startMeeting();
+});
+$('upFile').addEventListener('change', async e => {
+  const files = Array.from(e.target.files || []); e.target.value = ''; if(!files.length) return;
+  const cat = adCategory(); if(!cat) return;
+  const msg = t => { const m = $('adMsg'); if(m) m.textContent = t; };
+  let n = 0;
+  for(let i = 0; i < files.length; i++){
+    try{
+      msg('Uploading ' + (i + 1) + ' of ' + files.length + '...');
+      const { blob, ar } = await shrink(files[i], 1800);
+      const name = 'mood-' + BIZ + '-' + Date.now().toString(36) + i + '.jpg';
+      if(CLOUD){
+        const r = await fetch(WORKER + '/admin/upload?f=deck&n=' + encodeURIComponent(name), { method:'POST', headers:{ 'Content-Type':'image/jpeg', Authorization:'Bearer ' + await token() }, body:blob });
+        const j = await r.json().catch(() => ({}));
+        if(!r.ok || !j.ok) throw new Error(j.error || ('upload failed (' + r.status + ')'));
+        LIB.items.unshift({ id:'i' + uid(), ref:'d:' + (j.name || name), cat, cap:'', ar, at:new Date().toISOString() });
+      } else {
+        const url = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
+        LIB.items.unshift({ id:'i' + uid(), ref:'u:' + url, cat, cap:'', ar, at:new Date().toISOString() });
+      }
+      n++;
+    }catch(err){ console.warn(err); msg('Upload failed: ' + err.message + '. Check your signal and try again.'); break; }
+  }
+  if(n){ await Store.saveLib(); afterAdd(n); }
+});
+function afterAdd(n){
+  closeSheet(); toast(n + (n === 1 ? ' idea' : ' ideas') + ' added');
+  if(!$('vLib').classList.contains('hide')) renderLib();
+  if(!$('vLive').classList.contains('hide')) renderPanel();
+}
+function catSheet(){
+  sheet('Categories', `<div class="list" id="catList">${LIB.cats.map((c, i) => `<div class="li"><input class="grow" data-cat="${i}" value="${esc(c)}"><span class="muted small">${LIB.items.filter(x => x.cat === c).length}</span><button class="x" data-catdel="${i}" aria-label="Delete">&times;</button></div>`).join('')}</div>
+    <div class="row" style="margin-top:10px;flex-wrap:nowrap"><input class="inp" id="catNew" placeholder="New category"><button class="btn" id="catAdd">Add</button></div>
+    <p class="muted small" style="margin-top:10px">Renaming moves its ideas with it. Deleting a category moves its ideas to "${esc(LIB.cats[0] || 'Other')}".</p>`, b => {
+    b.querySelectorAll('[data-cat]').forEach(inp => inp.onchange = () => { const i = +inp.dataset.cat, old = LIB.cats[i], nw = inp.value.trim(); if(!nw || LIB.cats.includes(nw)) { inp.value = old; return; } LIB.cats[i] = nw; LIB.items.forEach(x => { if(x.cat === old) x.cat = nw; }); Store.saveLib(); renderLib(); });
+    b.querySelectorAll('[data-catdel]').forEach(btn => btn.onclick = () => { const i = +btn.dataset.catdel, old = LIB.cats[i]; if(LIB.cats.length < 2) return; LIB.cats.splice(i, 1); LIB.items.forEach(x => { if(x.cat === old) x.cat = LIB.cats[0]; }); Store.saveLib(); renderLib(); catSheet(); });
+    $('catAdd').onclick = () => { const v = $('catNew').value.trim(); if(v && !LIB.cats.includes(v)){ LIB.cats.push(v); Store.saveLib(); catSheet(); } };
+  });
+}
+
+/* =====================================================================
+   MEETING EDITOR (live, or editing a finished summary)
+   ===================================================================== */
+const TABS = [
+  { k:'board', n:'Mood board' }, { k:'notes', n:'Notes & dates', priv:true }, { k:'qs', n:'Questions', priv:true },
+  { k:'quote', n:'Quote' }, { k:'shots', n:'Shot list' }, { k:'tasks', n:'Follow-ups', priv:true }
+];
+function openEditor(m){
+  cur = m;
+  ['dates','qs','shots','people','tasks','hearts'].forEach(k => { if(!Array.isArray(cur[k])) cur[k] = []; });
+  cur.quote = Object.assign({ lines:[], discType:'R', disc:0, km:0, showClient:false }, cur.quote || {});
+  cur.client = Object.assign({ name:'', phone:'', email:'', type:'General', venue:'', guests:'', budget:'' }, cur.client || {});
+  show('vLive');
+  const live = cur.status === 'open';
+  $('endBtn').textContent = live ? 'End meeting' : 'Done editing';
+  $('lvTimer').classList.toggle('hide', !live);
+  $('cvLogo').src = BZ.b.logo;
+  drawHead(); updateTabs(); renderPanel();
+  clearInterval(timerInt);
+  if(live){ const tick = () => { const s = Math.max(0, Math.floor((Date.now() - new Date(cur.startedAt)) / 1000)); const h = Math.floor(s / 3600); $('lvTimer').textContent = (h ? h + ':' : '') + pad(Math.floor(s / 60) % 60) + ':' + pad(s % 60); }; tick(); timerInt = setInterval(tick, 1000); }
+}
+function drawHead(){
+  $('lvName').textContent = cur.client.name || 'New client';
+  $('cvName').textContent = cur.client.name ? 'Hi ' + first(cur.client.name) : 'Welcome';
+  const o = cur.orderId && ORDERS.find(x => x.id === cur.orderId);
+  $('lvSub').textContent = (cur.status === 'open' ? 'Live · ' : 'Editing summary · ') + (cur.client.type || 'General') + (o ? ' · Order ' + (o.orderId || '') : cur.leadId ? ' · Lead' : '');
+}
+function updateTabs(){
+  if(!cur) return;
+  const cv = document.body.classList.contains('cv');
+  $('lvTabs').innerHTML = TABS.filter(t => !(cv && t.priv) && !(cv && t.k === 'quote' && !cur.quote.showClient)).map(t => {
+    let n = '';
+    if(t.k === 'board' && cur.hearts.length) n = `<span class="n">&#9829; ${cur.hearts.length}</span>`;
+    if(t.k === 'tasks' && openTasks(cur)) n = `<span class="n" style="background:var(--ink-soft)">${openTasks(cur)}</span>`;
+    return `<button data-tab="${t.k}" class="${t.k === tab ? 'on' : ''}">${t.n}${n}</button>`;
+  }).join('');
+}
+$('lvTabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if(b){ tab = b.dataset.tab; updateTabs(); renderPanel(); } });
+
+function boardItems(){
+  if(boardFilter === 'Loved') return cur.hearts.map(h => LIB.items.find(i => i.id === h.id) || Object.assign({ ref:'u:' + h.url }, h));
+  return boardFilter === 'All' ? LIB.items : LIB.items.filter(i => i.cat === boardFilter);
+}
+function renderPanel(){
+  if(!cur) return;
+  const P = $('lvPanel'), c = cur;
+  if(tab === 'board'){
+    if(boardFilter !== 'All' && boardFilter !== 'Loved' && !LIB.items.some(i => i.cat === boardFilter)) boardFilter = 'All';
+    const items = boardItems();
+    P.innerHTML = `<div class="row" style="flex-wrap:nowrap"><div class="chips" style="flex:1" id="bdChips">${chipsHtml(boardFilter, ['Loved'])}</div><button class="mini priv" data-act="addSheet" style="margin-bottom:10px">+ Add</button></div>
+      <div class="masonry" id="bdGrid">${items.length ? items.map(i => pinHtml(i, 'meet')).join('') : `<div class="empty" style="column-span:all">${boardFilter === 'Loved' ? 'Nothing loved yet. Tap the heart on any idea.' : 'Your mood board is empty. Add ideas from the library.'}</div>`}</div>`;
+    return;
+  }
+  if(tab === 'notes'){
+    P.innerHTML = `
+      <div class="card"><div class="grid3">
+        <div><label class="lb">Client name</label><input class="inp" data-f="client.name" value="${esc(c.client.name)}"></div>
+        <div><label class="lb">WhatsApp</label><input class="inp" data-f="client.phone" inputmode="tel" value="${esc(c.client.phone)}"></div>
+        <div><label class="lb">Email</label><input class="inp" data-f="client.email" type="email" value="${esc(c.client.email)}"></div>
+        <div><label class="lb">Shoot type</label><select class="sel" data-f="client.type">${TYPES.map(t => `<option${t === c.client.type ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
+        <div><label class="lb">Venue or location</label><input class="inp" data-f="client.venue" value="${esc(c.client.venue)}"></div>
+        <div><label class="lb">Guests or people</label><input class="inp" data-f="client.guests" inputmode="numeric" value="${esc(c.client.guests)}"></div>
+      </div>
+      <div style="margin-top:12px"><label class="lb">Budget (private)</label><input class="inp" data-f="client.budget" value="${esc(c.client.budget)}" placeholder="e.g. R3 000 to R4 000"></div></div>
+      <div class="row" style="justify-content:space-between;margin-top:22px"><div class="sec-t" style="margin:0">Meeting notes</div><button class="mini" data-act="stamp">+ Time stamp</button></div>
+      <textarea class="ta" id="notesTa" data-f="notes" style="min-height:200px;margin-top:8px" placeholder="Type as you talk. Only you see this.">${esc(c.notes)}</textarea>
+      <div class="row" style="justify-content:space-between;margin-top:22px"><div class="sec-t" style="margin:0">Important dates</div><button class="mini" data-act="addDate">+ Add date</button></div>
+      <div class="list" style="margin-top:8px">${c.dates.length ? c.dates.map((d, i) => `
+        <div class="li" style="flex-wrap:wrap"><select data-list="dates" data-i="${i}" data-k="label" style="font-weight:700">${DATE_LABELS.map(l => `<option${l === d.label ? ' selected' : ''}>${l}</option>`).join('')}</select>
+          <input type="date" data-list="dates" data-i="${i}" data-k="date" value="${esc(d.date)}"><input type="time" data-list="dates" data-i="${i}" data-k="time" value="${esc(d.time)}">
+          <input class="grow" data-list="dates" data-i="${i}" data-k="note" value="${esc(d.note)}" placeholder="Note" style="min-width:120px"><button class="x" data-del="dates" data-i="${i}" aria-label="Remove">&times;</button></div>`).join('') : `<div class="empty">No dates yet. Add the shoot day, deposit date or a follow-up call.</div>`}</div>`;
+    return;
+  }
+  if(tab === 'qs'){
+    const done = c.qs.filter(q => q.done || q.a).length;
+    P.innerHTML = `<div class="row" style="justify-content:space-between"><p class="muted small">${done} of ${c.qs.length} covered · ${esc(c.client.type)}</p>
+        <div class="row" style="gap:6px"><button class="mini" data-act="loadQs">Load ${esc(c.client.type)} questions</button></div></div>
+      <div class="list" style="margin-top:10px">${c.qs.map((q, i) => `
+        <div class="qrow${q.done ? ' done' : ''}"><div class="q"><input type="checkbox" class="ck" data-list="qs" data-i="${i}" data-k="done"${q.done ? ' checked' : ''}><span>${esc(q.q)}</span><button class="x" data-del="qs" data-i="${i}" aria-label="Remove" style="border:0;background:none;color:var(--ink-soft);cursor:pointer;font-size:17px">&times;</button></div>
+          <input class="ans" data-list="qs" data-i="${i}" data-k="a" value="${esc(q.a)}" placeholder="Answer"></div>`).join('')}</div>
+      <div class="card" style="margin-top:14px"><label class="lb">Add a question</label><div class="row" style="flex-wrap:nowrap"><input class="inp" id="qNew" placeholder="e.g. Any surprise moments planned?"><button class="btn" data-act="addQ">Add</button></div>
+        <label class="small muted" style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" id="qSave" class="ck"> Also ask this in future ${esc(c.client.type)} meetings</label></div>`;
+    return;
+  }
+  if(tab === 'quote'){ renderQuote(P); return; }
+  if(tab === 'shots'){
+    const sugg = (SHOT_SUGG[c.client.type] || SHOT_SUGG.General).filter(s => !c.shots.some(x => x.t === s));
+    P.innerHTML = `<div class="sgrid"><div>
+      <div class="row" style="justify-content:space-between"><div class="sec-t" style="margin:0">Must-have shots</div><button class="mini priv" data-act="addShot">+ Add</button></div>
+      <div class="list" style="margin-top:8px">${c.shots.length ? c.shots.map((s, i) => `<div class="li${s.done ? ' done' : ''}"><button class="star${s.star ? ' on' : ''}" data-star="${i}" aria-label="Priority">&#9733;</button><input class="grow" data-list="shots" data-i="${i}" data-k="t" value="${esc(s.t)}" placeholder="Shot"><button class="x priv" data-del="shots" data-i="${i}" aria-label="Remove">&times;</button></div>`).join('') : `<div class="empty">No shots yet. Tap a suggestion below or add your own.</div>`}</div>
+      ${sugg.length ? `<div class="sugg priv">${sugg.map(s => `<button data-sugg="${esc(s)}">+ ${esc(s)}</button>`).join('')}</div>` : ''}
+    </div><div>
+      <div class="row" style="justify-content:space-between"><div class="sec-t" style="margin:0">Key people</div><button class="mini priv" data-act="addPerson">+ Add</button></div>
+      <div class="list" style="margin-top:8px">${c.people.length ? c.people.map((p, i) => `<div class="li"><input class="grow" data-list="people" data-i="${i}" data-k="name" value="${esc(p.name)}" placeholder="Name"><input data-list="people" data-i="${i}" data-k="role" value="${esc(p.role)}" placeholder="Role (e.g. Mum, CEO)" style="width:42%"><button class="x priv" data-del="people" data-i="${i}" aria-label="Remove">&times;</button></div>`).join('') : `<div class="empty">Who must be in the photos? Parents, the CEO, the birthday girl...</div>`}</div>
+    </div></div>`;
+    return;
+  }
+  if(tab === 'tasks'){
+    const sugg = TASK_SUGG.filter(s => !c.tasks.some(x => x.t === s));
+    P.innerHTML = `<div class="row" style="justify-content:space-between"><div class="sec-t" style="margin:0">Follow-ups</div><button class="mini" data-act="addTask">+ Add</button></div>
+      <div class="list" style="margin-top:8px">${c.tasks.length ? c.tasks.map((t, i) => `<div class="li${t.done ? ' done' : ''}" style="flex-wrap:wrap"><input type="checkbox" class="ck" data-list="tasks" data-i="${i}" data-k="done"${t.done ? ' checked' : ''}><input class="grow" data-list="tasks" data-i="${i}" data-k="t" value="${esc(t.t)}" placeholder="What needs to happen" style="min-width:150px">
+        <select data-list="tasks" data-i="${i}" data-k="who"><option value="me"${t.who !== 'client' ? ' selected' : ''}>Me</option><option value="client"${t.who === 'client' ? ' selected' : ''}>Client</option></select>
+        <input type="date" data-list="tasks" data-i="${i}" data-k="due" value="${esc(t.due)}"><button class="x" data-del="tasks" data-i="${i}" aria-label="Remove">&times;</button></div>`).join('') : `<div class="empty">Nothing to follow up yet.</div>`}</div>
+      ${sugg.length ? `<div class="sugg">${sugg.map(s => `<button data-tsugg="${esc(s)}">+ ${esc(s)}</button>`).join('')}</div>` : ''}
+      <div class="card" style="margin-top:18px"><b>Send the recap to the client</b><p class="muted small" style="margin:4px 0 10px">A WhatsApp message with the dates, loved ideas, must-have shots, quote and next steps. You can edit it before sending.</p>
+        <button class="btn" data-act="waSheet">WhatsApp recap</button></div>`;
+  }
+}
+
+/* ---------- quote ---------- */
+function quoteMenu(){
+  const C = CALC, P = { photo:'Photography', video:'Videography', combo:'Photo & Video' };
+  const hasPkg = cur.quote.lines.some(l => l.pkg);
+  const g = [];
+  g.push({ n:'Packages', items:[].concat(...Object.keys(P).map(t => ['Bronze','Silver','Gold'].map(tier => ({ label:P[t] + ' ' + tier, price:C.packagePrice[t][tier], pkg:true }))))
+    .concat(C.extraPackages.map(p => ({ label:p.name, price:p.price, pkg:true }))) });
+  g.push({ n:'Specials', items:[{ label:'Padel (per week)', price:C.specialPrice.padel, pkg:true }, { label:'Mini shoot', price:C.specialPrice.mini, pkg:true }] });
+  g.push({ n:hasPkg ? 'Add-ons (package rates)' : 'Items (a la carte rates)', items:Object.keys(C.deliverable).map(k => ({ label:k, price:hasPkg ? C.deliverable[k] : (C.normal[k] != null ? C.normal[k] : C.deliverable[k]) })) });
+  g.push({ n:'Extras', items:[{ label:'Extra photographer hour', price:C.hourly.photographer }, { label:'Extra videographer hour', price:C.hourly.videographer }, { label:'Second shooter', price:C.secondShooter }, { label:'Extra revision round', price:C.revision }] });
+  return g;
+}
+function quoteTotals(q){
+  const sub = q.lines.reduce((s, l) => s + (+l.price || 0) * (+l.qty || 0), 0);
+  const travel = q.km > 0 ? Math.round(q.km / 100 * CALC.fuel.consumption * CALC.fuel.price) : 0;
+  const disc = q.discType === '%' ? Math.round((sub + travel) * (+q.disc || 0) / 100) : (+q.disc || 0);
+  const total = Math.max(0, sub + travel - disc);
+  return { sub, travel, disc, total, deposit:Math.round(total * DEPOSIT_PCT / 100) };
+}
+function renderQuote(P){
+  const q = cur.quote, t = quoteTotals(q), cv = document.body.classList.contains('cv');
+  const menu = quoteMenu();
+  P.innerHTML = `<div class="qt"><div class="card">
+      <div class="row" style="justify-content:space-between"><b>Quote</b><label class="small muted priv" style="display:flex;gap:7px;align-items:center"><input type="checkbox" class="ck" id="qShow"${q.showClient ? ' checked' : ''}> Show in client view</label></div>
+      <div id="qLines" style="margin-top:8px">${q.lines.length ? q.lines.map((l, i) => `<div class="qline"><input data-list="quote.lines" data-i="${i}" data-k="label" value="${esc(l.label)}"${cv ? ' readonly' : ''}>
+        <div class="qty">${cv ? '' : `<button data-qty="${i}" data-d="-1">-</button>`}<span>${l.qty}</span>${cv ? '' : `<button data-qty="${i}" data-d="1">+</button>`}</div>
+        <input data-list="quote.lines" data-i="${i}" data-k="price" type="number" inputmode="numeric" value="${l.price}" style="text-align:right"${cv ? ' readonly' : ''}>
+        ${cv ? '<span></span>' : `<button class="x" data-del="quote.lines" data-i="${i}" aria-label="Remove" style="border:0;background:none;color:var(--ink-soft);font-size:17px;cursor:pointer">&times;</button>`}</div>`).join('') : `<div class="empty">Tap items on the ${innerWidth < 860 ? 'list below' : 'right'} to build the quote.</div>`}</div>
+      <div class="grid2 priv" style="margin-top:12px">
+        <div><label class="lb">Travel (total km)</label><input class="inp" type="number" inputmode="numeric" data-f="quote.km" value="${q.km || ''}" placeholder="0"></div>
+        <div><label class="lb">Discount</label><div class="row" style="flex-wrap:nowrap;gap:6px"><select class="sel" data-f="quote.discType" style="width:74px"><option${q.discType === 'R' ? ' selected' : ''}>R</option><option${q.discType === '%' ? ' selected' : ''}>%</option></select><input class="inp" type="number" inputmode="numeric" data-f="quote.disc" value="${q.disc || ''}" placeholder="0"></div></div>
+      </div>
+      <div id="qTot" style="margin-top:12px">${totHtml(t)}</div>
+    </div>
+    <div class="priv">${menu.map(g => `<div class="menu-g"><h4>${esc(g.n)}</h4><div class="items">${g.items.map(it => `<button data-addline='${esc(JSON.stringify(it))}'>${esc(it.label)}<small>${RZA(it.price)}</small></button>`).join('')}</div></div>`).join('')}
+      <div class="menu-g"><h4>Custom</h4><div class="row" style="flex-wrap:nowrap;gap:6px"><input class="inp" id="qcL" placeholder="Item"><input class="inp" id="qcP" type="number" inputmode="numeric" placeholder="R" style="width:100px"><button class="btn sm" data-act="addCustom">Add</button></div></div>
+      <p class="muted small">Prices come from your ${esc(BZ.b.name)} Calculator settings.</p></div></div>`;
+  const s = $('qShow'); if(s) s.onchange = () => { q.showClient = s.checked; Store.touch(); };
+}
+function totHtml(t){
+  return `${t.travel ? `<div class="qtot"><span>Subtotal</span><span>${RZA(t.sub)}</span></div><div class="qtot"><span>Travel</span><span>${RZA(t.travel)}</span></div>` : ''}
+    ${t.disc ? `<div class="qtot" style="color:#1f8a4c"><span>Discount</span><span>- ${RZA(t.disc)}</span></div>` : ''}
+    <div class="qtot big"><span>Total</span><span>${RZA(t.total)}</span></div>
+    <div class="qtot muted"><span>Deposit (${DEPOSIT_PCT}%) to secure the date</span><span>${RZA(t.deposit)}</span></div>`;
+}
+
+/* ---------- editor events ---------- */
+function getPath(o, p){ return p.split('.').reduce((a, k) => a && a[k], o); }
+function setPath(o, p, v){ const ks = p.split('.'); let t = o; for(let i = 0; i < ks.length - 1; i++) t = t[ks[i]] = t[ks[i]] || {}; t[ks[ks.length - 1]] = v; }
+$('lvPanel').addEventListener('input', e => {
+  const el = e.target; if(!cur) return;
+  const val = el.type === 'checkbox' ? el.checked : (el.type === 'number' ? (+el.value || 0) : el.value);
+  if(el.dataset.f){ setPath(cur, el.dataset.f, val); if(el.dataset.f.indexOf('client.name') === 0) drawHead(); }
+  else if(el.dataset.list){ const arr = getPath(cur, el.dataset.list); if(arr && arr[+el.dataset.i]) arr[+el.dataset.i][el.dataset.k] = val; }
+  else return;
+  Store.touch();
+  if(tab === 'quote' && $('qTot')) $('qTot').innerHTML = totHtml(quoteTotals(cur.quote));
+  if(el.type === 'checkbox' && el.dataset.list){ const row = el.closest('.li,.qrow'); if(row) row.classList.toggle('done', el.checked); updateTabs(); }
+});
+$('lvPanel').addEventListener('change', e => {
+  const el = e.target;
+  if(el.dataset.f === 'client.type'){ drawHead(); }
+  if(el.dataset.f === 'quote.discType' && $('qTot')) $('qTot').innerHTML = totHtml(quoteTotals(cur.quote));
+});
+$('lvPanel').addEventListener('click', e => {
+  if(!cur) return;
+  const t = e.target;
+  const heart = t.closest('[data-heart]');
+  if(heart){ e.stopPropagation(); const on = toggleHeart(heart.dataset.heart); heart.classList.toggle('on', on); if(on){ heart.classList.add('pop'); setTimeout(() => heart.classList.remove('pop'), 400); } if(boardFilter === 'Loved') renderPanel(); updateTabs(); const ch = $('bdChips'); if(ch) ch.innerHTML = chipsHtml(boardFilter, ['Loved']); return; }
+  const pin = t.closest('[data-pin]'); if(pin){ const list = boardItems(); openLB(list, list.findIndex(i => i.id === pin.dataset.pin), 'meet'); return; }
+  const chip = t.closest('[data-chip]'); if(chip){ boardFilter = chip.dataset.chip; renderPanel(); return; }
+  const del = t.closest('[data-del]'); if(del){ getPath(cur, del.dataset.del).splice(+del.dataset.i, 1); Store.touch(); renderPanel(); updateTabs(); return; }
+  const star = t.closest('[data-star]'); if(star){ const s = cur.shots[+star.dataset.star]; s.star = !s.star; cur.shots.sort((a, b) => (b.star ? 1 : 0) - (a.star ? 1 : 0)); Store.touch(); renderPanel(); return; }
+  const sg = t.closest('[data-sugg]'); if(sg){ cur.shots.push({ id:uid(), t:sg.dataset.sugg, star:false, done:false }); Store.touch(); renderPanel(); return; }
+  const ts = t.closest('[data-tsugg]'); if(ts){ const d = new Date(); d.setDate(d.getDate() + 2); cur.tasks.push({ id:uid(), t:ts.dataset.tsugg, who:/deposit|venue/i.test(ts.dataset.tsugg) ? 'client' : 'me', due:isoDay(d), done:false }); Store.touch(); renderPanel(); updateTabs(); return; }
+  const al = t.closest('[data-addline]'); if(al){ const it = JSON.parse(al.dataset.addline); const ex = cur.quote.lines.find(l => l.label === it.label); if(ex) ex.qty++; else cur.quote.lines.push({ id:uid(), label:it.label, price:it.price, qty:1, pkg:!!it.pkg }); Store.touch(); renderPanel(); return; }
+  const qy = t.closest('[data-qty]'); if(qy){ const l = cur.quote.lines[+qy.dataset.qty]; l.qty = Math.max(0, (+l.qty || 0) + (+qy.dataset.d)); if(!l.qty) cur.quote.lines.splice(+qy.dataset.qty, 1); Store.touch(); renderPanel(); return; }
+});
+
+/* =====================================================================
+   ACTIONS (buttons with data-act anywhere)
+   ===================================================================== */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const a = b.dataset.act;
+  const A = {
+    startSheet:() => startSheet(), openLib:() => go('lib=1'), home:() => go(''), addSheet, catSheet,
+    clearFilter:() => go(''), startOrder:() => startSheet('order:' + b.dataset.id),
+    leaveLive:() => { Store.flush(); if(cur.status === 'open') go(''); else go('m=' + cur.id); },
+    cvOn:() => { document.body.classList.add('cv'); if(TABS.find(x => x.k === tab).priv || (tab === 'quote' && !cur.quote.showClient)) tab = 'board'; updateTabs(); renderPanel(); window.scrollTo(0, 0); },
+    stamp:() => { const ta = $('notesTa'); const s = '[' + hhmm(new Date()) + '] '; const p = ta.selectionStart || ta.value.length; const pre = ta.value.slice(0, p); ta.value = pre + (pre && !/\n$/.test(pre) ? '\n' : '') + s + ta.value.slice(p); cur.notes = ta.value; Store.touch(); ta.focus(); },
+    addDate:() => { cur.dates.push({ id:uid(), label:cur.dates.length ? 'Other' : 'Shoot day', date:'', time:'', note:'' }); Store.touch(); renderPanel(); },
+    loadQs:() => { const have = new Set(cur.qs.map(q => q.q)); const add = questionsFor(cur.client.type).filter(q => !have.has(q.q)); cur.qs = cur.qs.concat(add); Store.touch(); renderPanel(); toast(add.length ? add.length + ' questions added' : 'All ' + cur.client.type + ' questions are already here'); },
+    addQ:() => { const v = $('qNew').value.trim(); if(!v) return; cur.qs.push({ id:uid(), q:v, a:'', done:false }); if($('qSave').checked){ const k = cur.client.type; QEXTRA[k] = (QEXTRA[k] || []).concat([v]); Store.saveQ(); } Store.touch(); renderPanel(); },
+    addCustom:() => { const l = $('qcL').value.trim(), p = +$('qcP').value || 0; if(!l) return; cur.quote.lines.push({ id:uid(), label:l, price:p, qty:1 }); Store.touch(); renderPanel(); },
+    addShot:() => { cur.shots.push({ id:uid(), t:'', star:false, done:false }); Store.touch(); renderPanel(); const ins = $('lvPanel').querySelectorAll('[data-list="shots"][data-k="t"]'); if(ins.length) ins[ins.length - 1].focus(); },
+    addPerson:() => { cur.people.push({ id:uid(), name:'', role:'' }); Store.touch(); renderPanel(); },
+    addTask:() => { cur.tasks.push({ id:uid(), t:'', who:'me', due:'', done:false }); Store.touch(); renderPanel(); updateTabs(); },
+    waSheet:() => waSheet(cur), endSheet
+  };
+  if(A[a]){ e.preventDefault(); A[a](); }
+});
+/* client view: hold the button for a second to leave, so a client cannot exit by accident */
+(function(){
+  const b = $('cvExit'); let t = null;
+  const start = e => { e.preventDefault(); b.classList.add('go'); t = setTimeout(() => { b.classList.remove('go'); document.body.classList.remove('cv'); updateTabs(); renderPanel(); toast('Back to your view'); }, 1000); };
+  const stop = () => { clearTimeout(t); b.classList.remove('go'); };
+  b.addEventListener('pointerdown', start); ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, stop));
+})();
+
+/* =====================================================================
+   END MEETING
+   ===================================================================== */
+function endSheet(){
+  if(cur.status !== 'open'){ Store.flush().then(() => go('m=' + cur.id)); return; }
+  const mins = Math.round((Date.now() - new Date(cur.startedAt)) / 60000);
+  sheet('End meeting?', `<div class="card"><div class="kv"><span>Client</span><b>${esc(cur.client.name || 'Unnamed')}</b></div>
+      <div class="kv"><span>Started</span><span>${hhmm(new Date(cur.startedAt))}</span></div><div class="kv"><span>Ends</span><span>now (${hhmm(new Date())})</span></div>
+      <div class="kv"><span>Length</span><span>${mins < 1 ? 'under 1 min' : durTxt(mins)}</span></div><div class="kv"><span>Loved ideas</span><span>${cur.hearts.length}</span></div>
+      <div class="kv"><span>Follow-ups</span><span>${openTasks(cur)}</span></div></div>
+    <p class="muted small" style="margin:10px 2px">The summary is saved${cur.orderId ? ' to this client in your Database' : ''}. You can still edit it afterwards.</p>
+    <button class="btn" style="width:100%;justify-content:center" id="endGo">End and save summary</button>`, () => {
+    $('endGo').onclick = () => {
+      const end = new Date();
+      cur.endedAt = end.toISOString(); cur.durationMin = Math.max(1, Math.round((end - new Date(cur.startedAt)) / 60000)); cur.status = 'closed';
+      Store.touch(); Store.flush().then(() => { localStorage.removeItem(BK_KEY); });
+      closeSheet(); toast('Meeting saved'); go('m=' + cur.id);
+    };
+  });
+}
+
+/* =====================================================================
+   SUMMARY
+   ===================================================================== */
+function renderSummary(m){
+  cur = null; show('vSum');
+  const o = m.orderId && ORDERS.find(x => x.id === m.orderId);
+  const l = m.leadId && LEADS.find(x => x.id === m.leadId);
+  const s = new Date(m.startedAt), en = m.endedAt ? new Date(m.endedAt) : null;
+  const q = Object.assign({ lines:[], km:0, disc:0, discType:'R' }, m.quote || {}), t = quoteTotals(q);
+  const answered = (m.qs || []).filter(x => x.a || x.done);
+  const match = !m.orderId ? suggestOrder(m) : null;
+  $('vSum').innerHTML = `
+    <button class="back no-print" data-act="home" aria-label="Back" style="margin-bottom:12px">&#8249;</button>
+    <div class="sum-hero"><div class="t">
+      <p class="muted small" style="font-weight:700;letter-spacing:.08em;text-transform:uppercase">Meeting summary · ${esc(BZ.b.name)}</p>
+      <h1>${esc(m.client.name || 'Unnamed client')}</h1>
+      <div class="when">
+        <span class="chip">&#128197; ${niceDay(m.startedAt)}</span>
+        <span class="chip">&#128339; ${hhmm(s)}${en ? ' to ' + hhmm(en) : ''}</span>
+        ${m.durationMin != null ? `<span class="chip">&#9201; ${durTxt(m.durationMin)}</span>` : ''}
+        ${o ? `<a class="chip acc" href="database.html">Order ${esc(o.orderId || '')}${o.product ? ' · ' + esc(o.product) : ''}</a>` : l ? `<span class="chip">Lead: ${esc(l.company || l.contact || '')}</span>` : `<span class="chip">Not linked to an order</span>`}
+        ${m.client.type ? `<span class="chip">${esc(m.client.type)}</span>` : ''}
+      </div>
+      <button class="mini no-print" data-sact="times" style="margin-top:10px">Edit date and times</button>
+      <div class="grid3 edit-times" id="eTimes">
+        <div><label class="lb">Date met</label><input class="inp" type="date" id="eDay" value="${isoDay(s)}"></div>
+        <div><label class="lb">Start</label><input class="inp" type="time" id="eStart" value="${hhmm(s)}"></div>
+        <div><label class="lb">End</label><input class="inp" type="time" id="eEnd" value="${en ? hhmm(en) : ''}"></div>
+      </div>
+    </div></div>
+    ${match ? `<div class="bar on no-print" style="background:#eef6ff;border-color:#bcd4f5;color:#1d3d6b">This looks like <b>${esc(match.customer)}</b> (Order ${esc(match.orderId || '')}) in your Database. <button class="mini" data-sact="linkMatch" data-id="${esc(match.id)}">Link it</button></div>` : ''}
+    <div class="actions">
+      <button class="btn" data-sact="wa">WhatsApp recap</button>
+      <button class="btn ghost" data-sact="edit">Edit</button>
+      ${o ? `<button class="btn ghost" data-sact="apply">Update order</button>` : ''}
+      <button class="btn ghost" data-sact="link">${o ? 'Change link' : 'Link to order'}</button>
+      <button class="btn ghost" data-sact="copy">Copy recap</button>
+      <button class="btn ghost" data-sact="print">PDF</button>
+      <button class="btn ghost" data-sact="reopen">Reopen</button>
+      <button class="btn ghost" data-sact="del" style="color:#c0392b!important">Delete</button>
+    </div>
+
+    <div class="sec-t">&#9829; Loved ideas (${m.hearts.length})</div>
+    ${m.hearts.length ? `<div class="masonry sm" id="sumBoard">${m.hearts.map(h => pinHtml(h, 'sum')).join('')}</div>` : `<div class="empty">No ideas were loved in this meeting.</div>`}
+
+    <div class="sgrid" style="margin-top:14px">
+      <div class="card"><div class="sec-t" style="margin-top:0">Client</div>
+        ${[['WhatsApp', m.client.phone], ['Email', m.client.email], ['Venue', m.client.venue], ['Guests', m.client.guests], ['Budget', m.client.budget]].filter(x => x[1]).map(x => `<div class="kv"><span>${x[0]}</span><span>${esc(x[1])}</span></div>`).join('') || '<p class="muted small">No details captured.</p>'}
+      </div>
+      <div class="card"><div class="sec-t" style="margin-top:0">Important dates</div>
+        ${m.dates.filter(d => d.date || d.note).length ? m.dates.filter(d => d.date || d.note).map(d => `<div class="kv"><span>${esc(d.label)}${d.note ? '<br><small>' + esc(d.note) + '</small>' : ''}</span><b style="text-align:right">${d.date ? niceDay(d.date) : ''}${d.time ? '<br><small>' + esc(d.time) + '</small>' : ''}</b></div>`).join('') : '<p class="muted small">No dates captured.</p>'}
+      </div>
+      <div class="card" style="grid-column:1/-1"><div class="sec-t" style="margin-top:0">Notes</div><div class="pre">${m.notes ? esc(m.notes) : '<span class="muted small">No notes.</span>'}</div></div>
+      ${answered.length ? `<div class="card" style="grid-column:1/-1"><div class="sec-t" style="margin-top:0">Questions covered (${answered.length})</div>${answered.map(x => `<div class="kv"><span>${esc(x.q)}</span><b style="text-align:right;max-width:55%">${esc(x.a || '✓')}</b></div>`).join('')}</div>` : ''}
+      <div class="card"><div class="sec-t" style="margin-top:0">Quote</div>
+        ${q.lines.length ? q.lines.map(x => `<div class="kv"><span>${esc(x.label)}${x.qty > 1 ? ' x ' + x.qty : ''}</span><span>${RZA(x.price * x.qty)}</span></div>`).join('') + totHtml(t) : '<p class="muted small">No quote built.</p>'}
+      </div>
+      <div class="card"><div class="sec-t" style="margin-top:0">Shot list</div>
+        ${m.shots.filter(x => x.t).length ? m.shots.filter(x => x.t).map(x => `<div class="kv"><span>${x.star ? '&#9733; ' : ''}${esc(x.t)}</span></div>`).join('') : '<p class="muted small">No shots listed.</p>'}
+        ${m.people.filter(x => x.name).length ? `<div class="sec-t">Key people</div>` + m.people.filter(x => x.name).map(x => `<div class="kv"><span>${esc(x.name)}</span><span>${esc(x.role)}</span></div>`).join('') : ''}
+      </div>
+      <div class="card" style="grid-column:1/-1"><div class="sec-t" style="margin-top:0">Follow-ups</div>
+        ${m.tasks.filter(x => x.t).length ? `<div class="list">${m.tasks.map((x, i) => x.t ? `<label class="li${x.done ? ' done' : ''}" style="cursor:pointer"><input type="checkbox" class="ck" data-stask="${i}"${x.done ? ' checked' : ''}><span class="grow">${esc(x.t)}</span><span class="chip">${x.who === 'client' ? 'Client' : 'Me'}</span>${x.due ? `<span class="small muted">${shortDay(x.due)}</span>` : ''}</label>` : '').join('')}</div>` : '<p class="muted small">No follow-ups.</p>'}
+      </div>
+    </div>
+    <p class="muted small" style="margin-top:16px">Saved automatically${m.updated ? ', last change ' + niceDay(m.updated) + ' at ' + hhmm(new Date(m.updated)) : ''}.</p>`;
+  const sb = $('sumBoard'); if(sb) sb.onclick = e => { const p = e.target.closest('[data-pin]'); if(p) openLB(m.hearts, m.hearts.findIndex(h => h.id === p.dataset.pin), 'sum'); };
+  $('vSum').onclick = e => sumAct(e, m);
+  $('vSum').onchange = e => {
+    if(e.target.dataset.stask != null){ m.tasks[+e.target.dataset.stask].done = e.target.checked; e.target.closest('.li').classList.toggle('done', e.target.checked); saveM(m); return; }
+    if(['eDay','eStart','eEnd'].includes(e.target.id)){
+      const d = $('eDay').value, st = $('eStart').value, et = $('eEnd').value; if(!d || !st) return;
+      const sd = new Date(d + 'T' + st); m.startedAt = sd.toISOString();
+      if(et){ let ed = new Date(d + 'T' + et); if(ed < sd) ed = new Date(ed.getTime() + 86400000); m.endedAt = ed.toISOString(); m.durationMin = Math.round((ed - sd) / 60000); }
+      saveM(m).then(() => { renderSummary(m); $('eTimes').classList.add('on'); toast('Times updated'); });
+    }
+  };
+}
+function saveM(m){ m.updated = new Date().toISOString(); return Store.saveMeeting(m); }
+function suggestOrder(m){
+  const e = String(m.client.email || '').toLowerCase().trim(), p = phoneKey(m.client.phone), n = nrm(m.client.name);
+  return ORDERS.slice().reverse().find(o => (e && String(o.clientEmail || '').toLowerCase().trim() === e) || (p.length >= 9 && phoneKey(o.clientPhone) === p) || (n.length > 3 && nrm(o.customer) && (n.indexOf(nrm(o.customer)) === 0 || nrm(o.customer) === n)));
+}
+function sumAct(e, m){
+  const b = e.target.closest('[data-sact]'); if(!b) return;
+  const a = b.dataset.sact;
+  if(a === 'times') $('eTimes').classList.toggle('on');
+  if(a === 'edit'){ tab = 'notes'; go('m=' + m.id + '&edit=1'); }
+  if(a === 'reopen'){ if(!confirm('Reopen this meeting? The timer continues from the original start time, and the end time is captured again when you end it.')) return; m.status = 'open'; m.endedAt = null; m.durationMin = null; saveM(m).then(() => { tab = 'board'; go('m=' + m.id); }); }
+  if(a === 'del'){ if(!confirm('Delete this meeting summary? This cannot be undone.')) return; Store.deleteMeeting(m.id).then(() => { toast('Meeting deleted'); go(''); }); }
+  if(a === 'print') window.print();
+  if(a === 'copy'){ const t = recap(m); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Recap copied'), () => { prompt('Copy the recap:', t); }); }
+  if(a === 'wa') waSheet(m);
+  if(a === 'link') linkSheet(m);
+  if(a === 'linkMatch'){ m.orderId = b.dataset.id; saveM(m).then(() => { toast('Linked to the order'); renderSummary(m); }); }
+  if(a === 'apply') applySheet(m);
+}
+
+/* ---------- WhatsApp recap ---------- */
+function recap(m){
+  const lines = [], q = Object.assign({ lines:[], km:0, disc:0, discType:'R' }, m.quote || {}), t = quoteTotals(q);
+  const owner = first(BZ.b.owner);
+  lines.push('Hi ' + first(m.client.name) + ', thank you for meeting with ' + BZ.b.name + (isoDay(new Date(m.startedAt)) === isoDay(new Date()) ? ' today' : '') + '! Here is a quick recap:');
+  const ds = m.dates.filter(d => d.date);
+  if(ds.length){ lines.push('', '📅 Key dates'); ds.forEach(d => lines.push('- ' + d.label + ': ' + niceDay(d.date) + (d.time ? ' at ' + d.time : '') + (d.note ? ' (' + d.note + ')' : ''))); }
+  if(m.client.venue) lines.push('', '📍 ' + m.client.venue);
+  if(m.hearts.length){ lines.push('', '❤️ You loved ' + m.hearts.length + (m.hearts.length === 1 ? ' idea' : ' ideas') + ' from the mood board' + (m.hearts.some(h => h.cap) ? ': ' + m.hearts.filter(h => h.cap).map(h => h.cap).slice(0, 6).join(', ') : '') + '.'); }
+  const sh = m.shots.filter(s => s.t);
+  if(sh.length){ lines.push('', '📸 Must-have shots'); sh.slice(0, 12).forEach(s => lines.push('- ' + s.t)); }
+  if(q.lines.length){ lines.push('', '💰 Quote: ' + RZA(t.total) + ' (' + q.lines.map(l => l.label + (l.qty > 1 ? ' x' + l.qty : '')).join(', ') + ')', 'A ' + DEPOSIT_PCT + '% deposit of ' + RZA(t.deposit) + ' secures your date.'); }
+  const ct = m.tasks.filter(x => x.t && !x.done && x.who === 'client'), mt = m.tasks.filter(x => x.t && !x.done && x.who !== 'client');
+  if(ct.length || mt.length){ lines.push('', '✅ Next steps'); mt.forEach(x => lines.push('- I will ' + x.t.charAt(0).toLowerCase() + x.t.slice(1) + (x.due ? ' by ' + shortDay(x.due) : ''))); ct.forEach(x => lines.push('- From you: ' + x.t + (x.due ? ' by ' + shortDay(x.due) : ''))); }
+  lines.push('', 'Any questions, just reply here. Chat soon!', owner + ', ' + BZ.b.name);
+  return lines.join('\n');
+}
+function waSheet(m){
+  const num = waNum(m.client.phone);
+  sheet('WhatsApp recap', `${num ? '' : `<label class="lb">Client WhatsApp number</label><input class="inp" id="waNum" inputmode="tel" placeholder="082 123 4567" style="margin-bottom:10px">`}
+    <textarea class="ta" id="waTxt" style="min-height:300px">${esc(recap(m))}</textarea>
+    <a class="btn" id="waGo" target="_blank" rel="noopener" style="width:100%;justify-content:center;margin-top:12px;background:#25D366!important;border-color:#25D366!important;color:#fff!important">Open WhatsApp</a>`, () => {
+    const upd = () => { const n = num || waNum(($('waNum') || {}).value); $('waGo').href = 'https://wa.me/' + (n || '') + '?text=' + encodeURIComponent($('waTxt').value); };
+    $('waTxt').oninput = upd; if($('waNum')) $('waNum').oninput = upd; upd();
+    $('waGo').onclick = () => { m.recapSentAt = new Date().toISOString(); if(cur && cur.id === m.id) Store.touch(); else saveM(m); };
+  });
+}
+
+/* ---------- link to an order ---------- */
+function linkSheet(m){
+  const best = suggestOrder(m);
+  const rows = ORDERS.slice().reverse();
+  sheet('Link to an order', `<input class="inp" id="lkS" placeholder="Search orders..."><div id="lkL" style="max-height:50dvh;overflow:auto;margin-top:8px"></div>${m.orderId ? '<button class="btn ghost" style="width:100%;justify-content:center;margin-top:10px" id="lkUn">Unlink</button>' : ''}`, () => {
+    const draw = () => { const q = $('lkS').value.toLowerCase();
+      $('lkL').innerHTML = rows.filter(o => !q || JSON.stringify([o.customer, o.orderId, o.product]).toLowerCase().includes(q)).sort((a, b) => (b === best) - (a === best)).map(o => `<div class="pick" data-lk="${esc(o.id)}"><div><b>${esc(o.customer || 'No name')} <span class="muted small">${esc(o.orderId || '')}</span></b><small>${esc(o.product || '')}${o.shootDate ? ' · ' + shortDay(o.shootDate) : ''}</small></div>${o === best ? '<span class="chip acc badge">Match</span>' : ''}${o.id === m.orderId ? '<span class="chip badge">Linked</span>' : ''}</div>`).join('') || '<p class="muted small" style="padding:10px">No orders.</p>'; };
+    $('lkS').oninput = draw; draw();
+    $('lkL').onclick = e => { const p = e.target.closest('[data-lk]'); if(!p) return; m.orderId = p.dataset.lk; saveM(m).then(() => { closeSheet(); toast('Linked'); renderSummary(m); }); };
+    if($('lkUn')) $('lkUn').onclick = () => { m.orderId = ''; saveM(m).then(() => { closeSheet(); renderSummary(m); }); };
+  });
+}
+
+/* ---------- push meeting details into the linked order ---------- */
+function applySheet(m){
+  const o = ORDERS.find(x => x.id === m.orderId); if(!o) return;
+  const t = quoteTotals(Object.assign({ lines:[], km:0, disc:0, discType:'R' }, m.quote || {}));
+  const sd = m.dates.find(d => /shoot|event/i.test(d.label) && d.date);
+  const pkg = (m.quote && m.quote.lines || []).find(l => l.pkg);
+  const ch = [];
+  if(sd && sd.date !== o.shootDate) ch.push({ k:'shootDate', l:'Shoot date', from:o.shootDate, to:sd.date });
+  if(sd && sd.time && sd.time !== o.shootTime) ch.push({ k:'shootTime', l:'Shoot time', from:o.shootTime, to:sd.time });
+  if(pkg && pkg.label !== o.product) ch.push({ k:'product', l:'Product', from:o.product, to:pkg.label });
+  if(t.total && t.total !== +o.total) ch.push({ k:'total', l:'Total amount', from:o.total ? RZA(o.total) : '', to:t.total, show:RZA(t.total) });
+  if(m.client.phone && !o.clientPhone) ch.push({ k:'clientPhone', l:'Client WhatsApp', from:'', to:m.client.phone });
+  if(m.client.email && !o.clientEmail) ch.push({ k:'clientEmail', l:'Client email', from:'', to:m.client.email });
+  sheet('Update order ' + (o.orderId || ''), ch.length ? `<p class="muted small" style="margin-bottom:10px">Tick what to copy from this meeting into ${esc(o.customer || 'the order')}.</p>
+    <div class="list">${ch.map((c, i) => `<label class="li" style="cursor:pointer"><input type="checkbox" class="ck" data-ap="${i}" checked><span class="grow"><b>${c.l}</b><br><small class="muted">${esc(c.from || 'empty')} &#8594; ${esc(c.show || c.to)}</small></span></label>`).join('')}</div>
+    <button class="btn" style="width:100%;justify-content:center;margin-top:12px" id="apGo">Update order</button>` : `<div class="empty">The order already matches this meeting.</div>`, () => {
+    const g = $('apGo'); if(!g) return;
+    g.onclick = () => { const f = {}; $('shB').querySelectorAll('[data-ap]').forEach(cb => { if(cb.checked){ const c = ch[+cb.dataset.ap]; f[c.k] = c.to; } });
+      if(!Object.keys(f).length){ closeSheet(); return; }
+      Store.updateOrder(o.id, f).then(() => { closeSheet(); toast('Order updated'); renderSummary(m); }).catch(err => { console.warn(err); toast('Could not update the order'); }); };
+  });
+}
+
+/* =====================================================================
+   FIREBASE
+   ===================================================================== */
+const configured = (typeof firebaseConfig !== 'undefined') && firebaseConfig && !String(firebaseConfig.apiKey || '').startsWith('PASTE');
+function loadScript(src){ return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+async function loadFirebase(){ const b = 'https://www.gstatic.com/firebasejs/10.12.0/'; await loadScript(b + 'firebase-app-compat.js'); await Promise.all([loadScript(b + 'firebase-auth-compat.js'), loadScript(b + 'firebase-firestore-compat.js')]); }
+function initCloud(){
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  try{ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); }catch(e){}
+  if(window.FOM_SESSION) FOM_SESSION.attach(auth);
+  const db = firebase.firestore(); db.settings({ experimentalAutoDetectLongPolling:true });
+  DB = db; CLOUD = true;
+  const login = () => { $('lgErr').textContent = ''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(), $('lgPass').value).catch(err => { $('lgErr').textContent = /password|user|credential|email/i.test(err.code || '') ? 'Incorrect email or password.' : (err.message || 'Login failed.'); }); };
+  $('lgBtn').onclick = login; $('lgPass').addEventListener('keydown', e => { if(e.key === 'Enter') login(); });
+  let started = false;
+  auth.onAuthStateChanged(u => {
+    $('authCheck').style.display = 'none';
+    if(!u){ $('loginGate').style.display = 'flex'; return; }
+    db.collection('admins').doc(u.uid).get().then(d => {
+      if(!d.exists){ $('lgErr').textContent = 'This account does not have admin access.'; $('loginGate').style.display = 'flex'; auth.signOut(); return; }
+      $('loginGate').style.display = 'none';
+      if(!started){ started = true; loadCloud(db); }
+    }).catch(err => { console.warn(err); $('loginGate').style.display = 'flex'; auth.signOut(); });
+  });
+}
+window.addEventListener('pagehide', () => { if(cur) Store.flush(); });
+if(!configured){ $('authCheck').style.display = 'none'; $('loginGate').style.display = 'none'; loadLocal(); }
+else loadFirebase().then(initCloud).catch(() => { $('authCheck').style.display = 'none'; toast('Could not reach the cloud. Working on this device only.'); loadLocal(); });
+</script>
+<script src="activity.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -262,7 +262,7 @@ td .pitch{border:1px solid var(--accent);background:none;color:var(--accent);bor
 td .pitch:hover{background:var(--accent);color:#fff;}
 td .deck-lnk{background:none;border:0;text-align:left;cursor:pointer;font-family:inherit;color:var(--accent);font-size:12.5px;font-weight:700;line-height:1.3;padding:4px;}
 td .deck-lnk small{display:block;color:var(--ink-soft);font-weight:500;font-size:11.5px;}
-.col-pitch{width:84px;}.col-deck{width:130px;}
+.col-pitch{width:140px;}td .pitch.meet{display:inline-block;margin-left:5px;text-decoration:none;}.col-deck{width:130px;}
 
 @media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
 @media(max-width:980px){.kpis{grid-template-columns:repeat(3,1fr);}}
@@ -604,7 +604,7 @@ function renderLeads(){
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="col-id"><input data-i="${i}" data-f="leadId" value="${esc(o.leadId)}"></td>
-            <td class="col-pitch"><button class="pitch" type="button" data-pitch="${i}" title="Fill the email and deck for this lead">Pitch</button></td>
+            <td class="col-pitch"><button class="pitch" type="button" data-pitch="${i}" title="Fill the email and deck for this lead">Pitch</button><a class="pitch meet" href="meetings.html?new=lead:${encodeURIComponent(o.id)}" title="Start a client meeting with this lead (mood board, notes, quote)">Meet</a></td>
             <td><input data-i="${i}" data-f="company" value="${esc(o.company)}" placeholder="Company / organisation"></td>
             <td><input data-i="${i}" data-f="contact" value="${esc(o.contact)}" placeholder="Contact name"></td>
             <td><input data-i="${i}" data-f="email" type="email" value="${esc(o.email)}" placeholder="email@example.com"></td>

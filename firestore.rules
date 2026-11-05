@@ -83,6 +83,9 @@ service cloud.firestore {
     match /contentPlanner/{id} {
       allow read, write: if isAdmin();
     }
+    match /meetings/{id} {               // client meetings: notes, mood board picks, quote (meetings.html)
+      allow read, write: if isAdmin();
+    }
 
     // ---- chat: one conversation per booking (doc id = the order's id).
     //      The chat doc only holds the latest-message summary and who has read it.

@@ -43,6 +43,7 @@ var PAGES = [
   // {n:'Messages',        h:'messages.html',  e:'💬'},   // client messages switched off for now
   {n:'Project Workflow',h:'workflow.html',  e:'✅'},
   {n:'Leads & Outreach',h:'leads.html',     e:'📣'},
+  {n:'Client Meetings', h:'meetings.html',  e:'🤝'},
   {n:'Content Planner', h:'content.html',   e:'🎬'},
   {n:'Price Calculator',h:'calculator.html',e:'🧮'},
   {n:'Email',           h:'email.html',     e:'✉️'},
