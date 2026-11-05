@@ -358,6 +358,12 @@ function render(){
   }).join('');
 }
 
+// Shot by A's website reads its featured reviews from one public doc
+async function publishSba(skipId){
+  const list=reviews.filter(x=>x.featured && x.id!==skipId).slice(0,MAX_FEATURED)
+    .map(x=>({name:x.name||'Anonymous',rating:+x.rating||5,message:(x.message||'').trim()}));
+  await db.collection('siteContent').doc('testimonials_sba').set({json:JSON.stringify(list),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+}
 $('rvList').addEventListener('click', async e=>{
   const btn=e.target.closest('[data-act]'); if(!btn||!db) return;
   const card=btn.closest('.rv-card'), r=reviews.find(x=>x.id===card.dataset.id); if(!r) return;
@@ -367,7 +373,15 @@ $('rvList').addEventListener('click', async e=>{
     try{ await navigator.clipboard.writeText(txt); toast('Testimonial copied'); }
     catch(_){ prompt('Copy this testimonial:', txt); }
   } else if(act==='feat' && FOM_BIZ.isSba){
-    toast('Featuring puts a review on a website. Shot by A has no website yet, so use Copy for now.');
+    // Shot by A: featured reviews go to siteContent/testimonials_sba (public read), which her website reads.
+    // Only name, rating and message are copied, so nothing private becomes public.
+    const turningOn=!r.featured;
+    if(turningOn && reviews.filter(x=>x.featured).length>=MAX_FEATURED){ toast('Only '+MAX_FEATURED+' can be featured. Remove one first.'); return; }
+    try{
+      await db.collection('feedback').doc(r.id).update({featured:turningOn});
+      r.featured=turningOn; await publishSba();
+      toast(turningOn?'Now showing on her website':'Removed from her website');
+    }catch(err){ console.warn(err); toast('Could not save - check the siteContent rule'); }
   } else if(act==='feat'){
     // Featured reviews are copied to the public "testimonials" collection that the website reads.
     // Only name, rating and message are copied, so nothing private ever becomes public.
@@ -387,8 +401,10 @@ $('rvList').addEventListener('click', async e=>{
     try{
       const batch=db.batch();
       batch.delete(db.collection('feedback').doc(r.id));
-      if(r.featured) batch.delete(db.collection('testimonials').doc(r.id));
-      await batch.commit(); toast('Review deleted');
+      if(r.featured && !FOM_BIZ.isSba) batch.delete(db.collection('testimonials').doc(r.id));
+      await batch.commit();
+      if(r.featured && FOM_BIZ.isSba){ r.featured=false; await publishSba(r.id); }
+      toast('Review deleted');
     }catch(err){ console.warn(err); toast('Could not delete - check connection'); }
   }
 });

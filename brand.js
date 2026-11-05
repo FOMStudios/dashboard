@@ -26,9 +26,9 @@ var DEF = {
     logo:'assets/mascot.png', logoAbs:'https://www.fomstudios.co.za/assets/mascot.png', icon:'assets/mascot.png',
     accent:'#02367B', accent2:'#5B9AE0', galleryPrefix:'' },
   sba: { id:'sba', name:'Shot by A', upper:'SHOT BY A', legal:'Shot by A Photography', tagline:'PHOTOGRAPHY',
-    owner:'Amarah Rangraze', email:'amarah.rangraze@gmail.com', phone:'084 445 6657', site:'instagram.com/shotbya_photography',
-    siteUrl:'https://instagram.com/shotbya_photography', instagram:'shotbya_photography', role:'Photographer',
-    portal:'https://www.fomstudios.co.za/shotbya/', clientQS:'b=sba',
+    owner:'Amarah Rangraze', email:'amarah.rangraze@gmail.com', phone:'084 445 6657', site:'www.fomstudios.co.za/shotbya',
+    siteUrl:'https://www.fomstudios.co.za/shotbya/', instagram:'shotbya_photography', role:'Photographer',
+    portal:'https://www.fomstudios.co.za/shotbya/portal/', clientQS:'b=sba',
     logo:'assets/shotbya-logo.png', logoAbs:'https://www.fomstudios.co.za/shotbya/logo.png', icon:'assets/shotbya-icon.png',
     accent:'#780000', accent2:'#C1121F', galleryPrefix:'shotbya/' }
 };

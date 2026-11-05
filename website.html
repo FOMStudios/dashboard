@@ -230,6 +230,11 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .ws-f input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);}
 .ws-f input:focus{outline:2px solid var(--accent);outline-offset:1px;}
 .ws-f input.bad{border-color:#c0392b;}
+.ws-f textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);min-height:96px;resize:vertical;line-height:1.5;}
+.ws-f textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.sv-row{border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;}
+.sv-row .ws-toggle{margin-bottom:10px;}
+.sv-row .ws-grid{gap:10px;}
 .ws-toggle{display:flex;align-items:center;gap:12px;margin-bottom:14px;cursor:pointer;font-size:14px;}
 .ws-toggle input{position:absolute;opacity:0;pointer-events:none;}
 .ws-toggle .sw{width:46px;height:26px;border-radius:99px;background:var(--line);position:relative;transition:.2s;flex:none;}
@@ -360,6 +365,24 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
         </div>
     </section>
 
+    <section class="ws-card" id="sbaTextCard" style="display:none;">
+        <h2>Page text</h2>
+        <p class="ws-help">The words on Shot by A's homepage. Leave a box empty to keep the wording already on the site. Headings show in her script font, so keep them short.</p>
+        <div class="ws-grid">
+            <div class="ws-f ws-wide"><label for="tHero">Homepage heading</label><input id="tHero" maxlength="60" placeholder="Moments, beautifully kept"></div>
+            <div class="ws-f ws-wide"><label for="tHeroSub">Line under the heading</label><textarea id="tHeroSub" maxlength="260" placeholder="Warm, natural photography for the people and occasions that matter..."></textarea></div>
+            <div class="ws-f ws-wide"><label for="tAbout">About heading</label><input id="tAbout" maxlength="40" placeholder="Hi, I'm Amarah"></div>
+            <div class="ws-f ws-wide"><label for="tAboutText">About text</label><textarea id="tAboutText" maxlength="900" placeholder="A few lines about Amarah and how she works. Press Enter for a new paragraph."></textarea></div>
+            <div class="ws-f ws-wide"><label for="tAboutPhoto">About photo</label><select id="tAboutPhoto" style="width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);"><option value="">Automatic (a family photo)</option></select></div>
+        </div>
+    </section>
+
+    <section class="ws-card" id="sbaSvcCard" style="display:none;">
+        <h2>What I shoot</h2>
+        <p class="ws-help">The four service cards on her homepage. Each one shows a photo from the matching category on the Photos page and links to it in the gallery. Switch one off to hide it.</p>
+        <div id="svList"></div>
+    </section>
+
     <section class="ws-card">
         <h2>Location and hours</h2>
         <p class="ws-help">Shown in the footer on every page and on the contact page.</p>
@@ -391,12 +414,33 @@ function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('sho
 const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 
 let db=null, saved={}, dirty=false, loaded=false;
+const SBA = !!(window.FOM_BIZ && FOM_BIZ.isSba);
+const DOC = SBA ? 'site_sba' : 'site';   // Shot by A's website (fomstudios.co.za/shotbya) reads siteContent/site_sba
+const SVC = [['events','Events'],['birthdays','Birthdays'],['corporate','Corporate & wellness'],['family','Family portraits']];
+const TX = {heroTitle:'tHero',heroSub:'tHeroSub',aboutTitle:'tAbout',aboutText:'tAboutText',aboutPhoto:'tAboutPhoto'};
+function drawSvc(list){
+  const by={}; (Array.isArray(list)?list:[]).forEach(x=>{ if(x&&x.key) by[x.key]=x; });
+  $('svList').innerHTML=SVC.map(([k,n])=>{ const o=by[k]||{}; return '<div class="sv-row" data-sv="'+k+'"><label class="ws-toggle"><input type="checkbox" data-k="on"'+(o.off?'':' checked')+'><span class="sw"></span><b>'+esc(n)+'</b></label><div class="ws-grid"><div class="ws-f ws-wide"><label>Title</label><input data-k="title" maxlength="30" placeholder="'+esc(n)+'" value="'+esc(o.title||'')+'"></div><div class="ws-f ws-wide"><label>Short description</label><textarea data-k="text" maxlength="160" style="min-height:70px" placeholder="Leave empty to keep the wording on the site">'+esc(o.text||'')+'</textarea></div></div></div>'; }).join('');
+}
+function readSvc(){
+  return [].map.call($('svList').querySelectorAll('.sv-row'),r=>{ const o={key:r.dataset.sv}; const t=r.querySelector('[data-k=title]').value.trim(), x=r.querySelector('[data-k=text]').value.trim(); if(t) o.title=t; if(x) o.text=x; if(!r.querySelector('[data-k=on]').checked) o.off=true; return o; });
+}
+function normSvc(a){ const by={}; (Array.isArray(a)?a:[]).forEach(x=>{ if(x&&x.key) by[x.key]=x; }); return SVC.map(([k])=>{ const x=by[k]||{}, o={key:k}; if(String(x.title||'').trim()) o.title=String(x.title).trim(); if(String(x.text||'').trim()) o.text=String(x.text).trim(); if(x.off) o.off=true; return o; }); }
+function normText(t){ const o={}; t=t||{}; Object.keys(TX).forEach(k=>{ const v=String(t[k]||'').trim(); if(v) o[k]=v; }); return o; }
+// About photo picker: her Photos page list (siteContent/portfolio_sba)
+function fillPhotoPick(arr){
+  const sel=$('tAboutPhoto'), cur=sel.value;
+  const list=(Array.isArray(arr)?arr:[]).filter(p=>p&&p.src&&!p.hide);
+  sel.innerHTML='<option value="">Automatic (a family photo)</option>'+list.map(p=>'<option value="'+esc(p.id)+'">'+esc((p.cap||'Untitled')+' ('+(p.cat||'other')+')')+'</option>').join('');
+  sel.value=cur;
+}
 const F={phone:'fPhone',whatsapp:'fWa',email:'fEmail',instagram:'fIg',whatsappChannel:'fWac',facebook:'fFb',tiktok:'fTt',youtube:'fYt',area:'fArea',serviceArea:'fCover',hours:'fHours'};
 
 function readForm(){
   const d={}; Object.keys(F).forEach(k=>{ const v=$(F[k]).value.trim(); if(v) d[k]=v; });
   d.banner={on:$('bOn').checked,text:$('bText').value.trim(),link:$('bLink').value.trim(),linkLabel:$('bLabel').value.trim()};
   d.blockedDates=readBD();
+  if(SBA){ const t={}; Object.keys(TX).forEach(k=>{ const v=$(TX[k]).value.trim(); if(v) t[k]=v; }); d.text=t; d.services=readSvc(); }
   return d;
 }
 /* ---- blocked dates ---- */
@@ -426,12 +470,14 @@ function readSaved(d){
   const o={}; Object.keys(F).forEach(k=>{ const v=String((d&&d[k])||'').trim(); if(v) o[k]=v; });
   const b=(d&&d.banner)||{}; o.banner={on:!!b.on,text:String(b.text||'').trim(),link:String(b.link||'').trim(),linkLabel:String(b.linkLabel||'').trim()};
   o.blockedDates=normBD(d&&d.blockedDates);
+  if(SBA){ o.text=normText(d&&d.text); o.services=normSvc(d&&d.services); }
   return o;
 }
 function fillForm(d){
   d=d||{}; Object.keys(F).forEach(k=>{ $(F[k]).value=d[k]||''; });
   const b=d.banner||{}; $('bOn').checked=!!b.on; $('bText').value=b.text||''; $('bLink').value=b.link||''; $('bLabel').value=b.linkLabel||'';
   drawBD(normBD(d.blockedDates));
+  if(SBA){ const t=d.text||{}; Object.keys(TX).forEach(k=>{ $(TX[k]).value=t[k]||''; }); drawSvc(d.services); }
   preview();
 }
 function preview(){
@@ -468,7 +514,7 @@ $('wsSave').onclick=async()=>{
   if(!validate(d)){ toast('Please fix the highlighted fields'); return; }
   $('wsSave').disabled=true; $('wsSave').textContent='Publishing...';
   try{
-    await db.collection('siteContent').doc('site').set(Object.assign({},d,{updatedAt:firebase.firestore.FieldValue.serverTimestamp()}));
+    await db.collection('siteContent').doc(DOC).set(Object.assign({},d,{updatedAt:firebase.firestore.FieldValue.serverTimestamp()}));
     toast('Published. Your website is updated.');
   }catch(err){ console.warn(err); toast('Could not publish. Check the Firestore rules (siteContent).'); }
   $('wsSave').textContent='Publish'; setState();
@@ -496,7 +542,8 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
     db=firebase.firestore();
 
     const start=()=>{
-      db.collection('siteContent').doc('site').onSnapshot(snap=>{
+      if(SBA) db.collection('siteContent').doc('portfolio_sba').get().then(sn=>{ let a=[]; try{ a=JSON.parse((sn.exists&&sn.data().json)||'[]'); }catch(e){} fillPhotoPick(a); if(!dirty&&saved.text&&saved.text.aboutPhoto) $('tAboutPhoto').value=saved.text.aboutPhoto; setState(); }).catch(()=>{});
+      db.collection('siteContent').doc(DOC).onSnapshot(snap=>{
         const d=snap.exists?snap.data():{};
         let txt=''; try{ if(d.updatedAt&&d.updatedAt.toDate) txt=d.updatedAt.toDate().toLocaleString('en-ZA',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }catch(e){}
         const clean=Object.assign({},d); delete clean.updatedAt;
@@ -532,15 +579,16 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
 <script src="activity.js"></script>
 <script src="app.js"></script>
 <script>
-/* this page edits fomstudios.co.za only; Shot by A has no website yet */
+/* Shot by A mode: this page edits her website at fomstudios.co.za/shotbya (siteContent/site_sba) */
 if(window.FOM_BIZ && FOM_BIZ.isSba){
-  var pg = document.querySelector('.page') || document.body;
-  var n = document.createElement('div'); n.setAttribute('data-norebrand','');
-  n.style.cssText = 'background:var(--bg-pill);border:1px solid var(--line);border-radius:20px;padding:22px;margin:0 0 20px;';
-  n.innerHTML = '<b style="font-size:17px">Shot by A has no website yet</b><p style="color:var(--ink-soft);margin:6px 0 14px;font-size:14px">This page edits fomstudios.co.za. When Shot by A gets her own domain we can build her site and this page will edit it. For now, switch to FOM Studios to change the FOM website.</p><button class="btn" type="button" id="wsSwitch">Switch to FOM Studios</button>';
-  pg.insertBefore(n, pg.firstChild);
-  document.getElementById('wsSwitch').onclick = function(){ FOM_BIZ.setBiz('fom'); };
-  var sv = document.getElementById('wsSave'); if(sv){ sv.disabled = true; sv.title = 'Switch to FOM Studios to publish'; }
+  var hp = document.querySelector('.page-head p');
+  if(hp) hp.innerHTML = 'Change Shot by A\'s contact details, socials, page text, services and banner here. Press <b>Publish</b> and fomstudios.co.za/shotbya updates within seconds. Her photos come from the Photos page, and featured reviews from the Reviews page.';
+  var lv = document.querySelector('.ws-bar a[href*="fomstudios"]'); if(lv) lv.href = 'https://www.fomstudios.co.za/shotbya/';
+  var sh = document.getElementById('fIg'); sh = sh && sh.closest('.ws-card') && sh.closest('.ws-card').querySelector('.ws-help'); if(sh) sh.textContent = 'Instagram updates every Instagram link on her site. Facebook and TikTok show in her footer once filled in.';
+  ['sbaTextCard','sbaSvcCard'].forEach(function(id){ var c = document.getElementById(id); if(c) c.style.display = ''; });
+  ['fWac','fYt'].forEach(function(id){ var f = document.getElementById(id); if(f && f.closest('.ws-f')) f.closest('.ws-f').style.display = 'none'; });
+  var ph = { fPhone:'084 445 6657', fEmail:'amarah.rangraze@gmail.com', fIg:'@shotbya_photography or full link', bLink:'contact.html or https://...' };
+  Object.keys(ph).forEach(function(id){ var f = document.getElementById(id); if(f) f.placeholder = ph[id]; });
 }
 </script>
 </body>

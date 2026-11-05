@@ -237,7 +237,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
                 <span class="eyebrow">Website</span>
                 <h1>Photos</h1>
                 <p>Upload, order and caption the photos on your website</p>
-                <script>if(window.FOM_BIZ&&FOM_BIZ.isSba)document.currentScript.previousElementSibling.textContent='Shot by A portfolio photos, used in her pitch deck (and her website once she has one)';</script>
+                <script>if(window.FOM_BIZ&&FOM_BIZ.isSba)document.currentScript.previousElementSibling.textContent='Shot by A photos for her website (fomstudios.co.za/shotbya) and her pitch deck';</script>
             </div>
         </div>
         <div class="head-actions">
@@ -279,7 +279,8 @@ const PHOTO_DOC = FOM_BIZ.isSba ? 'portfolio_sba' : 'portfolio';
 const DEFAULTS = FOM_BIZ.isSba ? [] : (window.FOM_PHOTO_DEFAULTS || []);
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-const CATS = { sports:'Sports', automotive:'Automotive', other:'Other' };
+// Shot by A's categories match the filters on her website gallery (fomstudios.co.za/shotbya/gallery.html)
+const CATS = FOM_BIZ.isSba ? { events:'Events', birthdays:'Birthdays', corporate:'Corporate & wellness', family:'Family & portraits', other:'Other' } : { sports:'Sports', automotive:'Automotive', other:'Other' };
 const SIZES = { square:'Square', wide:'Wide', tall:'Tall', big:'Big' };
 const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
 function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
@@ -298,10 +299,10 @@ const dirty = () => JSON.stringify(photos) !== savedJson;
 function msg(t, bad){ const m = $('phMsg'); m.textContent = t || ''; m.className = 'ph-msg' + (t ? ' show' : '') + (bad ? ' bad' : ''); }
 function render(){
   const list = photos.filter(p => filter === 'all' || (filter === 'hidden' ? p.hide : filter === 'home' ? p.home && !p.hide : p.cat === filter));
-  $('phChips').innerHTML = [['all','All'],['sports','Sports'],['automotive','Automotive'],['other','Other'],['home','Homepage'],['hidden','Hidden']]
+  $('phChips').innerHTML = [['all','All']].concat(Object.keys(CATS).map(k=>[k,CATS[k]]),[['home','Homepage'],['hidden','Hidden']])
     .map(c => `<button data-f="${c[0]}" class="${filter===c[0]?'on':''}">${c[1]}</button>`).join('');
   $('phCount').textContent = `${photos.length} photos, ${photos.filter(p=>p.hide).length} hidden, ${photos.filter(p=>p.home&&!p.hide).length} on the homepage`
-    + (FOM_BIZ.isSba ? '. Shot by A has no website yet: these photos feed her pitch deck now, and her website later.' : (usingDefaults ? '. Showing the photos built into your site. Save once to take control from here.' : ''));
+    + (FOM_BIZ.isSba ? '. These photos show on fomstudios.co.za/shotbya and in her pitch deck. Homepage picks fill her hero prints and Recent work strip; each category fills a service card.' : (usingDefaults ? '. Showing the photos built into your site. Save once to take control from here.' : ''));
   $('phGrid').innerHTML = list.map(p => `<div class="ph-card${p.hide?' hid':''}" data-id="${esc(p.id)}">
     <div class="ph-img" draggable="true" title="Drag to reorder"><img loading="lazy" src="${esc(url(p))}" alt="">
       <div class="ph-tags">${isR2(p)?'<span class="ph-tag u">Uploaded</span>':''}${p.home&&!p.hide?'<span class="ph-tag h">Home</span>':''}</div></div>
