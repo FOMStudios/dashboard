@@ -1025,7 +1025,7 @@ function openWa(o){
   const T=waTemplates(o), sug=waSuggest(o), num=waNum(o.clientPhone);
   document.getElementById('waTitle').textContent='Message '+(o.customer||'client');
   document.getElementById('waSub').textContent=num?('+'+num.replace(/^27(\d{2})(\d{3})(\d{4})$/,'27 $1 $2 $3')):'No WhatsApp number saved yet';
-  document.getElementById('waNote').textContent=num?'Opens your chat with this client. Check the message, then press send in WhatsApp.':'Add their number in the Client WhatsApp column, or WhatsApp will ask you to pick the contact.';
+  document.getElementById('waNote').textContent=num?'Opens your chat with this client. Check the message, then press send in WhatsApp.':'Add their number under Client in their details (tap their row), or WhatsApp will ask you to pick the contact.';
   const chips=document.getElementById('waChips');
   chips.innerHTML=T.map(x=>`<button type="button" class="wa-chip" data-k="${x.k}">${esc(x.t)}${x.k===sug?'<span class="sg">Suggested</span>':''}</button>`).join('');
   const pick=k=>{ waKey=k; const x=T.find(y=>y.k===k)||T[0]; document.getElementById('waText').value=x.m; chips.querySelectorAll('.wa-chip').forEach(b=>b.classList.toggle('on',b.dataset.k===k)); waLink(); };
