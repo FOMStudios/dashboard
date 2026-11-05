@@ -207,7 +207,7 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
 .pk-row{margin-top:14px;display:flex;gap:8px;}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
-<script src="brand.js"></script>
+<script src="brand.js?v=2"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -793,7 +793,7 @@ async function loadAdvisor(db){
 fetch('trends.json?d=' + OUT.iso(new Date()), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(j => { TRENDS = j || { items:[] }; renderAdvisor(); }).catch(() => { TRENDS = { items:[] }; renderAdvisor(); });
 renderAdvisor();
 </script>
-<script src="activity.js"></script>
-<script src="app.js"></script>
+<script src="activity.js?v=2"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

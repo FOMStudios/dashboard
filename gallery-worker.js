@@ -319,7 +319,7 @@ async function handleEvent(request, env, ctx) {
   const log = await R2J(env, '_events/log.json', []);
   log.unshift(ev); await R2P(env, '_events/log.json', log.slice(0, 400));
   const label = biz === 'sba' ? 'Shot by A: ' : '';
-  const msg = { title: label + def.title, body: def.body(name, detail), url: def.url || 'dashboard.html#activity', tag: 'fom-' + type + '-' + (o || name) };
+  const msg = { title: label + def.title, body: def.body(name, detail), url: def.url ? def.url + '?biz=' + biz : 'dashboard.html#activity', tag: 'fom-' + type + '-' + (o || name) };
   if (ctx && ctx.waitUntil) ctx.waitUntil(pushAll(env, msg)); else await pushAll(env, msg);
   return json({ ok: true });
 }

@@ -246,7 +246,7 @@ body.cv .fom-nav,body.cv .fom-sheet,body.cv .fom-scrim{display:none!important;}
 }
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
-<script src="brand.js"></script>
+<script src="brand.js?v=2"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -1559,7 +1559,7 @@ window.addEventListener('pagehide', () => { if(cur) Store.flush(); });
 if(!configured){ $('authCheck').style.display = 'none'; $('loginGate').style.display = 'none'; loadLocal(); }
 else loadFirebase().then(initCloud).catch(() => { $('authCheck').style.display = 'none'; toast('Could not reach the cloud. Working on this device only.'); loadLocal(); });
 </script>
-<script src="activity.js"></script>
-<script src="app.js"></script>
+<script src="activity.js?v=2"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

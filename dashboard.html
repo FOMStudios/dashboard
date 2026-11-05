@@ -168,9 +168,12 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .sd-item{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px;font-weight:600;cursor:pointer;}
 .sd-item:first-of-type{border-top:0;} .sd-item input{width:20px;height:20px;accent-color:var(--accent);flex:none;} .sd-item.done span{color:var(--ink-soft);text-decoration:line-through;}
 .sd-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 9px;background:#e0a100;color:#fff;margin-left:8px;vertical-align:middle;}
+.act-link{text-decoration:none;color:inherit;border-radius:12px;} .act-link:hover{background:var(--bg);} .act-go{color:var(--accent);font-weight:700;}
+.act-bk{margin-left:auto;margin-right:10px;font-size:12.5px;font-weight:800;color:var(--accent);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:5px 12px;white-space:nowrap;}
+.biz-tag{margin-right:6px;}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
-<script src="brand.js"></script>
+<script src="brand.js?v=2"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -350,9 +353,11 @@ function cardActivity(){
   const st = A.state, ev = (st.events || []);
   if(!st.ready && !st.error) return '';
   const rows = ev.slice(0, ACT_MORE ? 25 : 5).map(e => { const l = A.line(e);
-    return `<div class="act-row"><span class="act-ic">${l.icon}</span><span class="act-t"><b>${esc(l.name)}</b> ${esc(l.what)}${l.detail ? `<small>${esc(l.detail)}</small>` : ''}</span><span class="act-w" data-norebrand>${l.biz === 'sba' ? '<span class="biz-tag sba">Shot by A</span>' : ''}${esc(l.when)}</span></div>`; }).join('');
+    const tag = `<span class="biz-tag ${l.biz === 'sba' ? 'sba' : 'fom'}">${l.biz === 'sba' ? 'Shot by A' : 'FOM'}</span>`;
+    const inner = `<span class="act-ic">${l.icon}</span><span class="act-t"><b>${esc(l.name)}</b> ${esc(l.what)}${l.detail ? `<small>${esc(l.detail)}</small>` : ''}${l.t === 'meeting' ? '<small class="act-go">Tap to confirm, move or decline &#8594;</small>' : ''}</span><span class="act-w" data-norebrand>${tag}${esc(l.when)}</span>`;
+    return l.t === 'meeting' ? `<a class="act-row act-link" href="bookings.html?biz=${l.biz === 'sba' ? 'sba' : 'fom'}">${inner}</a>` : `<div class="act-row">${inner}</div>`; }).join('');
   const s = A.support(), on = s.on && s.permission === 'granted';
-  return `<div class="card" id="activity" style="margin-bottom:20px"><div class="ns-head"><h2>Client activity</h2>${on ? '<span class="act-on">&#128276; On</span>' : '<button class="ns-go" type="button" id="actPush">Turn on notifications</button>'}</div>
+  return `<div class="card" id="activity" style="margin-bottom:20px"><div class="ns-head"><h2>Client activity</h2><a class="act-bk" href="bookings.html">&#128197; Bookings</a>${on ? '<span class="act-on">&#128276; On</span>' : '<button class="ns-go" type="button" id="actPush">Turn on notifications</button>'}</div>
     ${st.error ? `<div class="ns-meta">Could not load activity: ${esc(st.error)}. Paste the latest gallery-worker.js into Cloudflare.</div>` : (rows || '<div class="ns-t" style="padding:8px 0;color:var(--ink-soft)">Nothing yet. When a client signs, opens their gallery, downloads, picks favourites, reviews or pays, it shows here.</div>')}
     ${st.ticked ? `<div class="ns-meta">${st.ticked} Workflow step${st.ticked === 1 ? '' : 's'} ticked from client activity.</div>` : ''}
     ${ev.length > 5 ? `<button class="act-more" type="button" id="actMore">${ACT_MORE ? 'Show less' : 'Show more (' + Math.min(ev.length, 25) + ')'}</button>` : ''}</div>`;
@@ -560,7 +565,7 @@ if(!configured){
   loadFirebase().then(initCloud).catch(showConnError);
 }
 </script>
-<script src="activity.js"></script>
-<script src="app.js"></script>
+<script src="activity.js?v=2"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

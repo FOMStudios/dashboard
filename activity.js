@@ -11,7 +11,7 @@
 var WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
 var LS = window.localStorage, D = document;
 var STEP = { paid:'s3', portal:'s9', download:'s13', signed:'s14' };   // event -> Workflow step
-var TXT = { signed:'signed the contract', portal:'signed in to the portal', gallery:'opened their gallery', download:'downloaded', favs:'picked favourites', review:'left a review', paid:'paid by card', meeting:'asked to meet' };
+var TXT = { signed:'signed the contract', portal:'signed in to the portal', gallery:'opened their gallery', download:'downloaded', favs:'picked favourites', review:'left a review', paid:'paid by card', meeting:'booked a meeting on the website' };
 var ICON = { signed:'✍️', portal:'🔑', gallery:'🖼️', download:'⬇️', favs:'♥', review:'⭐', paid:'💳', meeting:'📅' };
 var state = { events:[], devices:[], orders:[], ready:false, error:'' }, subs = [];
 function get(k, d){ try{ var v = LS.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } }

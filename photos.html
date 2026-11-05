@@ -173,7 +173,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 @media(max-width:520px){.ph-grid{grid-template-columns:repeat(2,1fr);gap:10px;}}
 </style>
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
-<script src="brand.js"></script>
+<script src="brand.js?v=2"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 </head>
@@ -447,7 +447,7 @@ function initCloud(){
 if(!configured){ $('loginGate').style.display='none'; var ac0=document.getElementById('authCheck'); if(ac0)ac0.style.display='none'; msg('Photos need your cloud login. Connect Firebase first.', true); }
 else loadFirebase().then(initCloud).catch(()=>{ msg('Could not reach the cloud. Check your connection and refresh.', true); var a=document.getElementById('authCheck'); if(a)a.style.display='none'; });
 </script>
-<script src="activity.js"></script>
-<script src="app.js"></script>
+<script src="activity.js?v=2"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

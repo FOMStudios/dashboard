@@ -37,6 +37,8 @@ var EDITABLE = ['name','owner','email','phone','site','instagram','role'];
 function readJSON(k){ try{ return JSON.parse(ls.getItem(k)) || null; }catch(e){ return null; } }
 var cur = 'fom';
 try{ cur = ls.getItem(KEY) === 'sba' ? 'sba' : 'fom'; }catch(e){}
+// a link can open the dashboard in a business: page.html?biz=sba (booking notifications, activity rows)
+try{ var qb = new URLSearchParams(location.search).get('biz'); if(qb === 'sba' || qb === 'fom'){ cur = qb; ls.setItem(KEY, qb); } }catch(e){}
 
 /* business details you can edit in Settings (cached; synced to settings/brand and settings/brand_sba) */
 function brandOf(id){
