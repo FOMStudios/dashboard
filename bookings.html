@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f1f0ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FOM">
+<link rel="manifest" href="manifest.webmanifest">
+<title>FOM Studios | Bookings</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/fom-icon-180.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1000px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* pill header + hamburger */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:1320px;margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:22px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.nav-cta{border:1px solid var(--ink);border-radius:var(--radius-pill);padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;background:none;}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:12px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--accent-hover);}
+.btn.block{width:100%;padding:13px;}
+
+/* page */
+.page{padding-top:108px;}
+.page-head{margin-bottom:24px;}
+.page-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.page-head p{color:var(--ink-soft);font-size:14px;margin-top:4px;max-width:60ch;}
+
+/* filter chips */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.filter-chip{
+    border:1px solid var(--line);background:var(--bg-pill);
+    border-radius:var(--radius-pill);padding:8px 16px;
+    font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.2s;
+}
+.filter-chip:hover{border-color:var(--ink);color:var(--ink);}
+.filter-chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg-pill);}
+
+/* empty state */
+.empty-state{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:48px 28px;text-align:center;}
+.empty-state h3{font-size:19px;font-weight:800;margin-bottom:6px;}
+.empty-state p{color:var(--ink-soft);max-width:40ch;margin:0 auto;font-size:14px;}
+
+/* ============================================================
+   PROJECT CARD - one per order, expandable checklist inside
+   ============================================================ */
+.project-list{display:flex;flex-direction:column;gap:16px;}
+
+.project-card{
+    background:var(--bg-pill);border:1px solid var(--line);
+    border-radius:var(--radius-card);overflow:hidden;
+}
+.project-card.complete{border-color:#b7d8c0;}
+
+.project-header{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:14px;padding:18px 22px;cursor:pointer;user-select:none;flex-wrap:wrap;
+}
+.project-header:hover{background:#f5f4f0;}
+.ph-left{min-width:0;}
+.ph-id{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;}
+.ph-title{font-size:17px;font-weight:800;letter-spacing:-.01em;margin-top:2px;}
+.ph-sub{font-size:13px;color:var(--ink-soft);margin-top:1px;}
+.ph-right{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+
+/* progress ring-style pill */
+.progress-pill{
+    display:flex;align-items:center;gap:8px;
+    background:var(--bg);border:1px solid var(--line);
+    border-radius:var(--radius-pill);padding:6px 14px;
+}
+.progress-pill .p-count{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;}
+.progress-track{width:70px;height:6px;background:var(--line);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .3s ease;}
+.project-card.complete .progress-fill{background:#27ae60;}
+.project-card.complete .progress-pill{border-color:#b7d8c0;background:#eef7f0;}
+
+.chevron{color:var(--ink-soft);font-size:13px;transition:transform .3s;}
+.project-card.open .chevron{transform:rotate(180deg);}
+
+/* checklist body */
+.project-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease;}
+.project-card.open .project-body{grid-template-rows:1fr;}
+.project-body-inner{overflow:hidden;min-height:0;}
+.checklist{padding:4px 22px 22px;border-top:1px solid var(--line);}
+
+.check-step{
+    display:flex;align-items:flex-start;gap:14px;
+    padding:13px 4px;border-bottom:1px solid #eceae4;
+    cursor:pointer;transition:background .15s;
+}
+.check-step:last-child{border-bottom:none;}
+.check-step:hover{background:#f5f4f0;}
+
+.check-box{
+    width:22px;height:22px;flex-shrink:0;margin-top:1px;
+    border:2px solid var(--line);border-radius:7px;
+    display:flex;align-items:center;justify-content:center;
+    transition:.2s;background:#fff;
+}
+.check-step.done .check-box{background:var(--accent);border-color:var(--accent);}
+.check-box svg{width:13px;height:13px;stroke:#fff;stroke-width:3;fill:none;opacity:0;transition:opacity .15s;}
+.check-step.done .check-box svg{opacity:1;}
+
+.check-text{min-width:0;}
+.check-title{font-size:14px;font-weight:600;color:var(--ink);}
+.check-step.done .check-title{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:#b9b8b5;}
+.check-note{font-size:12.5px;color:var(--ink-soft);margin-top:2px;line-height:1.55;}
+.check-step.done .check-note{opacity:.6;}
+.check-who{
+    display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;
+    text-transform:uppercase;border-radius:var(--radius-pill);
+    padding:2px 9px;margin-left:8px;vertical-align:1px;
+}
+.check-who.me{background:#e7f0ff;color:var(--accent);}
+.check-who.client{background:#efece5;color:var(--ink-soft);}
+.check-who.auto-badge{background:#e3f5ea;color:#1f8a4c;}
+.check-step.auto{cursor:default;}
+.check-step.auto .check-box{cursor:default;}
+
+/* quick links row inside checklist */
+.quick-links{display:flex;gap:8px;flex-wrap:wrap;padding:16px 4px 2px;}
+.quick-link{
+    display:inline-flex;align-items:center;gap:6px;
+    border:1px solid var(--line);border-radius:var(--radius-pill);
+    padding:7px 14px;font-size:12px;font-weight:600;color:var(--ink);
+    background:var(--bg-pill);transition:.2s;
+}
+.quick-link:hover{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-dark);color:#fff;padding:12px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000;}
+.toast.show{opacity:1;}
+
+@media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
+@media(max-width:560px){
+    .project-header{padding:15px 16px;}
+    .checklist{padding:2px 14px 18px;}
+    .ph-right{width:100%;justify-content:space-between;}
+}
+
+/* ---- reviews ---- */
+.rv-summary{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:22px;align-items:center;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:22px 24px;margin-bottom:18px;}
+.rv-avg{text-align:center;}
+.rv-avg .num{font-size:52px;font-weight:800;letter-spacing:-.02em;line-height:1;}
+.rv-avg .st{color:#e0a93b;font-size:20px;letter-spacing:2px;margin-top:6px;}
+.rv-avg .ct{color:var(--ink-soft);font-size:13px;margin-top:4px;}
+.rv-bars{display:flex;flex-direction:column;gap:7px;min-width:0;}
+.rv-bar{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-soft);}
+.rv-bar b{width:34px;color:var(--ink);font-weight:700;}
+.rv-bar .tr{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden;min-width:0;}
+.rv-bar .tr i{display:block;height:100%;background:#e0a93b;border-radius:99px;}
+.rv-bar span{width:24px;text-align:right;}
+.rv-list{display:flex;flex-direction:column;gap:12px;}
+.rv-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:18px 20px;}
+.rv-card.feat{border-color:#e0a93b;box-shadow:0 0 0 1px #e0a93b inset;}
+.rv-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.rv-stars{color:#e0a93b;font-size:17px;letter-spacing:2px;white-space:nowrap;}
+.rv-stars .off{color:var(--line);}
+.rv-who{font-weight:800;font-size:15px;margin-top:4px;}
+.rv-meta{color:var(--ink-soft);font-size:12.5px;margin-top:2px;}
+.rv-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.rv-tag{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 10px;background:#efece5;color:var(--ink-soft);}
+.rv-tag.ok{background:#e3f5ea;color:#1f8a4c;} .rv-tag.no{background:#f6e7e5;color:#b0392b;} .rv-tag.feat{background:#fbf0d6;color:#8a6410;}
+.rv-msg{margin-top:12px;font-size:15px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;}
+.rv-msg.empty{color:var(--ink-soft);font-style:italic;}
+.rv-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.rv-btn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;}
+.rv-btn:hover{border-color:var(--ink);} .rv-btn.danger{color:#b0392b;} .rv-btn[disabled]{opacity:.4;pointer-events:none;}
+.rv-empty{text-align:center;color:var(--ink-soft);padding:46px 20px;background:var(--bg-pill);border:1px dashed var(--line);border-radius:var(--radius-card);}
+@media(max-width:640px){.rv-summary{grid-template-columns:minmax(0,1fr);}}
+
+/* ---- website editor ---- */
+.ws-bar{position:sticky;top:78px;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:12px 16px;margin-bottom:16px;}
+.ws-state{font-size:13px;color:var(--ink-soft);font-weight:600;}
+.ws-state.dirty{color:#b0640b;} .ws-state.ok{color:#1f8a4c;}
+.ws-bar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.ws-pub{border:0;background:var(--accent);color:#fff;border-radius:99px;padding:10px 22px;font-size:13.5px;font-weight:800;cursor:pointer;}
+.ws-pub[disabled]{opacity:.45;pointer-events:none;}
+.ws-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 22px;margin-bottom:14px;}
+.ws-card h2{font-size:17px;font-weight:800;}
+.ws-help{color:var(--ink-soft);font-size:13px;margin:4px 0 14px;}
+.ws-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;}
+.ws-wide{grid-column:1/-1;}
+.ws-f{min-width:0;}
+.ws-f label{display:block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+.ws-f input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);}
+.ws-f input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.ws-f input.bad{border-color:#c0392b;}
+.ws-f textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);min-height:96px;resize:vertical;line-height:1.5;}
+.ws-f textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.sv-row{border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;}
+.sv-row .ws-toggle{margin-bottom:10px;}
+.sv-row .ws-grid{gap:10px;}
+.ws-toggle{display:flex;align-items:center;gap:12px;margin-bottom:14px;cursor:pointer;font-size:14px;}
+.ws-toggle input{position:absolute;opacity:0;pointer-events:none;}
+.ws-toggle .sw{width:46px;height:26px;border-radius:99px;background:var(--line);position:relative;transition:.2s;flex:none;}
+.ws-toggle .sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.ws-toggle input:checked + .sw{background:#1f8a4c;}
+.ws-toggle input:checked + .sw::after{transform:translateX(20px);}
+.ws-prev{margin-top:14px;border-radius:12px;overflow:hidden;font-size:13.5px;font-weight:600;text-align:center;}
+.ws-prev .strip{background:#02367B;color:#fff;padding:10px 14px;}
+.ws-prev .strip b{text-decoration:underline;text-underline-offset:3px;}
+.ws-prev .off{padding:10px;color:var(--ink-soft);border:1px dashed var(--line);border-radius:12px;font-weight:500;}
+.ws-note{color:var(--ink-soft);font-size:12.5px;text-align:center;margin:6px 0 0;}
+
+.bd-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr) 38px;gap:8px;margin-bottom:8px;align-items:center;}
+.bd-row input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--ink);}
+.bd-row input.bad{border-color:#c0392b;}
+.bd-row .bd-x{border:1px solid var(--line);background:var(--bg);border-radius:10px;height:42px;cursor:pointer;color:#c0392b;font-weight:700;font-size:16px;}
+.bd-row.past{opacity:.5;}
+.bd-cap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr) 38px;gap:8px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+@media(max-width:640px){.bd-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}.bd-row input[data-bd=label]{grid-column:1/-1;}.bd-row .bd-x{grid-column:1/-1;height:34px;}.bd-cap{display:none;}}
+@media(max-width:640px){.ws-grid{grid-template-columns:minmax(0,1fr);}.ws-bar{top:66px;}}
+.bk-rules{background:#fbf0d6;border:1px solid #e0a93b;color:#8a6410;border-radius:var(--radius-card);padding:12px 16px;font-size:14px;margin-bottom:14px;}
+.ws-f select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);}
+.bk-checks{display:flex;gap:8px;flex-wrap:wrap;}
+.bk-ck input{position:absolute;opacity:0;pointer-events:none;} .bk-ck span{display:inline-block;border:1px solid var(--line);background:var(--bg);border-radius:99px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer;}
+.bk-ck input:checked+span{background:var(--accent);border-color:var(--accent);color:#fff;} .bk-ck input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px;}
+.bd-day{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);}
+.bd-day:last-child{border-bottom:0;} .bd-day input[type=time]{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);}
+.bd-day.off input[type=time],.bd-day.off .bd-to{opacity:.35;pointer-events:none;} .bd-to{font-size:13px;color:var(--ink-soft);}
+.rq-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;} .rq-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.rq-chips .rv-btn.on{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+.rq-list{display:flex;flex-direction:column;gap:10px;}
+.rq{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--bg);} .rq.past{opacity:.6;}
+.rq-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;} .rq-when{font-weight:800;font-size:16px;}
+.rq-who{font-size:14.5px;margin-top:2px;} .rq-who span{color:var(--ink-soft);font-size:12.5px;margin-left:4px;}
+.rq-st{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:4px 10px;white-space:nowrap;}
+.rq-meta{font-size:13px;color:var(--ink-soft);margin-top:8px;overflow-wrap:anywhere;} .rq-meta a{color:var(--accent);font-weight:600;}
+.rq-msg{margin-top:8px;font-size:14px;white-space:pre-wrap;background:var(--bg-pill);border-radius:10px;padding:10px 12px;overflow-wrap:anywhere;}
+.rq .ws-pub{padding:9px 18px;font-size:12.5px;}
+@media(max-width:640px){.bd-day{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}.bd-day .ws-toggle{grid-column:1/-1;}.bd-to{display:none;}}
+</style>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js"></script>
+<script src="session.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="fom-splash" id="authCheck"><div class="in"><b>FOM STUDIOS</b><p>Checking session…</p></div></div>
+<script>setTimeout(function(){var a=document.getElementById("authCheck");if(a)a.style.display="none";},8000);</script>
+
+
+<!-- LOGIN GATE -->
+<div class="login-gate" id="loginGate">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="calculator.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+        <li><a href="reviews.html">Reviews</a></li>
+        <li><a href="website.html">Website</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+                <li><a href="reviews.html">Reviews</a></li>
+                <li><a href="website.html">Website</a></li>
+            </ul>
+            <button class="nav-cta" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </nav>
+</div>
+
+<div class="page wrap">
+    <div class="page-head">
+        <span class="eyebrow">Admin</span>
+        <h1>Bookings</h1>
+        <p id="bkIntro">Meeting requests from the Book a meeting page on your website, and the times you are free. Confirm a request and it becomes a scheduled meeting in Client Meetings.</p>
+    </div>
+
+    <div class="ws-bar">
+        <span class="ws-state" id="wsState">Loading...</span>
+        <span class="ws-bar-actions">
+            <a class="rv-btn" id="bkLive" href="https://www.fomstudios.co.za/book.html" target="_blank" rel="noopener">View booking page</a>
+            <button class="rv-btn" id="wsRevert" type="button">Discard changes</button>
+            <button class="ws-pub" id="wsSave" type="button">Publish</button>
+        </span>
+    </div>
+
+    <div class="bk-rules" id="bkRules" style="display:none">Requests cannot load. Publish the latest <b>firestore.rules</b> in Firebase (Firestore Database, Rules), then refresh. See the deploy checklist, section B.</div>
+
+    <section class="ws-card">
+        <div class="rq-head"><h2>Requests</h2><div class="rq-chips" id="rqChips"></div></div>
+        <div id="rqList" class="rq-list"><p class="ws-help">Loading...</p></div>
+    </section>
+
+    <section class="ws-card">
+        <h2>Online booking</h2>
+        <label class="ws-toggle" style="margin-top:12px"><input type="checkbox" id="bOn"><span class="sw"></span><b>Clients can book a meeting on the website</b></label>
+        <p class="ws-help" style="margin:0">When off, the booking page asks people to WhatsApp you instead.</p>
+    </section>
+
+    <section class="ws-card">
+        <h2>Meeting lengths</h2>
+        <p class="ws-help">The options the client can pick.</p>
+        <div class="bk-checks" id="bLens"></div>
+    </section>
+
+    <section class="ws-card">
+        <h2>Weekly hours</h2>
+        <p class="ws-help">When you are free to meet, in South African time. Days off are hidden on the website. Your blocked dates (Website page), your shoots (Database) and scheduled meetings are left out automatically.</p>
+        <div id="bDays"></div>
+    </section>
+
+    <section class="ws-card">
+        <h2>Booking rules</h2>
+        <div class="ws-grid">
+            <div class="ws-f"><label for="bBuf">Gap between meetings</label><select id="bBuf"><option value="0">No gap</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">1 hour</option></select></div>
+            <div class="ws-f"><label for="bNotice">Minimum notice</label><select id="bNotice"><option value="2">2 hours</option><option value="12">12 hours</option><option value="24">1 day</option><option value="48">2 days</option><option value="72">3 days</option></select></div>
+            <div class="ws-f ws-wide"><label for="bAhead">How far ahead clients can book</label><select id="bAhead"><option value="14">2 weeks</option><option value="21">3 weeks</option><option value="30">1 month</option><option value="60">2 months</option></select></div>
+        </div>
+    </section>
+
+    <section class="ws-card">
+        <h2>How to meet</h2>
+        <label class="ws-toggle" style="margin-top:12px"><input type="checkbox" id="bIp"><span class="sw"></span><b>In person</b></label>
+        <div class="ws-f" style="margin:-4px 0 16px"><label for="bPlace">Where (shown on the website)</label><input id="bPlace" maxlength="90" placeholder="e.g. Coffee shop in Fourways, or at your venue"></div>
+        <label class="ws-toggle"><input type="checkbox" id="bVid"><span class="sw"></span><b>Video call</b></label>
+        <div class="ws-f" style="margin-top:-4px"><label for="bLink">Your video call link (private, only sent in the confirmation)</label><input id="bLink" maxlength="200" inputmode="url" placeholder="https://meet.google.com/abc-defg-hij"></div>
+    </section>
+
+    <p class="ws-note" id="bkBusyNote"></p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script>
+/* ============================================================
+   Bookings (per business): meeting requests from the website's Book a meeting page, and your availability.
+   Public doc siteContent/booking_<biz>: hours, lengths, rules, places and busy times (no names) for booking.js.
+   Private doc settings/booking(_sba): your video call link.
+   meetingRequests: the requests (only you can read them). slotHolds: requested start times.
+   Confirm creates a scheduled meeting in "meetings", the same shape Client Meetings uses.
+   ============================================================ */
+const $ = id => document.getElementById(id);
+let toastT;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2400); }
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const BZ = window.FOM_BIZ, BIZ = BZ.id, B = BZ.b;
+const PUB = 'booking_' + BIZ, PRIV = BZ.sid('booking');
+const PAGE_URL = BIZ === 'sba' ? 'https://www.fomstudios.co.za/shotbya/book.html' : 'https://www.fomstudios.co.za/book.html';
+const TZ = 'Africa/Johannesburg';
+const DAYS = [['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday'],['0','Sunday']];
+const DEF = { on:true, lengths:[30,45,60], buffer:15, notice:24, ahead:30,
+  days:{ '1':['17:30','20:00'], '2':['17:30','20:00'], '3':['17:30','20:00'], '4':['17:30','20:00'], '5':['17:30','20:00'], '6':['09:00','13:00'] },
+  inPerson:{ on:true, place:'' }, video:{ on:true } };
+
+let db=null, saved=null, savedLink='', dirty=false, loaded=false, REQS=[], filter='new', busyCount=0;
+
+/* ---------- availability form ---------- */
+function drawForm(c){
+  c = Object.assign({}, DEF, c||{});
+  $('bOn').checked = c.on !== false;
+  $('bLens').innerHTML = [30,45,60].map(n=>`<label class="bk-ck"><input type="checkbox" data-len="${n}" ${(c.lengths||[]).map(Number).includes(n)?'checked':''}><span>${n===60?'1 hour':n+' min'}</span></label>`).join('');
+  $('bDays').innerHTML = DAYS.map(([k,n])=>{ const w=(c.days||{})[k]; return `<div class="bd-day${w?'':' off'}" data-d="${k}"><label class="ws-toggle" style="margin:0"><input type="checkbox" data-on ${w?'checked':''}><span class="sw"></span><b>${n}</b></label><input type="time" data-from value="${esc(w?w[0]:'17:30')}" aria-label="${n} from"><span class="bd-to">to</span><input type="time" data-to value="${esc(w?w[1]:'20:00')}" aria-label="${n} to"></div>`; }).join('');
+  $('bBuf').value = String(c.buffer ?? 15); $('bNotice').value = String(c.notice ?? 24); $('bAhead').value = String(c.ahead ?? 30);
+  $('bIp').checked = !c.inPerson || c.inPerson.on !== false; $('bPlace').value = (c.inPerson && c.inPerson.place) || '';
+  $('bVid').checked = !c.video || c.video.on !== false; $('bLink').value = savedLink;
+}
+function readForm(){
+  const days = {};
+  document.querySelectorAll('#bDays .bd-day').forEach(r=>{ const on=r.querySelector('[data-on]').checked; r.classList.toggle('off',!on); if(on) days[r.dataset.d]=[r.querySelector('[data-from]').value||'17:30', r.querySelector('[data-to]').value||'20:00']; });
+  return { on:$('bOn').checked, lengths:[...document.querySelectorAll('#bLens [data-len]')].filter(x=>x.checked).map(x=>+x.dataset.len),
+    days, buffer:+$('bBuf').value, notice:+$('bNotice').value, ahead:+$('bAhead').value,
+    inPerson:{ on:$('bIp').checked, place:$('bPlace').value.trim() }, video:{ on:$('bVid').checked } };
+}
+function norm(c){ c=Object.assign({},DEF,c||{}); return JSON.stringify({ on:c.on!==false, lengths:(c.lengths||[]).map(Number).sort(), days:c.days||{}, buffer:+c.buffer, notice:+c.notice, ahead:+c.ahead, inPerson:{on:!c.inPerson||c.inPerson.on!==false, place:(c.inPerson&&c.inPerson.place)||''}, video:{on:!c.video||c.video.on!==false} }); }
+function setState(){
+  const now = norm(readForm()) + '|' + $('bLink').value.trim(), was = norm(saved) + '|' + savedLink;
+  dirty = loaded && now !== was;
+  const st=$('wsState'); st.className='ws-state'+(dirty?' dirty':' ok');
+  st.textContent = !loaded ? 'Loading...' : dirty ? 'Unsaved changes' : (saved && saved.on===false ? 'Online booking is off' : 'Live on your website');
+  $('wsSave').disabled=!dirty; $('wsRevert').disabled=!dirty;
+}
+function validate(c){
+  if(!c.lengths.length){ toast('Pick at least one meeting length'); return false; }
+  if(!c.inPerson.on && !c.video.on){ toast('Turn on in person, video call, or both'); return false; }
+  for(const k in c.days){ if(c.days[k][1] <= c.days[k][0]){ toast('Check the hours: "to" must be after "from"'); return false; } }
+  const l=$('bLink').value.trim(); if(l && !/^https?:\/\//i.test(l)){ toast('The video link should start with https://'); return false; }
+  return true;
+}
+
+/* ---------- busy times shared with the website (no names) ---------- */
+async function busyList(){
+  const out=[], now=Date.now(), day=d=>new Date(d).toLocaleDateString('en-CA',{timeZone:TZ});
+  try{
+    const ms = BZ.mine((await db.collection('meetings').get()).docs.map(d=>({id:d.id,...d.data()})));
+    ms.filter(m=>m.status==='planned' && m.plannedAt).forEach(m=>{ const s=new Date(m.plannedAt).getTime(); if(s>now-36e5) out.push({ s:new Date(s).toISOString(), e:new Date(s+(+m.bookLen||60)*6e4).toISOString() }); });
+  }catch(e){ console.warn('meetings', e); }
+  try{
+    const os = BZ.mine((await db.collection('orders').get()).docs.map(d=>({id:d.id,...d.data()})));
+    const today = day(now);
+    os.filter(o=>o.shootDate && o.shootDate>=today && !/cancel/i.test(o.status||'') && !o.test).forEach(o=>{
+      const t=/^\d{1,2}:\d{2}/.test(o.shootTime||'') ? (o.shootTime.length===4?'0':'')+o.shootTime.slice(0,5) : '';
+      if(t){ const s=new Date(o.shootDate+'T'+t+':00+02:00').getTime(); out.push({ s:new Date(s-36e5).toISOString(), e:new Date(s+5*36e5).toISOString() }); }   // shoot time: 1 hour before to 5 hours after
+      else out.push({ s:o.shootDate+'T00:00:00+02:00', e:o.shootDate+'T23:59:00+02:00' });   // no time: the whole day
+    });
+  }catch(e){ console.warn('orders', e); }
+  out.sort((a,b)=>a.s<b.s?-1:1); busyCount=out.length;
+  return out.slice(0,250);
+}
+async function publish(c){
+  const busy = await busyList();
+  await db.collection('siteContent').doc(PUB).set(Object.assign({}, c, { busy, updatedAt:firebase.firestore.FieldValue.serverTimestamp() }));
+  $('bkBusyNote').textContent = busyCount ? busyCount+' busy time'+(busyCount===1?'':'s')+' (shoots and scheduled meetings) are hidden from the booking page. Names and details are never shared.' : '';
+}
+async function refreshBusy(){ if(saved){ try{ await publish(saved); }catch(e){ console.warn('busy', e); } } }
+
+/* ---------- requests ---------- */
+const fmtWhen = r => { const d=new Date(r.start); return d.toLocaleDateString('en-ZA',{timeZone:TZ,weekday:'short',day:'numeric',month:'short'})+', '+d.toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}); };
+const fmtLong = r => { const d=new Date(r.start); return d.toLocaleDateString('en-ZA',{timeZone:TZ,weekday:'long',day:'numeric',month:'long'}).replace(/,/g,'')+' at '+d.toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}); };
+const fmtEnd = r => new Date(new Date(r.start).getTime()+(+r.len||30)*6e4).toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'});
+const waNum = p => { let d=String(p||'').replace(/\D/g,''); if(d.startsWith('0')) d='27'+d.slice(1); return d; };
+const first = n => String(n||'').trim().split(/\s+/)[0] || 'there';
+const lenL = n => +n===60 ? '1 hour' : n+' min';
+const ST = { new:['New','#b0640b','#fbf0d6'], confirmed:['Confirmed','#1f8a4c','#e3f5ea'], moved:['Asked to rebook','#6f6f6d','#efece5'], declined:['Declined','#b0392b','#f6e7e5'] };
+function drawReqs(){
+  const now=Date.now();
+  const sets={ new:REQS.filter(r=>r.status==='new'), upcoming:REQS.filter(r=>r.status==='confirmed' && new Date(r.start).getTime()>now-36e5), all:REQS };
+  $('rqChips').innerHTML=[['new','New'],['upcoming','Confirmed'],['all','All']].map(([k,n])=>`<button class="rv-btn${filter===k?' on':''}" data-f="${k}" type="button">${n} ${sets[k].length}</button>`).join('');
+  const list=sets[filter].slice().sort((a,b)=> filter==='all' ? (b.start<a.start?-1:1) : (a.start<b.start?-1:1));
+  if(!list.length){ $('rqList').innerHTML=`<div class="rv-empty">${filter==='new'?'No new requests. Share your booking page: <a href="'+PAGE_URL+'" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">'+PAGE_URL.replace('https://www.','')+'</a>':'Nothing here yet.'}</div>`; return; }
+  $('rqList').innerHTML=list.map(r=>{ const st=ST[r.status]||ST.new, past=new Date(r.start).getTime()<now;
+    return `<article class="rq${past?' past':''}" data-id="${esc(r.id)}">
+      <div class="rq-top"><div><div class="rq-when">${esc(fmtWhen(r))} to ${esc(fmtEnd(r))}</div><div class="rq-who">${esc(r.name)} <span>${esc(r.type||'')}</span></div></div>
+        <span class="rq-st" style="color:${st[1]};background:${st[2]}">${st[0]}${past&&r.status==='new'?' (time passed)':''}</span></div>
+      <div class="rq-meta">${r.mode==='video'?'🎥 Video call':'📍 In person'} · ${lenL(r.len)} · <a href="https://wa.me/${waNum(r.phone)}" target="_blank" rel="noopener">${esc(r.phone)}</a>${r.email?' · <a href="mailto:'+esc(r.email)+'">'+esc(r.email)+'</a>':''}</div>
+      ${r.msg?`<div class="rq-msg">${esc(r.msg)}</div>`:''}
+      <div class="rv-actions">${r.status==='new'&&!past?`<button class="ws-pub" data-a="ok" type="button">Confirm</button><button class="rv-btn" data-a="move" type="button">Suggest another time</button><button class="rv-btn danger" data-a="no" type="button">Decline</button>`:''}
+        ${r.status==='confirmed'?`<button class="rv-btn" data-a="ics" type="button">Add to my calendar</button><a class="rv-btn" href="meetings.html${r.meetingId?'?m='+encodeURIComponent(r.meetingId):''}">Open in Client Meetings</a><button class="rv-btn" data-a="wa" type="button">WhatsApp ${esc(first(r.name))}</button>`:''}
+        ${r.status!=='new'||past?`<button class="rv-btn danger" data-a="del" type="button">Remove</button>`:''}</div>
+    </article>`; }).join('');
+}
+function confirmMsg(r){
+  const where = r.mode==='video' ? 'It is a video call'+(savedLink?': '+savedLink:'. I will send you the link before we meet.') : ((saved&&saved.inPerson&&saved.inPerson.place) ? 'We will meet at '+saved.inPerson.place+'. I will send you the exact spot before we meet.' : 'I will send you the place before we meet.');
+  return 'Hi '+first(r.name)+', it\'s '+(first(B.owner)||B.name)+' from '+B.name+'. Your meeting is confirmed for '+fmtLong(r)+' ('+lenL(r.len)+'). '+where+' Looking forward to chatting about your shoot!';
+}
+function ics(r){
+  const s=new Date(r.start), e=new Date(s.getTime()+(+r.len||30)*6e4), f=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  const loc = r.mode==='video' ? (savedLink||'Video call') : ((saved&&saved.inPerson&&saved.inPerson.place)||'');
+  const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//FOM Studios//Bookings//EN','BEGIN:VEVENT','UID:'+r.id+'@fomstudios.co.za','DTSTAMP:'+f(new Date()),'DTSTART:'+f(s),'DTEND:'+f(e),
+    'SUMMARY:'+(B.name+' meeting: '+r.name).replace(/[,;]/g,' '),'LOCATION:'+String(loc).replace(/[,;]/g,' '),'DESCRIPTION:'+(r.type+'. '+r.phone+(r.msg?'. '+r.msg:'')).replace(/\n/g,' ').replace(/[,;]/g,' ').slice(0,500),'BEGIN:VALARM','TRIGGER:-PT30M','ACTION:DISPLAY','DESCRIPTION:Meeting','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([body],{type:'text/calendar'})); a.download='meeting-'+first(r.name).toLowerCase()+'.ics'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+async function act(r, a){
+  if(a==='ok'){
+    const now=new Date().toISOString(), id='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    const m={ id, biz:BIZ, status:'planned', startedAt:null, endedAt:null, durationMin:null, plannedAt:new Date(r.start).toISOString(),
+      where: r.mode==='video' ? 'Video call'+(savedLink?' ('+savedLink+')':'') : ((saved&&saved.inPerson&&saved.inPerson.place)||'In person'),
+      orderId:'', leadId:'', client:{ name:r.name, phone:r.phone, email:r.email||'', type:r.type||'General', venue:'', guests:'', budget:'' },
+      notes: 'Booked on the website'+(r.msg?': '+r.msg:'.'), dates:[], qs:[], quote:{ lines:[], discType:'R', disc:0, km:0, showClient:false }, shots:[], people:[], tasks:[], hearts:[],
+      created:now, updated:now, fromRequest:r.id, bookLen:+r.len||30 };
+    try{
+      await db.collection('meetings').doc(id).set(m);
+      await db.collection('meetingRequests').doc(r.id).update({ status:'confirmed', meetingId:id, confirmedAt:firebase.firestore.FieldValue.serverTimestamp() });
+      toast('Confirmed. It is in Client Meetings under Upcoming.');
+      window.open('https://wa.me/'+waNum(r.phone)+'?text='+encodeURIComponent(confirmMsg(r)),'_blank','noopener');
+      refreshBusy();
+    }catch(e){ console.warn(e); toast('Could not confirm. Check the Firestore rules (meetings, meetingRequests).'); }
+  }
+  else if(a==='move'){
+    const msg='Hi '+first(r.name)+', it\'s '+(first(B.owner)||B.name)+' from '+B.name+'. Thanks for booking a meeting! Unfortunately '+fmtLong(r)+' no longer works for me. Could you pick another time here? '+PAGE_URL;
+    window.open('https://wa.me/'+waNum(r.phone)+'?text='+encodeURIComponent(msg),'_blank','noopener');
+    await release(r,'moved'); toast('Time released. They can book again.');
+  }
+  else if(a==='no'){
+    if(!confirm('Decline '+r.name+'\'s request for '+fmtWhen(r)+'? The time opens up again.')) return;
+    await release(r,'declined'); toast('Declined');
+    if(confirm('Send '+first(r.name)+' a short WhatsApp to let them know?')) window.open('https://wa.me/'+waNum(r.phone)+'?text='+encodeURIComponent('Hi '+first(r.name)+', it\'s '+(first(B.owner)||B.name)+' from '+B.name+'. Thank you for your meeting request. Unfortunately I am not able to meet at that time. Feel free to message me here and we can find another way to help.'),'_blank','noopener');
+  }
+  else if(a==='ics') ics(r);
+  else if(a==='wa') window.open('https://wa.me/'+waNum(r.phone)+'?text='+encodeURIComponent(confirmMsg(r)),'_blank','noopener');
+  else if(a==='del'){
+    if(!confirm('Remove this request from the list?')) return;
+    try{ if(r.hold) await db.collection('slotHolds').doc(r.hold).delete().catch(()=>{}); await db.collection('meetingRequests').doc(r.id).delete(); toast('Removed'); }catch(e){ toast('Could not remove'); }
+  }
+}
+async function release(r, status){
+  try{ if(r.hold) await db.collection('slotHolds').doc(r.hold).delete(); }catch(e){ console.warn('hold', e); }
+  try{ await db.collection('meetingRequests').doc(r.id).update({ status, closedAt:firebase.firestore.FieldValue.serverTimestamp() }); }catch(e){ toast('Could not update the request'); }
+}
+async function cleanHolds(){   // old holds (more than a day ago) are no longer needed
+  try{ const s=await db.collection('slotHolds').get(), cut=Date.now()-864e5; s.docs.forEach(d=>{ const x=d.data(); if(x.biz===BIZ && new Date(x.start).getTime()<cut) d.ref.delete().catch(()=>{}); }); }catch(e){}
+}
+
+/* ---------- wiring ---------- */
+document.addEventListener('input',e=>{ if(e.target.closest('.ws-card')) setState(); });
+document.addEventListener('change',e=>{ if(e.target.closest('.ws-card')) setState(); });
+$('wsRevert').onclick=()=>{ drawForm(saved); setState(); };
+$('wsSave').onclick=async()=>{
+  const c=readForm(); if(!validate(c)) return;
+  $('wsSave').disabled=true; $('wsSave').textContent='Publishing...';
+  try{
+    await publish(c);
+    const link=$('bLink').value.trim();
+    await db.collection('settings').doc(PRIV).set({ json:JSON.stringify({ videoLink:link }), updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
+    saved=c; savedLink=link; toast('Published. Your booking page is updated.');
+  }catch(e){ console.warn(e); toast('Could not publish. Check the Firestore rules (siteContent, settings).'); }
+  $('wsSave').textContent='Publish'; setState();
+};
+$('rqChips').onclick=e=>{ const b=e.target.closest('[data-f]'); if(b){ filter=b.dataset.f; drawReqs(); } };
+$('rqList').onclick=e=>{ const b=e.target.closest('[data-a]'); if(!b) return; const r=REQS.find(x=>x.id===b.closest('.rq').dataset.id); if(r){ b.disabled=true; Promise.resolve(act(r,b.dataset.a)).finally(()=>{ b.disabled=false; }); } };
+window.addEventListener('beforeunload',e=>{ if(dirty){ e.preventDefault(); e.returnValue=''; } });
+$('bkLive').href=PAGE_URL;
+if(BIZ==='sba') $('bkIntro').textContent='Meeting requests from the Book a meeting page on Shot by A\'s website, and the times she is free. Confirm a request and it becomes a scheduled meeting in Client Meetings.';
+
+const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+(async function init(){
+  if(!configured) return;
+  try{
+    const b='https://www.gstatic.com/firebasejs/10.12.0/';
+    await loadScript(b+'firebase-app-compat.js');
+    await Promise.all([loadScript(b+'firebase-auth-compat.js'), loadScript(b+'firebase-firestore-compat.js')]);
+    try{ firebase.initializeApp(firebaseConfig); }catch(e){}
+    const auth=firebase.auth();
+    try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+    if(window.FOM_SESSION)FOM_SESSION.attach(auth);
+    db=firebase.firestore();
+    const start=async()=>{
+      try{ const p=await db.collection('settings').doc(PRIV).get(); if(p.exists){ try{ savedLink=JSON.parse(p.data().json||'{}').videoLink||''; }catch(e){} } }catch(e){}
+      try{ const s=await db.collection('siteContent').doc(PUB).get(); saved = s.exists ? Object.assign({},DEF,s.data()) : Object.assign({},DEF); delete saved.updatedAt; delete saved.busy; }catch(e){ saved=Object.assign({},DEF); }
+      loaded=true; drawForm(saved); setState();
+      refreshBusy(); cleanHolds();
+      db.collection('meetingRequests').onSnapshot(snap=>{
+        REQS=BZ.mine(snap.docs.map(d=>({id:d.id,...d.data()}))); $('bkRules').style.display='none';
+        if(filter==='new' && !REQS.some(r=>r.status==='new') && REQS.some(r=>r.status==='confirmed')) filter='upcoming';
+        drawReqs();
+      }, e=>{ console.warn('requests',e); $('bkRules').style.display='block'; $('rqList').innerHTML=''; });
+    };
+    const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value).catch(()=>{ $('lgErr').textContent='Incorrect email or password.'; }); };
+    $('lgBtn').onclick=login; $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+    $('logoutBtn').onclick=()=>auth.signOut();
+    auth.onAuthStateChanged(u=>{
+      $('logoutBtn').style.display=u?'inline-block':'none';
+      if(!u){ $('loginGate').style.display='flex'; return; }
+      db.collection('admins').doc(u.uid).get().then(ad=>{
+        if(!ad.exists){ $('lgErr').textContent='This account does not have admin access.'; auth.signOut(); return; }
+        $('loginGate').style.display='none'; start();
+      }).catch(()=>{ $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
+    });
+  }catch(e){ console.error('Bookings init failed:', e.message||e); }
+})();
+</script>
+<script src="activity.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

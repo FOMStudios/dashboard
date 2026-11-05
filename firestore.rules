@@ -2,7 +2,7 @@ rules_version = '2';
 
 // FOM Studios - Firestore security rules (project fom-studios)
 // Paste this WHOLE file into Firebase Console > Firestore Database > Rules, then Publish.
-// Last updated 5 Nov 2026: meetings (client meetings) and moodShare (client mood board links). Earlier: gallery favourites, chat, settings/outreach, settings/pitchDeck.
+// Last updated 5 Nov 2026: slotHolds and meetingRequests (Book a meeting); meetings (client meetings) and moodShare (client mood board links). Earlier: gallery favourites, chat, settings/outreach, settings/pitchDeck.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -82,6 +82,33 @@ service cloud.firestore {
     }
     match /contentPlanner/{id} {
       allow read, write: if isAdmin();
+    }
+    // ---- Book a meeting (booking.js on both websites, bookings.html on the dashboard) ----
+    match /slotHolds/{id} {              // a requested start time; no personal details, so the websites can read them
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['biz', 'start', 'len', 'at'])
+                    && request.resource.data.biz in ['fom', 'sba']
+                    && request.resource.data.start is string && request.resource.data.start.size() < 40
+                    && request.resource.data.len in [30, 45, 60]
+                    && request.resource.data.at == request.time
+                    && id == request.resource.data.biz + '_' + request.resource.data.start;   // one hold per start time
+      allow update, delete: if isAdmin();
+    }
+    match /meetingRequests/{id} {        // the request itself: anyone can send one, only you can read it
+      allow create: if request.resource.data.keys().hasOnly(['biz', 'start', 'len', 'mode', 'name', 'phone', 'email', 'type', 'msg', 'status', 'hold', 'at'])
+                    && request.resource.data.biz in ['fom', 'sba']
+                    && request.resource.data.start is string && request.resource.data.start.size() < 40
+                    && request.resource.data.len in [30, 45, 60]
+                    && request.resource.data.mode in ['inperson', 'video']
+                    && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 110
+                    && request.resource.data.phone is string && request.resource.data.phone.size() <= 30
+                    && request.resource.data.email is string && request.resource.data.email.size() <= 110
+                    && request.resource.data.type is string && request.resource.data.type.size() <= 40
+                    && request.resource.data.msg is string && request.resource.data.msg.size() <= 1400
+                    && request.resource.data.status == 'new'
+                    && request.resource.data.hold == request.resource.data.biz + '_' + request.resource.data.start
+                    && request.resource.data.at == request.time;
+      allow read, update, delete: if isAdmin();
     }
     match /meetings/{id} {               // client meetings: notes, mood board picks, quote (meetings.html)
       allow read, write: if isAdmin();

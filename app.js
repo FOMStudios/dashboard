@@ -44,6 +44,7 @@ var PAGES = [
   {n:'Project Workflow',h:'workflow.html',  e:'✅'},
   {n:'Leads & Outreach',h:'leads.html',     e:'📣'},
   {n:'Client Meetings', h:'meetings.html',  e:'🤝'},
+  {n:'Bookings',        h:'bookings.html',  e:'📅'},   // meeting requests from the Book a meeting page on both websites
   {n:'Content Planner', h:'content.html',   e:'🎬'},
   {n:'Price Calculator',h:'calculator.html',e:'🧮'},
   {n:'Email',           h:'email.html',     e:'✉️'},

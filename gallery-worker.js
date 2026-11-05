@@ -200,7 +200,8 @@ const EV_TYPES = {
   download: { gap: 3600e3, title: 'Files downloaded',     body: (n, d) => n + ' is downloading ' + (d || 'their files') + '.' },
   favs:     { gap: 1800e3, title: 'Favourites picked',    body: (n, d) => n + ' picked ' + (d || 'their') + ' favourites.' },
   review:   { gap: 60e3,   title: 'New review',           body: (n, d) => n + ' left a review' + (d ? ': ' + d : '') + '.' },
-  paid:     { gap: 300e3,  title: 'Card payment',         body: (n, d) => n + ' paid ' + (d || 'by card') + ' (check Yoco to confirm).' }
+  paid:     { gap: 300e3,  title: 'Card payment',         body: (n, d) => n + ' paid ' + (d || 'by card') + ' (check Yoco to confirm).' },
+  meeting:  { gap: 30e3,   title: 'Meeting request',      body: (n, d) => n + ' asked to meet' + (d ? ': ' + d : '') + '.', url: 'bookings.html' }   // Book a meeting page on either website
 };
 const R2J = async (env, key, def) => { try { const o = await env.BUCKET.get(key); return o ? await o.json() : def; } catch (e) { return def; } };
 const R2P = (env, key, val) => env.BUCKET.put(key, JSON.stringify(val), { httpMetadata: { contentType: 'application/json' } });
@@ -318,7 +319,7 @@ async function handleEvent(request, env, ctx) {
   const log = await R2J(env, '_events/log.json', []);
   log.unshift(ev); await R2P(env, '_events/log.json', log.slice(0, 400));
   const label = biz === 'sba' ? 'Shot by A: ' : '';
-  const msg = { title: label + def.title, body: def.body(name, detail), url: 'dashboard.html#activity', tag: 'fom-' + type + '-' + (o || name) };
+  const msg = { title: label + def.title, body: def.body(name, detail), url: def.url || 'dashboard.html#activity', tag: 'fom-' + type + '-' + (o || name) };
   if (ctx && ctx.waitUntil) ctx.waitUntil(pushAll(env, msg)); else await pushAll(env, msg);
   return json({ ok: true });
 }
