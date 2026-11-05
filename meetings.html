@@ -110,6 +110,34 @@ label.lb{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);marg
 @keyframes pop{40%{transform:scale(1.3)}}
 .boardtag{position:absolute;left:8px;top:8px;border:0;border-radius:99px;font-size:11.5px;font-weight:800;padding:5px 10px;cursor:pointer;background:rgba(255,255,255,.92);color:#2a2b2c;box-shadow:0 2px 8px rgba(0,0,0,.15);}
 .boardtag.on{background:#1f8a4c;color:#fff;}
+/* drag and drop + bulk edit (library) */
+.dropzone{position:fixed;inset:0;z-index:2600;display:none;place-items:center;background:rgba(2,54,123,.18);backdrop-filter:blur(2px);pointer-events:none;}
+.dropzone.on{display:grid;}
+.dropzone div{border:3px dashed var(--accent);background:var(--bg-pill,#fff);color:var(--ink);border-radius:24px;padding:34px 44px;font-size:20px;font-weight:800;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.2);}
+.dropzone small{display:block;font-size:13px;font-weight:600;color:var(--ink-soft);margin-top:6px;}
+.upline{margin:4px 0 10px;padding:10px 14px;border-radius:14px;background:var(--surface-2,#e7e5df);font-size:13.5px;font-weight:700;}
+#libBoard.selecting .pin{cursor:pointer;}
+#libBoard.selecting .pimg::after{content:"";position:absolute;top:8px;left:8px;width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.25);box-shadow:0 1px 4px rgba(0,0,0,.3);}
+#libBoard.selecting .pin.picked .pimg{outline:3px solid var(--accent);outline-offset:-3px;}
+#libBoard.selecting .pin.picked .pimg img{filter:brightness(.8);}
+#libBoard.selecting .pin.picked .pimg::after{content:"\2713";background:var(--accent);color:#fff;font-size:14px;font-weight:800;display:grid;place-items:center;}
+.bulkbar{position:fixed;left:50%;bottom:16px;transform:translate(-50%,140%);z-index:2200;display:flex;gap:6px;align-items:center;max-width:calc(100% - 24px);overflow-x:auto;padding:8px;border-radius:99px;background:#1d1e20;color:#fff;box-shadow:0 12px 34px rgba(0,0,0,.3);transition:transform .25s cubic-bezier(.2,.8,.2,1);scrollbar-width:none;}
+.bulkbar.on{transform:translate(-50%,0);}
+.bulkbar b{padding:0 10px;white-space:nowrap;font-size:14px;}
+.bulkbar button{border:0;border-radius:99px;padding:9px 14px;font:inherit;font-size:13.5px;font-weight:700;white-space:nowrap;cursor:pointer;background:rgba(255,255,255,.12);color:#fff;}
+.bulkbar button:disabled{opacity:.4;cursor:default;}
+.bulkbar button.danger{background:#c62828;}
+.bulkbar button.done{background:#fff;color:#1d1e20;}
+body.selmode{padding-bottom:90px;}
+body.selmode .fom-nav{display:none!important;}
+@media(max-width:640px){
+  .bulkbar{flex-wrap:wrap;justify-content:center;border-radius:22px;bottom:calc(10px + env(safe-area-inset-bottom));width:calc(100% - 16px);max-width:none;overflow:visible;}
+  .bulkbar b{width:100%;text-align:center;padding:2px 0 4px;}
+  .bulkbar button{padding:8px 12px;font-size:13px;}
+  body.selmode{padding-bottom:150px;}
+  .librow{flex-wrap:wrap!important;}
+  .librow #libChips{order:2;flex:1 1 100%!important;}
+}
 .prep{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--bg-pill);border:1.5px dashed var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px;}
 .prep b{font-size:15px;} .prep p{font-size:13px;color:var(--ink-soft);margin-top:2px;}
 .lovedtag{position:absolute;left:8px;bottom:8px;background:var(--heart);color:#fff;border-radius:99px;font-size:11px;font-weight:700;padding:2px 8px;}
@@ -298,11 +326,13 @@ body.cv .fom-nav,body.cv .fom-sheet,body.cv .fom-scrim{display:none!important;}
       <div style="flex:1"><h1 style="font-size:clamp(24px,4vw,32px);font-weight:800">Mood board</h1><p class="muted small" id="libCount"></p></div>
       <button class="btn" data-act="addSheet">+ Add ideas</button>
     </div>
-    <div class="row" style="margin-top:14px;flex-wrap:nowrap">
+    <div class="row librow" style="margin-top:14px;flex-wrap:nowrap">
       <div class="chips" id="libChips" style="flex:1"></div>
+      <button class="mini" data-act="selMode" id="selBtn" style="margin-bottom:10px">Select</button>
       <button class="mini" data-act="starterSheet" style="margin-bottom:10px">Starters</button>
       <button class="mini" data-act="catSheet" style="margin-bottom:10px">Edit categories</button>
     </div>
+    <div class="upline hide" id="libUp"></div>
     <div class="masonry" id="libBoard"></div>
   </section>
 
@@ -349,6 +379,13 @@ body.cv .fom-nav,body.cv .fom-sheet,body.cv .fom-scrim{display:none!important;}
 <div class="sh" id="sh" role="dialog" aria-modal="true"><div class="grab"></div><div class="hd"><h2 id="shT"></h2><button id="shX" aria-label="Close">&times;</button></div><div class="bd" id="shB"></div></div>
 <div class="toast" id="toast"></div>
 <input type="file" id="upFile" accept="image/*" multiple hidden>
+<div class="dropzone" id="dropZone"><div><span id="dropTxt">Drop to add to the mood board</span><small>Drag in as many pictures as you like</small></div></div>
+<div class="bulkbar" id="bulkBar">
+  <b id="bkN">0 selected</b>
+  <button id="bkAll">Select all shown</button><button id="bkNone">Clear</button>
+  <button id="bkMove">Move to category</button><button id="bkCap">Caption</button><button id="bkSt">Save as starter</button>
+  <button id="bkDel" class="danger">Delete</button><button id="bkDone" class="done">Done</button>
+</div>
 
 <script src="firebase-config.js"></script>
 <script src="photo-defaults.js"></script>
@@ -619,6 +656,7 @@ $('shX').onclick = closeSheet; $('scr').onclick = closeSheet;
 let timerInt = null;
 function show(v){
   ['vHome','vLib','vLive','vSum'].forEach(id => $(id).classList.toggle('hide', id !== v));
+  if(v !== 'vLib' && libSel){ libSel = null; document.body.classList.remove('selmode'); $('selBtn').classList.remove('on'); $('selBtn').textContent = 'Select'; $('bulkBar').classList.remove('on'); }
   if(v !== 'vLive'){ clearInterval(timerInt); document.body.classList.remove('cv'); }
   window.scrollTo(0, 0);
 }
@@ -920,13 +958,99 @@ function autoCat(type){
 function libItems(){ return libFilter === 'All' ? LIB.items : LIB.items.filter(i => i.cat === libFilter); }
 function renderLib(){
   if(libFilter !== 'All' && !LIB.items.some(i => i.cat === libFilter)) libFilter = 'All';
-  $('libCount').textContent = LIB.items.length + (LIB.items.length === 1 ? ' idea' : ' ideas') + ' in ' + BZ.b.name + '’s board. Tap a picture to caption, move or remove it.';
+  const touch = matchMedia('(hover:none),(pointer:coarse)').matches;
+  $('libCount').textContent = libSel ? 'Tap pictures to select them, then choose what to do below.'
+    : LIB.items.length + (LIB.items.length === 1 ? ' idea' : ' ideas') + ' in ' + BZ.b.name + '’s board. Tap a picture to caption, move or remove it.' + (touch ? '' : ' Drag pictures in from Photos or a folder to add them.');
   $('libChips').innerHTML = chipsHtml(libFilter);
   const items = libItems();
-  $('libBoard').innerHTML = items.length ? items.map(i => pinHtml(i, 'lib')).join('') : `<div class="empty" style="column-span:all">No ideas yet. Tap <b>+ Add ideas</b> to upload pictures, pick from your Photos page or paste links.</div>`;
+  $('libBoard').classList.toggle('selecting', !!libSel);
+  $('libBoard').innerHTML = items.length ? items.map(i => pinHtml(i, 'lib')).join('') : `<div class="empty" style="column-span:all">No ideas yet. Tap <b>+ Add ideas</b>${touch ? '' : ' or drag pictures here'} to upload pictures, pick from your Photos page or paste links.</div>`;
+  if(libSel) $('libBoard').querySelectorAll('[data-pin]').forEach(p => p.classList.toggle('picked', libSel.has(p.dataset.pin)));
+  drawBulk();
 }
+
+/* ---- bulk edit: select several ideas, then move, caption, save as a starter or delete ---- */
+var libSel = null;   // a Set while Select mode is on
+function selMode(on){
+  libSel = on ? new Set() : null;
+  document.body.classList.toggle('selmode', !!on);
+  $('selBtn').classList.toggle('on', !!on); $('selBtn').textContent = on ? 'Cancel' : 'Select';
+  renderLib();
+}
+function drawBulk(){
+  $('bulkBar').classList.toggle('on', !!libSel && libOpen());
+  if(!libSel) return;
+  const n = libSel.size;
+  $('bkN').textContent = n + ' selected';
+  ['bkMove','bkCap','bkSt','bkDel'].forEach(id => $(id).disabled = !n);
+}
+const selIds = () => LIB.items.map(i => i.id).filter(id => libSel.has(id));   // library order
+$('bkAll').onclick = () => { libItems().forEach(i => libSel.add(i.id)); renderLib(); };
+$('bkNone').onclick = () => { libSel.clear(); renderLib(); };
+$('bkDone').onclick = () => selMode(false);
+$('bkMove').onclick = () => {
+  const n = libSel.size;
+  sheet('Move ' + n + (n === 1 ? ' picture' : ' pictures'), `
+    <label class="lb">Move to</label>
+    <select class="sel" id="adCat">${LIB.cats.map(c => `<option>${esc(c)}</option>`).join('')}<option value="__new">+ New category...</option></select>
+    <input class="inp hide" id="adNewCat" placeholder="New category name" style="margin-top:8px">
+    <button class="btn" id="bkMoveGo" style="width:100%;justify-content:center;margin-top:12px">Move</button>`, () => {
+    $('adCat').onchange = () => $('adNewCat').classList.toggle('hide', $('adCat').value !== '__new');
+    $('bkMoveGo').onclick = async () => {
+      const cat = adCategory(); if(!cat) return;
+      LIB.items.forEach(i => { if(libSel.has(i.id)) i.cat = cat; });
+      await Store.saveLib(); closeSheet();
+      if(libFilter !== 'All') libFilter = cat;
+      renderLib(); toast(n + (n === 1 ? ' picture' : ' pictures') + ' moved to ' + cat);
+    };
+  });
+};
+$('bkCap').onclick = () => {
+  const n = libSel.size, caps = [...new Set(LIB.items.filter(i => libSel.has(i.id)).map(i => i.cap || ''))];
+  sheet('Caption for ' + n + (n === 1 ? ' picture' : ' pictures'), `
+    <input class="inp" id="bkCapIn" placeholder="Caption, for example Golden hour couple shots" value="${caps.length === 1 ? esc(caps[0]) : ''}">
+    ${caps.length > 1 ? '<p class="muted small" style="margin-top:6px">These pictures have different captions. Saving gives them all this one.</p>' : ''}
+    <div class="row" style="gap:8px;margin-top:12px;flex-wrap:nowrap"><button class="btn" id="bkCapGo" style="flex:1;justify-content:center">Save caption</button><button class="btn ghost" id="bkCapClr">Clear captions</button></div>`, () => {
+    const apply = async v => { LIB.items.forEach(i => { if(libSel.has(i.id)) i.cap = v; }); await Store.saveLib(); closeSheet(); renderLib(); toast(v ? 'Caption saved on ' + n : 'Captions cleared'); };
+    $('bkCapGo').onclick = () => apply($('bkCapIn').value.trim());
+    $('bkCapClr').onclick = () => apply('');
+    $('bkCapIn').focus();
+  });
+};
+$('bkSt').onclick = () => {
+  const ids = selIds(), cats = [...new Set(LIB.items.filter(i => libSel.has(i.id)).map(i => i.cat))];
+  const guess = TYPES.find(t => t !== 'General' && cats.length === 1 && autoCat(t) === cats[0]) || 'General';
+  sheet('Save ' + ids.length + ' as a starter', `
+    <label class="lb">Shoot type</label>
+    <select class="sel" id="bkStT">${TYPES.map(t => `<option${t === guess ? ' selected' : ''}>${t}</option>`).join('')}</select>
+    <label class="lb" style="margin-top:10px">Starter name</label>
+    <input class="inp" id="bkStN">
+    <p class="muted small" style="margin-top:6px">New meetings of this shoot type begin with these pictures. Using a name you already have replaces that starter.</p>
+    <button class="btn" id="bkStGo" style="width:100%;justify-content:center;margin-top:12px">Save starter</button>`, () => {
+    const nm = () => { const t = $('bkStT').value; return (t === 'General' ? 'General' : t.split(' /')[0]) + ' starter'; };
+    let typed = false; $('bkStN').value = nm();
+    $('bkStN').oninput = () => typed = true;
+    $('bkStT').onchange = () => { if(!typed) $('bkStN').value = nm(); };
+    $('bkStGo').onclick = () => {
+      const name = $('bkStN').value.trim(); if(!name){ toast('Name the starter'); return; }
+      const st = saveStarter(name, $('bkStT').value, ids); if(!st) return;
+      closeSheet(); toast('Saved "' + st.name + '"' + (st.auto ? ': new ' + st.type + ' meetings start with it' : ''));
+    };
+  });
+};
+$('bkDel').onclick = async () => {
+  const n = libSel.size; if(!n) return;
+  const inSt = starters().filter(x => (x.ids || []).some(id => libSel.has(id))).map(x => x.name);
+  if(!confirm('Delete ' + n + (n === 1 ? ' picture' : ' pictures') + ' from the mood board?' + (inSt.length ? ' They are also removed from: ' + inSt.join(', ') + '.' : '') + ' Meeting summaries that loved them keep their copy.')) return;
+  LIB.items = LIB.items.filter(i => !libSel.has(i.id));
+  starters().forEach(x => { x.ids = (x.ids || []).filter(id => !libSel.has(id)); });
+  await Store.saveLib(); libSel.clear(); renderLib(); toast(n + (n === 1 ? ' picture' : ' pictures') + ' deleted');
+};
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && libSel && !$('sh').classList.contains('on') && !$('lb').classList.contains('on')) selMode(false); });
 $('libChips').addEventListener('click', e => { const c = e.target.closest('[data-chip]'); if(c){ libFilter = c.dataset.chip; renderLib(); } });
-$('libBoard').addEventListener('click', e => { const p = e.target.closest('[data-pin]'); if(!p) return; const list = libItems(); openLB(list, list.findIndex(i => i.id === p.dataset.pin), 'lib'); });
+$('libBoard').addEventListener('click', e => { const p = e.target.closest('[data-pin]'); if(!p) return;
+  if(libSel){ const id = p.dataset.pin; libSel.has(id) ? libSel.delete(id) : libSel.add(id); p.classList.toggle('picked', libSel.has(id)); drawBulk(); return; }
+  const list = libItems(); openLB(list, list.findIndex(i => i.id === p.dataset.pin), 'lib'); });
 
 let addSeg = 'up', addPicks = new Set();
 function addSheet(){
@@ -990,12 +1114,20 @@ $('shB').addEventListener('click', e => {
 $('upFile').addEventListener('change', async e => {
   const files = Array.from(e.target.files || []); e.target.value = ''; if(!files.length) return;
   const cat = adCategory(); if(!cat) return;
-  const msg = t => { const m = $('adMsg'); if(m) m.textContent = t; };
-  let n = 0;
+  const n = await uploadFiles(files, cat);
+  if(n){ await Store.saveLib(); afterAdd(n); }
+});
+/* Upload picture files into one library category. Used by Choose pictures and by drag and drop.
+   A file the browser cannot read (for example an iPhone HEIC in Chrome) is skipped; an upload error stops the batch. */
+async function uploadFiles(files, cat){
+  const msg = t => { const m = $('adMsg'); if(m && $('sh').classList.contains('on')) m.textContent = t; const u = $('libUp'); if(u){ u.textContent = t; u.classList.toggle('hide', !t); } };
+  let n = 0, unread = 0;
   for(let i = 0; i < files.length; i++){
+    msg('Uploading ' + (i + 1) + ' of ' + files.length + (cat ? ' into ' + cat : '') + '...');
+    let shr;
+    try{ shr = await shrink(files[i], 1800); }catch(err){ unread++; continue; }
     try{
-      msg('Uploading ' + (i + 1) + ' of ' + files.length + '...');
-      const { blob, ar } = await shrink(files[i], 1800);
+      const { blob, ar } = shr;
       const name = 'mood-' + BIZ + '-' + Date.now().toString(36) + i + '.jpg';
       if(CLOUD){
         const r = await fetch(WORKER + '/admin/upload?f=deck&n=' + encodeURIComponent(name), { method:'POST', headers:{ 'Content-Type':'image/jpeg', Authorization:'Bearer ' + await token() }, body:blob });
@@ -1007,9 +1139,48 @@ $('upFile').addEventListener('change', async e => {
         LIB.items.unshift({ id:'i' + uid(), ref:'u:' + url, cat, cap:'', ar, at:new Date().toISOString() });
       }
       n++;
-    }catch(err){ console.warn(err); msg('Upload failed: ' + err.message + '. Check your signal and try again.'); break; }
+    }catch(err){ console.warn(err); msg(''); toast('Upload stopped after ' + n + ': ' + err.message + '. Check your signal and try again.'); break; }
   }
-  if(n){ await Store.saveLib(); afterAdd(n); }
+  msg('');
+  if(unread) setTimeout(() => toast(unread + (unread === 1 ? ' picture' : ' pictures') + ' could not be read. iPhone HEIC photos only open in Safari: use Safari, or export them from Photos as JPEG first.'), n ? 2600 : 0);
+  return n;
+}
+
+/* ---- drag and drop onto the mood board library (from the Photos app, a folder or another tab) ---- */
+function libOpen(){ return !$('vLib').classList.contains('hide'); }
+function realCat(c){ return !!c && c !== 'All' && c !== 'Loved' && LIB.cats.includes(c); }
+let dragDepth = 0;
+function dragHasPics(e){ const t = Array.from((e.dataTransfer && e.dataTransfer.types) || []); return t.includes('Files') || t.includes('text/uri-list'); }
+function dropLabel(){ return realCat(libFilter) ? 'Drop to add to ' + libFilter : 'Drop to add to the mood board'; }
+document.addEventListener('dragenter', e => { if(!libOpen() || !dragHasPics(e)) return; e.preventDefault(); dragDepth++; $('dropTxt').textContent = dropLabel(); $('dropZone').classList.add('on'); });
+document.addEventListener('dragover', e => { if(!dragHasPics(e)) return; e.preventDefault(); if(e.dataTransfer) e.dataTransfer.dropEffect = libOpen() ? 'copy' : 'none'; });
+document.addEventListener('dragleave', e => { if(!libOpen()) return; dragDepth = Math.max(0, dragDepth - 1); if(!dragDepth) $('dropZone').classList.remove('on'); });
+document.addEventListener('drop', e => {
+  if(!dragHasPics(e)) return;
+  e.preventDefault(); dragDepth = 0; $('dropZone').classList.remove('on');   // never let the browser open a dropped file
+  if(!libOpen()) return;
+  const dt = e.dataTransfer;
+  const files = Array.from(dt.files || []).filter(f => /^image\//i.test(f.type) || /\.(jpe?g|png|webp|gif|heic|heif|avif)$/i.test(f.name));
+  const links = files.length ? [] : (dt.getData('text/uri-list') || dt.getData('text/plain') || '').split(/\s+/).filter(u => /^https?:\/\//i.test(u) && !/^#/.test(u));
+  if(!files.length && !links.length){ toast('Only pictures can be added to the mood board'); return; }
+  const count = files.length || links.length;
+  const go = async cat => {
+    let n;
+    if(files.length) n = await uploadFiles(files, cat);
+    else { n = 0; for(const u of links){ const ar = await ratio(u); LIB.items.unshift({ id:'i' + uid(), ref:'u:' + u, cat, cap:'', ar, at:new Date().toISOString() }); n++; } }
+    if(n){ await Store.saveLib(); afterAdd(n); if(realCat(cat) && libFilter !== cat){ libFilter = cat; renderLib(); } }
+  };
+  if(realCat(libFilter)) { go(libFilter); return; }
+  sheet('Add ' + count + (count === 1 ? ' picture' : ' pictures'), `
+    <label class="lb">Category</label>
+    <select class="sel" id="adCat">${LIB.cats.map(c => `<option>${esc(c)}</option>`).join('')}<option value="__new">+ New category...</option></select>
+    <input class="inp hide" id="adNewCat" placeholder="New category name" style="margin-top:8px">
+    <p class="muted small" style="margin-top:8px">Tip: open a category chip first and drops go straight into it.</p>
+    <button class="btn" id="dropGo" style="width:100%;justify-content:center;margin-top:12px">Add ${count} to the mood board</button>
+    <p class="muted small" id="adMsg" style="margin-top:10px"></p>`, () => {
+    $('adCat').onchange = () => $('adNewCat').classList.toggle('hide', $('adCat').value !== '__new');
+    $('dropGo').onclick = () => { const cat = adCategory(); if(!cat) return; $('dropGo').disabled = true; go(cat); };
+  });
 });
 function afterAdd(n){
   const fresh = LIB.items.slice(0, n).map(i => i.id);   // new ideas go to the front of the library
@@ -1332,7 +1503,7 @@ document.addEventListener('click', e => {
   const a = b.dataset.act;
   const A = {
     startSheet:() => startSheet(), schedSheet:() => startSheet(null, 'later'), openLib:() => go('lib=1'), home:() => go(''), addSheet, catSheet,
-    clearFilter:() => go(''), startOrder:() => startSheet('order:' + b.dataset.id), shareSheet:() => shareSheet(cur), toInvoice:() => toInvoice(cur), chooseSheet, starterSheet,
+    clearFilter:() => go(''), startOrder:() => startSheet('order:' + b.dataset.id), shareSheet:() => shareSheet(cur), toInvoice:() => toInvoice(cur), chooseSheet, starterSheet, selMode:() => selMode(!libSel),
     leaveLive:() => { Store.flush(); if(cur.status === 'open') go(''); else go('m=' + cur.id); },
     cvOn:() => { document.body.classList.add('cv'); if(TABS.find(x => x.k === tab).priv || (tab === 'quote' && !cur.quote.showClient)) tab = 'board'; updateTabs(); renderPanel(); window.scrollTo(0, 0); },
     stamp:() => { const ta = $('notesTa'); const s = '[' + hhmm(new Date()) + '] '; const p = ta.selectionStart || ta.value.length; const pre = ta.value.slice(0, p); ta.value = pre + (pre && !/\n$/.test(pre) ? '\n' : '') + s + ta.value.slice(p); cur.notes = ta.value; Store.touch(); ta.focus(); },
