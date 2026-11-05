@@ -245,6 +245,25 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .ws-prev .strip{background:#02367B;color:#fff;padding:10px 14px;}
 .ws-prev .strip b{text-decoration:underline;text-underline-offset:3px;}
 .ws-prev .off{padding:10px;color:var(--ink-soft);border:1px dashed var(--line);border-radius:12px;font-weight:500;}
+/* client gallery header */
+.gh-prev{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(0,1fr);gap:12px;align-items:end;}
+.gh-box{position:relative;border-radius:14px;overflow:hidden;background:#15161a;cursor:crosshair;user-select:none;}
+.gh-box.desk{aspect-ratio:16/7;} .gh-box.phone{aspect-ratio:9/13;}
+.gh-bg{position:absolute;inset:0;background-size:cover;background-position:50% 50%;filter:brightness(.72) saturate(.9);}
+.gh-scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,15,18,.7) 0%,rgba(14,15,18,.35) 55%,rgba(14,15,18,.1) 100%),linear-gradient(180deg,rgba(14,15,18,.2) 0%,rgba(14,15,18,.75) 100%);pointer-events:none;}
+.gh-box.phone .gh-scrim{background:linear-gradient(180deg,rgba(14,15,18,.4) 0%,rgba(14,15,18,.85) 100%);}
+.gh-txt{position:absolute;left:7%;bottom:9%;right:7%;color:#fff;pointer-events:none;}
+.gh-txt span{display:block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#bcd4f5;}
+.gh-txt b{display:block;font-size:clamp(16px,3.4vw,30px);font-weight:800;line-height:1;text-transform:uppercase;margin-top:4px;}
+.gh-txt b i{display:block;font-style:normal;color:#8fb8e8;}
+.gh-box.phone .gh-txt b{font-size:clamp(13px,2.4vw,18px);}
+.gh-dot{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.5);pointer-events:none;}
+.gh-cap{font-size:11px;color:var(--ink-soft);text-align:center;margin-top:5px;font-weight:600;}
+.gh-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;}
+.gh-acts button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.gh-acts button.pri{background:var(--accent);border-color:var(--accent);color:#fff;}
+.gh-acts span{font-size:12.5px;color:var(--ink-soft);}
+@media(max-width:560px){.gh-prev{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);}}
 .ws-note{color:var(--ink-soft);font-size:12.5px;text-align:center;margin:6px 0 0;}
 
 .bd-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr) 38px;gap:8px;margin-bottom:8px;align-items:center;}
@@ -343,6 +362,20 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
         <div class="ws-prev" id="bPrev"></div>
     </section>
 
+    <section class="ws-card" id="ghCard">
+        <h2>Client gallery header</h2>
+        <p class="ws-help">The photo at the top of every client's gallery in the portal. Tap either preview to set the focus point, so faces stay in view on phones. A cover set for one client on the Database replaces this for that client.</p>
+        <div class="gh-prev">
+            <div><div class="gh-box desk" data-gh><div class="gh-bg"></div><div class="gh-scrim"></div><div class="gh-txt"><span class="gh-eb"></span><b>Welcome,<i>Zara</i></b></div><span class="gh-dot"></span></div><div class="gh-cap">Computer</div></div>
+            <div><div class="gh-box phone" data-gh><div class="gh-bg"></div><div class="gh-scrim"></div><div class="gh-txt"><span class="gh-eb"></span><b>Welcome,<i>Zara</i></b></div><span class="gh-dot"></span></div><div class="gh-cap">Phone</div></div>
+        </div>
+        <div class="gh-acts"><button type="button" class="pri" id="ghUp">Upload image</button><button type="button" id="ghDel">Use the default</button><span id="ghMsg"></span></div>
+        <input type="file" id="ghFile" accept="image/*" hidden>
+        <div class="ws-grid" style="margin-top:14px">
+            <div class="ws-f ws-wide"><label for="ghLine">Header text (the small line above the client's name)</label><input id="ghLine" maxlength="60" placeholder="FOM Studios · Your Gallery"></div>
+        </div>
+    </section>
+
     <section class="ws-card">
         <h2>Contact details</h2>
         <p class="ws-help">Updates the phone, email and WhatsApp buttons and links on every page, including the booking form.</p>
@@ -436,10 +469,58 @@ function fillPhotoPick(arr){
 }
 const F={phone:'fPhone',whatsapp:'fWa',email:'fEmail',instagram:'fIg',whatsappChannel:'fWac',facebook:'fFb',tiktok:'fTt',youtube:'fYt',area:'fArea',serviceArea:'fCover',hours:'fHours'};
 
+/* ---- client gallery header: saved on this business's site doc as galleryHeader {src:'r2:<file>', fx, fy, line} ----
+   The portal gallery (portfolio client-gallery.html) reads it; uploads go to the R2 portfolio/ folder (public). */
+const GH_WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
+const GH_DEFAULT = SBA ? '' : 'https://www.fomstudios.co.za/assets/email-hero.png';   // what clients see when nothing is set
+let GH = { src:'', fx:50, fy:50 };
+const ghUrl = src => !src ? GH_DEFAULT : src.indexOf('r2:') === 0 ? GH_WORKER + '/file?g=portfolio%2F&n=' + encodeURIComponent(src.slice(3)) : src;
+function normGH(g){ g = (g && typeof g === 'object') ? g : {}; const n = v => Math.max(0, Math.min(100, Math.round(+v))); const o = { src:String(g.src || '').slice(0, 300), fx:isFinite(+g.fx) && g.fx !== '' ? n(g.fx) : 50, fy:isFinite(+g.fy) && g.fy !== '' ? n(g.fy) : 50, line:String(g.line || '').trim().slice(0, 60) }; return o; }
+function drawGH(){
+  const url = ghUrl(GH.src), line = $('ghLine').value.trim() || $('ghLine').placeholder;
+  document.querySelectorAll('[data-gh]').forEach(b => {
+    b.querySelector('.gh-bg').style.backgroundImage = url ? 'url("' + url + '")' : 'none';
+    b.querySelector('.gh-bg').style.backgroundPosition = GH.fx + '% ' + GH.fy + '%';
+    b.querySelector('.gh-eb').textContent = line;
+    const d = b.querySelector('.gh-dot'); d.style.display = url ? '' : 'none'; d.style.left = GH.fx + '%'; d.style.top = GH.fy + '%';
+  });
+  $('ghDel').style.display = GH.src ? '' : 'none';
+  $('ghMsg').textContent = GH.src ? 'Your own header' : (SBA ? 'No header photo yet: clients see a plain dark band' : 'Using the default FOM banner');
+}
+document.querySelectorAll('[data-gh]').forEach(b => b.addEventListener('click', e => {
+  if(!ghUrl(GH.src)) return;
+  const r = b.getBoundingClientRect();
+  GH.fx = Math.round(Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)));
+  GH.fy = Math.round(Math.max(0, Math.min(100, (e.clientY - r.top) / r.height * 100)));
+  drawGH(); setState();
+}));
+$('ghUp').onclick = () => $('ghFile').click();
+$('ghDel').onclick = () => { GH = { src:'', fx:50, fy:50 }; drawGH(); setState(); };
+function ghShrink(file, max){
+  return new Promise((res, rej) => { const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => { const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u); c.toBlob(b => b ? res(b) : rej(new Error('could not read image')), 'image/jpeg', 0.86); };
+    img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('could not read image')); }; img.src = u; });
+}
+$('ghFile').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = ''; if(!f) return;
+  $('ghMsg').textContent = 'Uploading...'; $('ghUp').disabled = true;
+  try{
+    const blob = await ghShrink(f, 2400), name = 'gallery-header-' + (SBA ? 'sba' : 'fom') + '-' + Date.now().toString(36) + '.jpg';
+    const u = window.firebase && firebase.apps.length && firebase.auth().currentUser; if(!u) throw new Error('not signed in');
+    const r = await fetch(GH_WORKER + '/admin/upload?n=' + encodeURIComponent(name), { method:'POST', headers:{ 'Content-Type':'image/jpeg', Authorization:'Bearer ' + await u.getIdToken() }, body:blob });
+    const j = await r.json().catch(() => ({})); if(!r.ok || !j.ok) throw new Error(j.error || ('upload failed (' + r.status + ')'));
+    GH = { src:'r2:' + (j.name || name), fx:50, fy:50 }; drawGH(); setState(); toast('Uploaded. Tap the preview to set the focus, then Publish.');
+  }catch(err){ console.warn(err); $('ghMsg').textContent = 'Upload failed: ' + err.message; }
+  $('ghUp').disabled = false;
+});
+drawGH();
+
 function readForm(){
   const d={}; Object.keys(F).forEach(k=>{ const v=$(F[k]).value.trim(); if(v) d[k]=v; });
   d.banner={on:$('bOn').checked,text:$('bText').value.trim(),link:$('bLink').value.trim(),linkLabel:$('bLabel').value.trim()};
   d.blockedDates=readBD();
+  d.galleryHeader=normGH(Object.assign({}, GH, { line:$('ghLine').value }));
   if(SBA){ const t={}; Object.keys(TX).forEach(k=>{ const v=$(TX[k]).value.trim(); if(v) t[k]=v; }); d.text=t; d.services=readSvc(); }
   return d;
 }
@@ -470,6 +551,7 @@ function readSaved(d){
   const o={}; Object.keys(F).forEach(k=>{ const v=String((d&&d[k])||'').trim(); if(v) o[k]=v; });
   const b=(d&&d.banner)||{}; o.banner={on:!!b.on,text:String(b.text||'').trim(),link:String(b.link||'').trim(),linkLabel:String(b.linkLabel||'').trim()};
   o.blockedDates=normBD(d&&d.blockedDates);
+  o.galleryHeader=normGH(d&&d.galleryHeader);
   if(SBA){ o.text=normText(d&&d.text); o.services=normSvc(d&&d.services); }
   return o;
 }
@@ -477,6 +559,7 @@ function fillForm(d){
   d=d||{}; Object.keys(F).forEach(k=>{ $(F[k]).value=d[k]||''; });
   const b=d.banner||{}; $('bOn').checked=!!b.on; $('bText').value=b.text||''; $('bLink').value=b.link||''; $('bLabel').value=b.linkLabel||'';
   drawBD(normBD(d.blockedDates));
+  { const g=normGH(d.galleryHeader); GH={ src:g.src, fx:g.fx, fy:g.fy }; $('ghLine').value=g.line; drawGH(); }
   if(SBA){ const t=d.text||{}; Object.keys(TX).forEach(k=>{ $(TX[k]).value=t[k]||''; }); drawSvc(d.services); }
   preview();
 }
@@ -505,7 +588,7 @@ function validate(d){
   return bad.length===0;
 }
 
-document.addEventListener('input',e=>{ if(e.target.closest('.ws-card')){ e.target.classList.remove('bad'); preview(); setState(); } });
+document.addEventListener('input',e=>{ if(e.target.closest('.ws-card')){ e.target.classList.remove('bad'); preview(); if(e.target.id==='ghLine') drawGH(); setState(); } });
 document.addEventListener('change',e=>{ if(e.target.closest('.ws-card')){ preview(); setState(); } });
 $('wsRevert').onclick=()=>{ fillForm(saved); setState(); };
 $('wsSave').onclick=async()=>{
