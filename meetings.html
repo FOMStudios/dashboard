@@ -300,6 +300,7 @@ body.cv .fom-nav,body.cv .fom-sheet,body.cv .fom-scrim{display:none!important;}
     </div>
     <div class="row" style="margin-top:14px;flex-wrap:nowrap">
       <div class="chips" id="libChips" style="flex:1"></div>
+      <button class="mini" data-act="starterSheet" style="margin-bottom:10px">Starters</button>
       <button class="mini" data-act="catSheet" style="margin-bottom:10px">Edit categories</button>
     </div>
     <div class="masonry" id="libBoard"></div>
@@ -867,6 +868,7 @@ async function startMeeting(){
     else { const l = LEADS.find(x => x.id === stPick); m.leadId = l.id; Object.assign(m.client, { name:l.contact ? l.contact + (l.company ? ' (' + l.company + ')' : '') : (l.company || ''), email:l.email || '', phone:l.phone || '', venue:l.location || '' }); }
   }
   m.qs = questionsFor(m.client.type);
+  const st = starterFor(m.client.type); if(st){ m.board = st.ids.filter(id => LIB.items.some(i => i.id === id)); m.starter = st.name; }
   if(startWhen === 'later'){
     const d = $('stDate').value, t = $('stTime').value || '10:00';
     if(!d){ toast('Pick the meeting date'); return; }
@@ -882,6 +884,7 @@ async function startMeeting(){
   cur = m; Store.touch(); Store.flush();
   tab = 'board'; boardFilter = autoCat(m.client.type);
   go('m=' + m.id);
+  if(m.starter) setTimeout(() => toast('Started from your ' + m.starter + ' (' + m.board.length + ' pictures)'), 300);
 }
 
 /* ---------- a scheduled meeting: start, remind, move or cancel ---------- */
@@ -1093,6 +1096,34 @@ function toggleBoard(id, on){
   Store.touch();
 }
 
+/* ---- starters: a saved board per shoot type (LIB.starters, saved with the library) ---- */
+const starters = () => (Array.isArray(LIB.starters) ? LIB.starters : (LIB.starters = []));
+function starterFor(type){ const list = starters().filter(x => x.type === type && x.ids && x.ids.length); return list.find(x => x.auto) || list[0] || null; }
+function saveStarter(name, type, ids){
+  const list = starters(), ex = list.find(x => x.name.toLowerCase() === name.toLowerCase());
+  if(ex && !confirm('Replace the "' + ex.name + '" starter with these ' + ids.length + ' pictures?')) return false;
+  const st = ex || { id:'s' + uid(), name, type, ids:[], auto:false };
+  st.name = name; st.type = type; st.ids = ids.slice(); st.at = new Date().toISOString();
+  if(!ex) list.push(st);
+  if(!list.some(x => x.type === type && x.auto)) st.auto = true;
+  Store.saveLib(); return st;
+}
+function starterSheet(){
+  const list = starters();
+  sheet('Mood board starters', `<p class="muted small" style="margin-bottom:10px">A starter is a saved set of pictures. New meetings of its shoot type begin with it, so you only swap a few pictures per client. Save one from any meeting's Choose images screen.</p>
+    ${list.length ? `<div class="list">${list.map((x, i) => `<div class="li" style="flex-wrap:wrap;align-items:flex-start;padding:10px 12px">
+        <div class="grow" style="min-width:160px"><input data-stn="${i}" value="${esc(x.name)}" style="font-weight:700;width:100%"><div class="muted small" style="padding:0 4px">${(x.ids || []).filter(id => LIB.items.some(it => it.id === id)).length} pictures</div></div>
+        <select data-stt="${i}">${TYPES.map(t => `<option${t === x.type ? ' selected' : ''}>${t}</option>`).join('')}</select>
+        <label class="small" style="display:flex;gap:6px;align-items:center;width:100%;padding:4px"><input type="checkbox" class="ck" data-sta="${i}"${x.auto ? ' checked' : ''}> Use for new ${esc(x.type)} meetings</label>
+        <button class="x" data-std="${i}" aria-label="Delete starter">&times;</button></div>`).join('')}</div>`
+      : `<div class="empty">No starters yet. Open a meeting, tap Choose images, pick the pictures, then Save as starter.</div>`}`, b => {
+    b.querySelectorAll('[data-stn]').forEach(el => el.onchange = () => { const v = el.value.trim(); if(v){ list[+el.dataset.stn].name = v; Store.saveLib(); } else el.value = list[+el.dataset.stn].name; });
+    b.querySelectorAll('[data-stt]').forEach(el => el.onchange = () => { const x = list[+el.dataset.stt]; x.type = el.value; x.auto = !list.some(y => y !== x && y.type === x.type && y.auto); Store.saveLib(); starterSheet(); });
+    b.querySelectorAll('[data-sta]').forEach(el => el.onchange = () => { const x = list[+el.dataset.sta]; list.forEach(y => { if(y.type === x.type) y.auto = false; }); x.auto = el.checked; Store.saveLib(); starterSheet(); });
+    b.querySelectorAll('[data-std]').forEach(el => el.onclick = () => { const x = list[+el.dataset.std]; if(!confirm('Delete the "' + x.name + '" starter? Meetings that already use its pictures keep them.')) return; list.splice(+el.dataset.std, 1); Store.saveLib(); starterSheet(); });
+  });
+}
+
 /* ---- choose this client's pictures (prepare before the meeting, or any time) ---- */
 let chSel = null, chCat = 'All', chooserOpen = false, chooserNext = false;
 function chooseSheet(){ if(!cur) return; chSel = new Set(cur.board || []); chCat = 'All'; chooserOpen = true; drawChooser(); }
@@ -1102,6 +1133,9 @@ function drawChooser(){
   const upCat = LIB.cats.find(c => /inspo/i.test(c)) || (chCat !== 'All' && chCat !== 'Chosen' ? chCat : LIB.cats[0]);
   sheet('Mood board for ' + first(cur.client.name), `
     <p class="muted small" style="margin-bottom:8px">Tap the pictures to show in this client's meeting. Uploads are saved to your library too, so you never upload the same picture twice.</p>
+    <div class="row" style="flex-wrap:nowrap;gap:8px;margin-bottom:10px">
+      <select class="sel" id="chStarter" style="flex:1;font-size:14px;padding:9px 12px"><option value="">${starters().length ? 'Start from a starter...' : 'No starters saved yet'}</option>${starters().map((x, i) => `<option value="${i}">${esc(x.name)} (${(x.ids || []).filter(id => LIB.items.some(it => it.id === id)).length})</option>`).join('')}</select>
+      <button class="mini" id="chSaveSt" type="button">Save as starter</button></div>
     <div class="chips" id="chChips">${['All','Chosen'].concat(cats).map(c => `<button class="mini${c === chCat ? ' on' : ''}" data-chc="${esc(c)}">${c === 'Chosen' ? '✓ Chosen <span id="chN">' + chSel.size + '</span>' : esc(c)}</button>`).join('')}</div>
     <div class="row" style="gap:6px;margin:2px 0 10px"><button class="mini" id="chAll">Select all shown</button><button class="mini" id="chNone">Clear shown</button></div>
     <div class="pgrid" id="chGrid">${list.length ? list.map(i => `<div data-chi="${esc(i.id)}" class="${chSel.has(i.id) ? 'sel' : ''}" title="${esc(i.cap || i.cat || '')}"><img src="${esc(imgUrl(i))}" loading="lazy" alt=""></div>`).join('') : `<p class="muted small" style="grid-column:1/-1">${chCat === 'Chosen' ? 'Nothing chosen yet.' : 'No pictures here yet. Upload some below.'}</p>`}</div>
@@ -1115,6 +1149,18 @@ function drawChooser(){
     $('chAll').onclick = () => { list.forEach(i => chSel.add(i.id)); drawChooser(); };
     $('chNone').onclick = () => { list.forEach(i => chSel.delete(i.id)); drawChooser(); };
     $('adCat').onchange = () => $('adNewCat').classList.toggle('hide', $('adCat').value !== '__new');
+    $('chStarter').onchange = e => { const x = starters()[+e.target.value]; if(!x) return;
+      const ids = x.ids.filter(id => LIB.items.some(i => i.id === id));
+      if(chSel.size && !confirm('Replace the ' + chSel.size + ' chosen pictures with the "' + x.name + '" starter (' + ids.length + ')?')){ e.target.value = ''; return; }
+      chSel = new Set(ids); chCat = 'Chosen'; drawChooser(); toast('Loaded ' + x.name); };
+    $('chSaveSt').onclick = () => {
+      if(!chSel.size){ toast('Choose some pictures first'); return; }
+      const name = (prompt('Name this starter (new ' + cur.client.type + ' meetings will begin with it):', (cur.client.type === 'General' ? 'General' : cur.client.type.split(' /')[0]) + ' starter') || '').trim();
+      if(!name) return;
+      const ordered = LIB.items.map(i => i.id).filter(id => chSel.has(id));
+      const st = saveStarter(name, cur.client.type, ordered);
+      if(st){ drawChooser(); toast('Saved "' + st.name + '"' + (st.auto ? ': new ' + st.type + ' meetings start with it' : '')); }
+    };
     $('chUp').onclick = () => { if(!adCategory()) return; $('upFile').click(); };
     $('chSave').onclick = () => {
       const keep = (cur.board || []).filter(id => chSel.has(id)), add = LIB.items.map(i => i.id).filter(id => chSel.has(id) && !keep.includes(id));
@@ -1286,7 +1332,7 @@ document.addEventListener('click', e => {
   const a = b.dataset.act;
   const A = {
     startSheet:() => startSheet(), schedSheet:() => startSheet(null, 'later'), openLib:() => go('lib=1'), home:() => go(''), addSheet, catSheet,
-    clearFilter:() => go(''), startOrder:() => startSheet('order:' + b.dataset.id), shareSheet:() => shareSheet(cur), toInvoice:() => toInvoice(cur), chooseSheet,
+    clearFilter:() => go(''), startOrder:() => startSheet('order:' + b.dataset.id), shareSheet:() => shareSheet(cur), toInvoice:() => toInvoice(cur), chooseSheet, starterSheet,
     leaveLive:() => { Store.flush(); if(cur.status === 'open') go(''); else go('m=' + cur.id); },
     cvOn:() => { document.body.classList.add('cv'); if(TABS.find(x => x.k === tab).priv || (tab === 'quote' && !cur.quote.showClient)) tab = 'board'; updateTabs(); renderPanel(); window.scrollTo(0, 0); },
     stamp:() => { const ta = $('notesTa'); const s = '[' + hhmm(new Date()) + '] '; const p = ta.selectionStart || ta.value.length; const pre = ta.value.slice(0, p); ta.value = pre + (pre && !/\n$/.test(pre) ? '\n' : '') + s + ta.value.slice(p); cur.notes = ta.value; Store.touch(); ta.focus(); },
