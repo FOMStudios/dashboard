@@ -108,6 +108,10 @@ label.lb{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);marg
 .heart.on{background:var(--heart);color:#fff;}
 .heart.pop{animation:pop .35s;}
 @keyframes pop{40%{transform:scale(1.3)}}
+.boardtag{position:absolute;left:8px;top:8px;border:0;border-radius:99px;font-size:11.5px;font-weight:800;padding:5px 10px;cursor:pointer;background:rgba(255,255,255,.92);color:#2a2b2c;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.boardtag.on{background:#1f8a4c;color:#fff;}
+.prep{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--bg-pill);border:1.5px dashed var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px;}
+.prep b{font-size:15px;} .prep p{font-size:13px;color:var(--ink-soft);margin-top:2px;}
 .lovedtag{position:absolute;left:8px;bottom:8px;background:var(--heart);color:#fff;border-radius:99px;font-size:11px;font-weight:700;padding:2px 8px;}
 
 /* ---------- lightbox ---------- */
@@ -540,6 +544,7 @@ function pinHtml(it, mode){
   return `<div class="pin" data-pin="${esc(it.id)}">
     <div class="pimg" style="aspect-ratio:${ar}"><img src="${esc(it.url || imgUrl(it))}" alt="${esc(it.cap || 'Idea')}" loading="lazy">
       ${mode === 'meet' ? `<button class="heart${loved ? ' on' : ''}" data-heart="${esc(it.id)}" aria-label="Love this idea">${HEART}</button>` : ''}
+      ${mode === 'meet' && boardFilter === 'Library' && hasBoard() ? `<button class="boardtag priv${cur.board.includes(it.id) ? ' on' : ''}" data-board="${esc(it.id)}">${cur.board.includes(it.id) ? '\u2713 On their board' : '+ Their board'}</button>` : ''}
       ${mode === 'sum' ? `<span class="lovedtag">&#9829; Loved</span>` : ''}
     </div>
     ${it.cap ? `<div class="pcap">${esc(it.cap)}</div>` : ''}
@@ -597,7 +602,7 @@ document.addEventListener('keydown', e => { if(!$('lb').classList.contains('on')
    SHEET
    ===================================================================== */
 function sheet(title, html, onOpen){ $('shT').textContent = title; $('shB').innerHTML = html; $('sh').classList.add('on'); $('scr').classList.add('on'); if(onOpen) onOpen($('shB')); }
-function closeSheet(){ $('sh').classList.remove('on'); $('scr').classList.remove('on'); }
+function closeSheet(){ chooserOpen = false; $('sh').classList.remove('on'); $('scr').classList.remove('on'); }
 $('shX').onclick = closeSheet; $('scr').onclick = closeSheet;
 (function drag(){
   let y0 = null, dy = 0; const sh = $('sh');
@@ -888,13 +893,14 @@ function plannedSheet(m){
     <button class="btn" style="width:100%;justify-content:center;margin-top:12px" id="plStart">Start meeting now</button>
     <a class="btn ghost" id="plRemind" target="_blank" rel="noopener" style="width:100%;justify-content:center;margin-top:8px">WhatsApp reminder to ${esc(first(m.client.name))}</a>
     <div class="grid3" style="margin-top:14px"><div><label class="lb">Date</label><input class="inp" type="date" id="plDate" value="${isoDay(d)}"></div><div><label class="lb">Time</label><input class="inp" type="time" id="plTime" value="${hhmm(d)}"></div><div><label class="lb">Where</label><input class="inp" id="plWhere" value="${esc(m.where || '')}"></div></div>
-    <div class="row" style="margin-top:10px"><button class="btn ghost sm" id="plSave">Save changes</button><button class="btn ghost sm" id="plPrep">Prepare notes</button><button class="btn ghost sm" id="plDel" style="color:#c0392b!important">Cancel meeting</button></div>`, () => {
+    <div class="row" style="margin-top:10px"><button class="btn ghost sm" id="plSave">Save changes</button><button class="btn ghost sm" id="plBoard">Choose mood board${(m.board || []).length ? ' (' + m.board.length + ')' : ''}</button><button class="btn ghost sm" id="plPrep">Prepare notes</button><button class="btn ghost sm" id="plDel" style="color:#c0392b!important">Cancel meeting</button></div>`, () => {
     const msg = 'Hi ' + first(m.client.name) + ', just confirming our meeting ' + planLabel(m).replace(/^Today/, 'today').replace(/^Tomorrow/, 'tomorrow').replace(/^(\w{3}), /, 'on $1 ') + (m.where ? ' at ' + m.where : '') + '. Looking forward to chatting about your shoot! ' + first(BZ.b.owner) + ', ' + BZ.b.name;
     $('plRemind').href = 'https://wa.me/' + waNum(m.client.phone) + '?text=' + encodeURIComponent(msg);
     $('plRemind').onclick = () => { m.remindedAt = new Date().toISOString(); saveM(m); };
     $('plStart').onclick = () => { m.status = 'open'; m.startedAt = new Date().toISOString(); closeSheet(); cur = m; Store.touch(); Store.flush(); tab = 'board'; boardFilter = autoCat(m.client.type); go('m=' + m.id); };
     $('plSave').onclick = () => { const dd = $('plDate').value, tt = $('plTime').value || '10:00'; if(!dd) return; m.plannedAt = new Date(dd + 'T' + tt).toISOString(); m.where = $('plWhere').value.trim(); saveM(m).then(() => { closeSheet(); toast('Moved to ' + planLabel(m)); renderHome(); }); };
     $('plPrep').onclick = () => { closeSheet(); tab = 'qs'; go('m=' + m.id + '&edit=1'); };
+    $('plBoard').onclick = () => { closeSheet(); tab = 'board'; chooserNext = true; go('m=' + m.id + '&edit=1'); };
     $('plDel').onclick = () => { if(!confirm('Cancel this scheduled meeting?')) return; Store.deleteMeeting(m.id).then(() => { closeSheet(); toast('Meeting cancelled'); go(''); }); };
   });
 }
@@ -1003,6 +1009,9 @@ $('upFile').addEventListener('change', async e => {
   if(n){ await Store.saveLib(); afterAdd(n); }
 });
 function afterAdd(n){
+  const fresh = LIB.items.slice(0, n).map(i => i.id);   // new ideas go to the front of the library
+  if(chooserOpen && cur){ fresh.forEach(id => chSel.add(id)); drawChooser(); toast(n + (n === 1 ? ' picture' : ' pictures') + ' uploaded and chosen'); return; }
+  if(cur && hasBoard() && !$('vLive').classList.contains('hide')) fresh.forEach(id => toggleBoard(id, true));
   closeSheet(); toast(n + (n === 1 ? ' idea' : ' ideas') + ' added');
   if(!$('vLib').classList.contains('hide')) renderLib();
   if(!$('vLive').classList.contains('hide')) renderPanel();
@@ -1034,7 +1043,9 @@ function openEditor(m){
   $('endBtn').textContent = live ? 'End meeting' : cur.status === 'planned' ? 'Done preparing' : 'Done editing';
   $('lvTimer').classList.toggle('hide', !live);
   $('cvLogo').src = BZ.b.logo;
+  if(hasBoard() && !['Board','Loved'].includes(boardFilter)) boardFilter = 'Board';
   drawHead(); updateTabs(); renderPanel();
+  if(chooserNext){ chooserNext = false; tab = 'board'; updateTabs(); renderPanel(); setTimeout(chooseSheet, 250); }
   clearInterval(timerInt);
   if(live){ const tick = () => { const s = Math.max(0, Math.floor((Date.now() - new Date(cur.startedAt)) / 1000)); const h = Math.floor(s / 3600); $('lvTimer').textContent = (h ? h + ':' : '') + pad(Math.floor(s / 60) % 60) + ':' + pad(s % 60); }; tick(); timerInt = setInterval(tick, 1000); }
 }
@@ -1056,17 +1067,74 @@ function updateTabs(){
 }
 $('lvTabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if(b){ tab = b.dataset.tab; updateTabs(); renderPanel(); } });
 
+/* ---- each client's own board: cur.board = the library ideas chosen for this meeting (empty = whole library) ---- */
+const hasBoard = () => !!(cur && Array.isArray(cur.board) && cur.board.length);
+const myBoard = () => (cur.board || []).map(id => LIB.items.find(i => i.id === id)).filter(Boolean);
 function boardItems(){
   if(boardFilter === 'Loved') return cur.hearts.map(h => LIB.items.find(i => i.id === h.id) || Object.assign({ ref:'u:' + h.url }, h));
+  if(hasBoard()){
+    if(boardFilter === 'Library') return LIB.items;
+    const mine = myBoard();
+    return (boardFilter === 'Board' || boardFilter === 'All') ? mine : mine.filter(i => i.cat === boardFilter);
+  }
   return boardFilter === 'All' ? LIB.items : LIB.items.filter(i => i.cat === boardFilter);
+}
+function boardChips(){
+  if(!hasBoard()) return chipsHtml(boardFilter, ['Loved']);
+  const mine = myBoard(), cats = LIB.cats.filter(c => mine.some(i => i.cat === c));
+  const chip = (k, label, cls) => `<button class="mini${k === boardFilter ? ' on' : ''}${cls ? ' ' + cls : ''}" data-chip="${esc(k)}">${label}</button>`;
+  return chip('Board', 'Their board ' + mine.length) + chip('Loved', '&#9829; Loved ' + cur.hearts.length) + cats.map(c => chip(c, esc(c))).join('') + chip('Library', 'Whole library', 'priv');
+}
+function toggleBoard(id, on){
+  if(!cur) return; if(!Array.isArray(cur.board)) cur.board = [];
+  const i = cur.board.indexOf(id);
+  if(on === undefined) on = i < 0;
+  if(on && i < 0) cur.board.push(id); else if(!on && i >= 0) cur.board.splice(i, 1);
+  Store.touch();
+}
+
+/* ---- choose this client's pictures (prepare before the meeting, or any time) ---- */
+let chSel = null, chCat = 'All', chooserOpen = false, chooserNext = false;
+function chooseSheet(){ if(!cur) return; chSel = new Set(cur.board || []); chCat = 'All'; chooserOpen = true; drawChooser(); }
+function drawChooser(){
+  const cats = LIB.cats.filter(c => LIB.items.some(i => i.cat === c));
+  const list = chCat === 'Chosen' ? LIB.items.filter(i => chSel.has(i.id)) : chCat === 'All' ? LIB.items : LIB.items.filter(i => i.cat === chCat);
+  const upCat = LIB.cats.find(c => /inspo/i.test(c)) || (chCat !== 'All' && chCat !== 'Chosen' ? chCat : LIB.cats[0]);
+  sheet('Mood board for ' + first(cur.client.name), `
+    <p class="muted small" style="margin-bottom:8px">Tap the pictures to show in this client's meeting. Uploads are saved to your library too, so you never upload the same picture twice.</p>
+    <div class="chips" id="chChips">${['All','Chosen'].concat(cats).map(c => `<button class="mini${c === chCat ? ' on' : ''}" data-chc="${esc(c)}">${c === 'Chosen' ? '✓ Chosen <span id="chN">' + chSel.size + '</span>' : esc(c)}</button>`).join('')}</div>
+    <div class="row" style="gap:6px;margin:2px 0 10px"><button class="mini" id="chAll">Select all shown</button><button class="mini" id="chNone">Clear shown</button></div>
+    <div class="pgrid" id="chGrid">${list.length ? list.map(i => `<div data-chi="${esc(i.id)}" class="${chSel.has(i.id) ? 'sel' : ''}" title="${esc(i.cap || i.cat || '')}"><img src="${esc(imgUrl(i))}" loading="lazy" alt=""></div>`).join('') : `<p class="muted small" style="grid-column:1/-1">${chCat === 'Chosen' ? 'Nothing chosen yet.' : 'No pictures here yet. Upload some below.'}</p>`}</div>
+    <div class="card" style="margin-top:12px;padding:12px 14px"><label class="lb">Upload more pictures into</label>
+      <div class="row" style="flex-wrap:nowrap"><select class="sel" id="adCat">${LIB.cats.map(c => `<option${c === upCat ? ' selected' : ''}>${esc(c)}</option>`).join('')}<option value="__new">+ New category...</option></select><button class="btn sm" id="chUp" type="button">Upload</button></div>
+      <input class="inp hide" id="adNewCat" placeholder="New category name" style="margin-top:8px"><p class="muted small" id="adMsg" style="margin-top:6px"></p></div>
+    <button class="btn" id="chSave" style="width:100%;justify-content:center;margin-top:12px">Save their board (${chSel.size} pictures)</button>`, b => {
+    const count = () => { $('chSave').textContent = 'Save their board (' + chSel.size + ' pictures)'; const n = $('chN'); if(n) n.textContent = chSel.size; };
+    b.querySelectorAll('[data-chc]').forEach(x => x.onclick = () => { chCat = x.dataset.chc; drawChooser(); });
+    $('chGrid').onclick = e => { const d = e.target.closest('[data-chi]'); if(!d) return; const id = d.dataset.chi; chSel.has(id) ? chSel.delete(id) : chSel.add(id); d.classList.toggle('sel', chSel.has(id)); count(); };
+    $('chAll').onclick = () => { list.forEach(i => chSel.add(i.id)); drawChooser(); };
+    $('chNone').onclick = () => { list.forEach(i => chSel.delete(i.id)); drawChooser(); };
+    $('adCat').onchange = () => $('adNewCat').classList.toggle('hide', $('adCat').value !== '__new');
+    $('chUp').onclick = () => { if(!adCategory()) return; $('upFile').click(); };
+    $('chSave').onclick = () => {
+      const keep = (cur.board || []).filter(id => chSel.has(id)), add = LIB.items.map(i => i.id).filter(id => chSel.has(id) && !keep.includes(id));
+      cur.board = keep.concat(add); Store.touch(); chooserOpen = false; closeSheet();
+      boardFilter = cur.board.length ? 'Board' : 'All'; tab = 'board'; updateTabs(); renderPanel();
+      toast(cur.board.length ? cur.board.length + ' pictures on ' + first(cur.client.name) + '’s board' : 'Board cleared: the whole library shows');
+    };
+  });
 }
 function renderPanel(){
   if(!cur) return;
   const P = $('lvPanel'), c = cur;
   if(tab === 'board'){
-    if(boardFilter !== 'All' && boardFilter !== 'Loved' && !LIB.items.some(i => i.cat === boardFilter)) boardFilter = 'All';
+    const cv = document.body.classList.contains('cv');
+    if(hasBoard()){ if(boardFilter === 'All' || (boardFilter === 'Library' && cv) || (!['Board','Loved','Library'].includes(boardFilter) && !myBoard().some(i => i.cat === boardFilter))) boardFilter = 'Board'; }
+    else if(boardFilter === 'Board' || boardFilter === 'Library' || (boardFilter !== 'All' && boardFilter !== 'Loved' && !LIB.items.some(i => i.cat === boardFilter))) boardFilter = 'All';
     const items = boardItems();
-    P.innerHTML = `<div class="row" style="flex-wrap:nowrap"><div class="chips" style="flex:1" id="bdChips">${chipsHtml(boardFilter, ['Loved'])}</div><button class="mini priv" data-act="addSheet" style="margin-bottom:10px">+ Add</button></div>
+    P.innerHTML = `${hasBoard() ? '' : `<div class="prep priv"><div><b>Pick the pictures for ${esc(first(c.client.name))}</b><p>Choose from your library or upload new ones. Until then, the whole library shows.</p></div><button class="btn sm" data-act="chooseSheet">Choose images</button></div>`}
+      <div class="row" style="flex-wrap:nowrap"><div class="chips" style="flex:1" id="bdChips">${boardChips()}</div>${hasBoard() ? `<button class="mini priv" data-act="chooseSheet" style="margin-bottom:10px">Edit board</button>` : ''}<button class="mini priv" data-act="addSheet" style="margin-bottom:10px">+ Add</button></div>
+      ${boardFilter === 'Library' ? `<p class="muted small priv" style="margin:-2px 0 10px">Your whole library (only you see this). Tap <b>+ Their board</b> or the heart to add a picture to ${esc(first(c.client.name))}'s board.</p>` : ''}
       <div class="masonry" id="bdGrid">${items.length ? items.map(i => pinHtml(i, 'meet')).join('') : `<div class="empty" style="column-span:all">${boardFilter === 'Loved' ? 'Nothing loved yet. Tap the heart on any idea.' : 'Your mood board is empty. Add ideas from the library.'}</div>`}</div>`;
     return;
   }
@@ -1197,7 +1265,9 @@ $('lvPanel').addEventListener('click', e => {
   if(!cur) return;
   const t = e.target;
   const heart = t.closest('[data-heart]');
-  if(heart){ e.stopPropagation(); const on = toggleHeart(heart.dataset.heart); heart.classList.toggle('on', on); if(on){ heart.classList.add('pop'); setTimeout(() => heart.classList.remove('pop'), 400); } if(boardFilter === 'Loved') renderPanel(); updateTabs(); const ch = $('bdChips'); if(ch) ch.innerHTML = chipsHtml(boardFilter, ['Loved']); return; }
+  if(heart){ e.stopPropagation(); const on = toggleHeart(heart.dataset.heart); heart.classList.toggle('on', on); if(on){ heart.classList.add('pop'); setTimeout(() => heart.classList.remove('pop'), 400); } if(on && hasBoard() && !cur.board.includes(heart.dataset.heart)){ toggleBoard(heart.dataset.heart, true); if(boardFilter === 'Library') renderPanel(); }
+    if(boardFilter === 'Loved') renderPanel(); updateTabs(); const ch = $('bdChips'); if(ch) ch.innerHTML = boardChips(); return; }
+  const bt = t.closest('[data-board]'); if(bt){ e.stopPropagation(); toggleBoard(bt.dataset.board); renderPanel(); return; }
   const pin = t.closest('[data-pin]'); if(pin){ const list = boardItems(); openLB(list, list.findIndex(i => i.id === pin.dataset.pin), 'meet'); return; }
   const chip = t.closest('[data-chip]'); if(chip){ boardFilter = chip.dataset.chip; renderPanel(); return; }
   const del = t.closest('[data-del]'); if(del){ getPath(cur, del.dataset.del).splice(+del.dataset.i, 1); Store.touch(); renderPanel(); updateTabs(); return; }
@@ -1216,7 +1286,7 @@ document.addEventListener('click', e => {
   const a = b.dataset.act;
   const A = {
     startSheet:() => startSheet(), schedSheet:() => startSheet(null, 'later'), openLib:() => go('lib=1'), home:() => go(''), addSheet, catSheet,
-    clearFilter:() => go(''), startOrder:() => startSheet('order:' + b.dataset.id), shareSheet:() => shareSheet(cur), toInvoice:() => toInvoice(cur),
+    clearFilter:() => go(''), startOrder:() => startSheet('order:' + b.dataset.id), shareSheet:() => shareSheet(cur), toInvoice:() => toInvoice(cur), chooseSheet,
     leaveLive:() => { Store.flush(); if(cur.status === 'open') go(''); else go('m=' + cur.id); },
     cvOn:() => { document.body.classList.add('cv'); if(TABS.find(x => x.k === tab).priv || (tab === 'quote' && !cur.quote.showClient)) tab = 'board'; updateTabs(); renderPanel(); window.scrollTo(0, 0); },
     stamp:() => { const ta = $('notesTa'); const s = '[' + hhmm(new Date()) + '] '; const p = ta.selectionStart || ta.value.length; const pre = ta.value.slice(0, p); ta.value = pre + (pre && !/\n$/.test(pre) ? '\n' : '') + s + ta.value.slice(p); cur.notes = ta.value; Store.touch(); ta.focus(); },
@@ -1386,8 +1456,9 @@ function shareWrite(id, data, merge){
   return DB.collection('moodShare').doc(id).set(data, { merge:!!merge });
 }
 function shareDelete(id){ if(!CLOUD){ const all = readLS(SH_KEY, {}); delete all[id]; writeLS(SH_KEY, all); return Promise.resolve(); } return DB.collection('moodShare').doc(id).delete(); }
-function shareItems(m, cat){
+function shareItems(m, cat, withBoard){
   const items = m.hearts.map(h => ({ id:h.id, url:absUrl(h.url), cap:h.cap || '', ar:h.ar || 0.8 }));
+  if(withBoard) (m.board || []).map(id => LIB.items.find(i => i.id === id)).filter(i => i && !items.some(x => x.id === i.id)).forEach(i => items.push({ id:i.id, url:absUrl(imgUrl(i)), cap:i.cap || '', ar:i.ar || 0.8 }));
   if(cat) LIB.items.filter(i => i.cat === cat && !items.some(x => x.id === i.id)).forEach(i => items.push({ id:i.id, url:absUrl(imgUrl(i)), cap:i.cap || '', ar:i.ar || 0.8 }));
   return items;
 }
@@ -1407,11 +1478,11 @@ async function shareSheet(m){
         <div class="kv"><span>Client picks</span><b>${at ? picks + ' · ' + niceDay(at) + ' ' + hhmm(at) : 'Not opened yet'}</b></div>
         <div class="kv"><span>Works until</span><span style="${exp && exp < new Date() ? 'color:#c0392b;font-weight:700' : ''}">${exp ? niceDay(exp) + (exp < new Date() ? ' (expired)' : '') : ''}</span></div></div>
       <div class="row" style="margin-top:10px"><button class="btn ghost sm" id="shUpd">Update pictures</button><button class="btn ghost sm" id="shExt">Extend ${SHARE_DAYS} days</button><button class="btn ghost sm" id="shOff" style="color:#c0392b!important">Turn off link</button></div>
-      <p class="muted small" style="margin-top:8px">Update pictures sends your current loved ideas${m.share.cat ? ' plus the ' + esc(m.share.cat) + ' board' : ''}. The client's picks are kept.</p>`, () => {
+      <p class="muted small" style="margin-top:8px">Update pictures sends your current loved ideas${m.share.board ? ', their board' : ''}${m.share.cat ? ' plus the ' + esc(m.share.cat) + ' category' : ''}. The client's picks are kept.</p>`, () => {
       $('shCopy').onclick = () => { (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast('Link copied'), () => prompt('Copy the link:', url)); };
       $('shWa').href = 'https://wa.me/' + waNum(m.client.phone) + '?text=' + encodeURIComponent(shareMsg(m));
       $('shWa').onclick = () => { m.share.sentAt = new Date().toISOString(); saveAny(m); };
-      $('shUpd').onclick = () => { const items = shareItems(m, m.share.cat); if(!items.length){ toast('Nothing to share'); return; } shareWrite(m.share.id, { items, picked:m.hearts.map(h => h.id), brand:shareBrand(), name:first(m.client.name), orderId:m.orderId || '' }, true).then(() => { toast('Pictures updated'); shareSheet(m); }).catch(e => { rulesProblem(e); toast('Could not update the link'); }); };
+      $('shUpd').onclick = () => { const items = shareItems(m, m.share.cat, m.share.board); if(!items.length){ toast('Nothing to share'); return; } shareWrite(m.share.id, { items, picked:m.hearts.map(h => h.id), brand:shareBrand(), name:first(m.client.name), orderId:m.orderId || '' }, true).then(() => { toast('Pictures updated'); shareSheet(m); }).catch(e => { rulesProblem(e); toast('Could not update the link'); }); };
       $('shExt').onclick = () => shareWrite(m.share.id, { expiresAt:tsOf(new Date(Date.now() + SHARE_DAYS * 864e5)) }, true).then(() => { toast('Link extended'); shareSheet(m); }).catch(e => { rulesProblem(e); toast('Could not extend the link'); });
       $('shOff').onclick = () => { if(!confirm('Turn off this link? The client will see that it has ended.')) return; shareDelete(m.share.id).catch(e => console.warn(e)).then(() => { m.share = null; return saveAny(m); }).then(() => { closeSheet(); toast('Link turned off'); if(!cur || cur.id !== m.id) renderSummary(m); }); };
     });
@@ -1420,19 +1491,20 @@ async function shareSheet(m){
   const cats = LIB.cats.filter(c => LIB.items.some(i => i.cat === c)), def = autoCat(m.client.type);
   sheet('Share the mood board', `<p class="muted small" style="margin-bottom:12px">${esc(first(m.client.name))} gets a private link (no login needed) to look through the ideas and heart the ones they love. You get a notification, and their picks show in this meeting's summary.</p>
     <label class="li"><input type="checkbox" class="ck" checked disabled><span class="grow">Ideas loved in the meeting (${m.hearts.length})</span></label>
+    ${(m.board || []).length ? `<label class="li" style="margin-top:8px;cursor:pointer"><input type="checkbox" class="ck" id="shBoard" checked><span class="grow">Everything on their board (${m.board.length})</span></label>` : ''}
     <label class="lb" style="margin-top:12px">Also include a whole board (optional)</label>
     <select class="sel" id="shCat"><option value="">None</option>${cats.map(c => `<option${c === def && !m.hearts.length ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
     <p class="muted small" style="margin-top:8px">The link works for ${SHARE_DAYS} days. You can extend it or turn it off any time.</p>
     <button class="btn" style="width:100%;justify-content:center;margin-top:12px" id="shGo">Create link</button>`, () => {
     $('shGo').onclick = async () => {
-      const cat = $('shCat').value, items = shareItems(m, cat);
+      const cat = $('shCat').value, withBoard = !!($('shBoard') && $('shBoard').checked), items = shareItems(m, cat, withBoard);
       if(!items.length){ toast('Heart some ideas first, or include a board'); return; }
       $('shGo').disabled = true;
       const id = (window.crypto && crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : uid() + uid() + uid()).slice(0, 24);
       const data = { biz:BIZ, meetingId:m.id, orderId:m.orderId || '', name:first(m.client.name), brand:shareBrand(), items, picked:m.hearts.map(h => h.id),
         clientLoved:[], clientAt:null, createdAt:tsOf(new Date()), expiresAt:tsOf(new Date(Date.now() + SHARE_DAYS * 864e5)) };
       try{ await shareWrite(id, data); }catch(e){ rulesProblem(e); toast('Could not create the link. Publish the latest Firestore rules (moodShare).'); $('shGo').disabled = false; return; }
-      m.share = { id, cat, at:new Date().toISOString() };
+      m.share = { id, cat, board:withBoard, at:new Date().toISOString() };
       await saveAny(m); toast('Link ready'); shareSheet(m);
     };
   });
