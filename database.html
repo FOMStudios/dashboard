@@ -176,6 +176,19 @@ table.orders tbody tr.row.sel{background:#eef2fb;box-shadow:inset 3px 0 0 var(--
 .chip-ok{display:inline-block;font-size:12px;font-weight:800;color:#1f8a4c;white-space:nowrap;}
 .chip-no{display:inline-block;font-size:12px;color:var(--ink-soft);white-space:nowrap;}
 .sign-mini{font:inherit;font-size:11.5px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:#eef2fb;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap;}
+.fchips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;scrollbar-width:none;}
+.fchips::-webkit-scrollbar{display:none;}
+.fchip{border:1px solid var(--line);background:var(--bg-pill);color:var(--ink);border-radius:99px;padding:8px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;}
+.fchip .n{min-width:20px;height:20px;border-radius:10px;background:var(--surface-2,#e7e5df);font-size:11.5px;line-height:20px;text-align:center;padding:0 6px;}
+.fchip.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.fchip.on .n{background:rgba(255,255,255,.25);color:#fff;}
+.fchip.warn .n{background:#fdecea;color:#c0392b;}
+.fchip.on.warn .n{background:rgba(255,255,255,.25);color:#fff;}
+table.orders thead th.sortable{cursor:pointer;user-select:none;}
+table.orders thead th.sortable:hover{color:var(--accent);}
+table.orders thead th .ar{display:inline-block;width:10px;margin-left:3px;opacity:.35;font-size:10px;}
+table.orders thead th.sorted .ar{opacity:1;color:var(--accent);}
+.filter-empty{padding:26px;text-align:center;color:var(--ink-soft);font-size:14px;}
 @media(max-width:1100px){.hide-md{display:none;}}
 .st-chip{display:none;font-size:12px;font-weight:800;border-radius:99px;padding:3px 9px;background:var(--surface-2,#e7e5df);white-space:nowrap;}
 @media(max-width:700px){.hide-sm{display:none;} table.orders thead th{padding:10px 8px;} table.orders tbody td{padding:10px 8px;font-size:13.5px;} .c-st{width:auto;} .c-st select{display:none;} .st-chip{display:inline-block;} .c-owe{width:auto;} .c-id{width:auto;}}
@@ -301,13 +314,14 @@ body.op-open{overflow:hidden;}
         <button class="btn ghost" id="logoutBtn" style="display:none;">Log out</button>
     </div>
 
+    <div class="fchips" id="fchips" role="tablist" aria-label="Filter orders"></div>
     <div class="table-card">
         <div class="table-scroll">
             <table class="orders">
                 <thead>
                     <tr>
-                        <th class="c-id">#</th><th>Client</th><th class="c-sm hide-sm">WhatsApp</th><th>Shoot</th><th class="c-st">Status</th>
-                        <th class="c-amt hide-sm">Total</th><th class="c-amt hide-md">Paid</th><th class="c-owe">Owing</th>
+                        <th class="c-id sortable" data-sort="id">#<span class="ar"></span></th><th class="sortable" data-sort="name">Client<span class="ar"></span></th><th class="c-sm hide-sm">WhatsApp</th><th class="sortable" data-sort="shoot">Shoot<span class="ar"></span></th><th class="c-st sortable" data-sort="status">Status<span class="ar"></span></th>
+                        <th class="c-amt hide-sm sortable" data-sort="total">Total<span class="ar"></span></th><th class="c-amt hide-md sortable" data-sort="paid">Paid<span class="ar"></span></th><th class="c-owe sortable" data-sort="owing">Owing<span class="ar"></span></th>
                         <th class="c-sm hide-sm">Contract</th><th class="c-sm hide-md">Gallery</th><th class="c-meet hide-sm">Meeting</th>
                         <th class="c-go hide-sm"></th><th class="rm-col hide-sm"></th>
                     </tr>
@@ -444,15 +458,62 @@ const dShort = d => { if(!d) return ''; const x = new Date(String(d).length > 10
 let VIS = [];          // order indexes shown after search, in table order (panel prev / next)
 let OPEN_ID = null;    // order open in the details panel
 
+/* ---------------- filters and sorting (remembered on this device) ---------------- */
+const dayN = d => { if(!d) return null; const x = new Date(String(d).slice(0,10) + 'T00:00:00'); if(isNaN(x)) return null; const t = new Date(); t.setHours(0,0,0,0); return Math.round((x - t) / 864e5); };
+const owingOf = o => (+o.total||0) - (+o.paid||0);
+const live = o => o.status !== 'Cancelled';
+const FILTERS = {
+  unpaid:   { label:'Unpaid',            empty:'waiting for money',            warn:true, test:o => live(o) && owingOf(o) > 0 },
+  unsigned: { label:'Unsigned',          empty:'waiting for a signature',      warn:true, test:o => live(o) && !o.contractSigned && !o.test },
+  week:     { label:'Shoots this week',  empty:'shooting in the next 7 days',             test:o => live(o) && (n => n !== null && n >= 0 && n <= 7)(dayN(o.shootDate)) },
+  expiring: { label:'Galleries expiring',empty:'with a gallery ending in the next 7 days', warn:true, test:o => !!o.galleryExpiry && (n => n !== null && n >= -7 && n <= 7)(dayN(o.galleryExpiry)) }
+};
+let FILTER = (()=>{ try{ const f=localStorage.getItem('fom.db.filter'); return FILTERS[f]?f:'all'; }catch(e){ return 'all'; } })();
+let SORT = (()=>{ try{ return JSON.parse(localStorage.getItem('fom.db.sort')) || null; }catch(e){ return null; } })();   // {k, dir}
+function drawChips(){
+  const n = k => orders.filter(FILTERS[k].test).length;
+  $('fchips').innerHTML = `<button type="button" class="fchip${FILTER==='all'?' on':''}" data-filter="all">All<span class="n">${orders.length}</span></button>` +
+    Object.keys(FILTERS).map(k => { const c = n(k); return `<button type="button" class="fchip${FILTER===k?' on':''}${FILTERS[k].warn&&c?' warn':''}" data-filter="${k}">${FILTERS[k].label}<span class="n">${c}</span></button>`; }).join('');
+  document.querySelectorAll('table.orders th.sortable').forEach(th => { const on = SORT && SORT.k === th.dataset.sort; th.classList.toggle('sorted', !!on); th.querySelector('.ar').textContent = on ? (SORT.dir > 0 ? '▲' : '▼') : '▴'; th.setAttribute('aria-sort', on ? (SORT.dir > 0 ? 'ascending' : 'descending') : 'none'); });
+}
+$('fchips').addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if(!b) return; FILTER = b.dataset.filter; try{ localStorage.setItem('fom.db.filter', FILTER); }catch(err){} render(); });
+const SORT_VAL = {
+  id:     o => parseInt(String(o.orderId||'').replace(/\D/g,''),10) || 0,
+  name:   o => String(o.customer||'').toLowerCase(),
+  shoot:  o => o.shootDate || null,
+  status: o => STATUSES.indexOf(o.status),
+  total:  o => +o.total || 0,
+  paid:   o => +o.paid || 0,
+  owing:  o => owingOf(o)
+};
+function sortIdx(idx){
+  if(!SORT || !SORT_VAL[SORT.k]) return;
+  const f = SORT_VAL[SORT.k], d = SORT.dir;
+  idx.sort((a, b) => { const x = f(orders[a]), y = f(orders[b]);
+    if(x === null && y === null) return 0; if(x === null) return 1; if(y === null) return -1;   // no date always goes last
+    return (x < y ? -1 : x > y ? 1 : 0) * d || a - b; });
+}
+document.querySelector('table.orders thead').addEventListener('click', e => {
+  const th = e.target.closest('th.sortable'); if(!th) return; const k = th.dataset.sort;
+  // first click: the natural direction (shoot date soonest first, money biggest first); second flips; third clears
+  const first = ['total','paid','owing'].includes(k) ? -1 : 1;
+  if(!SORT || SORT.k !== k) SORT = { k, dir:first }; else if(SORT.dir === first) SORT = { k, dir:-first }; else SORT = null;
+  try{ localStorage.setItem('fom.db.sort', JSON.stringify(SORT)); }catch(err){}
+  render();
+});
+
 /* ---------------- table: short and readable; tap a row for everything else ---------------- */
 function render(){
   const q=search.value.trim().toLowerCase();
   tbody.innerHTML='';
   let sumT=0,sumP=0,sumO=0;
   VIS=[];
-  orders.forEach((o,i)=>{
+  drawChips();
+  const idx=orders.map((o,i)=>i).filter(i=>{ const o=orders[i];
     const hay=[o.orderId,o.customer,o.product,o.status,o.notes,o.clientEmail,o.clientPhone,o.galleryFolder].join(' ').toLowerCase();
-    if(q && !hay.includes(q)) return;
+    return (!q || hay.includes(q)) && (FILTER==='all' || FILTERS[FILTER].test(o)); });
+  sortIdx(idx);
+  idx.forEach(i=>{ const o=orders[i];
     VIS.push(i);
     const out=(+o.total||0)-(+o.paid||0);
     sumT+=+o.total||0; sumP+=+o.paid||0; sumO+=out;
@@ -477,6 +538,7 @@ function render(){
   $('sumTotal').textContent=R0(sumT); $('sumPaid').textContent=R0(sumP); $('sumOut').textContent=R0(sumO);
   $('countPill').textContent=orders.length+(orders.length===1?' order':' orders');
   $('emptyState').style.display=orders.length?'none':'block';
+  if(orders.length && !idx.length){ const tr=document.createElement('tr'); tr.innerHTML=`<td colspan="13" class="filter-empty">${FILTER!=='all'?'No orders are '+FILTERS[FILTER].empty+'.':'No orders match your search.'}</td>`; tbody.appendChild(tr); }
   if(OPEN_ID) renderPanel();
   fixFoot();
 }
@@ -796,7 +858,7 @@ $('testBtn').onclick = () => {
   tcLog(''); tcDraw(); sc.classList.add('on');
 };
 
-function recalcFoot(){ let t=0,p=0,o=0; orders.forEach(r=>{t+=+r.total||0;p+=+r.paid||0;o+=(+r.total||0)-(+r.paid||0);}); $('sumTotal').textContent=R0(t);$('sumPaid').textContent=R0(p);$('sumOut').textContent=R0(o); }
+function recalcFoot(){ let t=0,p=0,o=0; VIS.map(i=>orders[i]).filter(Boolean).forEach(r=>{t+=+r.total||0;p+=+r.paid||0;o+=(+r.total||0)-(+r.paid||0);}); $('sumTotal').textContent=R0(t);$('sumPaid').textContent=R0(p);$('sumOut').textContent=R0(o); }
 
 $('addBtn').onclick=()=>{ if(!store) return; Promise.resolve(store.add(blankOrder())).then(id=>{ if(!id) return; const i=orders.findIndex(o=>o.id===id); if(i>=0) openPanel(i); else { OPEN_ID=id; $('op').classList.add('on'); $('opScrim').classList.add('on'); document.body.classList.add('op-open'); } setTimeout(()=>{ const n=$('op_customer'); if(n) n.focus(); }, 350); }); };
 $('clearBtn').onclick=()=>{ if(store && confirm('Delete ALL orders? This cannot be undone.')) store.clear(); };
