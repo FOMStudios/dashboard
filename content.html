@@ -533,7 +533,7 @@ $('ideaBoard').addEventListener('click', e=>{
     const planId = e.target.dataset.plan, shootId = e.target.dataset.shoot, delId = e.target.dataset.del;
     if(planId){ const o=items.find(x=>x.id===planId); if(o){ o.status='Planned'; store.updateNow(o.id); safeRender(); } }
     if(shootId){ const o=items.find(x=>x.id===shootId); if(o){ o.status='Shot'; store.updateNow(o.id); safeRender(); } }
-    if(delId){ if(store) store.remove(delId); }
+    if(delId){ const o=items.find(x=>x.id===delId); if(store && confirm('Delete the idea "'+((o&&o.title)||'Untitled')+'"? This cannot be undone.')) store.remove(delId); }
 });
 
 $('addIdeaBtn').onclick = ()=>{
@@ -625,7 +625,7 @@ trackerTbody().addEventListener('change', e=>{
     store.update(items[i].id);
     renderTrackerDashboard();
 });
-trackerTbody().addEventListener('click', e=>{ const rm=e.target.dataset.rm; if(rm!==undefined) store.remove(items[+rm].id); });
+trackerTbody().addEventListener('click', e=>{ const rm=e.target.dataset.rm; if(rm!==undefined){ const o=items[+rm]; if(o && confirm('Delete "'+(o.title||'Untitled')+'" from the tracker? This cannot be undone.')) store.remove(o.id); } });
 trackerSearch().addEventListener('input', renderTracker);
 
 $('addRowBtn').onclick = ()=>{ if(!store){ toast('Still connecting to the cloud - wait a second and try again.'); return; } store.add(blankItem()); };

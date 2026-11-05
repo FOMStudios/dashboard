@@ -1012,7 +1012,7 @@ function catSheet(){
     <div class="row" style="margin-top:10px;flex-wrap:nowrap"><input class="inp" id="catNew" placeholder="New category"><button class="btn" id="catAdd">Add</button></div>
     <p class="muted small" style="margin-top:10px">Renaming moves its ideas with it. Deleting a category moves its ideas to "${esc(LIB.cats[0] || 'Other')}".</p>`, b => {
     b.querySelectorAll('[data-cat]').forEach(inp => inp.onchange = () => { const i = +inp.dataset.cat, old = LIB.cats[i], nw = inp.value.trim(); if(!nw || LIB.cats.includes(nw)) { inp.value = old; return; } LIB.cats[i] = nw; LIB.items.forEach(x => { if(x.cat === old) x.cat = nw; }); Store.saveLib(); renderLib(); });
-    b.querySelectorAll('[data-catdel]').forEach(btn => btn.onclick = () => { const i = +btn.dataset.catdel, old = LIB.cats[i]; if(LIB.cats.length < 2) return; LIB.cats.splice(i, 1); LIB.items.forEach(x => { if(x.cat === old) x.cat = LIB.cats[0]; }); Store.saveLib(); renderLib(); catSheet(); });
+    b.querySelectorAll('[data-catdel]').forEach(btn => btn.onclick = () => { const i = +btn.dataset.catdel, old = LIB.cats[i]; if(LIB.cats.length < 2) return; const n = LIB.items.filter(x => x.cat === old).length; if(!confirm('Delete the "' + old + '" category?' + (n ? ' Its ' + n + (n === 1 ? ' idea moves' : ' ideas move') + ' to "' + LIB.cats.filter(c => c !== old)[0] + '".' : ''))) return; LIB.cats.splice(i, 1); LIB.items.forEach(x => { if(x.cat === old) x.cat = LIB.cats[0]; }); Store.saveLib(); renderLib(); catSheet(); });
     $('catAdd').onclick = () => { const v = $('catNew').value.trim(); if(v && !LIB.cats.includes(v)){ LIB.cats.push(v); Store.saveLib(); catSheet(); } };
   });
 }

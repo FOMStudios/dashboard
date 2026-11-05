@@ -1860,6 +1860,7 @@ function closePreview(){
       D.deliverable[name] = pk; D.normal[name] = nr >= 0 ? nr : Math.round(pk * 1.25); drawTab();
     } else if(act === 'rmDl'){
       if(D.extraPackages.some(p => key in p.items)){ dmToast('Remove it from your packages first'); return; }
+      if(!confirm('Remove the "' + key + '" add-on from your rates?')) return;
       delete D.deliverable[key]; delete D.normal[key]; drawTab();
     } else if(act === 'addPkg'){
       D.extraPackages.push({ id:'p' + Date.now().toString(36), name:'New package', price:0, ph:1, vh:0, rev:0, oh:1, items:{}, contents:'' }); drawTab();

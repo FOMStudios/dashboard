@@ -480,7 +480,7 @@ tbody.addEventListener('change',e=>{
   if(f==='galleryExpiry' || f==='galleryFolder') syncGalleryMeta(orders[i]);
   if((f==='galleryFolder' && el.value) || (f==='deliverablesReady' && orders[i].deliverablesReady)) checkGalleryFolder(orders[i]);
 });
-tbody.addEventListener('click',e=>{ const cv=e.target.closest('[data-cover]'); if(cv){ showCover(orders[+cv.dataset.cover]); return; } const ml=e.target.closest('[data-meetlink]'); if(ml){ linkMeeting(ml.dataset.meetlink, ml.dataset.oid); return; } const fb=e.target.closest('[data-favs]'); if(fb){ showFavs(orders[+fb.dataset.favs]); return; } const wb=e.target.closest('[data-wa]'); if(wb){ openWa(orders[+wb.dataset.wa]); return; } const rm=e.target.dataset.rm; if(rm!==undefined){ store.remove(orders[+rm].id); return; }
+tbody.addEventListener('click',e=>{ const cv=e.target.closest('[data-cover]'); if(cv){ showCover(orders[+cv.dataset.cover]); return; } const ml=e.target.closest('[data-meetlink]'); if(ml){ linkMeeting(ml.dataset.meetlink, ml.dataset.oid); return; } const fb=e.target.closest('[data-favs]'); if(fb){ showFavs(orders[+fb.dataset.favs]); return; } const wb=e.target.closest('[data-wa]'); if(wb){ openWa(orders[+wb.dataset.wa]); return; } const rm=e.target.dataset.rm; if(rm!==undefined){ const o=orders[+rm]; if(o && confirmDelete(o)) store.remove(o.id); return; }
   const lb=e.target.closest('[data-login]'); if(lb){ createClientLogin(orders[+lb.dataset.login], lb); return; }
   const sl=e.target.dataset.signlink;
   if(sl!==undefined){
@@ -779,6 +779,20 @@ function showFavs(o){
   };
   document.getElementById('favScrim').classList.add('on');
 }
+/* ================= DELETE A CLIENT: always ask first (the x is easy to tap by mistake) ================= */
+function confirmDelete(o){
+  const R = n => 'R ' + Math.round(+n || 0).toLocaleString('en-ZA').replace(/,/g, ' ');
+  const warn = [];
+  if(!o.test){
+    if(+o.paid > 0) warn.push('It has ' + R(o.paid) + ' paid recorded.');
+    if(o.contractSigned) warn.push('Their contract is signed.');
+    if(o.galleryFolder && o.deliverablesReady) warn.push('Their gallery is live in the portal.');
+    const ms = (typeof meetings !== 'undefined' ? meetings : []).filter(m => m.orderId === o.id).length;
+    if(ms) warn.push(ms + (ms === 1 ? ' meeting stays' : ' meetings stay') + ' on Client Meetings, unlinked.');
+  }
+  return confirm('Delete ' + ((o.orderId ? o.orderId + ' ' : '') + (o.customer || 'this order')).trim() + '?\n\n' + (warn.length ? warn.join('\n') + '\n\n' : '') + 'This cannot be undone.');
+}
+
 /* ================= CLIENT GALLERY HEADER (per client) =================
    Pick one of the client's own gallery photos as the header of their gallery, and tap to set the focus point.
    Saved on the order as galleryCover {n, fx, fy}; the portal passes it to the gallery. With none set, the gallery
