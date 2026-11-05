@@ -100,10 +100,11 @@ td.rm-col{width:38px;text-align:center;}
 .lg-btn.ok{border-color:#1f8a4c;color:#1f8a4c;}
 .lg-btn:disabled{opacity:.6;cursor:wait;}
 .wa-btn svg{width:19px;height:19px;} .wa-btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
-.col-meet{width:150px;}
+.col-meet{width:190px;}
 .meet-cell{display:flex;align-items:center;gap:5px;white-space:nowrap;}
 .meet-btn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--bg-pill);color:var(--ink);border-radius:99px;padding:5px 11px;font-size:12.5px;font-weight:800;text-decoration:none;}
 .meet-btn.live{border-color:#1f8a4c;color:#1f8a4c;}
+.meet-btn.plan{border-color:#e0a100;color:#7a4b00;background:#fff8e6;}
 .meet-btn.link{border-style:dashed;cursor:pointer;font:inherit;font-size:12px;font-weight:700;}
 .meet-more,.meet-new{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:99px;border:1px solid var(--line);font-size:12px;font-weight:800;color:var(--ink-soft);text-decoration:none;padding:0 6px;}
 .meet-new.txt{width:auto;padding:0 11px;color:var(--ink);}
@@ -306,11 +307,15 @@ function meetMatch(o){
     (n.length > 3 && mNrm(m.client.name).indexOf(n) === 0)));
 }
 function meetCell(o, i){
-  const ms = meetings.filter(m => m.orderId === o.id).sort((a,b) => String(b.startedAt).localeCompare(String(a.startedAt)));
+  const all = meetings.filter(m => m.orderId === o.id);
+  const plan = all.filter(m => m.status === 'planned').sort((a,b) => String(a.plannedAt).localeCompare(String(b.plannedAt)))[0];
+  const ms = all.filter(m => m.status !== 'planned').sort((a,b) => String(b.startedAt).localeCompare(String(a.startedAt)));
   const add = `<a class="meet-new" href="meetings.html?new=order:${encodeURIComponent(o.id)}" title="Start a new meeting with this client">+</a>`;
+  const planChip = plan ? `<a class="meet-btn plan" href="meetings.html?m=${encodeURIComponent(plan.id)}" title="Scheduled meeting">&#128197; ${mDay(plan.plannedAt)} ${new Date(plan.plannedAt).toTimeString().slice(0,5)}</a>` : '';
+  if(plan && !ms.length) return `<div class="meet-cell">${planChip}${add}</div>`;
   if(ms.length){
     const m = ms[0], live = m.status === 'open';
-    return `<div class="meet-cell"><a class="meet-btn${live?' live':''}" href="meetings.html?m=${encodeURIComponent(m.id)}" title="Open the meeting summary">${live?'&#9679; Live':'&#128221; '+mDay(m.startedAt)}${m.hearts&&m.hearts.length?' &#9829;'+m.hearts.length:''}</a>${ms.length>1?`<a class="meet-more" href="meetings.html?order=${encodeURIComponent(o.id)}" title="All meetings with this client">+${ms.length-1}</a>`:''}${add}</div>`;
+    return `<div class="meet-cell">${planChip}<a class="meet-btn${live?' live':''}" href="meetings.html?m=${encodeURIComponent(m.id)}" title="Open the meeting summary">${live?'&#9679; Live':'&#128221; '+mDay(m.startedAt)}${m.hearts&&m.hearts.length?' &#9829;'+m.hearts.length:''}</a>${ms.length>1?`<a class="meet-more" href="meetings.html?order=${encodeURIComponent(o.id)}" title="All meetings with this client">+${ms.length-1}</a>`:''}${add}</div>`;
   }
   const mm = meetMatch(o);
   if(mm) return `<div class="meet-cell"><button type="button" class="meet-btn link" data-meetlink="${esc(mm.id)}" data-oid="${esc(o.id)}" title="${esc((mm.client.name||'')+', '+mDay(mm.startedAt))}">Link meeting</button>${add}</div>`;

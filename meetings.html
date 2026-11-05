@@ -231,6 +231,13 @@ body.cv .fom-nav,body.cv .fom-sheet,body.cv .fom-scrim{display:none!important;}
 .pgrid div.has::before{content:"On board";position:absolute;left:4px;bottom:4px;z-index:1;background:rgba(0,0,0,.6);color:#fff;font-size:10px;border-radius:99px;padding:1px 6px;}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--btn,#1a1a1a);color:var(--btn-ink,#fff);padding:11px 18px;border-radius:99px;font-size:14px;font-weight:600;z-index:2700;opacity:0;pointer-events:none;transition:all .25s;max-width:92vw;text-align:center;}
 .toast.on{opacity:1;transform:translateX(-50%);}
+.chip.plan{background:#fff4e5;color:#7a4b00;}
+.clienttag{position:absolute;left:8px;bottom:8px;background:#1f8a4c;color:#fff;border-radius:99px;font-size:11px;font-weight:700;padding:2px 8px;}
+.sharebox{display:flex;gap:8px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;word-break:break-all;}
+.wa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.wa-grid label{font-size:11.5px;font-weight:700;color:var(--ink-soft);}
+.wa-grid input{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:15px;background:var(--input-bg,#fff);color:var(--ink);}
+.wa-grid .found{border-color:#1f8a4c;}
 .hide{display:none!important;}
 @media print{
   .fom-nav,.actions,.back,.lbar,.toast,.sh,.scr,.no-print{display:none!important;}
@@ -268,6 +275,7 @@ body.cv .fom-nav,body.cv .fom-sheet,body.cv .fom-scrim{display:none!important;}
     </div>
     <div class="row" style="margin-top:16px">
       <button class="btn" data-act="startSheet">+ Start meeting</button>
+      <button class="btn ghost" data-act="schedSheet">Schedule</button>
       <button class="btn ghost" data-act="openLib">Mood board library</button>
     </div>
     <div id="homeOpen"></div>
@@ -615,6 +623,7 @@ function route(){
   if(p.get('m')){
     const m = MEETS.find(x => x.id === p.get('m'));
     if(!m){ show('vHome'); renderHome(); toast('That meeting could not be found in ' + BZ.b.name + '. Check the business switch.'); return; }
+    if(m.status === 'planned' && !p.get('edit')){ show('vHome'); renderHome(); plannedSheet(m); return; }
     if(m.status === 'open' || p.get('edit')) openEditor(m); else renderSummary(m);
     return;
   }
@@ -641,12 +650,17 @@ function linkChip(m){
 function renderHome(){
   const p = new URLSearchParams(location.search), ord = p.get('order');
   const open = MEETS.filter(m => m.status === 'open');
-  $('homeOpen').innerHTML = open.length ? `<div class="sec-t">In progress</div><div class="mlist">${open.map(m => `
+  const planned = MEETS.filter(m => m.status === 'planned').sort((a, b) => String(a.plannedAt).localeCompare(String(b.plannedAt)));
+  const upHtml = planned.length ? `<div class="sec-t">Upcoming</div><div class="mlist">${planned.map(m => { const d = new Date(m.plannedAt), late = d < Date.now() - 3600e3; return `
+    <div class="mcard" data-open="${esc(m.id)}"><div class="thumbs one" style="display:grid;place-items:center;text-align:center;line-height:1.1;font-weight:800;background:${late ? '#fdecea' : 'var(--surface-2,#e7e5df)'}"><span style="font-size:11px;text-transform:uppercase">${d.toLocaleDateString('en-ZA',{month:'short'})}</span><span style="font-size:22px">${d.getDate()}</span></div>
+      <div style="flex:1;min-width:0"><b>${esc(m.client.name || 'Unnamed client')}</b><div class="meta">${planLabel(m)}${m.where ? ' \u00b7 ' + esc(m.where) : ''}</div>
+      <div class="tags"><span class="chip plan">${late ? 'Missed?' : 'Scheduled'}</span>${linkChip(m)}${m.client.type && m.client.type !== 'General' ? `<span class="chip">${esc(m.client.type)}</span>` : ''}</div></div><span class="btn sm">Open</span></div>`; }).join('')}</div>` : '';
+  $('homeOpen').innerHTML = upHtml + (open.length ? `<div class="sec-t">In progress</div><div class="mlist">${open.map(m => `
     <div class="mcard" data-open="${esc(m.id)}">${thumbs(m)}<div style="flex:1;min-width:0"><b>${esc(m.client.name || 'Unnamed client')}</b>
       <div class="meta">Started ${shortDay(m.startedAt)} at ${hhmm(new Date(m.startedAt))}</div>
-      <div class="tags"><span class="chip live">Live</span>${linkChip(m)}</div></div><span class="btn sm">Resume</span></div>`).join('')}</div>` : '';
+      <div class="tags"><span class="chip live">Live</span>${linkChip(m)}</div></div><span class="btn sm">Resume</span></div>`).join('')}</div>` : '');
   const q = $('mSearch').value.trim().toLowerCase();
-  let list = MEETS.filter(m => m.status !== 'open');
+  let list = MEETS.filter(m => m.status !== 'open' && m.status !== 'planned');
   if(ord) list = list.filter(m => m.orderId === ord);
   if(q) list = list.filter(m => JSON.stringify([m.client, m.notes, m.qs]).toLowerCase().includes(q));
   list.sort((a, b) => String(b.startedAt).localeCompare(String(a.startedAt)));
@@ -659,14 +673,17 @@ function renderHome(){
     : `<div class="empty" style="grid-column:1/-1">${q || ord ? 'No meetings match.' : 'No meetings yet. Tap <b>Start meeting</b> when you sit down with a client.'}</div>`;
 }
 const openTasks = m => (m.tasks || []).filter(t => !t.done).length;
+const planLabel = m => { const d = new Date(m.plannedAt), t = new Date(); t.setHours(0,0,0,0); const dd = Math.round((new Date(d).setHours(0,0,0,0) - t) / 86400000);
+  return (dd === 0 ? 'Today' : dd === 1 ? 'Tomorrow' : d.toLocaleDateString('en-ZA', { weekday:'short', day:'numeric', month:'short' })) + ' at ' + hhmm(d); };
 $('mSearch').addEventListener('input', renderHome);
+$('vHome').addEventListener('click', e => { const c = e.target.closest('[data-open]'); if(c) go('m=' + c.dataset.open); });
 
 /* =====================================================================
    START A MEETING
    ===================================================================== */
 function blankMeeting(){
   const now = new Date();
-  return { id:'m' + uid(), biz:BIZ, status:'open', startedAt:now.toISOString(), endedAt:null, durationMin:null,
+  return { id:'m' + uid(), biz:BIZ, status:'open', startedAt:now.toISOString(), endedAt:null, durationMin:null, plannedAt:null, where:'',
     orderId:'', leadId:'', client:{ name:'', phone:'', email:'', type:'General', venue:'', guests:'', budget:'' },
     notes:'', dates:[], qs:[], quote:{ lines:[], discType:'R', disc:0, km:0, showClient:false }, shots:[], people:[], tasks:[], hearts:[],
     created:now.toISOString(), updated:now.toISOString() };
@@ -677,7 +694,7 @@ function questionsFor(type){
 }
 function guessType(txt){
   const t = String(txt || '').toLowerCase();
-  if(/wedd|nikah|bride/.test(t)) return 'Wedding';
+  if(/wedd|nikah|bride|groom|marr|engage|lobola|walima|mehndi/.test(t)) return 'Wedding';
   if(/birth|party|kids/.test(t)) return 'Birthday / Party';
   if(/corp|event|confer|launch|pilates|wellness/.test(t)) return 'Corporate / Event';
   if(/family|portrait|matern|newborn/.test(t)) return 'Family / Portrait';
@@ -685,29 +702,51 @@ function guessType(txt){
   if(/product|brand|menu|food/.test(t)) return 'Product / Brand';
   return 'General';
 }
-let startSeg = 'order', startPre = null;
-function startSheet(pre){
-  startPre = null;
+let startSeg = 'order', startPre = null, startWhen = 'now', stPick = null;
+function startSheet(pre, when){
+  startPre = null; startWhen = when || 'now';
   if(typeof pre === 'string' && pre.indexOf(':') > 0){ const [k, id] = pre.split(':'); startSeg = k === 'lead' ? 'lead' : 'order'; startPre = { k:startSeg, id }; }
+  const d = new Date(); d.setDate(d.getDate() + 1);
   sheet('Start a meeting', `
-    <div class="seg"><button data-seg="order">Booked client</button><button data-seg="lead">Lead</button><button data-seg="new">New person</button></div>
+    <div class="seg"><button data-seg="order">Booked</button><button data-seg="lead">Lead</button><button data-seg="new">New</button><button data-seg="wa">WhatsApp</button></div>
     <div id="stBody"></div>
     <label class="lb" style="margin-top:14px">Shoot type</label>
     <select class="sel" id="stType">${TYPES.map(t => `<option>${t}</option>`).join('')}</select>
-    <p class="muted small" style="margin:10px 2px 0">The start time is saved automatically. Questions load for the shoot type you pick.</p>
+    <label class="lb" style="margin-top:14px">When</label>
+    <div class="seg" style="margin-bottom:0"><button data-when="now">Start now</button><button data-when="later">Schedule for later</button></div>
+    <div id="stLater" class="grid3" style="margin-top:10px">
+      <div><label class="lb">Date</label><input class="inp" type="date" id="stDate" value="${isoDay(d)}"></div>
+      <div><label class="lb">Time</label><input class="inp" type="time" id="stTime" value="10:00"></div>
+      <div><label class="lb">Where</label><input class="inp" id="stWhere" placeholder="Coffee shop, Zoom, venue"></div>
+    </div>
+    <p class="muted small" id="stHint" style="margin:10px 2px 0"></p>
     <button class="btn" style="width:100%;justify-content:center;margin-top:14px" id="stGo">Start meeting now</button>`, drawStart);
 }
-let stPick = null;
+function drawWhen(){
+  $('shB').querySelectorAll('[data-when]').forEach(b => b.classList.toggle('on', b.dataset.when === startWhen));
+  const later = startWhen === 'later';
+  $('stLater').classList.toggle('hide', !later);
+  $('stGo').textContent = later ? 'Schedule meeting' : 'Start meeting now';
+  $('shT').textContent = later ? 'Schedule a meeting' : 'Start a meeting';
+  $('stHint').textContent = later ? 'It shows on your Dashboard and in the Database. Open it and tap Start when the client arrives.' : 'The start time is saved automatically. Questions load for the shoot type you pick.';
+}
 function drawStart(){
   $('shB').querySelectorAll('[data-seg]').forEach(b => b.classList.toggle('on', b.dataset.seg === startSeg));
+  drawWhen();
   stPick = null;
   const body = $('stBody');
   if(startSeg === 'new'){
     body.innerHTML = `<div class="grid2"><div><label class="lb">Name</label><input class="inp" id="nwName" placeholder="Client name"></div><div><label class="lb">WhatsApp</label><input class="inp" id="nwPhone" inputmode="tel" placeholder="082 123 4567"></div></div><div style="margin-top:10px"><label class="lb">Email</label><input class="inp" id="nwEmail" type="email" placeholder="Optional"></div>`;
     return;
   }
+  if(startSeg === 'wa'){
+    body.innerHTML = `<textarea class="ta" id="waIn" placeholder="Paste the WhatsApp enquiry here.&#10;In WhatsApp: press and hold the message (or select several), then Copy."></textarea><div id="waOut" style="margin-top:10px"></div>`;
+    $('waIn').oninput = () => drawWaOut(parseWa($('waIn').value));
+    drawWaOut(null);
+    return;
+  }
   const src = startSeg === 'order' ? ORDERS.slice().reverse() : LEADS.slice().reverse();
-  body.innerHTML = `<input class="inp" id="stSearch" placeholder="Search ${startSeg === 'order' ? 'orders' : 'leads'}..."><div id="stList" style="max-height:38dvh;overflow:auto;margin-top:8px"></div>`;
+  body.innerHTML = `<input class="inp" id="stSearch" placeholder="Search ${startSeg === 'order' ? 'orders' : 'leads'}..."><div id="stList" style="max-height:34dvh;overflow:auto;margin-top:8px"></div>`;
   const draw = () => {
     const q = $('stSearch').value.trim().toLowerCase();
     const rows = src.filter(r => !q || JSON.stringify([r.customer, r.orderId, r.product, r.company, r.contact, r.email]).toLowerCase().includes(q)).slice(0, 60);
@@ -715,10 +754,10 @@ function drawStart(){
       ? `<div class="pick" data-pick="${esc(r.id)}"><div><b>${esc(r.customer || 'No name')} <span class="muted small">${esc(r.orderId || '')}</span></b><small>${esc(r.product || '')}${r.shootDate ? ' · ' + shortDay(r.shootDate) : ''} · ${esc(r.status || '')}</small></div></div>`
       : `<div class="pick" data-pick="${esc(r.id)}"><div><b>${esc(r.company || r.contact || 'No name')}</b><small>${esc(r.contact || '')} ${esc(r.category || '')} · ${esc(r.status || '')}</small></div></div>`).join('')
       : `<p class="muted small" style="padding:10px">${src.length ? 'No match.' : 'Nothing here yet in ' + esc(BZ.b.name) + '.'}</p>`;
-    if(stPick) { const el = $('stList').querySelector(`[data-pick="${CSS.escape(stPick)}"]`); if(el) el.style.borderColor = 'var(--ink)'; }
+    if(stPick){ const el = $('stList').querySelector(`[data-pick="${CSS.escape(stPick)}"]`); if(el) el.style.borderColor = 'var(--ink)'; }
   };
   $('stSearch').oninput = draw; draw();
-  if(startPre && startPre.k === startSeg) { selectPick(startPre.id); startPre = null; }
+  if(startPre && startPre.k === startSeg){ selectPick(startPre.id); startPre = null; }
 }
 function selectPick(id){
   stPick = id;
@@ -726,12 +765,65 @@ function selectPick(id){
   const r = (startSeg === 'order' ? ORDERS : LEADS).find(x => x.id === id);
   if(r) $('stType').value = guessType([r.product, r.notes, r.category, r.company].join(' '));
 }
+
+/* ---------- WhatsApp enquiry reader: pulls name, number, date, time, venue, guests and budget out of a pasted chat ---------- */
+const MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+function parseWa(raw){
+  const out = { name:'', phone:'', email:'', date:'', time:'', venue:'', guests:'', budget:'', type:'General', text:String(raw || '').trim() };
+  if(!out.text) return out;
+  const owner = nrm(BZ.b.owner.split(' ')[0]), senders = [];
+  // WhatsApp copy formats: "[05/11/2026, 10:22] Zara Patel: hi" and exports "05/11/2026, 10:22 - Zara Patel: hi"
+  const body = out.text.split('\n').map(l => {
+    const m = l.match(/^\s*\[?\d{1,4}[\/.-]\d{1,2}[\/.-]\d{1,4},?\s+\d{1,2}:\d{2}(?::\d{2})?\s*(?:[ap]\.?m\.?)?\]?\s*(?:-\s*)?([^:]{1,40}):\s?(.*)$/i);
+    if(m){ const who = m[1].trim(); if(nrm(who).indexOf(owner) !== 0 && !/fom|shot by a/i.test(who)) senders.push(who); return nrm(who).indexOf(owner) === 0 ? '' : m[2]; }
+    return l;
+  }).join('\n');
+  const t = body;
+  if(senders.length && !/^\+?[\d\s]+$/.test(senders[0])) out.name = senders[0];
+  else if(senders.length) out.phone = senders[0];
+  const nm = t.match(/(?:my name is|i am|i'm|this is|it's|its)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
+  if(!out.name && nm && !/interested|looking|getting|planning|having/i.test(nm[1])) out.name = nm[1];
+  const ph = t.match(/(?:\+27|0027|\b0)[\s-]?\d{2}[\s-]?\d{3}[\s-]?\d{4}\b/); if(ph) out.phone = ph[0].trim();
+  const em = t.match(/[\w.+-]+@[\w-]+\.[\w.-]+/); if(em) out.email = em[0];
+  const now = new Date(), Y = now.getFullYear();
+  const fix = (y, mo, d) => { if(!y){ y = Y; if(new Date(y, mo, d) < new Date(Y, now.getMonth(), now.getDate())) y++; } if(y < 100) y += 2000; const dt = new Date(y, mo, d); return isNaN(dt) || dt.getMonth() !== mo ? '' : isoDay(dt); };
+  let dm = t.match(/\b(\d{1,2})(?:st|nd|rd|th)?\s*(?:of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?,?\s*(\d{4})?/i);
+  if(dm) out.date = fix(dm[3] ? +dm[3] : 0, MONTHS.indexOf(dm[2].toLowerCase().slice(0,3)), +dm[1]);
+  if(!out.date){ dm = t.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})?/i); if(dm) out.date = fix(dm[3] ? +dm[3] : 0, MONTHS.indexOf(dm[1].toLowerCase().slice(0,3)), +dm[2]); }
+  if(!out.date){ dm = t.match(/\b(\d{4})-(\d{2})-(\d{2})\b/); if(dm) out.date = fix(+dm[1], +dm[2] - 1, +dm[3]); }
+  if(!out.date){ dm = t.match(/\b(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?\b/); if(dm && +dm[2] <= 12) out.date = fix(dm[3] ? +dm[3] : 0, +dm[2] - 1, +dm[1]); }
+  let h = -1, mi = 0, ap = '', tm = t.match(/\b(\d{1,2})[:h](\d{2})\s*([ap])?\.?m?\b/i);
+  if(tm){ h = +tm[1]; mi = +tm[2]; ap = tm[3] || ''; } else { tm = t.match(/\b(\d{1,2})\s*([ap])\.?m\b/i); if(tm){ h = +tm[1]; ap = tm[2]; } }
+  if(h >= 0){ if(/p/i.test(ap) && h < 12) h += 12; if(/a/i.test(ap) && h === 12) h = 0; if(h < 24 && mi < 60) out.time = pad(h) + ':' + pad(mi); }
+  const gs = t.match(/\b(\d{1,4})\s*(?:\+\s*)?(?:guests|people|pax|kids|children|adults|attendees|persons|ppl)\b/i); if(gs) out.guests = gs[1];
+  const vn = t.match(/(?:venue|location|place)\s*(?:is|will be|:|-)?\s*([^\n.,!?]{3,60})/i) || t.match(/\b(?:at|in)\s+((?:the\s+)?[A-Z][\w'&]+(?:\s+(?:[A-Z][\w'&]+|&|of|on))*)/);
+  if(vn) out.venue = vn[1].trim();
+  const bd = t.match(/budget\s*(?:is|of|:|-)?\s*(?:around|about|roughly|approx\w*|max\w*|up to|between)?\s*(R\s?\d[\d\s,.]*k?(?:\s*(?:to|-)\s*R?\s?\d[\d\s,.]*k?)?|\d[\d\s,.]*k?\s*(?:rand)?)/i); if(bd) out.budget = bd[1].trim().replace(/[.,\s]+$/, '');
+  out.type = guessType(t);
+  return out;
+}
+function drawWaOut(r){
+  const box = $('waOut'); if(!box) return;
+  const v = r || { name:'', phone:'', email:'', date:'', time:'', venue:'', guests:'', budget:'' };
+  const f = (k, l, type) => `<div><label>${l}</label><input id="wa_${k}" ${type ? 'type="' + type + '"' : ''} value="${esc(v[k] || '')}" class="${v[k] ? 'found' : ''}"></div>`;
+  box.innerHTML = `${r && r.text ? `<p class="small muted" style="margin-bottom:8px">Found ${['name','phone','email','date','time','venue','guests','budget'].filter(k => v[k]).length} details. Check and fix anything before you start.</p>` : ''}
+    <div class="wa-grid">${f('name','Name')}${f('phone','WhatsApp')}${f('email','Email')}${f('date','Event date','date')}${f('time','Time','time')}${f('guests','Guests')}${f('venue','Venue')}${f('budget','Budget')}</div>`;
+  if(r && r.text && r.type) $('stType').value = r.type;
+}
+
 function startMeeting(){
   const m = blankMeeting();
   m.client.type = $('stType').value;
   if(startSeg === 'new'){
     m.client.name = ($('nwName').value || '').trim(); m.client.phone = ($('nwPhone').value || '').trim(); m.client.email = ($('nwEmail').value || '').trim();
     if(!m.client.name){ toast('Add the client name first'); return; }
+  } else if(startSeg === 'wa'){
+    const g = k => (($('wa_' + k) || {}).value || '').trim(), txt = ($('waIn').value || '').trim();
+    if(!txt && !g('name')){ toast('Paste the WhatsApp message first'); return; }
+    Object.assign(m.client, { name:g('name') || 'WhatsApp enquiry', phone:g('phone'), email:g('email'), venue:g('venue'), guests:g('guests'), budget:g('budget') });
+    if(g('date')) m.dates.push({ id:uid(), label:'Event day', date:g('date'), time:g('time'), note:'' });
+    if(txt) m.notes = 'WhatsApp enquiry:\n' + txt + '\n\n';
+    m.source = 'whatsapp';
   } else {
     if(!stPick){ toast('Pick a ' + (startSeg === 'order' ? 'client' : 'lead') + ' first'); return; }
     if(startSeg === 'order'){ const o = ORDERS.find(x => x.id === stPick); m.orderId = o.id; Object.assign(m.client, { name:o.customer || '', phone:o.clientPhone || '', email:o.clientEmail || '' });
@@ -739,10 +831,37 @@ function startMeeting(){
     else { const l = LEADS.find(x => x.id === stPick); m.leadId = l.id; Object.assign(m.client, { name:l.contact ? l.contact + (l.company ? ' (' + l.company + ')' : '') : (l.company || ''), email:l.email || '', phone:l.phone || '', venue:l.location || '' }); }
   }
   m.qs = questionsFor(m.client.type);
+  if(startWhen === 'later'){
+    const d = $('stDate').value, t = $('stTime').value || '10:00';
+    if(!d){ toast('Pick the meeting date'); return; }
+    m.status = 'planned'; m.startedAt = null; m.plannedAt = new Date(d + 'T' + t).toISOString(); m.where = $('stWhere').value.trim();
+    MEETS.unshift(m); saveM(m); closeSheet(); toast('Scheduled: ' + planLabel(m));
+    renderHome(); return;
+  }
   MEETS.unshift(m); closeSheet();
   cur = m; Store.touch(); Store.flush();
   tab = 'board'; boardFilter = autoCat(m.client.type);
   go('m=' + m.id);
+}
+
+/* ---------- a scheduled meeting: start, remind, move or cancel ---------- */
+function plannedSheet(m){
+  const d = new Date(m.plannedAt);
+  sheet('Scheduled meeting', `<div class="card"><div class="kv"><span>Client</span><b>${esc(m.client.name || 'Unnamed')}</b></div>
+      <div class="kv"><span>When</span><span>${planLabel(m)}</span></div>${m.where ? `<div class="kv"><span>Where</span><span>${esc(m.where)}</span></div>` : ''}
+      <div class="kv"><span>Shoot type</span><span>${esc(m.client.type)}</span></div></div>
+    <button class="btn" style="width:100%;justify-content:center;margin-top:12px" id="plStart">Start meeting now</button>
+    <a class="btn ghost" id="plRemind" target="_blank" rel="noopener" style="width:100%;justify-content:center;margin-top:8px">WhatsApp reminder to ${esc(first(m.client.name))}</a>
+    <div class="grid3" style="margin-top:14px"><div><label class="lb">Date</label><input class="inp" type="date" id="plDate" value="${isoDay(d)}"></div><div><label class="lb">Time</label><input class="inp" type="time" id="plTime" value="${hhmm(d)}"></div><div><label class="lb">Where</label><input class="inp" id="plWhere" value="${esc(m.where || '')}"></div></div>
+    <div class="row" style="margin-top:10px"><button class="btn ghost sm" id="plSave">Save changes</button><button class="btn ghost sm" id="plPrep">Prepare notes</button><button class="btn ghost sm" id="plDel" style="color:#c0392b!important">Cancel meeting</button></div>`, () => {
+    const msg = 'Hi ' + first(m.client.name) + ', just confirming our meeting ' + planLabel(m).replace(/^Today/, 'today').replace(/^Tomorrow/, 'tomorrow').replace(/^(\w{3}), /, 'on $1 ') + (m.where ? ' at ' + m.where : '') + '. Looking forward to chatting about your shoot! ' + first(BZ.b.owner) + ', ' + BZ.b.name;
+    $('plRemind').href = 'https://wa.me/' + waNum(m.client.phone) + '?text=' + encodeURIComponent(msg);
+    $('plRemind').onclick = () => { m.remindedAt = new Date().toISOString(); saveM(m); };
+    $('plStart').onclick = () => { m.status = 'open'; m.startedAt = new Date().toISOString(); closeSheet(); cur = m; Store.touch(); Store.flush(); tab = 'board'; boardFilter = autoCat(m.client.type); go('m=' + m.id); };
+    $('plSave').onclick = () => { const dd = $('plDate').value, tt = $('plTime').value || '10:00'; if(!dd) return; m.plannedAt = new Date(dd + 'T' + tt).toISOString(); m.where = $('plWhere').value.trim(); saveM(m).then(() => { closeSheet(); toast('Moved to ' + planLabel(m)); renderHome(); }); };
+    $('plPrep').onclick = () => { closeSheet(); tab = 'qs'; go('m=' + m.id + '&edit=1'); };
+    $('plDel').onclick = () => { if(!confirm('Cancel this scheduled meeting?')) return; Store.deleteMeeting(m.id).then(() => { closeSheet(); toast('Meeting cancelled'); go(''); }); };
+  });
 }
 function autoCat(type){
   const map = { 'Wedding':/wedd/i, 'Birthday / Party':/birth|party/i, 'Corporate / Event':/corp|event/i, 'Family / Portrait':/family|portrait/i, 'Sports':/sport/i, 'Product / Brand':/product|brand/i };
@@ -818,6 +937,7 @@ function drawAdd(){
   }
 }
 $('shB').addEventListener('click', e => {
+  const w = e.target.closest('[data-when]'); if(w){ startWhen = w.dataset.when; drawWhen(); return; }
   const s = e.target.closest('[data-seg]'); if(s){ startSeg = s.dataset.seg; drawStart(); return; }
   const a = e.target.closest('[data-aseg]'); if(a){ addSeg = a.dataset.aseg; drawAdd(); return; }
   const p = e.target.closest('[data-pick]'); if(p){ selectPick(p.dataset.pick); return; }
@@ -876,7 +996,7 @@ function openEditor(m){
   cur.client = Object.assign({ name:'', phone:'', email:'', type:'General', venue:'', guests:'', budget:'' }, cur.client || {});
   show('vLive');
   const live = cur.status === 'open';
-  $('endBtn').textContent = live ? 'End meeting' : 'Done editing';
+  $('endBtn').textContent = live ? 'End meeting' : cur.status === 'planned' ? 'Done preparing' : 'Done editing';
   $('lvTimer').classList.toggle('hide', !live);
   $('cvLogo').src = BZ.b.logo;
   drawHead(); updateTabs(); renderPanel();
@@ -887,7 +1007,7 @@ function drawHead(){
   $('lvName').textContent = cur.client.name || 'New client';
   $('cvName').textContent = cur.client.name ? 'Hi ' + first(cur.client.name) : 'Welcome';
   const o = cur.orderId && ORDERS.find(x => x.id === cur.orderId);
-  $('lvSub').textContent = (cur.status === 'open' ? 'Live · ' : 'Editing summary · ') + (cur.client.type || 'General') + (o ? ' · Order ' + (o.orderId || '') : cur.leadId ? ' · Lead' : '');
+  $('lvSub').textContent = (cur.status === 'open' ? 'Live · ' : cur.status === 'planned' ? 'Preparing · ' : 'Editing summary · ') + (cur.client.type || 'General') + (o ? ' · Order ' + (o.orderId || '') : cur.leadId ? ' · Lead' : '');
 }
 function updateTabs(){
   if(!cur) return;
@@ -967,7 +1087,9 @@ function renderPanel(){
         <input type="date" data-list="tasks" data-i="${i}" data-k="due" value="${esc(t.due)}"><button class="x" data-del="tasks" data-i="${i}" aria-label="Remove">&times;</button></div>`).join('') : `<div class="empty">Nothing to follow up yet.</div>`}</div>
       ${sugg.length ? `<div class="sugg">${sugg.map(s => `<button data-tsugg="${esc(s)}">+ ${esc(s)}</button>`).join('')}</div>` : ''}
       <div class="card" style="margin-top:18px"><b>Send the recap to the client</b><p class="muted small" style="margin:4px 0 10px">A WhatsApp message with the dates, loved ideas, must-have shots, quote and next steps. You can edit it before sending.</p>
-        <button class="btn" data-act="waSheet">WhatsApp recap</button></div>`;
+        <button class="btn" data-act="waSheet">WhatsApp recap</button></div>
+      <div class="card" style="margin-top:12px"><b>Mood board link</b><p class="muted small" style="margin:4px 0 10px">A private page where ${esc(first(c.client.name))} can look through the ideas and heart favourites. Their picks come back to this meeting.</p>
+        <button class="btn ghost" data-act="shareSheet">${c.share && c.share.id ? 'Open link options' : 'Create link'}</button></div>`;
   }
 }
 
@@ -1007,7 +1129,8 @@ function renderQuote(P){
     </div>
     <div class="priv">${menu.map(g => `<div class="menu-g"><h4>${esc(g.n)}</h4><div class="items">${g.items.map(it => `<button data-addline='${esc(JSON.stringify(it))}'>${esc(it.label)}<small>${RZA(it.price)}</small></button>`).join('')}</div></div>`).join('')}
       <div class="menu-g"><h4>Custom</h4><div class="row" style="flex-wrap:nowrap;gap:6px"><input class="inp" id="qcL" placeholder="Item"><input class="inp" id="qcP" type="number" inputmode="numeric" placeholder="R" style="width:100px"><button class="btn sm" data-act="addCustom">Add</button></div></div>
-      <p class="muted small">Prices come from your ${esc(BZ.b.name)} Calculator settings.</p></div></div>`;
+      <p class="muted small">Prices come from your ${esc(BZ.b.name)} Calculator settings.</p>
+      ${q.lines.length ? `<button class="btn ghost" data-act="toInvoice" style="margin-top:6px">Make invoice in Calculator</button>` : ''}</div></div>`;
   const s = $('qShow'); if(s) s.onchange = () => { q.showClient = s.checked; Store.touch(); };
 }
 function totHtml(t){
@@ -1057,8 +1180,8 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if(!b) return;
   const a = b.dataset.act;
   const A = {
-    startSheet:() => startSheet(), openLib:() => go('lib=1'), home:() => go(''), addSheet, catSheet,
-    clearFilter:() => go(''), startOrder:() => startSheet('order:' + b.dataset.id),
+    startSheet:() => startSheet(), schedSheet:() => startSheet(null, 'later'), openLib:() => go('lib=1'), home:() => go(''), addSheet, catSheet,
+    clearFilter:() => go(''), startOrder:() => startSheet('order:' + b.dataset.id), shareSheet:() => shareSheet(cur), toInvoice:() => toInvoice(cur),
     leaveLive:() => { Store.flush(); if(cur.status === 'open') go(''); else go('m=' + cur.id); },
     cvOn:() => { document.body.classList.add('cv'); if(TABS.find(x => x.k === tab).priv || (tab === 'quote' && !cur.quote.showClient)) tab = 'board'; updateTabs(); renderPanel(); window.scrollTo(0, 0); },
     stamp:() => { const ta = $('notesTa'); const s = '[' + hhmm(new Date()) + '] '; const p = ta.selectionStart || ta.value.length; const pre = ta.value.slice(0, p); ta.value = pre + (pre && !/\n$/.test(pre) ? '\n' : '') + s + ta.value.slice(p); cur.notes = ta.value; Store.touch(); ta.focus(); },
@@ -1135,7 +1258,9 @@ function renderSummary(m){
     ${match ? `<div class="bar on no-print" style="background:#eef6ff;border-color:#bcd4f5;color:#1d3d6b">This looks like <b>${esc(match.customer)}</b> (Order ${esc(match.orderId || '')}) in your Database. <button class="mini" data-sact="linkMatch" data-id="${esc(match.id)}">Link it</button></div>` : ''}
     <div class="actions">
       <button class="btn" data-sact="wa">WhatsApp recap</button>
+      <button class="btn ghost" data-sact="share">${m.share && m.share.id ? 'Mood board link' : 'Share mood board'}</button>
       <button class="btn ghost" data-sact="edit">Edit</button>
+      ${q.lines.length ? `<button class="btn ghost" data-sact="invoice">Make invoice</button>` : ''}
       ${o ? `<button class="btn ghost" data-sact="apply">Update order</button>` : ''}
       <button class="btn ghost" data-sact="link">${o ? 'Change link' : 'Link to order'}</button>
       <button class="btn ghost" data-sact="copy">Copy recap</button>
@@ -1146,6 +1271,7 @@ function renderSummary(m){
 
     <div class="sec-t">&#9829; Loved ideas (${m.hearts.length})</div>
     ${m.hearts.length ? `<div class="masonry sm" id="sumBoard">${m.hearts.map(h => pinHtml(h, 'sum')).join('')}</div>` : `<div class="empty">No ideas were loved in this meeting.</div>`}
+    <div id="clientPicks"></div>
 
     <div class="sgrid" style="margin-top:14px">
       <div class="card"><div class="sec-t" style="margin-top:0">Client</div>
@@ -1168,6 +1294,7 @@ function renderSummary(m){
       </div>
     </div>
     <p class="muted small" style="margin-top:16px">Saved automatically${m.updated ? ', last change ' + niceDay(m.updated) + ' at ' + hhmm(new Date(m.updated)) : ''}.</p>`;
+  loadClientPicks(m);
   const sb = $('sumBoard'); if(sb) sb.onclick = e => { const p = e.target.closest('[data-pin]'); if(p) openLB(m.hearts, m.hearts.findIndex(h => h.id === p.dataset.pin), 'sum'); };
   $('vSum').onclick = e => sumAct(e, m);
   $('vSum').onchange = e => {
@@ -1198,6 +1325,106 @@ function sumAct(e, m){
   if(a === 'link') linkSheet(m);
   if(a === 'linkMatch'){ m.orderId = b.dataset.id; saveM(m).then(() => { toast('Linked to the order'); renderSummary(m); }); }
   if(a === 'apply') applySheet(m);
+  if(a === 'share') shareSheet(m);
+  if(a === 'invoice') toInvoice(m);
+}
+
+/* =====================================================================
+   CLIENT MOOD BOARD LINK
+   The client opens fomstudios.co.za/moodboard.html?s=<id> (portfolio repo, no login) and hearts ideas.
+   Data: Firestore moodShare/<id> (public only by its exact id, until expiresAt). The client can only
+   change clientLoved and clientAt. Their picks show in the summary and send you a notification.
+   ===================================================================== */
+const SHARE_DAYS = 60, SH_KEY = 'fom_moodshare';
+const shareUrl = id => BZ.clientUrl('moodboard.html', 's=' + id);
+const absUrl = u => /^https?:|^data:/.test(u) ? u : SITE + String(u).replace(/^\/+/, '');
+const tsOf = d => CLOUD ? firebase.firestore.Timestamp.fromDate(d) : d.toISOString();
+const tsDate = v => v && v.toDate ? v.toDate() : (v ? new Date(v) : null);
+function shareRead(id){
+  if(!CLOUD) return Promise.resolve(readLS(SH_KEY, {})[id] || null);
+  return DB.collection('moodShare').doc(id).get().then(x => x.exists ? x.data() : null).catch(e => { rulesProblem(e); return null; });
+}
+function shareWrite(id, data, merge){
+  if(!CLOUD){ const all = readLS(SH_KEY, {}); all[id] = merge ? Object.assign(all[id] || {}, data) : data; writeLS(SH_KEY, all); return Promise.resolve(); }
+  return DB.collection('moodShare').doc(id).set(data, { merge:!!merge });
+}
+function shareDelete(id){ if(!CLOUD){ const all = readLS(SH_KEY, {}); delete all[id]; writeLS(SH_KEY, all); return Promise.resolve(); } return DB.collection('moodShare').doc(id).delete(); }
+function shareItems(m, cat){
+  const items = m.hearts.map(h => ({ id:h.id, url:absUrl(h.url), cap:h.cap || '', ar:h.ar || 0.8 }));
+  if(cat) LIB.items.filter(i => i.cat === cat && !items.some(x => x.id === i.id)).forEach(i => items.push({ id:i.id, url:absUrl(imgUrl(i)), cap:i.cap || '', ar:i.ar || 0.8 }));
+  return items;
+}
+const shareBrand = () => { const b = BZ.b; return { name:b.name, owner:first(b.owner), logo:b.logoAbs, accent:b.accent, wa:waNum(b.phone), site:b.siteUrl }; };
+const shareMsg = m => 'Hi ' + first(m.client.name) + ', here is your mood board from our meeting: ' + shareUrl(m.share.id) + '\n\nTap the heart on the ideas you love and I will see your picks straight away. ' + first(BZ.b.owner) + ', ' + BZ.b.name;
+function saveAny(m){ if(cur && cur.id === m.id){ Store.touch(); return Store.flush(); } return saveM(m); }
+async function shareSheet(m){
+  if(!m) return;
+  if(m.share && m.share.id){
+    sheet('Mood board link', '<p class="muted small">Loading...</p>');
+    const d = await shareRead(m.share.id);
+    if(!d){ sheet('Mood board link', `<div class="empty">This link was turned off or could not be read.</div><button class="btn" style="width:100%;justify-content:center;margin-top:12px" id="shNew">Make a new link</button>`, () => { $('shNew').onclick = () => { m.share = null; saveAny(m).then(() => shareSheet(m)); }; }); return; }
+    const exp = tsDate(d.expiresAt), at = tsDate(d.clientAt), picks = (d.clientLoved || []).length, url = shareUrl(m.share.id);
+    sheet('Mood board link', `<div class="sharebox"><span style="flex:1">${esc(url)}</span></div>
+      <div class="row" style="margin-top:10px"><button class="btn sm" id="shCopy">Copy link</button><a class="btn sm" id="shWa" target="_blank" rel="noopener" style="background:#25D366!important;border-color:#25D366!important;color:#fff!important">WhatsApp to ${esc(first(m.client.name))}</a><a class="btn sm ghost" href="${esc(url)}" target="_blank" rel="noopener">Preview</a></div>
+      <div class="card" style="margin-top:14px"><div class="kv"><span>Pictures</span><span>${(d.items || []).length}</span></div>
+        <div class="kv"><span>Client picks</span><b>${at ? picks + ' · ' + niceDay(at) + ' ' + hhmm(at) : 'Not opened yet'}</b></div>
+        <div class="kv"><span>Works until</span><span style="${exp && exp < new Date() ? 'color:#c0392b;font-weight:700' : ''}">${exp ? niceDay(exp) + (exp < new Date() ? ' (expired)' : '') : ''}</span></div></div>
+      <div class="row" style="margin-top:10px"><button class="btn ghost sm" id="shUpd">Update pictures</button><button class="btn ghost sm" id="shExt">Extend ${SHARE_DAYS} days</button><button class="btn ghost sm" id="shOff" style="color:#c0392b!important">Turn off link</button></div>
+      <p class="muted small" style="margin-top:8px">Update pictures sends your current loved ideas${m.share.cat ? ' plus the ' + esc(m.share.cat) + ' board' : ''}. The client's picks are kept.</p>`, () => {
+      $('shCopy').onclick = () => { (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast('Link copied'), () => prompt('Copy the link:', url)); };
+      $('shWa').href = 'https://wa.me/' + waNum(m.client.phone) + '?text=' + encodeURIComponent(shareMsg(m));
+      $('shWa').onclick = () => { m.share.sentAt = new Date().toISOString(); saveAny(m); };
+      $('shUpd').onclick = () => { const items = shareItems(m, m.share.cat); if(!items.length){ toast('Nothing to share'); return; } shareWrite(m.share.id, { items, picked:m.hearts.map(h => h.id), brand:shareBrand(), name:first(m.client.name), orderId:m.orderId || '' }, true).then(() => { toast('Pictures updated'); shareSheet(m); }).catch(e => { rulesProblem(e); toast('Could not update the link'); }); };
+      $('shExt').onclick = () => shareWrite(m.share.id, { expiresAt:tsOf(new Date(Date.now() + SHARE_DAYS * 864e5)) }, true).then(() => { toast('Link extended'); shareSheet(m); }).catch(e => { rulesProblem(e); toast('Could not extend the link'); });
+      $('shOff').onclick = () => { if(!confirm('Turn off this link? The client will see that it has ended.')) return; shareDelete(m.share.id).catch(e => console.warn(e)).then(() => { m.share = null; return saveAny(m); }).then(() => { closeSheet(); toast('Link turned off'); if(!cur || cur.id !== m.id) renderSummary(m); }); };
+    });
+    return;
+  }
+  const cats = LIB.cats.filter(c => LIB.items.some(i => i.cat === c)), def = autoCat(m.client.type);
+  sheet('Share the mood board', `<p class="muted small" style="margin-bottom:12px">${esc(first(m.client.name))} gets a private link (no login needed) to look through the ideas and heart the ones they love. You get a notification, and their picks show in this meeting's summary.</p>
+    <label class="li"><input type="checkbox" class="ck" checked disabled><span class="grow">Ideas loved in the meeting (${m.hearts.length})</span></label>
+    <label class="lb" style="margin-top:12px">Also include a whole board (optional)</label>
+    <select class="sel" id="shCat"><option value="">None</option>${cats.map(c => `<option${c === def && !m.hearts.length ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
+    <p class="muted small" style="margin-top:8px">The link works for ${SHARE_DAYS} days. You can extend it or turn it off any time.</p>
+    <button class="btn" style="width:100%;justify-content:center;margin-top:12px" id="shGo">Create link</button>`, () => {
+    $('shGo').onclick = async () => {
+      const cat = $('shCat').value, items = shareItems(m, cat);
+      if(!items.length){ toast('Heart some ideas first, or include a board'); return; }
+      $('shGo').disabled = true;
+      const id = (window.crypto && crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : uid() + uid() + uid()).slice(0, 24);
+      const data = { biz:BIZ, meetingId:m.id, orderId:m.orderId || '', name:first(m.client.name), brand:shareBrand(), items, picked:m.hearts.map(h => h.id),
+        clientLoved:[], clientAt:null, createdAt:tsOf(new Date()), expiresAt:tsOf(new Date(Date.now() + SHARE_DAYS * 864e5)) };
+      try{ await shareWrite(id, data); }catch(e){ rulesProblem(e); toast('Could not create the link. Publish the latest Firestore rules (moodShare).'); $('shGo').disabled = false; return; }
+      m.share = { id, cat, at:new Date().toISOString() };
+      await saveAny(m); toast('Link ready'); shareSheet(m);
+    };
+  });
+}
+function loadClientPicks(m){
+  const box = $('clientPicks'); if(!box || !m.share || !m.share.id) return;
+  shareRead(m.share.id).then(d => {
+    if(!d || !$('clientPicks')) return;
+    const at = tsDate(d.clientAt), loved = d.clientLoved || [], items = (d.items || []).filter(i => loved.includes(i.id));
+    box.innerHTML = `<div class="sec-t">&#10084;&#65039; ${esc(first(m.client.name))}'s picks from the link${at ? ' (' + loved.length + ') · ' + niceDay(at) + ' ' + hhmm(at) : ''}</div>` +
+      (items.length ? `<div class="masonry sm" id="cpBoard">${items.map(i => `<div class="pin" data-cp="${esc(i.id)}"><div class="pimg" style="aspect-ratio:${i.ar || 0.8}"><img src="${esc(i.url)}" alt="" loading="lazy"><span class="clienttag">${m.hearts.some(h => h.id === i.id) ? 'You both' : 'Client'}</span></div>${i.cap ? `<div class="pcap">${esc(i.cap)}</div>` : ''}</div>`).join('')}</div>`
+        : `<div class="empty">${at ? 'They took all their hearts off.' : 'Link ' + (m.share.sentAt ? 'sent ' + niceDay(m.share.sentAt) : 'ready') + '. Their picks show here once they open it.'}</div>`);
+    const cb = $('cpBoard'); if(cb) cb.onclick = e => { const p = e.target.closest('[data-cp]'); if(p) openLB(items, items.findIndex(i => i.id === p.dataset.cp), 'sum'); };
+  });
+}
+
+/* ---------- quote to Calculator invoice ---------- */
+function toInvoice(m){
+  if(!m) return;
+  const q = Object.assign({ lines:[], km:0, disc:0, discType:'R' }, m.quote || {});
+  if(!q.lines.length){ toast('Build a quote first'); return; }
+  const t = quoteTotals(q), sd = (m.dates || []).find(d => d.date && /shoot|event/i.test(d.label));
+  writeLS('fom.meet.toInvoice', { biz:BIZ, at:Date.now(), meetingId:m.id, client:m.client.name,
+    lines:q.lines.map(l => ({ desc:l.label, unit:+l.price || 0, qty:+l.qty || 1 })),
+    travel:t.travel ? { desc:'Travel (' + q.km + ' km)', unit:t.travel } : null,
+    discType:q.disc ? (q.discType === '%' ? 'percent' : 'flat') : 'none', disc:+q.disc || 0,
+    note:sd ? (sd.label + ' ' + niceDay(sd.date) + (m.client.venue ? ', ' + m.client.venue : '')) : '' });
+  if(cur) Store.flush();
+  location.href = 'calculator.html?from=meeting';
 }
 
 /* ---------- WhatsApp recap ---------- */
@@ -1209,6 +1436,7 @@ function recap(m){
   if(ds.length){ lines.push('', '📅 Key dates'); ds.forEach(d => lines.push('- ' + d.label + ': ' + niceDay(d.date) + (d.time ? ' at ' + d.time : '') + (d.note ? ' (' + d.note + ')' : ''))); }
   if(m.client.venue) lines.push('', '📍 ' + m.client.venue);
   if(m.hearts.length){ lines.push('', '❤️ You loved ' + m.hearts.length + (m.hearts.length === 1 ? ' idea' : ' ideas') + ' from the mood board' + (m.hearts.some(h => h.cap) ? ': ' + m.hearts.filter(h => h.cap).map(h => h.cap).slice(0, 6).join(', ') : '') + '.'); }
+  if(m.share && m.share.id) lines.push('', '\uD83D\uDDBC\uFE0F Your mood board (tap the hearts on your favourites): ' + shareUrl(m.share.id));
   const sh = m.shots.filter(s => s.t);
   if(sh.length){ lines.push('', '📸 Must-have shots'); sh.slice(0, 12).forEach(s => lines.push('- ' + s.t)); }
   if(q.lines.length){ lines.push('', '💰 Quote: ' + RZA(t.total) + ' (' + q.lines.map(l => l.label + (l.qty > 1 ? ' x' + l.qty : '')).join(', ') + ')', 'A ' + DEPOSIT_PCT + '% deposit of ' + RZA(t.deposit) + ' secures your date.'); }

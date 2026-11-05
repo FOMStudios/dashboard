@@ -358,6 +358,30 @@ function cardActivity(){
     ${ev.length > 5 ? `<button class="act-more" type="button" id="actMore">${ACT_MORE ? 'Show less' : 'Show more (' + Math.min(ev.length, 25) + ')'}</button>` : ''}</div>`;
 }
 
+/* client meetings (meetings.html): live meeting, today's and upcoming scheduled meetings, follow-ups that are due */
+let MEETS = [];
+function cardMeetings(){
+  const mine = BZ.mine(MEETS); if(!mine.length) return '';
+  const now = new Date(), t0 = new Date(); t0.setHours(0,0,0,0);
+  const days = d => Math.round((new Date(d).setHours(0,0,0,0) - t0) / 86400000);
+  const hm = d => { const x = new Date(d); return String(x.getHours()).padStart(2,'0') + ':' + String(x.getMinutes()).padStart(2,'0'); };
+  const when = d => { const n = days(d); return n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : new Date(d).toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short'}); };
+  const live = mine.filter(m => m.status === 'open');
+  const plan = mine.filter(m => m.status === 'planned' && days(m.plannedAt) >= -1 && days(m.plannedAt) <= 7).sort((a,b) => String(a.plannedAt).localeCompare(String(b.plannedAt)));
+  const due = [];
+  mine.filter(m => m.status === 'closed').forEach(m => (m.tasks || []).forEach(t => { if(t.t && !t.done && t.due && days(t.due) <= 0) due.push({ m, t, n:days(t.due) }); }));
+  due.sort((a,b) => a.n - b.n);
+  if(!live.length && !plan.length && !due.length) return '';
+  const nm = m => esc(((m.client && m.client.name) || 'Client').split(' ')[0]);
+  const rows = [].concat(
+    live.map(m => `<a class="ns-step" href="meetings.html?m=${encodeURIComponent(m.id)}"><span class="ns-who" style="background:#e8f6ee;color:#1f8a4c">Live</span><span class="ns-t">Meeting with ${nm(m)}</span><span class="ns-go">Resume</span></a>`),
+    plan.map(m => `<a class="ns-step" href="meetings.html?m=${encodeURIComponent(m.id)}"><span class="ns-who" style="background:#fff4e5;color:#7a4b00">${when(m.plannedAt)}</span><span class="ns-t">${hm(m.plannedAt)} ${esc((m.client && m.client.name) || 'Client')}${m.where ? ` <small style="color:var(--ink-soft);font-weight:500">${esc(m.where)}</small>` : ''}</span></a>`),
+    due.slice(0, 6).map(x => `<a class="ns-step" href="meetings.html?m=${encodeURIComponent(x.m.id)}"><span class="ns-who ${x.t.who === 'client' ? 'client' : 'me'}"${x.n < 0 ? ' style="background:#c0392b;color:#fff"' : ''}>${x.n < 0 ? (-x.n) + 'd late' : 'Due today'}</span><span class="ns-t">${esc(x.t.t)} <small style="color:var(--ink-soft);font-weight:500">${nm(x.m)}${x.t.who === 'client' ? ' (client)' : ''}</small></span></a>`)
+  ).join('');
+  return `<div class="card" style="margin-bottom:20px"><div class="ns-head"><h2>Meetings${due.length ? `<span class="sd-tag"${due.some(x => x.n < 0) ? ' style="background:#c0392b"' : ''}>${due.length} to do</span>` : ''}</h2><a class="ns-go" href="meetings.html">Open</a></div>${rows}
+    ${due.length > 6 ? `<div class="ns-meta">and ${due.length - 6} more follow-ups</div>` : ''}</div>`;
+}
+
 let sdPick = '';
 function cardShoot(){
   const H = window.FOM_HEALTH; if(!H) return '';
@@ -429,6 +453,7 @@ function render(){
     ${cardMessages()}
     ${cardActivity()}
     ${cardShoot()}
+    ${cardMeetings()}
     <div class="grid2">${cardNext()}${cardSuggest()}</div>
     <div class="kpis">
       <div class="kpi"><div class="k-lbl">Total Orders</div><div class="k-val">${vo.length}</div><div class="k-sub">${statusMap['Completed']||0} completed</div>${both?`<div class="k-split" data-norebrand><span><i class="biz-dot fom"></i>FOM ${cnt(ALL.filter(o=>bizOf(o)==='fom'))}</span><span><i class="biz-dot sba"></i>Shot by A ${cnt(ALL.filter(o=>bizOf(o)==='sba'))}</span></div>`:''}</div>
@@ -490,6 +515,7 @@ function startLocal(){ var _ac0=document.getElementById('authCheck'); if(_ac0)_a
   const badge=$('syncBadge'); badge.textContent='💾 Local only'; badge.className='badge local';
   $('logoutBtn').style.display='none';
   try{ orders=JSON.parse(localStorage.getItem('fom_orders'))||[]; }catch(e){ orders=[]; }
+  try{ MEETS=JSON.parse(localStorage.getItem('fom_meetings'))||[]; }catch(e){ MEETS=[]; }
   ALL=orders.slice();
   try{ ADV.calc=JSON.parse(localStorage.getItem('fom.calc.v1')); ADV.contract=JSON.parse(localStorage.getItem('fom.contract.v1')); }catch(e){}
   safeRender();
@@ -522,6 +548,7 @@ function initCloud(){
         loadAdvisorData(db);
         db.collection('orders').onSnapshot(snap=>{ ALL=snap.docs.map(d=>({id:d.id,...d.data()})); ALL.sort((a,b)=>tsMillis(a.createdAt)-tsMillis(b.createdAt)); orders=BZ.mine(ALL); safeRender(); }, err=>console.warn('Firestore:',err));
         BZ.syncBrand(db);
+        db.collection('meetings').onSnapshot(snap=>{ MEETS=snap.docs.map(d=>({id:d.id,...d.data()})); safeRender(); }, err=>console.warn('meetings (publish the latest Firestore rules):',err));
         if(CHAT_ON) db.collection('chat').onSnapshot(snap=>{ CHATS=snap.docs.map(d=>({id:d.id,...d.data()})).filter(c=>orders.some(o=>o.id===c.id)); safeRender(); }, err=>console.warn('chat:',err));
       }).catch(err=>{ console.warn('Admin check failed:',err); $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
     } else { orders=[]; safeRender(); $('loginGate').style.display='flex'; }

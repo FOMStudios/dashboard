@@ -1969,6 +1969,29 @@ function closePreview(){
   })();
 })();
 </script>
+<script>
+/* From a client meeting (meetings.html, "Make invoice"): the meeting quote opens here as a custom build, ready to export. */
+(function(){
+  if(!/from=meeting/.test(location.search)) return;
+  let p = null; try{ p = JSON.parse(localStorage.getItem('fom.meet.toInvoice')); }catch(e){}
+  history.replaceState(null, '', 'calculator.html');
+  if(!p || p.biz !== FOM_BIZ.id || Date.now() - p.at > 15 * 60000) return;
+  localStorage.removeItem('fom.meet.toInvoice');
+  try{
+    state.type = 'custom';
+    state.custom = p.lines.map(l => L(l.desc, +l.unit || 0, +l.qty || 1));
+    if(p.travel) state.custom.push(L(p.travel.desc, +p.travel.unit || 0, 1));
+    state.transport.on = false;
+    const sel = $('qtype'); if(sel) sel.value = 'custom';
+    if(p.client) $('client').value = p.client;
+    if($('invdate') && !$('invdate').value) $('invdate').value = new Date().toISOString().slice(0, 10);
+    if(p.note && $('invnotes')) $('invnotes').value = p.note;
+    if(p.discType && p.discType !== 'none'){ $('discType').value = p.discType; $('discValue').value = p.disc; if(!$('discLabel').value) $('discLabel').value = 'Discount'; $('discType').dispatchEvent(new Event('change')); }
+    render();
+    setTimeout(() => { try{ dmToast('Quote from your meeting with ' + (p.client || 'the client') + ' loaded'); }catch(e){} }, 400);
+  }catch(e){ console.warn('meeting quote', e); }
+})();
+</script>
 <script src="activity.js"></script>
 <script src="app.js"></script>
 </body>
