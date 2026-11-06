@@ -375,10 +375,18 @@ export default {
       const n = url.searchParams.get('n');
       if (!g || !n) return json({ error: 'missing g or n' }, 400);
       const key = g + n;
+      // Video players fetch big files in pieces (Range requests). Every piece must say exactly
+      // which bytes it holds, or the player stalls (this was the "big MP4 gets stuck" bug).
       const range = request.headers.get('range');
-      const obj = range
-        ? await env.BUCKET.get(key, { range: parseRange(range) })
-        : await env.BUCKET.get(key);
+      let want = range ? parseRange(range) : null;
+      if (want && !('offset' in want) && !('suffix' in want)) want = null;
+      if (want) {
+        const head = await env.BUCKET.head(key);
+        if (!head) return json({ error: 'not found' }, 404);
+        want = fitRange(want, head.size);
+        if (!want) return new Response(null, { status: 416, headers: { ...cors, 'Content-Range': `bytes */${head.size}` } });
+      }
+      const obj = want ? await env.BUCKET.get(key, { range: want }) : await env.BUCKET.get(key);
       if (!obj) return json({ error: 'not found' }, 404);
 
       const h = new Headers(cors);
@@ -387,11 +395,12 @@ export default {
       h.set('Accept-Ranges', 'bytes');
       h.set('Cache-Control', PUBLIC_FOLDERS.includes(g) ? 'public, max-age=86400' : 'private, max-age=3600');
       if (url.searchParams.get('dl') === '1') h.set('Content-Disposition', `attachment; filename="${n.replace(/"/g, '')}"`);
-      if (range && obj.range) {
-        const end = obj.range.offset + obj.range.length - 1;
-        h.set('Content-Range', `bytes ${obj.range.offset}-${end}/${obj.size}`);
+      if (want) {
+        h.set('Content-Range', `bytes ${want.offset}-${want.offset + want.length - 1}/${obj.size}`);
+        h.set('Content-Length', String(want.length));
         return new Response(obj.body, { status: 206, headers: h });
       }
+      h.set('Content-Length', String(obj.size));
       return new Response(obj.body, { headers: h });
     }
 
@@ -465,6 +474,14 @@ export default {
   }
 };
 
+// Turn any range (start-end, start-, or last N bytes) into an exact { offset, length } inside the file.
+function fitRange(r, size) {
+  if (!size) return null;
+  let offset, length;
+  if ('suffix' in r) { length = Math.min(r.suffix, size); offset = size - length; }
+  else { offset = r.offset; if (offset >= size) return null; length = 'length' in r ? Math.min(r.length, size - offset) : size - offset; }
+  return length > 0 ? { offset, length } : null;
+}
 function parseRange(h) {
   const m = /bytes=(\d*)-(\d*)/.exec(h || '');
   if (!m) return {};
