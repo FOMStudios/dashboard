@@ -99,7 +99,7 @@ service cloud.firestore {
                     && request.resource.data.biz in ['fom', 'sba']
                     && request.resource.data.start is string && request.resource.data.start.size() < 40
                     && request.resource.data.len in [30, 45, 60]
-                    && request.resource.data.mode in ['inperson', 'video']
+                    && request.resource.data.mode in ['phone', 'video', 'inperson']   // in person is hidden on the websites for now
                     && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 110
                     && request.resource.data.phone is string && request.resource.data.phone.size() <= 30
                     && request.resource.data.email is string && request.resource.data.email.size() <= 110

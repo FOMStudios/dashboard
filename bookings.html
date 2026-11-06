@@ -386,8 +386,13 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 
     <section class="ws-card">
         <h2>How to meet</h2>
-        <label class="ws-toggle" style="margin-top:12px"><input type="checkbox" id="bIp"><span class="sw"></span><b>In person</b></label>
+        <label class="ws-toggle" style="margin-top:12px"><input type="checkbox" id="bPh"><span class="sw"></span><b>Phone call</b></label>
+        <p class="ws-help" style="margin:-4px 0 16px">You call the client on the WhatsApp number they give.</p>
+        <!-- In person is hidden for now (6 Nov 2026). To bring it back: remove these comment marks, and the // in booking.js (modes). -->
+        <!--
+        <label class="ws-toggle"><input type="checkbox" id="bIp"><span class="sw"></span><b>In person</b></label>
         <div class="ws-f" style="margin:-4px 0 16px"><label for="bPlace">Where (shown on the website)</label><input id="bPlace" maxlength="90" placeholder="e.g. Coffee shop in Fourways, or at your venue"></div>
+        -->
         <label class="ws-toggle"><input type="checkbox" id="bVid"><span class="sw"></span><b>Video call</b></label>
         <div class="ws-f" style="margin-top:-4px"><label for="bLink">Your video call link (private, only sent in the confirmation)</label><input id="bLink" maxlength="200" inputmode="url" placeholder="https://meet.google.com/abc-defg-hij"></div>
     </section>
@@ -416,7 +421,7 @@ const TZ = 'Africa/Johannesburg';
 const DAYS = [['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday'],['0','Sunday']];
 const DEF = { on:true, lengths:[30,45,60], buffer:15, notice:24, ahead:30,
   days:{ '1':['17:30','20:00'], '2':['17:30','20:00'], '3':['17:30','20:00'], '4':['17:30','20:00'], '5':['17:30','20:00'], '6':['09:00','13:00'] },
-  inPerson:{ on:true, place:'' }, video:{ on:true } };
+  inPerson:{ on:false, place:'' }, phone:{ on:true }, video:{ on:true } };
 
 let db=null, saved=null, savedLink='', dirty=false, loaded=false, REQS=[], filter='new', busyCount=0;
 
@@ -427,7 +432,8 @@ function drawForm(c){
   $('bLens').innerHTML = [30,45,60].map(n=>`<label class="bk-ck"><input type="checkbox" data-len="${n}" ${(c.lengths||[]).map(Number).includes(n)?'checked':''}><span>${n===60?'1 hour':n+' min'}</span></label>`).join('');
   $('bDays').innerHTML = DAYS.map(([k,n])=>{ const w=(c.days||{})[k]; return `<div class="bd-day${w?'':' off'}" data-d="${k}"><label class="ws-toggle" style="margin:0"><input type="checkbox" data-on ${w?'checked':''}><span class="sw"></span><b>${n}</b></label><input type="time" data-from value="${esc(w?w[0]:'17:30')}" aria-label="${n} from"><span class="bd-to">to</span><input type="time" data-to value="${esc(w?w[1]:'20:00')}" aria-label="${n} to"></div>`; }).join('');
   $('bBuf').value = String(c.buffer ?? 15); $('bNotice').value = String(c.notice ?? 24); $('bAhead').value = String(c.ahead ?? 30);
-  $('bIp').checked = !c.inPerson || c.inPerson.on !== false; $('bPlace').value = (c.inPerson && c.inPerson.place) || '';
+  if($('bIp')){ $('bIp').checked = !!(c.inPerson && c.inPerson.on === true); $('bPlace').value = (c.inPerson && c.inPerson.place) || ''; }   // hidden for now
+  $('bPh').checked = !c.phone || c.phone.on !== false;
   $('bVid').checked = !c.video || c.video.on !== false; $('bLink').value = savedLink;
 }
 function readForm(){
@@ -435,9 +441,10 @@ function readForm(){
   document.querySelectorAll('#bDays .bd-day').forEach(r=>{ const on=r.querySelector('[data-on]').checked; r.classList.toggle('off',!on); if(on) days[r.dataset.d]=[r.querySelector('[data-from]').value||'17:30', r.querySelector('[data-to]').value||'20:00']; });
   return { on:$('bOn').checked, lengths:[...document.querySelectorAll('#bLens [data-len]')].filter(x=>x.checked).map(x=>+x.dataset.len),
     days, buffer:+$('bBuf').value, notice:+$('bNotice').value, ahead:+$('bAhead').value,
-    inPerson:{ on:$('bIp').checked, place:$('bPlace').value.trim() }, video:{ on:$('bVid').checked } };
+    inPerson:{ on:$('bIp') ? $('bIp').checked : false, place:$('bPlace') ? $('bPlace').value.trim() : ((saved&&saved.inPerson&&saved.inPerson.place)||'') },
+    phone:{ on:$('bPh').checked }, video:{ on:$('bVid').checked } };
 }
-function norm(c){ c=Object.assign({},DEF,c||{}); return JSON.stringify({ on:c.on!==false, lengths:(c.lengths||[]).map(Number).sort(), days:c.days||{}, buffer:+c.buffer, notice:+c.notice, ahead:+c.ahead, inPerson:{on:!c.inPerson||c.inPerson.on!==false, place:(c.inPerson&&c.inPerson.place)||''}, video:{on:!c.video||c.video.on!==false} }); }
+function norm(c){ c=Object.assign({},DEF,c||{}); return JSON.stringify({ on:c.on!==false, lengths:(c.lengths||[]).map(Number).sort(), days:c.days||{}, buffer:+c.buffer, notice:+c.notice, ahead:+c.ahead, inPerson:{on:!!(c.inPerson&&c.inPerson.on===true), place:(c.inPerson&&c.inPerson.place)||''}, phone:{on:!c.phone||c.phone.on!==false}, video:{on:!c.video||c.video.on!==false} }); }
 function setState(){
   const now = norm(readForm()) + '|' + $('bLink').value.trim(), was = norm(saved) + '|' + savedLink;
   dirty = loaded && now !== was;
@@ -447,7 +454,7 @@ function setState(){
 }
 function validate(c){
   if(!c.lengths.length){ toast('Pick at least one meeting length'); return false; }
-  if(!c.inPerson.on && !c.video.on){ toast('Turn on in person, video call, or both'); return false; }
+  if(!c.phone.on && !c.video.on && !c.inPerson.on){ toast('Turn on phone call, video call, or both'); return false; }
   for(const k in c.days){ if(c.days[k][1] <= c.days[k][0]){ toast('Check the hours: "to" must be after "from"'); return false; } }
   const l=$('bLink').value.trim(); if(l && !/^https?:\/\//i.test(l)){ toast('The video link should start with https://'); return false; }
   return true;
@@ -497,7 +504,7 @@ function drawReqs(){
     return `<article class="rq${past?' past':''}" data-id="${esc(r.id)}">
       <div class="rq-top"><div><div class="rq-when">${esc(fmtWhen(r))} to ${esc(fmtEnd(r))}</div><div class="rq-who">${esc(r.name)} <span>${esc(r.type||'')}</span></div></div>
         <span class="rq-st" style="color:${st[1]};background:${st[2]}">${st[0]}${past&&r.status==='new'?' (time passed)':''}</span></div>
-      <div class="rq-meta">${r.mode==='video'?'🎥 Video call':'📍 In person'} · ${lenL(r.len)} · <a href="https://wa.me/${waNum(r.phone)}" target="_blank" rel="noopener">${esc(r.phone)}</a>${r.email?' · <a href="mailto:'+esc(r.email)+'">'+esc(r.email)+'</a>':''}</div>
+      <div class="rq-meta">${r.mode==='video'?'🎥 Video call':r.mode==='phone'?'📞 Phone call':'📍 In person'} · ${lenL(r.len)} · <a href="https://wa.me/${waNum(r.phone)}" target="_blank" rel="noopener">${esc(r.phone)}</a>${r.email?' · <a href="mailto:'+esc(r.email)+'">'+esc(r.email)+'</a>':''}</div>
       ${r.msg?`<div class="rq-msg">${esc(r.msg)}</div>`:''}
       <div class="rv-actions">${r.status==='new'&&!past?`<button class="ws-pub" data-a="ok" type="button">Confirm</button><button class="rv-btn" data-a="move" type="button">Suggest another time</button><button class="rv-btn danger" data-a="no" type="button">Decline</button>`:''}
         ${r.status==='confirmed'?`<button class="rv-btn" data-a="ics" type="button">Add to my calendar</button><a class="rv-btn" href="meetings.html${r.meetingId?'?m='+encodeURIComponent(r.meetingId):''}">Open in Client Meetings</a><button class="rv-btn" data-a="wa" type="button">WhatsApp ${esc(first(r.name))}</button>`:''}
@@ -505,12 +512,12 @@ function drawReqs(){
     </article>`; }).join('');
 }
 function confirmMsg(r){
-  const where = r.mode==='video' ? 'It is a video call'+(savedLink?': '+savedLink:'. I will send you the link before we meet.') : ((saved&&saved.inPerson&&saved.inPerson.place) ? 'We will meet at '+saved.inPerson.place+'. I will send you the exact spot before we meet.' : 'I will send you the place before we meet.');
+  const where = r.mode==='video' ? 'It is a video call'+(savedLink?': '+savedLink:'. I will send you the link before we meet.') : r.mode==='phone' ? 'I will call you on '+r.phone+' at that time.' : ((saved&&saved.inPerson&&saved.inPerson.place) ? 'We will meet at '+saved.inPerson.place+'. I will send you the exact spot before we meet.' : 'I will send you the place before we meet.');
   return 'Hi '+first(r.name)+', it\'s '+(first(B.owner)||B.name)+' from '+B.name+'. Your meeting is confirmed for '+fmtLong(r)+' ('+lenL(r.len)+'). '+where+' Looking forward to chatting about your shoot!';
 }
 function ics(r){
   const s=new Date(r.start), e=new Date(s.getTime()+(+r.len||30)*6e4), f=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
-  const loc = r.mode==='video' ? (savedLink||'Video call') : ((saved&&saved.inPerson&&saved.inPerson.place)||'');
+  const loc = r.mode==='video' ? (savedLink||'Video call') : r.mode==='phone' ? 'Phone call: '+r.phone : ((saved&&saved.inPerson&&saved.inPerson.place)||'');
   const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//FOM Studios//Bookings//EN','BEGIN:VEVENT','UID:'+r.id+'@fomstudios.co.za','DTSTAMP:'+f(new Date()),'DTSTART:'+f(s),'DTEND:'+f(e),
     'SUMMARY:'+(B.name+' meeting: '+r.name).replace(/[,;]/g,' '),'LOCATION:'+String(loc).replace(/[,;]/g,' '),'DESCRIPTION:'+(r.type+'. '+r.phone+(r.msg?'. '+r.msg:'')).replace(/\n/g,' ').replace(/[,;]/g,' ').slice(0,500),'BEGIN:VALARM','TRIGGER:-PT30M','ACTION:DISPLAY','DESCRIPTION:Meeting','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([body],{type:'text/calendar'})); a.download='meeting-'+first(r.name).toLowerCase()+'.ics'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
@@ -519,7 +526,7 @@ async function act(r, a){
   if(a==='ok'){
     const now=new Date().toISOString(), id='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
     const m={ id, biz:BIZ, status:'planned', startedAt:null, endedAt:null, durationMin:null, plannedAt:new Date(r.start).toISOString(),
-      where: r.mode==='video' ? 'Video call'+(savedLink?' ('+savedLink+')':'') : ((saved&&saved.inPerson&&saved.inPerson.place)||'In person'),
+      where: r.mode==='video' ? 'Video call'+(savedLink?' ('+savedLink+')':'') : r.mode==='phone' ? 'Phone call ('+r.phone+')' : ((saved&&saved.inPerson&&saved.inPerson.place)||'In person'),
       orderId:'', leadId:'', client:{ name:r.name, phone:r.phone, email:r.email||'', type:r.type||'General', venue:'', guests:'', budget:'' },
       notes: 'Booked on the website'+(r.msg?': '+r.msg:'.'), dates:[], qs:[], quote:{ lines:[], discType:'R', disc:0, km:0, showClient:false }, shots:[], people:[], tasks:[], hearts:[],
       created:now, updated:now, fromRequest:r.id, bookLen:+r.len||30 };
