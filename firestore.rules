@@ -116,16 +116,18 @@ service cloud.firestore {
 
     // ---- moodShare: the private mood board link a client opens (portfolio moodboard.html?s=<id>).
     //      Anyone with the exact link can open it until it expires; nobody can list them.
-    //      The client can only change their hearts (clientLoved) and the time they saved them.
+    //      The client can only change their hearts (clientLoved), their own inspiration (clientInspo, up to 30) and the time they saved them.
     match /moodShare/{id} {
       allow get: if isAdmin() || resource.data.expiresAt > request.time;
       allow list, create, delete: if isAdmin();
       allow update: if isAdmin()
                     || (
                          resource.data.expiresAt > request.time
-                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clientLoved', 'clientAt'])
+                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clientLoved', 'clientAt', 'clientInspo'])
                          && request.resource.data.clientLoved is list
                          && request.resource.data.clientLoved.size() <= 300
+                         && (!('clientInspo' in request.resource.data)
+                             || (request.resource.data.clientInspo is list && request.resource.data.clientInspo.size() <= 30))
                          && request.resource.data.clientAt == request.time
                        );
     }

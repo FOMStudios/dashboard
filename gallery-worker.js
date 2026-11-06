@@ -198,6 +198,7 @@ const EV_TYPES = {
   portal:   { once: true,  title: 'Portal sign-in',       body: (n) => n + ' signed in to the client portal for the first time.' },
   gallery:  { once: true,  title: 'Gallery opened',       body: (n) => n + ' opened their gallery.' },
   download: { gap: 3600e3, title: 'Files downloaded',     body: (n, d) => n + ' is downloading ' + (d || 'their files') + '.' },
+  inspo:    { gap: 600e3,  title: 'Inspiration added',    body: (n, d) => n + ' added ' + (d || 'some') + ' inspiration to their mood board.' },
   favs:     { gap: 1800e3, title: 'Favourites picked',    body: (n, d) => n + ' picked ' + (d || 'their') + ' favourites.' },
   review:   { gap: 60e3,   title: 'New review',           body: (n, d) => n + ' left a review' + (d ? ': ' + d : '') + '.' },
   paid:     { gap: 300e3,  title: 'Card payment',         body: (n, d) => n + ' paid ' + (d || 'by card') + ' (check Yoco to confirm).' },
@@ -333,6 +334,48 @@ async function handleEvents(request, env, url) {
 
 const normPrefix = g => { g = (g || '').replace(/^\/+/, ''); if (g && !g.endsWith('/')) g += '/'; return g; };
 
+/* ============================================================
+   CLIENT INSPIRATION ON A MOOD BOARD LINK (no login)
+   POST /mood/upload?s=<link id>   body: a JPEG the page already resized  -> { ok, url, name }
+   POST /mood/delete?s=<link id>&n=<name>                                  -> { ok }
+   Only works while that mood board link exists and has not expired (checked against the public
+   Firestore moodShare doc). Files live in R2 under mood-client/<link id>/, at most 30 per link,
+   and stay after the link ends so the meeting's inspo keeps its pictures.
+   ============================================================ */
+const MOOD_MAX = 30, MOOD_BYTES = 6 * 1024 * 1024;
+async function moodShareLive(env, id) {
+  try {
+    const pid = env.FIREBASE_PROJECT_ID || PROJECT;
+    const r = await fetch(`https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/moodShare/${encodeURIComponent(id)}`);
+    if (!r.ok) return false;                                  // missing, turned off or expired (the rules refuse expired links)
+    const exp = ((await r.json()).fields || {}).expiresAt;
+    return !exp || !exp.timestampValue || Date.parse(exp.timestampValue) > Date.now();
+  } catch (e) { return false; }
+}
+async function handleMoodClient(path, request, env, url) {
+  if (request.method !== 'POST') return json({ error: 'POST only' }, 405);
+  const id = String(url.searchParams.get('s') || '');
+  if (!/^[A-Za-z0-9]{12,40}$/.test(id)) return json({ error: 'bad link' }, 400);
+  if (!(await moodShareLive(env, id))) return json({ error: 'This mood board link has ended.' }, 403);
+  const prefix = 'mood-client/' + id + '/';
+  if (path === '/mood/delete') {
+    const n = safeName(url.searchParams.get('n'));
+    if (!n) return json({ error: 'missing n' }, 400);
+    await env.BUCKET.delete(prefix + n);
+    return json({ ok: true });
+  }
+  const type = (request.headers.get('Content-Type') || '').split(';')[0];
+  if (!/^image\/(jpeg|png|webp)$/.test(type)) return json({ error: 'pictures only' }, 400);
+  if (Number(request.headers.get('Content-Length') || 0) > MOOD_BYTES) return json({ error: 'picture too large' }, 413);
+  const have = await env.BUCKET.list({ prefix, limit: MOOD_MAX + 1 });
+  if (have.objects.length >= MOOD_MAX) return json({ error: 'You can add up to ' + MOOD_MAX + ' pictures.' }, 429);
+  const buf = await request.arrayBuffer();
+  if (!buf.byteLength || buf.byteLength > MOOD_BYTES) return json({ error: 'bad file size' }, 413);
+  const n = Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + (type === 'image/png' ? '.png' : type === 'image/webp' ? '.webp' : '.jpg');
+  await env.BUCKET.put(prefix + n, buf, { httpMetadata: { contentType: type } });
+  return json({ ok: true, name: n, url: `${url.origin}/file?g=${encodeURIComponent(prefix)}&n=${encodeURIComponent(n)}` });
+}
+
 export default {
   async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -346,6 +389,7 @@ export default {
     if (path === '/events') return handleEvents(request, env, url);
     if (path.startsWith('/push/')) return handlePush(path, request, env);
     if (path === '/notify') return handleNotify(request, env);
+    if (path === '/mood/upload' || path === '/mood/delete') return handleMoodClient(path, request, env, url);
 
     // ---- list files in a folder ----
     if (path === '/list') {

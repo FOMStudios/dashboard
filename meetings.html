@@ -264,6 +264,9 @@ body.cv .fom-nav,body.cv .fom-sheet,body.cv .fom-scrim{display:none!important;}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--btn,#1a1a1a);color:var(--btn-ink,#fff);padding:11px 18px;border-radius:99px;font-size:14px;font-weight:600;z-index:2700;opacity:0;pointer-events:none;transition:all .25s;max-width:92vw;text-align:center;}
 .toast.on{opacity:1;transform:translateX(-50%);}
 .chip.plan{background:#fff4e5;color:#7a4b00;}
+.fromclient{position:absolute;left:8px;top:8px;background:#7a4cc2;color:#fff;border-radius:99px;font-size:11px;font-weight:700;padding:2px 8px;}
+.inspohead{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 12px;padding:12px 14px;border-radius:16px;background:var(--surface-2,#efede8);}
+.inspohead p{margin:2px 0 0;font-size:13px;color:var(--ink-soft);}
 .clienttag{position:absolute;left:8px;bottom:8px;background:#1f8a4c;color:#fff;border-radius:99px;font-size:11px;font-weight:700;padding:2px 8px;}
 .sharebox{display:flex;gap:8px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;word-break:break-all;}
 .wa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
@@ -333,6 +336,7 @@ body.cv .fom-nav,body.cv .fom-sheet,body.cv .fom-scrim{display:none!important;}
       <button class="mini" data-act="catSheet" style="margin-bottom:10px">Edit categories</button>
     </div>
     <div class="upline hide" id="libUp"></div>
+    <div id="libMove"></div>
     <div class="masonry" id="libBoard"></div>
   </section>
 
@@ -379,6 +383,7 @@ body.cv .fom-nav,body.cv .fom-sheet,body.cv .fom-scrim{display:none!important;}
 <div class="sh" id="sh" role="dialog" aria-modal="true"><div class="grab"></div><div class="hd"><h2 id="shT"></h2><button id="shX" aria-label="Close">&times;</button></div><div class="bd" id="shB"></div></div>
 <div class="toast" id="toast"></div>
 <input type="file" id="upFile" accept="image/*" multiple hidden>
+<input type="file" id="upInspo" accept="image/*" multiple hidden>
 <div class="dropzone" id="dropZone"><div><span id="dropTxt">Drop to add to the mood board</span><small>Drag in as many pictures as you like</small></div></div>
 <div class="bulkbar" id="bulkBar">
   <b id="bkN">0 selected</b>
@@ -584,6 +589,7 @@ function pinHtml(it, mode){
       ${mode === 'meet' ? `<button class="heart${loved ? ' on' : ''}" data-heart="${esc(it.id)}" aria-label="Love this idea">${HEART}</button>` : ''}
       ${mode === 'meet' && boardFilter === 'Library' && hasBoard() ? `<button class="boardtag priv${cur.board.includes(it.id) ? ' on' : ''}" data-board="${esc(it.id)}">${cur.board.includes(it.id) ? '\u2713 On their board' : '+ Their board'}</button>` : ''}
       ${mode === 'sum' ? `<span class="lovedtag">&#9829; Loved</span>` : ''}
+      ${it.from === 'client' ? `<span class="fromclient">From client</span>` : ''}
     </div>
     ${it.cap ? `<div class="pcap">${esc(it.cap)}</div>` : ''}
     ${mode === 'lib' && it.cat ? `<div class="pcat">${esc(it.cat)}</div>` : ''}
@@ -610,13 +616,17 @@ function drawLB(){
     $('lbCapIn').onchange = e => { it.cap = e.target.value.trim(); $('lbCap').textContent = it.cap; Store.saveLib(); };
     $('lbCatIn').onchange = e => { it.cat = e.target.value; Store.saveLib(); };
     $('lbDel').onclick = () => { if(!confirm('Remove this idea from the mood board? Meeting summaries that loved it keep their copy.')) return; LIB.items = LIB.items.filter(x => x.id !== it.id); Store.saveLib(); LBLIST.splice(LBI, 1); if(LBI >= LBLIST.length) LBI = LBLIST.length - 1; LBLIST.length ? drawLB() : closeLB(); };
+  } else if(LBMODE === 'meet' && meetInspo().includes(it) && !document.body.classList.contains('cv')){
+    ed.innerHTML = `<input id="lbCapIn" placeholder="Caption" value="${esc(it.cap || '')}"><button id="lbDel">Remove from inspo</button>`;
+    $('lbCapIn').onchange = e => { it.cap = e.target.value.trim(); $('lbCap').textContent = it.cap; Store.touch(); };
+    $('lbDel').onclick = () => { if(!confirm('Remove this picture from ' + first(cur.client.name) + '’s inspo?')) return; cur.inspo = meetInspo().filter(x => x !== it); Store.touch(); LBLIST.splice(LBI, 1); if(LBI >= LBLIST.length) LBI = LBLIST.length - 1; LBLIST.length ? drawLB() : closeLB(); };
   } else ed.innerHTML = '';
 }
 function toggleHeart(id){
   if(!cur) return false;
   const i = cur.hearts.findIndex(h => h.id === id);
   if(i >= 0){ cur.hearts.splice(i, 1); Store.touch(); return false; }
-  const it = LIB.items.find(x => x.id === id); if(!it) return false;
+  const it = LIB.items.find(x => x.id === id) || meetInspo().find(x => x.id === id); if(!it) return false;
   cur.hearts.push({ id:it.id, url:imgUrl(it), cap:it.cap || '', cat:it.cat || '', ar:it.ar || 0.8, at:new Date().toISOString() });
   Store.touch(); return true;
 }
@@ -968,8 +978,42 @@ function renderLib(){
   const items = libItems();
   $('libBoard').classList.toggle('selecting', !!libSel);
   $('libBoard').innerHTML = items.length ? items.map(i => pinHtml(i, 'lib')).join('') : `<div class="empty" style="column-span:all">No ideas yet. Tap <b>+ Add ideas</b>${touch ? '' : ' or drag pictures here'} to upload pictures, pick from your Photos page or paste links.</div>`;
+  drawInspoMove();
   if(libSel) $('libBoard').querySelectorAll('[data-pin]').forEach(p => p.classList.toggle('picked', libSel.has(p.dataset.pin)));
   drawBulk();
+}
+
+/* ---- one-time move: library Inspo pictures go into the meetings that use them ---- */
+function inspoMovePlan(){
+  const ins = LIB.items.filter(i => isInspo(i.cat)); if(!ins.length) return null;
+  const ids = new Set(ins.map(i => i.id)), per = [];
+  MEETS.forEach(m => { const use = (m.board || []).filter(id => ids.has(id)); if(use.length) per.push({ m, use }); });
+  const used = new Set(per.flatMap(x => x.use));
+  return { ins, ids, per, unused: ins.filter(i => !used.has(i.id)) };
+}
+function drawInspoMove(){
+  const box = $('libMove'); if(!box) return;
+  const pl = inspoMovePlan();
+  box.innerHTML = pl ? `<div class="inspohead" style="background:#fff6e0;border:1px solid #f0d58a"><div><b>Inspo now lives inside each client’s meeting</b><p>${pl.ins.length} inspo ${pl.ins.length === 1 ? 'picture is' : 'pictures are'} still in your library. ${(() => { const mv = pl.ins.length - pl.unused.length, are = n => n === 1 ? ' is' : ' are'; return (mv ? mv + are(mv) + ' on ' + pl.per.length + (pl.per.length === 1 ? ' meeting’s board' : ' meetings’ boards') + ' and will move there.' : 'None are on a meeting’s board.') + (pl.unused.length ? ' ' + pl.unused.length + are(pl.unused.length) + ' not on any board and will be deleted.' : ''); })()}</p></div><button class="btn sm" id="inMoveGo">Move inspo into meetings</button></div>` : '';
+  const b = $('inMoveGo'); if(b) b.onclick = moveInspoToMeetings;
+}
+async function moveInspoToMeetings(){
+  const pl = inspoMovePlan(); if(!pl) return;
+  const moved = pl.ins.length - pl.unused.length;
+  if(!confirm('Move ' + moved + ' inspo ' + (moved === 1 ? 'picture' : 'pictures') + ' into ' + pl.per.length + (pl.per.length === 1 ? ' meeting' : ' meetings') + (pl.unused.length ? ' and delete ' + pl.unused.length + ' that no meeting uses' : '') + '? Loved ideas in past summaries keep their copies.')) return;
+  $('inMoveGo').disabled = true;
+  for(const { m, use } of pl.per){
+    if(!Array.isArray(m.inspo)) m.inspo = [];
+    use.forEach(id => { const it = LIB.items.find(i => i.id === id); if(it && !m.inspo.some(x => x.ref === it.ref)) m.inspo.push({ id:it.id, ref:it.ref, cat:INSPO, cap:it.cap || '', ar:it.ar || 0.8, from:'me', at:it.at || new Date().toISOString() }); });
+    m.board = (m.board || []).filter(id => !pl.ids.has(id));
+    await saveM(m);
+  }
+  LIB.items = LIB.items.filter(i => !pl.ids.has(i.id));
+  LIB.cats = LIB.cats.filter(c => !isInspo(c)); if(!LIB.cats.length) LIB.cats = DEF_CATS.slice();
+  starters().forEach(x => { x.ids = (x.ids || []).filter(id => !pl.ids.has(id)); });
+  if(libFilter !== 'All' && !LIB.cats.includes(libFilter)) libFilter = 'All';
+  await Store.saveLib(); renderLib();
+  toast('Moved ' + moved + ' into ' + pl.per.length + (pl.per.length === 1 ? ' meeting' : ' meetings') + (pl.unused.length ? ', deleted ' + pl.unused.length : ''));
 }
 
 /* ---- bulk edit: select several ideas, then move, caption, save as a starter or delete ---- */
@@ -1067,9 +1111,10 @@ function addSheet(){
     <div id="adBody" style="margin-top:14px"></div>
     <p class="muted small" id="adMsg" style="margin-top:10px"></p>`, drawAdd);
 }
+function noInspoCat(c){ if(!isInspo(c)) return false; toast('Inspo now lives in each client’s meeting: open the meeting, Mood board, then the Inspo chip.'); return true; }
 function adCategory(){
   let c = $('adCat').value;
-  if(c === '__new'){ c = ($('adNewCat').value || '').trim(); if(!c){ toast('Name the new category'); return null; } if(!LIB.cats.includes(c)) LIB.cats.push(c); }
+  if(c === '__new'){ c = ($('adNewCat').value || '').trim(); if(!c){ toast('Name the new category'); return null; } if(noInspoCat(c)) return null; if(!LIB.cats.includes(c)) LIB.cats.push(c); }
   return c;
 }
 function drawAdd(){
@@ -1122,7 +1167,8 @@ $('upFile').addEventListener('change', async e => {
 });
 /* Upload picture files into one library category. Used by Choose pictures and by drag and drop.
    A file the browser cannot read (for example an iPhone HEIC in Chrome) is skipped; an upload error stops the batch. */
-async function uploadFiles(files, cat){
+async function uploadFiles(files, cat, into){
+  into = into || LIB.items;
   const msg = t => { const m = $('adMsg'); if(m && $('sh').classList.contains('on')) m.textContent = t; const u = $('libUp'); if(u){ u.textContent = t; u.classList.toggle('hide', !t); } };
   let n = 0, unread = 0;
   for(let i = 0; i < files.length; i++){
@@ -1136,10 +1182,10 @@ async function uploadFiles(files, cat){
         const r = await fetch(WORKER + '/admin/upload?f=deck&n=' + encodeURIComponent(name), { method:'POST', headers:{ 'Content-Type':'image/jpeg', Authorization:'Bearer ' + await token() }, body:blob });
         const j = await r.json().catch(() => ({}));
         if(!r.ok || !j.ok) throw new Error(j.error || ('upload failed (' + r.status + ')'));
-        LIB.items.unshift({ id:'i' + uid(), ref:'d:' + (j.name || name), cat, cap:'', ar, at:new Date().toISOString() });
+        into.unshift({ id:'i' + uid(), ref:'d:' + (j.name || name), cat, cap:'', ar, at:new Date().toISOString() });
       } else {
         const url = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
-        LIB.items.unshift({ id:'i' + uid(), ref:'u:' + url, cat, cap:'', ar, at:new Date().toISOString() });
+        into.unshift({ id:'i' + uid(), ref:'u:' + url, cat, cap:'', ar, at:new Date().toISOString() });
       }
       n++;
     }catch(err){ console.warn(err); msg(''); toast('Upload stopped after ' + n + ': ' + err.message + '. Check your signal and try again.'); break; }
@@ -1154,19 +1200,26 @@ function libOpen(){ return !$('vLib').classList.contains('hide'); }
 function realCat(c){ return !!c && c !== 'All' && c !== 'Loved' && LIB.cats.includes(c); }
 let dragDepth = 0;
 function dragHasPics(e){ const t = Array.from((e.dataTransfer && e.dataTransfer.types) || []); return t.includes('Files') || t.includes('text/uri-list'); }
-function dropLabel(){ return realCat(libFilter) ? 'Drop to add to ' + libFilter : 'Drop to add to the mood board'; }
-document.addEventListener('dragenter', e => { if(!libOpen() || !dragHasPics(e)) return; e.preventDefault(); dragDepth++; $('dropTxt').textContent = dropLabel(); $('dropZone').classList.add('on'); });
-document.addEventListener('dragover', e => { if(!dragHasPics(e)) return; e.preventDefault(); if(e.dataTransfer) e.dataTransfer.dropEffect = libOpen() ? 'copy' : 'none'; });
-document.addEventListener('dragleave', e => { if(!libOpen()) return; dragDepth = Math.max(0, dragDepth - 1); if(!dragDepth) $('dropZone').classList.remove('on'); });
+function dropLabel(){ if(inspoOpen()) return 'Drop to add to ' + first(cur.client.name) + '’s inspo'; return realCat(libFilter) ? 'Drop to add to ' + libFilter : 'Drop to add to the mood board'; }
+document.addEventListener('dragenter', e => { if(!(libOpen() || inspoOpen()) || !dragHasPics(e)) return; e.preventDefault(); dragDepth++; $('dropTxt').textContent = dropLabel(); $('dropZone').classList.add('on'); });
+document.addEventListener('dragover', e => { if(!dragHasPics(e)) return; e.preventDefault(); if(e.dataTransfer) e.dataTransfer.dropEffect = (libOpen() || inspoOpen()) ? 'copy' : 'none'; });
+document.addEventListener('dragleave', e => { if(!(libOpen() || inspoOpen())) return; dragDepth = Math.max(0, dragDepth - 1); if(!dragDepth) $('dropZone').classList.remove('on'); });
 document.addEventListener('drop', e => {
   if(!dragHasPics(e)) return;
   e.preventDefault(); dragDepth = 0; $('dropZone').classList.remove('on');   // never let the browser open a dropped file
-  if(!libOpen()) return;
+  const toInspo = inspoOpen();
+  if(!libOpen() && !toInspo) return;
   const dt = e.dataTransfer;
   const files = Array.from(dt.files || []).filter(f => /^image\//i.test(f.type) || /\.(jpe?g|png|webp|gif|heic|heif|avif)$/i.test(f.name));
   const links = files.length ? [] : (dt.getData('text/uri-list') || dt.getData('text/plain') || '').split(/\s+/).filter(u => /^https?:\/\//i.test(u) && !/^#/.test(u));
   if(!files.length && !links.length){ toast('Only pictures can be added to the mood board'); return; }
   const count = files.length || links.length;
+  if(toInspo){ (async () => {
+    let list = [];
+    if(files.length){ const into = []; await uploadFiles(files, INSPO, into); list = into.map(x => Object.assign(x, { id:'n' + uid(), from:'me' })); }
+    else for(const u of links) list.push(inspoItem('u:' + u, await ratio(u), 'me'));
+    addInspo(list);
+  })(); return; }
   const go = async cat => {
     let n;
     if(files.length) n = await uploadFiles(files, cat);
@@ -1197,9 +1250,9 @@ function catSheet(){
   sheet('Categories', `<div class="list" id="catList">${LIB.cats.map((c, i) => `<div class="li"><input class="grow" data-cat="${i}" value="${esc(c)}"><span class="muted small">${LIB.items.filter(x => x.cat === c).length}</span><button class="x" data-catdel="${i}" aria-label="Delete">&times;</button></div>`).join('')}</div>
     <div class="row" style="margin-top:10px;flex-wrap:nowrap"><input class="inp" id="catNew" placeholder="New category"><button class="btn" id="catAdd">Add</button></div>
     <p class="muted small" style="margin-top:10px">Renaming moves its ideas with it. Deleting a category moves its ideas to "${esc(LIB.cats[0] || 'Other')}".</p>`, b => {
-    b.querySelectorAll('[data-cat]').forEach(inp => inp.onchange = () => { const i = +inp.dataset.cat, old = LIB.cats[i], nw = inp.value.trim(); if(!nw || LIB.cats.includes(nw)) { inp.value = old; return; } LIB.cats[i] = nw; LIB.items.forEach(x => { if(x.cat === old) x.cat = nw; }); Store.saveLib(); renderLib(); });
+    b.querySelectorAll('[data-cat]').forEach(inp => inp.onchange = () => { const i = +inp.dataset.cat, old = LIB.cats[i], nw = inp.value.trim(); if(!nw || LIB.cats.includes(nw) || (noInspoCat(nw) && !isInspo(old))) { inp.value = old; return; } LIB.cats[i] = nw; LIB.items.forEach(x => { if(x.cat === old) x.cat = nw; }); Store.saveLib(); renderLib(); });
     b.querySelectorAll('[data-catdel]').forEach(btn => btn.onclick = () => { const i = +btn.dataset.catdel, old = LIB.cats[i]; if(LIB.cats.length < 2) return; const n = LIB.items.filter(x => x.cat === old).length; if(!confirm('Delete the "' + old + '" category?' + (n ? ' Its ' + n + (n === 1 ? ' idea moves' : ' ideas move') + ' to "' + LIB.cats.filter(c => c !== old)[0] + '".' : ''))) return; LIB.cats.splice(i, 1); LIB.items.forEach(x => { if(x.cat === old) x.cat = LIB.cats[0]; }); Store.saveLib(); renderLib(); catSheet(); });
-    $('catAdd').onclick = () => { const v = $('catNew').value.trim(); if(v && !LIB.cats.includes(v)){ LIB.cats.push(v); Store.saveLib(); catSheet(); } };
+    $('catAdd').onclick = () => { const v = $('catNew').value.trim(); if(v && !noInspoCat(v) && !LIB.cats.includes(v)){ LIB.cats.push(v); Store.saveLib(); catSheet(); } };
   });
 }
 
@@ -1220,8 +1273,9 @@ function openEditor(m){
   $('endBtn').textContent = live ? 'End meeting' : cur.status === 'planned' ? 'Done preparing' : 'Done editing';
   $('lvTimer').classList.toggle('hide', !live);
   $('cvLogo').src = BZ.b.logo;
-  if(hasBoard() && !['Board','Loved'].includes(boardFilter)) boardFilter = 'Board';
+  if(hasBoard() && !['Board','Loved',INSPO].includes(boardFilter)) boardFilter = 'Board';
   drawHead(); updateTabs(); renderPanel();
+  if(m.share && m.share.id) shareRead(m.share.id).then(d => { if(syncClientInspo(m, d) && cur === m){ Store.touch(); renderPanel(); toast(first(m.client.name) + ' added inspo on their link'); } }).catch(() => {});
   if(chooserNext){ chooserNext = false; tab = 'board'; updateTabs(); renderPanel(); setTimeout(chooseSheet, 250); }
   clearInterval(timerInt);
   if(live){ const tick = () => { const s = Math.max(0, Math.floor((Date.now() - new Date(cur.startedAt)) / 1000)); const h = Math.floor(s / 3600); $('lvTimer').textContent = (h ? h + ':' : '') + pad(Math.floor(s / 60) % 60) + ':' + pad(s % 60); }; tick(); timerInt = setInterval(tick, 1000); }
@@ -1248,7 +1302,8 @@ $('lvTabs').addEventListener('click', e => { const b = e.target.closest('[data-t
 const hasBoard = () => !!(cur && Array.isArray(cur.board) && cur.board.length);
 const myBoard = () => (cur.board || []).map(id => LIB.items.find(i => i.id === id)).filter(Boolean);
 function boardItems(){
-  if(boardFilter === 'Loved') return cur.hearts.map(h => LIB.items.find(i => i.id === h.id) || Object.assign({ ref:'u:' + h.url }, h));
+  if(boardFilter === INSPO) return meetInspo();
+  if(boardFilter === 'Loved') return cur.hearts.map(h => LIB.items.find(i => i.id === h.id) || meetInspo().find(i => i.id === h.id) || Object.assign({ ref:'u:' + h.url }, h));
   if(hasBoard()){
     if(boardFilter === 'Library') return ownWork(LIB.items);
     const mine = myBoard();
@@ -1257,10 +1312,83 @@ function boardItems(){
   return boardFilter === 'All' ? ownWork(LIB.items) : LIB.items.filter(i => i.cat === boardFilter);
 }
 function boardChips(){
-  if(!hasBoard()) return chipsHtml(boardFilter, ['Loved']);
-  const mine = myBoard(), cats0 = LIB.cats.filter(c => mine.some(i => i.cat === c)), cats = cats0.filter(c => !isInspo(c)).concat(cats0.filter(isInspo));
   const chip = (k, label, cls) => `<button class="mini${k === boardFilter ? ' on' : ''}${cls ? ' ' + cls : ''}" data-chip="${esc(k)}">${label}</button>`;
-  return chip('Board', 'Their board ' + ownWork(mine).length) + chip('Loved', '&#9829; Loved ' + cur.hearts.length) + cats.map(c => chip(c, esc(c) + (isInspo(c) ? ' ' + mine.filter(i => i.cat === c).length : ''))).join('') + chip('Library', 'Whole library', 'priv');
+  const ni = meetInspo().length, inspoChip = chip(INSPO, 'Inspo ' + ni, ni ? '' : 'priv');   // hidden from the client while empty
+  if(!hasBoard()) return chipsHtml(boardFilter, ['Loved']) + inspoChip;
+  const mine = ownWork(myBoard()), cats = LIB.cats.filter(c => !isInspo(c) && mine.some(i => i.cat === c));
+  return chip('Board', 'Their board ' + mine.length) + chip('Loved', '&#9829; Loved ' + cur.hearts.length) + cats.map(c => chip(c, esc(c))).join('') + inspoChip + chip('Library', 'Whole library', 'priv');
+}
+
+/* =====================================================================
+   MEETING INSPO: inspiration that belongs to one client's meeting only.
+   Stored on the meeting (m.inspo), never in the library, Choose images or starters.
+   ===================================================================== */
+const INSPO = 'Inspo';
+function meetInspo(m){ m = m || cur; return (m && Array.isArray(m.inspo)) ? m.inspo : []; }
+function inspoItem(ref, ar, from, cap){ return { id:'n' + uid(), ref, cat:INSPO, cap:cap || '', ar:ar || 0.8, from:from || 'me', at:new Date().toISOString() }; }
+function inspoOpen(){ return !!cur && !$('vLive').classList.contains('hide') && tab === 'board' && boardFilter === INSPO && !document.body.classList.contains('cv'); }
+function addInspo(list){
+  if(!cur || !list.length) return;
+  if(!Array.isArray(cur.inspo)) cur.inspo = [];
+  list.slice().reverse().forEach(x => cur.inspo.unshift(x));
+  Store.touch(); boardFilter = INSPO; tab = 'board'; updateTabs(); renderPanel();
+  toast(list.length + (list.length === 1 ? ' picture' : ' pictures') + ' added to ' + first(cur.client.name) + '’s inspo');
+}
+let inspoSeg = 'up';
+function inspoSheet(){
+  if(!cur) return;
+  const touch = matchMedia('(hover:none),(pointer:coarse)').matches;
+  sheet('Inspo for ' + first(cur.client.name), `
+    <p class="muted small" style="margin-bottom:10px">Inspiration for this client only. It stays in this meeting and never goes into your mood board library.${touch ? '' : ' You can also drag pictures straight onto the Inspo chip view.'}</p>
+    <div class="seg"><button data-iseg="up">Upload</button><button data-iseg="ln">Paste links</button></div>
+    <div id="inBody" style="margin-top:12px"></div>
+    <p class="muted small" id="adMsg" style="margin-top:10px"></p>`, drawInspoSheet);
+}
+function drawInspoSheet(){
+  $('shB').querySelectorAll('[data-iseg]').forEach(b => { b.classList.toggle('on', b.dataset.iseg === inspoSeg); b.onclick = () => { inspoSeg = b.dataset.iseg; drawInspoSheet(); }; });
+  const b = $('inBody');
+  if(inspoSeg === 'up'){
+    b.innerHTML = `<button class="btn" style="width:100%;justify-content:center;height:56px" id="inPick">Choose pictures</button><p class="muted small" style="margin-top:8px">Pick as many as you like. They are resized and saved to your storage.</p>`;
+    $('inPick').onclick = () => $('upInspo').click();
+  } else {
+    b.innerHTML = `<textarea class="ta" id="inLinks" placeholder="Paste image links, one per line.&#10;Tip: on Pinterest, open the pin, press and hold the picture, then Copy image address."></textarea>
+      <input class="inp" id="inCap" placeholder="Caption (optional)" style="margin-top:8px">
+      <button class="btn" style="width:100%;justify-content:center;margin-top:12px" id="inLnGo">Add to their inspo</button>`;
+    $('inLnGo').onclick = async () => {
+      const urls = $('inLinks').value.split(/\s+/).map(x => x.trim()).filter(x => /^https?:\/\//i.test(x));
+      if(!urls.length){ toast('Paste at least one link that starts with https://'); return; }
+      $('inLnGo').disabled = true; $('adMsg').textContent = 'Checking pictures...';
+      const list = []; for(const u of urls) list.push(inspoItem('u:' + u, await ratio(u), 'me', $('inCap').value.trim()));
+      closeSheet(); addInspo(list);
+    };
+  }
+}
+$('upInspo').addEventListener('change', async e => {
+  const files = Array.from(e.target.files || []); e.target.value = ''; if(!files.length || !cur) return;
+  const into = []; const n = await uploadFiles(files, INSPO, into);
+  into.forEach(x => { x.id = 'n' + uid(); x.from = 'me'; });
+  if(n){ closeSheet(); addInspo(into); }
+});
+/* copy inspo from another meeting (each meeting keeps its own copy) */
+function copyInspoSheet(){
+  if(!cur) return;
+  const others = MEETS.filter(m => m.id !== cur.id && meetInspo(m).length).sort((a, b) => String(b.startedAt || b.plannedAt || '').localeCompare(String(a.startedAt || a.plannedAt || '')));
+  const have = new Set(meetInspo().map(i => i.ref)), pick = new Set();
+  sheet('Copy inspo from a past meeting', others.length ? `
+    <p class="muted small" style="margin-bottom:10px">Tap the pictures to copy into ${esc(first(cur.client.name))}'s inspo. Pictures already there are faded.</p>
+    ${others.map(m => `<div style="margin-bottom:14px"><div class="row" style="justify-content:space-between;margin-bottom:6px"><b style="font-size:14px">${esc(m.client.name || 'Unnamed')} <span class="muted small" style="font-weight:600">${m.startedAt || m.plannedAt ? niceDay(m.startedAt || m.plannedAt) : ''}${m.client.type ? ' · ' + esc(m.client.type) : ''}</span></b><button class="mini" data-cpall="${esc(m.id)}">Select all</button></div>
+      <div class="pgrid">${meetInspo(m).map(i => `<div data-cpi="${esc(m.id)}|${esc(i.id)}" class="${have.has(i.ref) ? 'has' : ''}" title="${esc(i.cap || '')}"><img src="${esc(imgUrl(i))}" loading="lazy" alt=""></div>`).join('')}</div></div>`).join('')}
+    <button class="btn" id="cpGo" style="width:100%;justify-content:center;margin-top:4px" disabled>Copy selected</button>`
+    : `<div class="empty">No other meeting has inspo yet.</div>`, b => {
+    const go = $('cpGo'); if(!go) return;
+    const count = () => { go.disabled = !pick.size; go.textContent = pick.size ? 'Copy ' + pick.size + ' to ' + first(cur.client.name) + '’s inspo' : 'Copy selected'; };
+    b.querySelectorAll('[data-cpi]').forEach(d => d.onclick = () => { const k = d.dataset.cpi; pick.has(k) ? pick.delete(k) : pick.add(k); d.classList.toggle('sel', pick.has(k)); count(); });
+    b.querySelectorAll('[data-cpall]').forEach(x => x.onclick = () => { b.querySelectorAll(`[data-cpi^="${x.dataset.cpall}|"]`).forEach(d => { if(!d.classList.contains('has')){ pick.add(d.dataset.cpi); d.classList.add('sel'); } }); count(); });
+    go.onclick = () => {
+      const list = [...pick].map(k => { const [mid, iid] = k.split('|'); const src = meetInspo(MEETS.find(m => m.id === mid)).find(i => i.id === iid); return src && inspoItem(src.ref, src.ar, 'me', src.cap); }).filter(Boolean);
+      closeSheet(); addInspo(list);
+    };
+  });
 }
 function toggleBoard(id, on){
   if(!cur) return; if(!Array.isArray(cur.board)) cur.board = [];
@@ -1304,7 +1432,7 @@ function chooseSheet(){ if(!cur) return; chSel = new Set(cur.board || []); chCat
 function drawChooser(){
   const cats0 = LIB.cats.filter(c => LIB.items.some(i => i.cat === c)), cats = cats0.filter(c => !isInspo(c)).concat(cats0.filter(isInspo));
   const list = chCat === 'Chosen' ? LIB.items.filter(i => chSel.has(i.id)) : chCat === 'All' ? ownWork(LIB.items) : LIB.items.filter(i => i.cat === chCat);
-  const upCat = LIB.cats.find(c => /inspo/i.test(c)) || (chCat !== 'All' && chCat !== 'Chosen' ? chCat : LIB.cats[0]);
+  const upCat = chCat !== 'All' && chCat !== 'Chosen' ? chCat : (LIB.cats.find(c => !isInspo(c)) || LIB.cats[0]);
   sheet('Mood board for ' + first(cur.client.name), `
     <p class="muted small" style="margin-bottom:8px">Tap the pictures to show in this client's meeting. Uploads are saved to your library too, so you never upload the same picture twice.</p>
     <div class="row" style="flex-wrap:nowrap;gap:8px;margin-bottom:10px">
@@ -1349,14 +1477,17 @@ function renderPanel(){
   const P = $('lvPanel'), c = cur;
   if(tab === 'board'){
     const cv = document.body.classList.contains('cv');
-    if(hasBoard()){ if(boardFilter === 'All' || (boardFilter === 'Library' && cv) || (!['Board','Loved','Library'].includes(boardFilter) && !myBoard().some(i => i.cat === boardFilter))) boardFilter = 'Board';
-      if(boardFilter === 'Board' && !ownWork(myBoard()).length){ const ic = myBoard().find(i => isInspo(i.cat)); if(ic) boardFilter = ic.cat; } }
+    if(boardFilter === INSPO && cv && !meetInspo().length) boardFilter = 'All';
+    if(boardFilter === INSPO){}
+    else if(hasBoard()){ if(boardFilter === 'All' || (boardFilter === 'Library' && cv) || (!['Board','Loved','Library'].includes(boardFilter) && !myBoard().some(i => i.cat === boardFilter))) boardFilter = 'Board';
+      if(boardFilter === 'Board' && !ownWork(myBoard()).length && meetInspo().length) boardFilter = INSPO; }
     else if(boardFilter === 'Board' || boardFilter === 'Library' || (boardFilter !== 'All' && boardFilter !== 'Loved' && !LIB.items.some(i => i.cat === boardFilter))) boardFilter = 'All';
     const items = boardItems();
     P.innerHTML = `${hasBoard() ? '' : `<div class="prep priv"><div><b>Pick the pictures for ${esc(first(c.client.name))}</b><p>Choose from your library or upload new ones. Until then, the whole library shows.</p></div><button class="btn sm" data-act="chooseSheet">Choose images</button></div>`}
-      <div class="row" style="flex-wrap:nowrap"><div class="chips" style="flex:1" id="bdChips">${boardChips()}</div>${hasBoard() ? `<button class="mini priv" data-act="chooseSheet" style="margin-bottom:10px">Edit board</button>` : ''}<button class="mini priv" data-act="addSheet" style="margin-bottom:10px">+ Add</button></div>
+      <div class="row" style="flex-wrap:nowrap"><div class="chips" style="flex:1" id="bdChips">${boardChips()}</div>${hasBoard() ? `<button class="mini priv" data-act="chooseSheet" style="margin-bottom:10px">Edit board</button>` : ''}<button class="mini priv" data-act="${boardFilter === INSPO ? 'inspoSheet' : 'addSheet'}" style="margin-bottom:10px">+ Add</button></div>
+      ${boardFilter === INSPO ? `<div class="inspohead priv"><div><b>Inspo for ${esc(first(c.client.name))}</b><p>Only in this meeting, never in your library.${meetInspo().some(i => i.from === 'client') ? ' Purple tags were added by the client.' : ''}</p></div><div class="row" style="gap:6px"><button class="btn sm" data-act="inspoSheet">+ Add inspo</button><button class="btn sm ghost" data-act="copyInspoSheet">Copy from a past meeting</button></div></div>` : ''}
       ${boardFilter === 'Library' ? `<p class="muted small priv" style="margin:-2px 0 10px">Your whole library (only you see this). Tap <b>+ Their board</b> or the heart to add a picture to ${esc(first(c.client.name))}'s board.</p>` : ''}
-      <div class="masonry" id="bdGrid">${items.length ? items.map(i => pinHtml(i, 'meet')).join('') : `<div class="empty" style="column-span:all">${boardFilter === 'Loved' ? 'Nothing loved yet. Tap the heart on any idea.' : 'Your mood board is empty. Add ideas from the library.'}</div>`}</div>`;
+      <div class="masonry" id="bdGrid">${items.length ? items.map(i => pinHtml(i, 'meet')).join('') : `<div class="empty" style="column-span:all">${boardFilter === 'Loved' ? 'Nothing loved yet. Tap the heart on any idea.' : boardFilter === INSPO ? 'No inspo for this client yet. Tap + Add inspo, paste Pinterest links, or copy from a past meeting.' : 'Your mood board is empty. Add ideas from the library.'}</div>`}</div>`;
     return;
   }
   if(tab === 'notes'){
@@ -1486,7 +1617,7 @@ $('lvPanel').addEventListener('click', e => {
   if(!cur) return;
   const t = e.target;
   const heart = t.closest('[data-heart]');
-  if(heart){ e.stopPropagation(); const on = toggleHeart(heart.dataset.heart); heart.classList.toggle('on', on); if(on){ heart.classList.add('pop'); setTimeout(() => heart.classList.remove('pop'), 400); } if(on && hasBoard() && !cur.board.includes(heart.dataset.heart)){ toggleBoard(heart.dataset.heart, true); if(boardFilter === 'Library') renderPanel(); }
+  if(heart){ e.stopPropagation(); const on = toggleHeart(heart.dataset.heart); heart.classList.toggle('on', on); if(on){ heart.classList.add('pop'); setTimeout(() => heart.classList.remove('pop'), 400); } if(on && hasBoard() && !cur.board.includes(heart.dataset.heart) && !meetInspo().some(i => i.id === heart.dataset.heart)){ toggleBoard(heart.dataset.heart, true); if(boardFilter === 'Library') renderPanel(); }
     if(boardFilter === 'Loved') renderPanel(); updateTabs(); const ch = $('bdChips'); if(ch) ch.innerHTML = boardChips(); return; }
   const bt = t.closest('[data-board]'); if(bt){ e.stopPropagation(); toggleBoard(bt.dataset.board); renderPanel(); return; }
   const pin = t.closest('[data-pin]'); if(pin){ const list = boardItems(); openLB(list, list.findIndex(i => i.id === pin.dataset.pin), 'meet'); return; }
@@ -1507,7 +1638,7 @@ document.addEventListener('click', e => {
   const a = b.dataset.act;
   const A = {
     startSheet:() => startSheet(), schedSheet:() => startSheet(null, 'later'), openLib:() => go('lib=1'), home:() => go(''), addSheet, catSheet,
-    clearFilter:() => go(''), startOrder:() => startSheet('order:' + b.dataset.id), shareSheet:() => shareSheet(cur), toInvoice:() => toInvoice(cur), chooseSheet, starterSheet, selMode:() => selMode(!libSel),
+    clearFilter:() => go(''), startOrder:() => startSheet('order:' + b.dataset.id), shareSheet:() => shareSheet(cur), toInvoice:() => toInvoice(cur), chooseSheet, starterSheet, inspoSheet, copyInspoSheet, selMode:() => selMode(!libSel),
     leaveLive:() => { Store.flush(); if(cur.status === 'open') go(''); else go('m=' + cur.id); },
     cvOn:() => { document.body.classList.add('cv'); if(TABS.find(x => x.k === tab).priv || (tab === 'quote' && !cur.quote.showClient)) tab = 'board'; updateTabs(); renderPanel(); window.scrollTo(0, 0); },
     stamp:() => { const ta = $('notesTa'); const s = '[' + hhmm(new Date()) + '] '; const p = ta.selectionStart || ta.value.length; const pre = ta.value.slice(0, p); ta.value = pre + (pre && !/\n$/.test(pre) ? '\n' : '') + s + ta.value.slice(p); cur.notes = ta.value; Store.touch(); ta.focus(); },
@@ -1598,6 +1729,7 @@ function renderSummary(m){
 
     <div class="sec-t">&#9829; Loved ideas (${m.hearts.length})</div>
     ${m.hearts.length ? `<div class="masonry sm" id="sumBoard">${m.hearts.map(h => pinHtml(h, 'sum')).join('')}</div>` : `<div class="empty">No ideas were loved in this meeting.</div>`}
+    ${meetInspo(m).length ? `<div class="sec-t">Inspo for ${esc(first(m.client.name))} (${meetInspo(m).length})${meetInspo(m).some(i => i.from === 'client') ? ' · ' + meetInspo(m).filter(i => i.from === 'client').length + ' from the client' : ''}</div><div class="masonry sm" id="sumInspo">${meetInspo(m).map(i => pinHtml(i, 'insp')).join('')}</div>` : ''}
     <div id="clientPicks"></div>
 
     <div class="sgrid" style="margin-top:14px">
@@ -1622,6 +1754,7 @@ function renderSummary(m){
     </div>
     <p class="muted small" style="margin-top:16px">Saved automatically${m.updated ? ', last change ' + niceDay(m.updated) + ' at ' + hhmm(new Date(m.updated)) : ''}.</p>`;
   loadClientPicks(m);
+  const si = $('sumInspo'); if(si) si.onclick = e => { const p = e.target.closest('[data-pin]'); if(p){ const l = meetInspo(m); openLB(l, l.findIndex(i => i.id === p.dataset.pin), 'sum'); } };
   const sb = $('sumBoard'); if(sb) sb.onclick = e => { const p = e.target.closest('[data-pin]'); if(p) openLB(m.hearts, m.hearts.findIndex(h => h.id === p.dataset.pin), 'sum'); };
   $('vSum').onclick = e => sumAct(e, m);
   $('vSum').onchange = e => {
@@ -1683,6 +1816,7 @@ function shareItems(m, cat, withBoard){
   const add = i => items.push({ id:i.id, url:absUrl(imgUrl(i)), cap:i.cap || '', ar:i.ar || 0.8, ins:isInspo(i.cat) });
   if(withBoard) (m.board || []).map(id => LIB.items.find(i => i.id === id)).filter(i => i && !items.some(x => x.id === i.id)).forEach(add);
   if(cat) LIB.items.filter(i => i.cat === cat && !items.some(x => x.id === i.id)).forEach(add);
+  meetInspo(m).filter(i => !items.some(x => x.id === i.id)).forEach(i => items.push({ id:i.id, url:absUrl(imgUrl(i)), cap:i.cap || '', ar:i.ar || 0.8, ins:true, from:i.from === 'client' ? 'client' : undefined }));
   // the client page shows your work first and inspiration in its own section
   return items.filter(i => !i.ins).concat(items.filter(i => i.ins));
 }
@@ -1702,7 +1836,7 @@ async function shareSheet(m){
         <div class="kv"><span>Client picks</span><b>${at ? picks + ' · ' + niceDay(at) + ' ' + hhmm(at) : 'Not opened yet'}</b></div>
         <div class="kv"><span>Works until</span><span style="${exp && exp < new Date() ? 'color:#c0392b;font-weight:700' : ''}">${exp ? niceDay(exp) + (exp < new Date() ? ' (expired)' : '') : ''}</span></div></div>
       <div class="row" style="margin-top:10px"><button class="btn ghost sm" id="shUpd">Update pictures</button><button class="btn ghost sm" id="shExt">Extend ${SHARE_DAYS} days</button><button class="btn ghost sm" id="shOff" style="color:#c0392b!important">Turn off link</button></div>
-      <p class="muted small" style="margin-top:8px">Update pictures sends your current loved ideas${m.share.board ? ', their board' : ''}${m.share.cat ? ' plus the ' + esc(m.share.cat) + ' category' : ''}. The client's picks are kept.</p>`, () => {
+      <p class="muted small" style="margin-top:8px">Update pictures sends your current loved ideas${m.share.board ? ', their board' : ''}${meetInspo(m).length ? ', their inspo' : ''}${m.share.cat ? ' plus the ' + esc(m.share.cat) + ' category' : ''}. The client's picks are kept.</p>`, () => {
       $('shCopy').onclick = () => { (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast('Link copied'), () => prompt('Copy the link:', url)); };
       $('shWa').href = 'https://wa.me/' + waNum(m.client.phone) + '?text=' + encodeURIComponent(shareMsg(m));
       $('shWa').onclick = () => { m.share.sentAt = new Date().toISOString(); saveAny(m); };
@@ -1715,6 +1849,7 @@ async function shareSheet(m){
   const cats = LIB.cats.filter(c => LIB.items.some(i => i.cat === c)), def = autoCat(m.client.type);
   sheet('Share the mood board', `<p class="muted small" style="margin-bottom:12px">${esc(first(m.client.name))} gets a private link (no login needed) to look through the ideas and heart the ones they love. You get a notification, and their picks show in this meeting's summary.</p>
     <label class="li"><input type="checkbox" class="ck" checked disabled><span class="grow">Ideas loved in the meeting (${m.hearts.length})</span></label>
+    ${meetInspo(m).length ? `<label class="li" style="margin-top:8px"><input type="checkbox" class="ck" checked disabled><span class="grow">Their inspo (${meetInspo(m).length}), in its own Inspiration section</span></label>` : ''}
     ${(m.board || []).length ? `<label class="li" style="margin-top:8px;cursor:pointer"><input type="checkbox" class="ck" id="shBoard" checked><span class="grow">Everything on their board (${m.board.length})</span></label>` : ''}
     <label class="lb" style="margin-top:12px">Also include a whole board (optional)</label>
     <select class="sel" id="shCat"><option value="">None</option>${cats.map(c => `<option${c === def && !m.hearts.length ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
@@ -1722,7 +1857,7 @@ async function shareSheet(m){
     <button class="btn" style="width:100%;justify-content:center;margin-top:12px" id="shGo">Create link</button>`, () => {
     $('shGo').onclick = async () => {
       const cat = $('shCat').value, withBoard = !!($('shBoard') && $('shBoard').checked), items = shareItems(m, cat, withBoard);
-      if(!items.length){ toast('Heart some ideas first, or include a board'); return; }
+      if(!items.length){ toast('Heart some ideas first, add inspo, or include a board'); return; }
       $('shGo').disabled = true;
       const id = (window.crypto && crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : uid() + uid() + uid()).slice(0, 24);
       const data = { biz:BIZ, meetingId:m.id, orderId:m.orderId || '', name:first(m.client.name), brand:shareBrand(), items, picked:m.hearts.map(h => h.id),
@@ -1733,11 +1868,24 @@ async function shareSheet(m){
     };
   });
 }
+/* pictures the client added on their mood board link join this meeting's inspo (tagged From client) */
+function syncClientInspo(m, d){
+  if(!d || !Array.isArray(d.clientInspo)) return false;
+  if(!Array.isArray(m.inspo)) m.inspo = [];
+  const theirs = d.clientInspo.filter(i => i && i.id && i.url), ids = new Set(theirs.map(i => i.id));
+  const before = m.inspo.length, had = new Set(m.inspo.map(i => i.id));
+  m.inspo = m.inspo.filter(i => i.from !== 'client' || ids.has(i.id));            // the client removed it
+  const removed = before - m.inspo.length;
+  const add = theirs.filter(i => !had.has(i.id)).map(i => ({ id:i.id, ref:'u:' + i.url, cat:INSPO, cap:'', ar:+i.ar || 0.8, from:'client', at:i.at ? new Date(i.at).toISOString() : new Date().toISOString() }));
+  m.inspo = add.concat(m.inspo);
+  return !!(add.length || removed);
+}
 function loadClientPicks(m){
   const box = $('clientPicks'); if(!box || !m.share || !m.share.id) return;
   shareRead(m.share.id).then(d => {
+    if(d && syncClientInspo(m, d)){ saveM(m).then(() => { if(!$('vSum').classList.contains('hide')) renderSummary(m); }); return; }
     if(!d || !$('clientPicks')) return;
-    const at = tsDate(d.clientAt), loved = d.clientLoved || [], items = (d.items || []).filter(i => loved.includes(i.id));
+    const at = tsDate(d.clientAt), loved = d.clientLoved || [], base = d.items || [], items = base.concat((d.clientInspo || []).filter(i => !base.some(x => x.id === i.id))).filter(i => loved.includes(i.id));
     box.innerHTML = `<div class="sec-t">&#10084;&#65039; ${esc(first(m.client.name))}'s picks from the link${at ? ' (' + loved.length + ') · ' + niceDay(at) + ' ' + hhmm(at) : ''}</div>` +
       (items.length ? `<div class="masonry sm" id="cpBoard">${items.map(i => `<div class="pin" data-cp="${esc(i.id)}"><div class="pimg" style="aspect-ratio:${i.ar || 0.8}"><img src="${esc(i.url)}" alt="" loading="lazy"><span class="clienttag">${m.hearts.some(h => h.id === i.id) ? 'You both' : 'Client'}</span></div>${i.cap ? `<div class="pcap">${esc(i.cap)}</div>` : ''}</div>`).join('')}</div>`
         : `<div class="empty">${at ? 'They took all their hearts off.' : 'Link ' + (m.share.sentAt ? 'sent ' + niceDay(m.share.sentAt) : 'ready') + '. Their picks show here once they open it.'}</div>`);
