@@ -590,7 +590,7 @@ function pinHtml(it, mode){
   </div>`;
 }
 function chipsHtml(active, extra){
-  const used = LIB.cats.filter(c => LIB.items.some(i => i.cat === c));
+  const used0 = LIB.cats.filter(c => LIB.items.some(i => i.cat === c)), used = used0.filter(c => !isInspo(c)).concat(used0.filter(isInspo));
   const list = ['All'].concat(extra || []).concat(used);
   return list.map(c => `<button class="mini${c === active ? ' on' : ''}" data-chip="${esc(c)}">${c === 'Loved' ? '&#9829; Loved' : esc(c)}${c === 'Loved' && cur ? ' ' + cur.hearts.length : ''}</button>`).join('');
 }
@@ -955,12 +955,15 @@ function autoCat(type){
 /* =====================================================================
    LIBRARY
    ===================================================================== */
-function libItems(){ return libFilter === 'All' ? LIB.items : LIB.items.filter(i => i.cat === libFilter); }
+/* Inspiration (any category with "inspo" in its name) is not your own work: it never shows under All, Their board or Whole library, only under its own chip. */
+function isInspo(c){ return /inspo/i.test(c || ''); }
+const ownWork = list => list.filter(i => !isInspo(i.cat));
+function libItems(){ return libFilter === 'All' ? ownWork(LIB.items) : LIB.items.filter(i => i.cat === libFilter); }
 function renderLib(){
   if(libFilter !== 'All' && !LIB.items.some(i => i.cat === libFilter)) libFilter = 'All';
   const touch = matchMedia('(hover:none),(pointer:coarse)').matches;
   $('libCount').textContent = libSel ? 'Tap pictures to select them, then choose what to do below.'
-    : LIB.items.length + (LIB.items.length === 1 ? ' idea' : ' ideas') + ' in ' + BZ.b.name + '’s board. Tap a picture to caption, move or remove it.' + (touch ? '' : ' Drag pictures in from Photos or a folder to add them.');
+    : (() => { const own = ownWork(LIB.items).length, ins = LIB.items.length - own; return own + (own === 1 ? ' idea' : ' ideas') + ' of your work' + (ins ? ' and ' + ins + ' inspo (only under its own chip)' : '') + '. Tap'; })() + ' a picture to caption, move or remove it.' + (touch ? '' : ' Drag pictures in from Photos or a folder to add them.');
   $('libChips').innerHTML = chipsHtml(libFilter);
   const items = libItems();
   $('libBoard').classList.toggle('selecting', !!libSel);
@@ -1247,17 +1250,17 @@ const myBoard = () => (cur.board || []).map(id => LIB.items.find(i => i.id === i
 function boardItems(){
   if(boardFilter === 'Loved') return cur.hearts.map(h => LIB.items.find(i => i.id === h.id) || Object.assign({ ref:'u:' + h.url }, h));
   if(hasBoard()){
-    if(boardFilter === 'Library') return LIB.items;
+    if(boardFilter === 'Library') return ownWork(LIB.items);
     const mine = myBoard();
-    return (boardFilter === 'Board' || boardFilter === 'All') ? mine : mine.filter(i => i.cat === boardFilter);
+    return (boardFilter === 'Board' || boardFilter === 'All') ? ownWork(mine) : mine.filter(i => i.cat === boardFilter);
   }
-  return boardFilter === 'All' ? LIB.items : LIB.items.filter(i => i.cat === boardFilter);
+  return boardFilter === 'All' ? ownWork(LIB.items) : LIB.items.filter(i => i.cat === boardFilter);
 }
 function boardChips(){
   if(!hasBoard()) return chipsHtml(boardFilter, ['Loved']);
-  const mine = myBoard(), cats = LIB.cats.filter(c => mine.some(i => i.cat === c));
+  const mine = myBoard(), cats0 = LIB.cats.filter(c => mine.some(i => i.cat === c)), cats = cats0.filter(c => !isInspo(c)).concat(cats0.filter(isInspo));
   const chip = (k, label, cls) => `<button class="mini${k === boardFilter ? ' on' : ''}${cls ? ' ' + cls : ''}" data-chip="${esc(k)}">${label}</button>`;
-  return chip('Board', 'Their board ' + mine.length) + chip('Loved', '&#9829; Loved ' + cur.hearts.length) + cats.map(c => chip(c, esc(c))).join('') + chip('Library', 'Whole library', 'priv');
+  return chip('Board', 'Their board ' + ownWork(mine).length) + chip('Loved', '&#9829; Loved ' + cur.hearts.length) + cats.map(c => chip(c, esc(c) + (isInspo(c) ? ' ' + mine.filter(i => i.cat === c).length : ''))).join('') + chip('Library', 'Whole library', 'priv');
 }
 function toggleBoard(id, on){
   if(!cur) return; if(!Array.isArray(cur.board)) cur.board = [];
@@ -1299,8 +1302,8 @@ function starterSheet(){
 let chSel = null, chCat = 'All', chooserOpen = false, chooserNext = false;
 function chooseSheet(){ if(!cur) return; chSel = new Set(cur.board || []); chCat = 'All'; chooserOpen = true; drawChooser(); }
 function drawChooser(){
-  const cats = LIB.cats.filter(c => LIB.items.some(i => i.cat === c));
-  const list = chCat === 'Chosen' ? LIB.items.filter(i => chSel.has(i.id)) : chCat === 'All' ? LIB.items : LIB.items.filter(i => i.cat === chCat);
+  const cats0 = LIB.cats.filter(c => LIB.items.some(i => i.cat === c)), cats = cats0.filter(c => !isInspo(c)).concat(cats0.filter(isInspo));
+  const list = chCat === 'Chosen' ? LIB.items.filter(i => chSel.has(i.id)) : chCat === 'All' ? ownWork(LIB.items) : LIB.items.filter(i => i.cat === chCat);
   const upCat = LIB.cats.find(c => /inspo/i.test(c)) || (chCat !== 'All' && chCat !== 'Chosen' ? chCat : LIB.cats[0]);
   sheet('Mood board for ' + first(cur.client.name), `
     <p class="muted small" style="margin-bottom:8px">Tap the pictures to show in this client's meeting. Uploads are saved to your library too, so you never upload the same picture twice.</p>
@@ -1346,7 +1349,8 @@ function renderPanel(){
   const P = $('lvPanel'), c = cur;
   if(tab === 'board'){
     const cv = document.body.classList.contains('cv');
-    if(hasBoard()){ if(boardFilter === 'All' || (boardFilter === 'Library' && cv) || (!['Board','Loved','Library'].includes(boardFilter) && !myBoard().some(i => i.cat === boardFilter))) boardFilter = 'Board'; }
+    if(hasBoard()){ if(boardFilter === 'All' || (boardFilter === 'Library' && cv) || (!['Board','Loved','Library'].includes(boardFilter) && !myBoard().some(i => i.cat === boardFilter))) boardFilter = 'Board';
+      if(boardFilter === 'Board' && !ownWork(myBoard()).length){ const ic = myBoard().find(i => isInspo(i.cat)); if(ic) boardFilter = ic.cat; } }
     else if(boardFilter === 'Board' || boardFilter === 'Library' || (boardFilter !== 'All' && boardFilter !== 'Loved' && !LIB.items.some(i => i.cat === boardFilter))) boardFilter = 'All';
     const items = boardItems();
     P.innerHTML = `${hasBoard() ? '' : `<div class="prep priv"><div><b>Pick the pictures for ${esc(first(c.client.name))}</b><p>Choose from your library or upload new ones. Until then, the whole library shows.</p></div><button class="btn sm" data-act="chooseSheet">Choose images</button></div>`}
@@ -1674,10 +1678,13 @@ function shareWrite(id, data, merge){
 }
 function shareDelete(id){ if(!CLOUD){ const all = readLS(SH_KEY, {}); delete all[id]; writeLS(SH_KEY, all); return Promise.resolve(); } return DB.collection('moodShare').doc(id).delete(); }
 function shareItems(m, cat, withBoard){
-  const items = m.hearts.map(h => ({ id:h.id, url:absUrl(h.url), cap:h.cap || '', ar:h.ar || 0.8 }));
-  if(withBoard) (m.board || []).map(id => LIB.items.find(i => i.id === id)).filter(i => i && !items.some(x => x.id === i.id)).forEach(i => items.push({ id:i.id, url:absUrl(imgUrl(i)), cap:i.cap || '', ar:i.ar || 0.8 }));
-  if(cat) LIB.items.filter(i => i.cat === cat && !items.some(x => x.id === i.id)).forEach(i => items.push({ id:i.id, url:absUrl(imgUrl(i)), cap:i.cap || '', ar:i.ar || 0.8 }));
-  return items;
+  const ins = (id, c) => { const li = LIB.items.find(i => i.id === id); return isInspo(li ? li.cat : c); };
+  const items = m.hearts.map(h => ({ id:h.id, url:absUrl(h.url), cap:h.cap || '', ar:h.ar || 0.8, ins:ins(h.id, h.cat) }));
+  const add = i => items.push({ id:i.id, url:absUrl(imgUrl(i)), cap:i.cap || '', ar:i.ar || 0.8, ins:isInspo(i.cat) });
+  if(withBoard) (m.board || []).map(id => LIB.items.find(i => i.id === id)).filter(i => i && !items.some(x => x.id === i.id)).forEach(add);
+  if(cat) LIB.items.filter(i => i.cat === cat && !items.some(x => x.id === i.id)).forEach(add);
+  // the client page shows your work first and inspiration in its own section
+  return items.filter(i => !i.ins).concat(items.filter(i => i.ins));
 }
 const shareBrand = () => { const b = BZ.b; return { name:b.name, owner:first(b.owner), logo:b.logoAbs, accent:b.accent, wa:waNum(b.phone), site:b.siteUrl }; };
 const shareMsg = m => 'Hi ' + first(m.client.name) + ', here is your mood board from our meeting: ' + shareUrl(m.share.id) + '\n\nTap the heart on the ideas you love and I will see your picks straight away. ' + first(BZ.b.owner) + ', ' + BZ.b.name;
