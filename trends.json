@@ -1,16 +1,66 @@
 {
-  "updated": "2026-11-02",
+  "updated": "2026-11-09",
   "source": "Weekly refresh by Claude (scheduled task). Edit freely; the next refresh replaces this file.",
   "items": [
-    { "title": "Springbok test weekends: shoot a fan viewing crowd at a pub or braai", "type": "Reel", "why": "The Boks play Italy on 7 Nov, France on 13 Nov and Ireland on 21 Nov, so rugby fan content will fill SA feeds all month.", "tip": "Post within a few hours of the final whistle and cut on the loudest crowd moment." },
-    { "title": "Soweto Marathon (29 Nov): plan a 'find yourself' gallery and a race-day reel", "type": "Carousel", "why": "Thousands of runners start and finish at the Johannesburg Expo Centre in Nasrec and will go looking for photos of themselves.", "tip": "Announce this week that you will be shooting, then post the gallery link the same evening and ask runners to tag friends." },
-    { "title": "Black Friday (27 Nov) mini-session offer that doubles as a Christmas gift", "type": "Carousel", "why": "People start planning gift buys early in November, so a clear deal with a deadline gets saved and shared.", "tip": "Slide 1 the offer, slides 2 to 4 sample shots, last slide how to book and the cut-off date." },
-    { "title": "'Hi, I'm a photographer' intro with your single best frame", "type": "Reel", "why": "This simple self-intro format with a trending sound is popular on TikTok right now and is an easy way to show your style to new viewers.", "tip": "Open on your strongest sports or car shot in the first second and keep the whole thing under 7 seconds." },
-    { "title": "Twist carousel: build up over 4 slides, pay off on the last one", "type": "Carousel", "why": "Story carousels that hold back the best image until the final slide are being shared more than ones that lead with it.", "tip": "Try 'the brief, the location, the setup, the light' and end with the final hero shot." },
-    { "title": "'Loading' freeze-frame reveal for cars and athletes", "type": "Reel", "why": "Freeze a plain moment with a 'loading' label, then hard cut on the beat to the finished look; this structure is trending and suits car and sport work.", "tip": "Freeze on the raw car in the garage, then cut to your edited rolling shot on the drop." },
-    { "title": "'POV: you take pics of everything' weekend photo dump", "type": "Carousel", "why": "Casual photo dumps set to a song are trending and show your eye beyond paid jobs, which makes you feel more human to clients.", "tip": "Mix 6 to 10 everyday Joburg shots with one client frame so it still sells your work." },
-    { "title": "Build carousels and beat-synced reels inside the Edits app", "type": "Other", "why": "Edits now supports carousel editing and is testing effects that sync to the music beat, and Instagram is testing a Reels-first home screen.", "tip": "Make video your default post type this month and use Edits to save time on beat cuts." },
-    { "title": "Year-end function teaser for venues and caterers", "type": "Reel", "why": "November and December are peak work party and event season in South Africa, and venues are booking content now.", "tip": "Tag the venue and caterer so they reshare, and pin a 'December dates open' comment." },
-    { "title": "Post only your own original work, no reposted clips", "type": "Other", "why": "Instagram keeps reducing reach for accounts that mostly repost other people's content, including photos and carousels.", "tip": "If you share a client's video, add your own edit or BTS so it counts as new." }
+    {
+      "title": "SAES Season Finale at Kyalami (13 to 14 Nov): motorsport hype reel",
+      "type": "Reel",
+      "why": "The Nine Hours of Kyalami weekend is the biggest local car event this month and fits the FOM automotive niche perfectly.",
+      "tip": "Shoot pit lane prep and night laps, post a 15 second teaser the same night and tag the teams so they reshare."
+    },
+    {
+      "title": "Black Friday (27 Nov) mini-session offer that doubles as a Christmas gift",
+      "type": "Carousel",
+      "why": "November is when people plan gift buys, so a clear deal with a deadline gets saved and sent to partners.",
+      "tip": "Slide 1 the offer, slides 2 to 4 sample shots, last slide how to book and the cut-off date."
+    },
+    {
+      "title": "End of November race galleries: Soweto Marathon and Ride Joburg",
+      "type": "Carousel",
+      "why": "Big Joburg races land at the end of the month and finishers go hunting for photos of themselves.",
+      "tip": "Announce where you will stand before race day, then drop the gallery link that evening and ask runners to tag friends."
+    },
+    {
+      "title": "Festive market and lights series for local brands",
+      "type": "Reel",
+      "why": "Cozy early-Christmas content is trending from early November, and Joburg is full of Christmas markets and light shows from late November.",
+      "tip": "Film a 3 clip vendor story at a market like KAMERS or Parkview and offer the stall a short promo package."
+    },
+    {
+      "title": "'AI mock-up vs the real shoot' beat comparison",
+      "type": "Reel",
+      "why": "Side by side clips of an AI version and the real handmade thing, cut to the beat, are trending and show off real skill.",
+      "tip": "Generate an AI image of your planned car or sport shot, then cut to your real frame on every beat so the real one clearly wins."
+    },
+    {
+      "title": "'Planned vs reality' twist carousel",
+      "type": "Carousel",
+      "why": "Carousels that build a story over a few slides and flip it on the last slide are being shared widely on TikTok right now.",
+      "tip": "Start with the client mood board, then the messy setup and the bad weather, and finish on the hero shot."
+    },
+    {
+      "title": "Serious documentary-style narration of a tiny photographer moment",
+      "type": "Reel",
+      "why": "Treating a mundane moment with dead serious documentary music is a popular format and makes you relatable.",
+      "tip": "Sit in a chair and narrate choosing between two almost identical frames like it is a true crime story."
+    },
+    {
+      "title": "Write posts people want to send, not just like",
+      "type": "Other",
+      "why": "Instagram now weighs DM shares, saves and watch time more than likes, so shareable posts travel further.",
+      "tip": "End captions with a send prompt like 'send this to the friend who needs new car photos'."
+    },
+    {
+      "title": "Edit bigger projects in Edits for Mac",
+      "type": "Video",
+      "why": "Instagram launched a desktop version of Edits on 5 Nov with a multi track timeline, LUT import and 4K export with no watermark.",
+      "tip": "Import your own colour LUT so every reel matches your photo grade, then publish straight to Instagram."
+    },
+    {
+      "title": "Year-end function teaser for venues and caterers",
+      "type": "Reel",
+      "why": "Late November and December are peak work party and event season in South Africa, and venues are booking content now.",
+      "tip": "Tag the venue and caterer so they reshare, and pin a 'December dates open' comment."
+    }
   ]
 }
