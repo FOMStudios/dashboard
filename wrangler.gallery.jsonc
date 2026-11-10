@@ -1,0 +1,13 @@
+{
+  // fom-gallery Worker. Deploys on push: npx wrangler deploy -c wrangler.gallery.jsonc
+  // Secrets (BREVO_KEY etc.) stay in Cloudflare and are not touched by deploys.
+  "name": "fom-gallery",
+  "main": "gallery-worker.js",
+  "compatibility_date": "2025-09-01",
+  "workers_dev": true,
+  "keep_vars": true,
+  "r2_buckets": [
+    { "binding": "BUCKET", "bucket_name": "fom-deliverables" }
+  ],
+  "triggers": { "crons": ["0 3 * * *"] }
+}

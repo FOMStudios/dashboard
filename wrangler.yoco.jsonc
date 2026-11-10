@@ -1,0 +1,9 @@
+{
+  // fom-yoco Worker. Deploys on push: npx wrangler deploy -c wrangler.yoco.jsonc
+  // YOCO_SECRET_KEY stays in Cloudflare and is not touched by deploys.
+  "name": "fom-yoco",
+  "main": "yoco-worker.js",
+  "compatibility_date": "2025-09-01",
+  "workers_dev": true,
+  "keep_vars": true
+}
