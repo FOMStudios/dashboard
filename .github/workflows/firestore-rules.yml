@@ -1,0 +1,23 @@
+# Publishes firestore.rules to Firebase (project fom-studios) whenever the file changes on main.
+# Needs the repo secret FIREBASE_SERVICE_ACCOUNT (JSON key of a service account with
+# Firebase Rules Admin + Service Usage Consumer). Run it by hand from the Actions tab too.
+name: Publish Firestore rules
+on:
+  push:
+    branches: [main]
+    paths: [firestore.rules, firebase.json]
+  workflow_dispatch:
+concurrency: firestore-rules
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      - name: Publish rules
+        run: npx -y firebase-tools@13 deploy --only firestore:rules --project fom-studios --non-interactive
