@@ -233,6 +233,30 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .ws-f textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);min-height:96px;resize:vertical;line-height:1.5;}
 .ws-f textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
 .sv-row{border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;}
+/* Book a shoot form editor */
+.bf-h{font-size:14px;font-weight:800;margin:18px 0 8px;}
+.bf-row{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:8px;margin-bottom:8px;background:var(--bg);}
+.bf-row.off{opacity:.55;}
+.bf-row input{border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:15px;font-family:inherit;background:var(--bg-pill);color:var(--ink);min-width:0;}
+.bf-row input.ic{width:52px;text-align:center;font-size:20px;padding:6px;flex:none;}
+.bf-row input.lbl{flex:1;}
+.bf-pk{flex-direction:column;align-items:stretch;}
+.bf-pk .bf-line{display:flex;gap:8px;align-items:center;}
+.bf-pk input.nm{flex:1.3;} .bf-pk input.dt{flex:2;} .bf-pk input.pr{width:96px;flex:none;}
+.bf-ctl{display:flex;gap:4px;flex:none;align-items:center;}
+.bf-ctl button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--bg-pill);color:var(--ink);cursor:pointer;font-size:14px;font-family:inherit;line-height:1;}
+.bf-ctl button.x{color:#c0392b;}
+.bf-sw{position:relative;width:40px;height:24px;flex:none;cursor:pointer;}
+.bf-sw input{position:absolute;opacity:0;}
+.bf-sw span{position:absolute;inset:0;border-radius:99px;background:var(--line);transition:.2s;}
+.bf-sw span::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.bf-sw input:checked + span{background:#1f8a4c;}
+.bf-sw input:checked + span::after{transform:translateX(16px);}
+.bf-only{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--ink-soft);font-weight:700;}
+.bf-only button{border:1px solid var(--line);background:var(--bg-pill);border-radius:99px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;}
+.bf-only button.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.bf-add{border:1px dashed var(--line);background:none;border-radius:12px;padding:10px 14px;font:inherit;font-size:13.5px;font-weight:700;color:var(--ink);cursor:pointer;width:100%;}
+@media(max-width:640px){ .bf-pk .bf-line{flex-wrap:wrap;} .bf-pk input.nm{flex:1 1 100%;} .bf-pk input.dt{flex:1 1 60%;} }
 .sv-row .ws-toggle{margin-bottom:10px;}
 .sv-row .ws-grid{gap:10px;}
 .ws-toggle{display:flex;align-items:center;gap:12px;margin-bottom:14px;cursor:pointer;font-size:14px;}
@@ -376,6 +400,22 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
         </div>
     </section>
 
+    <section class="ws-card" id="bfCard">
+        <h2>Book a shoot form</h2>
+        <p class="ws-help">The step-by-step form behind every Book a shoot button: 1 what are we shooting, 2 package, 3 date and area, 4 their details, then Send on WhatsApp or by email. Every enquiry also lands on the Leads page with a phone notification.</p>
+        <label class="ws-toggle"><input type="checkbox" id="bfOn"><span class="sw"></span><b>Use the step-by-step form</b> <span style="color:var(--ink-soft);font-weight:600">(off: the old one-page form)</span></label>
+        <label class="ws-toggle"><input type="checkbox" id="bfPrices"><span class="sw"></span><b>Show package prices</b></label>
+        <div class="bf-h">Step 1: shoot cards</div>
+        <p class="ws-help" style="margin-top:0">An emoji and a name for each card. "Something else" is always added at the end.</p>
+        <div id="bfCards"></div>
+        <button type="button" class="bf-add" id="bfAddCard">+ Add a shoot card</button>
+        <div class="bf-h">Step 2: packages</div>
+        <p class="ws-help" style="margin-top:0">Name, a short line and the price. Under "Only for", tap shoot cards to show a package only for those; none tapped shows it for every card. "Not sure yet" is always added at the end. A shoot card with no packages skips this step.</p>
+        <div id="bfPkgs"></div>
+        <button type="button" class="bf-add" id="bfAddPkg">+ Add a package</button>
+        <div class="gh-acts" style="margin-top:14px"><a class="rv-btn" href="https://www.fomstudios.co.za/?book=1" target="_blank" rel="noopener">Open the live form</a><button type="button" id="bfReset">Reset to the defaults</button></div>
+    </section>
+
     <section class="ws-card">
         <h2>Contact details</h2>
         <p class="ws-help">Updates the phone, email and WhatsApp buttons and links on every page, including the booking form.</p>
@@ -516,11 +556,59 @@ $('ghFile').addEventListener('change', async e => {
 });
 drawGH();
 
+/* ---- Book a shoot form (FOM website only): saved as bookingForm { on, showPrices, cards:[{id,label,icon,off}], pkgs:[{id,name,detail,price,only:[cardIds],off}] } ----
+   Keep DEF_BF in step with the defaults in portfolio/book-steps.js. */
+const DEF_BF = { on:true, showPrices:true,
+  cards:[{id:'wedding',label:'Wedding',icon:'💍'},{id:'party',label:'Birthday / Party',icon:'🎉'},{id:'corporate',label:'Corporate / Event',icon:'🏢'},{id:'family',label:'Family / Portrait',icon:'📸'},{id:'product',label:'Product / Brand',icon:'📦'},{id:'sports',label:'Sports',icon:'⚽'}],
+  pkgs:[{id:'mini',name:'Mini Shoot',detail:'30 minutes, 20 photos or 1 reel',price:'R500'},{id:'pb',name:'Photography Bronze',detail:'2 hours, 30-40 photos',price:'R800'},{id:'ps',name:'Photography Silver',detail:'4 hours, 40-50 photos',price:'R1300'},{id:'pg',name:'Photography Gold',detail:'6 hours, 50-60 photos',price:'R1800'},
+    {id:'vb',name:'Videography Bronze',detail:'2 hours, 1 reel',price:'R1000'},{id:'vs',name:'Videography Silver',detail:'4 hours, 2 reels',price:'R1700'},{id:'vg',name:'Videography Gold',detail:'6 hours, 2 reels and drone',price:'R3000'},
+    {id:'cb',name:'Photo & Video Bronze',detail:'2 hours, photos and 1 reel',price:'R1500'},{id:'cs',name:'Photo & Video Silver',detail:'4 hours, photos and 2 reels',price:'R2700'},{id:'cg',name:'Photo & Video Gold',detail:'6 hours, photos, reels and drone',price:'R4500'},
+    {id:'padel',name:'Padel League',detail:'Game day reel and photos every week',price:'R2500/wk',only:['sports']}] };
+const bfId = t => (String(t||'').toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,12) || 'x') + Math.random().toString(36).slice(2,5);
+function normBF(x){
+  const src = (x && typeof x === 'object' && Array.isArray(x.cards)) ? x : DEF_BF;
+  const cards = (src.cards||[]).filter(c=>c && String(c.label||'').trim()).map(c=>{ const o={ id:String(c.id||bfId(c.label)), label:String(c.label).trim().slice(0,30), icon:String(c.icon||'').trim().slice(0,8) }; if(c.off) o.off=true; return o; });
+  const ids = cards.map(c=>c.id);
+  const pkgs = (src.pkgs||[]).filter(p=>p && String(p.name||'').trim()).map(p=>{ const o={ id:String(p.id||bfId(p.name)), name:String(p.name).trim().slice(0,40), detail:String(p.detail||'').trim().slice(0,70), price:String(p.price||'').trim().slice(0,20) };
+    const only=(Array.isArray(p.only)?p.only:[]).filter(i=>ids.includes(i)); if(only.length) o.only=only; if(p.off) o.off=true; return o; });
+  return { on:src.on!==false, showPrices:src.showPrices!==false, cards, pkgs };
+}
+let BF = normBF(null);
+function bfCardRow(c){ return '<div class="bf-row'+(c.off?' off':'')+'" data-bfc="'+esc(c.id)+'"><input class="ic" data-k="icon" maxlength="8" value="'+esc(c.icon)+'" aria-label="Emoji" placeholder="📷"><input class="lbl" data-k="label" maxlength="30" value="'+esc(c.label)+'" placeholder="Shoot type, e.g. Matric farewell"><label class="bf-sw" title="Show on the website"><input type="checkbox" data-k="on"'+(c.off?'':' checked')+'><span></span></label><span class="bf-ctl"><button type="button" data-mv="-1" aria-label="Move up">&uarr;</button><button type="button" data-mv="1" aria-label="Move down">&darr;</button><button type="button" class="x" data-rmc aria-label="Remove">&times;</button></span></div>'; }
+function bfPkgRow(p){ return '<div class="bf-row bf-pk'+(p.off?' off':'')+'" data-bfp="'+esc(p.id)+'"><div class="bf-line"><input class="nm" data-k="name" maxlength="40" value="'+esc(p.name)+'" placeholder="Package name"><input class="dt" data-k="detail" maxlength="70" value="'+esc(p.detail)+'" placeholder="Short line, e.g. 4 hours, 40-50 photos"><input class="pr" data-k="price" maxlength="20" value="'+esc(p.price)+'" placeholder="R1300"><label class="bf-sw" title="Show on the website"><input type="checkbox" data-k="on"'+(p.off?'':' checked')+'><span></span></label><span class="bf-ctl"><button type="button" data-mv="-1" aria-label="Move up">&uarr;</button><button type="button" data-mv="1" aria-label="Move down">&darr;</button><button type="button" class="x" data-rmp aria-label="Remove">&times;</button></span></div>'+
+  '<div class="bf-only">Only for:'+BF.cards.map(c=>'<button type="button" data-only="'+esc(c.id)+'" class="'+((p.only||[]).includes(c.id)?'on':'')+'">'+esc((c.icon?c.icon+' ':'')+c.label)+'</button>').join('')+'</div></div>'; }
+function drawBF(bf){
+  BF = normBF(bf);
+  $('bfOn').checked = BF.on; $('bfPrices').checked = BF.showPrices;
+  $('bfCards').innerHTML = BF.cards.map(bfCardRow).join('');
+  $('bfPkgs').innerHTML = BF.pkgs.map(bfPkgRow).join('');
+}
+function readBF(){
+  const cards = [].map.call($('bfCards').querySelectorAll('[data-bfc]'), r=>({ id:r.dataset.bfc, icon:r.querySelector('[data-k=icon]').value, label:r.querySelector('[data-k=label]').value, off:!r.querySelector('[data-k=on]').checked }));
+  const pkgs = [].map.call($('bfPkgs').querySelectorAll('[data-bfp]'), r=>({ id:r.dataset.bfp, name:r.querySelector('[data-k=name]').value, detail:r.querySelector('[data-k=detail]').value, price:r.querySelector('[data-k=price]').value, off:!r.querySelector('[data-k=on]').checked,
+    only:[].map.call(r.querySelectorAll('[data-only].on'), b=>b.dataset.only) }));
+  return normBF({ on:$('bfOn').checked, showPrices:$('bfPrices').checked, cards, pkgs });
+}
+function bfRedraw(){ const cur = readBF(); drawBF(cur); setState(); }
+$('bfAddCard').onclick = ()=>{ const cur=readBF(); cur.cards.push({ id:bfId('card'), label:'New shoot type', icon:'📷' }); drawBF(cur); setState(); const r=$('bfCards').querySelectorAll('[data-k=label]'); const el=r[r.length-1]; el.focus(); el.select(); };
+$('bfAddPkg').onclick = ()=>{ const cur=readBF(); cur.pkgs.push({ id:bfId('pkg'), name:'New package', detail:'', price:'' }); drawBF(cur); setState(); const r=$('bfPkgs').querySelectorAll('[data-k=name]'); const el=r[r.length-1]; el.focus(); el.select(); };
+$('bfReset').onclick = ()=>{ if(!confirm('Reset the shoot cards and packages to the defaults? Your changes here are lost (nothing changes on the website until you Publish).')) return; drawBF(DEF_BF); setState(); };
+$('bfCard').addEventListener('click', e=>{
+  const row = e.target.closest('.bf-row');
+  const o = e.target.closest('[data-only]'); if(o){ o.classList.toggle('on'); setState(); return; }
+  const mv = e.target.closest('[data-mv]'); if(mv && row){ const d=+mv.dataset.mv, sib = d<0 ? row.previousElementSibling : row.nextElementSibling; if(sib){ d<0 ? row.parentNode.insertBefore(row, sib) : row.parentNode.insertBefore(sib, row); bfRedraw(); } return; }
+  if(e.target.closest('[data-rmc]') && row){ const n=row.querySelector('[data-k=label]').value||'this card'; if(!confirm('Remove "'+n+'" from the form? Packages limited to it will show for every card instead.')) return; row.remove(); bfRedraw(); return; }
+  if(e.target.closest('[data-rmp]') && row){ const n=row.querySelector('[data-k=name]').value||'this package'; if(!confirm('Remove the "'+n+'" package from the form?')) return; row.remove(); bfRedraw(); return; }
+});
+$('bfCard').addEventListener('change', e=>{ if(e.target.matches('[data-k=on]')) e.target.closest('.bf-row').classList.toggle('off', !e.target.checked); if(e.target.matches('[data-k=label],[data-k=icon]')) bfRedraw(); });
+drawBF(null);
+
 function readForm(){
   const d={}; Object.keys(F).forEach(k=>{ const v=$(F[k]).value.trim(); if(v) d[k]=v; });
   d.banner={on:$('bOn').checked,text:$('bText').value.trim(),link:$('bLink').value.trim(),linkLabel:$('bLabel').value.trim()};
   d.blockedDates=readBD();
   d.galleryHeader=normGH(Object.assign({}, GH, { line:$('ghLine').value }));
+  if(!SBA) d.bookingForm=readBF();
   if(SBA){ const t={}; Object.keys(TX).forEach(k=>{ const v=$(TX[k]).value.trim(); if(v) t[k]=v; }); d.text=t; d.services=readSvc(); }
   return d;
 }
@@ -552,6 +640,7 @@ function readSaved(d){
   const b=(d&&d.banner)||{}; o.banner={on:!!b.on,text:String(b.text||'').trim(),link:String(b.link||'').trim(),linkLabel:String(b.linkLabel||'').trim()};
   o.blockedDates=normBD(d&&d.blockedDates);
   o.galleryHeader=normGH(d&&d.galleryHeader);
+  if(!SBA) o.bookingForm=normBF(d&&d.bookingForm);
   if(SBA){ o.text=normText(d&&d.text); o.services=normSvc(d&&d.services); }
   return o;
 }
@@ -560,6 +649,7 @@ function fillForm(d){
   const b=d.banner||{}; $('bOn').checked=!!b.on; $('bText').value=b.text||''; $('bLink').value=b.link||''; $('bLabel').value=b.linkLabel||'';
   drawBD(normBD(d.blockedDates));
   { const g=normGH(d.galleryHeader); GH={ src:g.src, fx:g.fx, fy:g.fy }; $('ghLine').value=g.line; drawGH(); }
+  if(!SBA) drawBF(d.bookingForm);
   if(SBA){ const t=d.text||{}; Object.keys(TX).forEach(k=>{ $(TX[k]).value=t[k]||''; }); drawSvc(d.services); }
   preview();
 }
@@ -669,6 +759,7 @@ if(window.FOM_BIZ && FOM_BIZ.isSba){
   var lv = document.querySelector('.ws-bar a[href*="fomstudios"]'); if(lv) lv.href = 'https://www.fomstudios.co.za/shotbya/';
   var sh = document.getElementById('fIg'); sh = sh && sh.closest('.ws-card') && sh.closest('.ws-card').querySelector('.ws-help'); if(sh) sh.textContent = 'Instagram updates every Instagram link on her site. Facebook and TikTok show in her footer once filled in.';
   ['sbaTextCard','sbaSvcCard'].forEach(function(id){ var c = document.getElementById(id); if(c) c.style.display = ''; });
+  var bfc = document.getElementById('bfCard'); if(bfc) bfc.style.display = 'none';   // Shot by A keeps her own contact form
   ['fWac','fYt'].forEach(function(id){ var f = document.getElementById(id); if(f && f.closest('.ws-f')) f.closest('.ws-f').style.display = 'none'; });
   var ph = { fPhone:'084 445 6657', fEmail:'amarah.rangraze@gmail.com', fIg:'@shotbya_photography or full link', bLink:'contact.html or https://...' };
   Object.keys(ph).forEach(function(id){ var f = document.getElementById(id); if(f) f.placeholder = ph[id]; });

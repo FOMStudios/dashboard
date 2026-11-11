@@ -2,7 +2,7 @@ rules_version = '2';
 
 // FOM Studios - Firestore security rules (project fom-studios)
 // Paste this WHOLE file into Firebase Console > Firestore Database > Rules, then Publish.
-// Last updated 5 Nov 2026: slotHolds and meetingRequests (Book a meeting); meetings (client meetings) and moodShare (client mood board links). Earlier: gallery favourites, chat, settings/outreach, settings/pitchDeck.
+// Last updated 11 Nov 2026: leads can be created by the website Book a shoot form (status New enquiry). 6 Nov 2026: moodShare clientInspo. 5 Nov 2026: slotHolds and meetingRequests (Book a meeting); meetings (client meetings) and moodShare (client mood board links). Earlier: gallery favourites, chat, settings/outreach, settings/pitchDeck.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -79,6 +79,27 @@ service cloud.firestore {
     }
     match /leads/{id} {
       allow read, write: if isAdmin();
+      // Book a shoot form on the FOM website (book-steps.js, Nov 2026): anyone can send an enquiry, only you can read it
+      allow create: if request.resource.data.keys().hasOnly(['biz', 'source', 'via', 'leadId', 'status', 'category', 'company', 'contact', 'email', 'phone', 'web',
+                                                            'location', 'emailed', 'dateEmailed', 'followUp', 'comments', 'shootType', 'pkg', 'shootDate', 'enquiry', 'createdAt'])
+                    && request.resource.data.biz == 'fom'
+                    && request.resource.data.source == 'website'
+                    && request.resource.data.status == 'New enquiry'
+                    && request.resource.data.category == 'Website enquiry'
+                    && request.resource.data.via in ['whatsapp', 'email']
+                    && request.resource.data.contact is string && request.resource.data.contact.size() > 0 && request.resource.data.contact.size() <= 80
+                    && request.resource.data.email is string && request.resource.data.email.size() <= 100
+                    && request.resource.data.phone is string && request.resource.data.phone.size() <= 20
+                    && request.resource.data.location is string && request.resource.data.location.size() <= 80
+                    && request.resource.data.comments is string && request.resource.data.comments.size() <= 300
+                    && request.resource.data.enquiry is string && request.resource.data.enquiry.size() <= 1500
+                    && request.resource.data.shootType is string && request.resource.data.shootType.size() <= 40
+                    && request.resource.data.pkg is string && request.resource.data.pkg.size() <= 60
+                    && request.resource.data.shootDate is string && request.resource.data.shootDate.size() <= 10
+                    && request.resource.data.leadId is string && request.resource.data.leadId.size() <= 20
+                    && request.resource.data.company == '' && request.resource.data.web == ''
+                    && request.resource.data.emailed == 'No' && request.resource.data.dateEmailed == '' && request.resource.data.followUp == ''
+                    && request.resource.data.createdAt == request.time;
     }
     match /contentPlanner/{id} {
       allow read, write: if isAdmin();

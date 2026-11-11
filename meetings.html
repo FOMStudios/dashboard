@@ -817,7 +817,7 @@ function selectPick(id){
   stPick = id;
   $('stList').querySelectorAll('.pick').forEach(p => p.style.borderColor = p.dataset.pick === id ? 'var(--ink)' : 'transparent');
   const r = (startSeg === 'order' ? ORDERS : LEADS).find(x => x.id === id);
-  if(r) $('stType').value = guessType([r.product, r.notes, r.category, r.company].join(' '));
+  if(r) $('stType').value = guessType([r.shootType, r.product, r.notes, r.category, r.company, r.enquiry].join(' '));
 }
 
 /* ---------- WhatsApp enquiry reader: pulls name, number, date, time, venue, guests and budget out of a pasted chat ---------- */
@@ -913,7 +913,14 @@ async function startMeeting(){
     if(!stPick){ toast('Pick a ' + (startSeg === 'order' ? 'client' : 'lead') + ' first'); return; }
     if(startSeg === 'order'){ const o = ORDERS.find(x => x.id === stPick); m.orderId = o.id; Object.assign(m.client, { name:o.customer || '', phone:o.clientPhone || '', email:o.clientEmail || '' });
       if(o.shootDate) m.dates.push({ id:uid(), label:'Shoot day', date:o.shootDate, time:o.shootTime || '', note:'' }); }
-    else { const l = LEADS.find(x => x.id === stPick); m.leadId = l.id; Object.assign(m.client, { name:l.contact ? l.contact + (l.company ? ' (' + l.company + ')' : '') : (l.company || ''), email:l.email || '', phone:l.phone || '', venue:l.location || '' }); }
+    else { const l = LEADS.find(x => x.id === stPick); m.leadId = l.id; Object.assign(m.client, { name:l.contact ? l.contact + (l.company ? ' (' + l.company + ')' : '') : (l.company || ''), email:l.email || '', phone:l.phone || '', venue:l.location || '' });
+      if(l.source === 'website' && l.enquiry){   // Book a shoot form on the website: the enquiry reader fills the rest
+        const p = parseWa(l.enquiry);
+        ['guests','budget'].forEach(k => { if(p[k] && !m.client[k]) m.client[k] = p[k]; });
+        if(l.shootDate || p.date) m.dates.push({ id:uid(), label:'Event day', date:l.shootDate || p.date, time:p.time || '', note:'' });
+        m.notes = 'Website enquiry' + (l.pkg ? ' (package: ' + l.pkg + ')' : '') + ':\n' + l.enquiry + '\n\n';
+        m.source = 'website';
+      } }
   }
   m.qs = questionsFor(m.client.type);
   const st = starterFor(m.client.type); if(st){ m.board = st.ids.filter(id => LIB.items.some(i => i.id === id)); m.starter = st.name; }

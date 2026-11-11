@@ -202,6 +202,7 @@ const EV_TYPES = {
   favs:     { gap: 1800e3, title: 'Favourites picked',    body: (n, d) => n + ' picked ' + (d || 'their') + ' favourites.' },
   review:   { gap: 60e3,   title: 'New review',           body: (n, d) => n + ' left a review' + (d ? ': ' + d : '') + '.' },
   paid:     { gap: 300e3,  title: 'Card payment',         body: (n, d) => n + ' paid ' + (d || 'by card') + ' (check Yoco to confirm).' },
+  enquiry:  { gap: 30e3,   title: 'New enquiry',          body: (n, d) => n + ' sent an enquiry' + (d ? ': ' + d : '') + '.', url: 'leads.html' },   // Book a shoot form on the FOM website
   meeting:  { gap: 30e3,   title: 'Meeting request',      body: (n, d) => n + ' asked to meet' + (d ? ': ' + d : '') + '.', url: 'bookings.html' }   // Book a meeting page on either website
 };
 const R2J = async (env, key, def) => { try { const o = await env.BUCKET.get(key); return o ? await o.json() : def; } catch (e) { return def; } };

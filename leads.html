@@ -122,6 +122,12 @@ td.rm-col{width:36px;text-align:center;}
 .col-id{width:56px;}.col-date{width:130px;}.col-yn{width:90px;}
 select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align:center;-webkit-appearance:none;appearance:none;padding:8px 12px;cursor:pointer;}
 .st-notemailed{background:#efece5;color:#6f6f6d;}
+.st-newenq{background:#f1e8ff;color:#6b3fb5;}
+.enq-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:12px 14px;border-radius:16px;background:#f1e8ff;color:#4b2a85;font-size:14px;}
+.enq-banner b{font-weight:800;}
+.enq-banner button{border:0;border-radius:99px;background:#6b3fb5;color:#fff;font:inherit;font-size:13px;font-weight:700;padding:7px 14px;cursor:pointer;}
+.enq-banner button.ghost{background:transparent;color:#4b2a85;border:1px solid rgba(75,42,133,.3);}
+.web-tag{display:inline-block;font-size:10.5px;font-weight:800;color:#6b3fb5;background:#f1e8ff;border-radius:99px;padding:1px 7px;margin-top:3px;}
 .st-emailed{background:#e7f0ff;color:#02367B;}
 .st-responded{background:#fff4e0;color:#a9720b;}
 .st-accepted{background:#e8f7ee;color:#1f8a4c;}
@@ -375,6 +381,7 @@ td .deck-lnk small{display:block;color:var(--ink-soft);font-weight:500;font-size
             <input type="text" class="search" id="search" placeholder="Search company, contact, email, status…">
             <span class="count-pill" id="countPill">0 leads</span>
         </div>
+        <div class="enq-banner" id="enqBanner" style="display:none"></div>
 
         <div class="table-card">
             <div class="table-scroll">
@@ -530,9 +537,9 @@ sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
    dedicated cloud store. No local-storage fallback, so leads always
    match across devices (desktop + mobile).
    ================================================================ */
-const STATUSES = ['Not Emailed','Emailed','Responded','Accepted','Rejected'];
-const STATUS_CLASS = { 'Not Emailed':'st-notemailed','Emailed':'st-emailed','Responded':'st-responded','Accepted':'st-accepted','Rejected':'st-rejected' };
-const STATUS_DOT   = { 'Not Emailed':'#6f6f6d','Emailed':(window.FOM_BIZ?FOM_BIZ.b.accent:'#02367B'),'Responded':'#c98a1f','Accepted':'#1f8a4c','Rejected':'#c0392b' };
+const STATUSES = ['New enquiry','Not Emailed','Emailed','Responded','Accepted','Rejected'];   // New enquiry: sent from the Book a shoot form on the website
+const STATUS_CLASS = { 'New enquiry':'st-newenq','Not Emailed':'st-notemailed','Emailed':'st-emailed','Responded':'st-responded','Accepted':'st-accepted','Rejected':'st-rejected' };
+const STATUS_DOT   = { 'New enquiry':'#6b3fb5','Not Emailed':'#6f6f6d','Emailed':(window.FOM_BIZ?FOM_BIZ.b.accent:'#02367B'),'Responded':'#c98a1f','Accepted':'#1f8a4c','Rejected':'#c0392b' };
 
 let leads = [];
 let store, editingCell=false, pendingRender=false;
@@ -603,7 +610,7 @@ function renderLeads(){
         if(q && !hay.includes(q)) return;
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td class="col-id"><input data-i="${i}" data-f="leadId" value="${esc(o.leadId)}"></td>
+            <td class="col-id"><input data-i="${i}" data-f="leadId" value="${esc(o.leadId)}">${o.source==='website'?`<span class="web-tag" title="${esc(o.enquiry||'Website enquiry')}">🌐 Website</span>`:''}</td>
             <td class="col-pitch"><button class="pitch" type="button" data-pitch="${i}" title="Fill the email and deck for this lead">Pitch</button><a class="pitch meet" href="meetings.html?new=lead:${encodeURIComponent(o.id)}" title="Start a client meeting with this lead (mood board, notes, quote)">Meet</a></td>
             <td><input data-i="${i}" data-f="company" value="${esc(o.company)}" placeholder="Company / organisation"></td>
             <td><input data-i="${i}" data-f="contact" value="${esc(o.contact)}" placeholder="Contact name"></td>
@@ -622,11 +629,22 @@ function renderLeads(){
     });
 
     $('countPill').textContent = leads.length + (leads.length===1?' lead':' leads');
+    drawEnqBanner();
     $('emptyState').style.display = leads.length ? 'none' : 'block';
     renderLeadDashboard();
     try{ renderLeadPicker(); renderPitchBanner(); renderAdvisor(); }catch(e){}
 }
 
+/* website enquiries (Book a shoot form): a banner while any are still "New enquiry" */
+function drawEnqBanner(){
+    const b = $('enqBanner'); if(!b) return;
+    const n = leads.filter(o=>o.status==='New enquiry').length, filt = (leadSearch().value||'').trim().toLowerCase()==='new enquiry';
+    if(!n && !filt){ b.style.display='none'; return; }
+    b.style.display='flex';
+    b.innerHTML = n ? `<span>🌐 <b>${n} new website ${n===1?'enquiry':'enquiries'}</b> from the Book a shoot form. Tap <b>Meet</b> to start a meeting with the details filled in, then set the status.</span>${filt?'<button class="ghost" type="button" data-enq="all">Show all leads</button>':'<button type="button" data-enq="show">Show them</button>'}`
+      : `<span>No new website enquiries.</span><button class="ghost" type="button" data-enq="all">Show all leads</button>`;
+    b.onclick = e=>{ const t=e.target.closest('[data-enq]'); if(!t) return; leadSearch().value = t.dataset.enq==='show' ? 'new enquiry' : ''; renderLeads(); };
+}
 function renderLeadDashboard(){
     const total = leads.length;
     const byStatus = {}; STATUSES.forEach(s=>byStatus[s]=0);
@@ -637,7 +655,7 @@ function renderLeadDashboard(){
     $('kEmailed').textContent = byStatus['Emailed']||0;
     $('kResponded').textContent = byStatus['Responded']||0;
     $('kAccepted').textContent = byStatus['Accepted']||0;
-    const emailedTotal = total - (byStatus['Not Emailed']||0);
+    const emailedTotal = total - (byStatus['Not Emailed']||0) - (byStatus['New enquiry']||0);
     const respondedTotal = (byStatus['Responded']||0)+(byStatus['Accepted']||0)+(byStatus['Rejected']||0);
     $('kRate').textContent = emailedTotal ? Math.round(respondedTotal/emailedTotal*100)+'%' : '0%';
 
@@ -670,8 +688,9 @@ leadTbody().addEventListener('change', e=>{
     leads[i][f]=el.value;
     if(f==='status'){
         el.className = 'status-select ' + (STATUS_CLASS[el.value]||'');
-        if(el.value!=='Not Emailed' && leads[i].emailed==='No') leads[i].emailed='Yes';
-        if(el.value!=='Not Emailed' && !leads[i].dateEmailed){ leads[i].dateEmailed = new Date().toISOString().slice(0,10); renderLeads(); return; }
+        const outreach = !['Not Emailed','New enquiry'].includes(el.value);
+        if(outreach && leads[i].emailed==='No') leads[i].emailed='Yes';
+        if(outreach && !leads[i].dateEmailed){ leads[i].dateEmailed = new Date().toISOString().slice(0,10); renderLeads(); return; }
     }
     store.update(leads[i].id);
     renderLeadDashboard();
