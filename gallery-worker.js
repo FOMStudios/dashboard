@@ -323,7 +323,28 @@ async function handleEvent(request, env, ctx) {
   const label = biz === 'sba' ? 'Shot by A: ' : '';
   const msg = { title: label + def.title, body: def.body(name, detail), url: def.url ? def.url + '?biz=' + biz : 'dashboard.html#activity', tag: 'fom-' + type + '-' + (o || name) };
   if (ctx && ctx.waitUntil) ctx.waitUntil(pushAll(env, msg)); else await pushAll(env, msg);
+  // Book a shoot form: also email you the whole enquiry (needs the BREVO_KEY secret; NOTIFY_TO changes the address)
+  if (type === 'enquiry' && env.BREVO_KEY) {
+    const job = sendEnquiryEmail(env, name, detail, clean(b.x, 1500), clean(b.p, 20), clean(b.e, 100)).catch(() => false);
+    if (ctx && ctx.waitUntil) ctx.waitUntil(job); else await job;
+  }
   return json({ ok: true });
+}
+async function sendEnquiryEmail(env, name, detail, text, phone, email) {
+  const intl = String(phone || '').replace(/\D/g, '').replace(/^0/, '27');
+  const first = String(name || '').split(' ')[0] || 'there';
+  const wa = intl.length >= 11 ? 'https://wa.me/' + intl + '?text=' + encodeURIComponent('Hi ' + first + ', thanks for your enquiry with FOM Studios! ') : '';
+  const admin = (env.ADMIN_URL || 'https://fomstudios.github.io/dashboard/') .replace(/[^/]*$/, '') + 'leads.html?biz=fom';
+  const btn = (href, label, dark) => `<a href="${htmlEsc(href)}" style="display:inline-block;background:${dark ? '#02367B' : '#25D366'};color:#fff;text-decoration:none;font-weight:700;font-size:14.5px;padding:13px 22px;border-radius:999px;margin:0 8px 8px 0">${htmlEsc(label)}</a>`;
+  const html = `<div style="background:#f1f0ec;padding:24px 12px;font-family:-apple-system,Helvetica Neue,Arial,sans-serif"><table role="presentation" width="100%" style="max-width:560px;margin:0 auto;background:#fafaf9;border:1px solid #dcdad3;border-radius:18px"><tr><td style="padding:26px 26px 18px">
+    <div style="font-weight:800;letter-spacing:.08em;font-size:13px;color:#02367B">FOM STUDIOS</div>
+    <h1 style="font-size:22px;margin:10px 0 6px;color:#2a2b2c">New enquiry from ${htmlEsc(name)}</h1>
+    <p style="font-size:14.5px;color:#6f6f6d;margin:0 0 16px;line-height:1.6">Sent from the Book a shoot form on your website${detail ? ': ' + htmlEsc(detail) : ''}.</p>
+    <div style="padding:14px 16px;background:#f1f0ec;border-radius:12px;font-size:15px;line-height:1.6;color:#2a2b2c;white-space:pre-wrap">${htmlEsc(text || detail || '')}</div>
+    <p style="margin:18px 0 6px">${wa ? btn(wa, 'Reply on WhatsApp') : ''}${btn(admin, 'Open Leads', true)}</p>
+    <p style="font-size:12.5px;color:#8a8a88;margin:6px 0 0">${email ? 'Reply to this email to answer ' + htmlEsc(first) + ' directly. ' : ''}It is also on your Leads page as a New enquiry.</p>
+  </td></tr></table></div>`;
+  return sendBrevo(env, env.NOTIFY_TO || 'info@fomstudios.co.za', 'FOM Studios', 'New enquiry: ' + name + (detail ? ', ' + detail : ''), html, email || '');
 }
 async function handleEvents(request, env, url) {
   if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);

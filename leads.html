@@ -269,6 +269,69 @@ td .pitch:hover{background:var(--accent);color:#fff;}
 td .deck-lnk{background:none;border:0;text-align:left;cursor:pointer;font-family:inherit;color:var(--accent);font-size:12.5px;font-weight:700;line-height:1.3;padding:4px;}
 td .deck-lnk small{display:block;color:var(--ink-soft);font-weight:500;font-size:11.5px;}
 .col-pitch{width:140px;}td .pitch.meet{display:inline-block;margin-left:5px;text-decoration:none;}.col-deck{width:130px;}
+/* ===== Nov 2026: short leads table + details panel (same pattern as the Database) ===== */
+table.leads{min-width:0;}
+table.leads thead th{padding:12px 12px;}
+table.leads tbody tr{cursor:pointer;}
+table.leads tbody td{padding:10px 12px;font-size:14px;}
+table.leads .l-id{width:76px;color:var(--ink-soft);font-size:13px;font-weight:700;white-space:nowrap;}
+table.leads .l-who b{display:block;font-weight:800;line-height:1.3;overflow-wrap:anywhere;}
+table.leads .l-who small{display:block;color:var(--ink-soft);font-size:12.5px;line-height:1.35;margin-top:2px;overflow-wrap:anywhere;}
+table.leads .l-st{width:150px;}
+table.leads .l-st select{width:100%;}
+table.leads .l-fu{width:120px;white-space:nowrap;font-size:13px;}
+table.leads .l-fu.due{color:#c0392b;font-weight:700;}
+table.leads .l-act{width:1%;white-space:nowrap;}
+.acts{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;}
+.acts .pitch,.acts .pitch.meet{margin:0!important;display:inline-flex!important;align-items:center;justify-content:center;box-sizing:border-box;min-width:64px;height:32px;padding:0 12px!important;line-height:1!important;text-decoration:none;vertical-align:middle;}
+table.leads td select.status-select{border:0;padding:7px 12px;font-size:13px;}
+table.leads td select.st-newenq{background:#f1e8ff!important;color:#6b3fb5;}
+table.leads td select.st-notemailed{background:#efece5!important;color:#6f6f6d;}
+table.leads td select.st-emailed{background:#e7f0ff!important;color:#02367B;}
+table.leads td select.st-responded{background:#fff4e0!important;color:#a9720b;}
+table.leads td select.st-accepted{background:#e8f7ee!important;color:#1f8a4c;}
+table.leads td select.st-rejected{background:#fdeceb!important;color:#c0392b;}
+table.leads .l-go{width:28px;color:var(--ink-soft);font-size:20px;text-align:center;}
+.st-chip{display:none;font-size:11.5px;font-weight:800;border-radius:99px;padding:3px 9px;white-space:nowrap;margin-top:4px;}
+@media(max-width:1100px){.hide-md{display:none;}}
+@media(max-width:700px){
+  .hide-sm{display:none;}
+  table.leads thead th{padding:10px 8px;}
+  table.leads tbody td{padding:10px 8px;font-size:13.5px;}
+  table.leads .l-st select{display:none;}
+  .st-chip{display:inline-block;}
+  .acts{flex-direction:column;gap:6px;}
+  .acts .pitch,.acts .pitch.meet{min-width:64px;height:30px;font-size:12px;}
+  table.leads .l-st{display:none;}
+}
+/* details panel */
+.op-scrim{position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:1900;opacity:0;pointer-events:none;transition:opacity .2s;}
+.op-scrim.on{opacity:1;pointer-events:auto;}
+.op{position:fixed;top:0;right:0;bottom:0;width:min(520px,100vw);background:var(--bg);z-index:2000;transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;box-shadow:-18px 0 50px rgba(0,0,0,.18);}
+.op.on{transform:none;}
+.op-head{display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top,0px)) 18px 12px;border-bottom:1px solid var(--line);background:var(--bg-pill);}
+.op-head .t{flex:1;min-width:0;}
+.op-head .t b{display:block;font-size:19px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.op-head .t small{color:var(--ink-soft);font-size:12.5px;}
+.op-ib{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:18px;cursor:pointer;flex:none;display:grid;place-items:center;}
+.op-ib:disabled{opacity:.35;cursor:default;}
+.op-body{flex:1;overflow-y:auto;padding:6px 18px calc(110px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch;}
+.op-sec{background:var(--bg-pill);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-top:12px;}
+.op-sec h3{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 10px;font-weight:800;}
+.op-g{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
+.op-f{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.op-f.w{grid-column:1/-1;}
+.op-f label{font-size:12px;font-weight:700;color:var(--ink-soft);}
+.op-f input,.op-f select,.op-f textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:16px;background:#fff;color:var(--ink);}
+.op-f textarea{min-height:76px;resize:vertical;line-height:1.45;}
+.op-f input:focus,.op-f select:focus,.op-f textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent);}
+.op-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.op-btn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:9px 15px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.op-btn.pri{border-color:var(--accent);background:var(--accent);color:#fff;}
+.op-btn.wa{border-color:#25D366;background:#25D366;color:#fff;}
+.op-btn.red{color:#c0392b;}
+.op-enq{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.55;}
+@media(max-width:520px){ .op-g{grid-template-columns:1fr;} }
 
 @media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
 @media(max-width:980px){.kpis{grid-template-columns:repeat(3,1fr);}}
@@ -385,29 +448,31 @@ td .deck-lnk small{display:block;color:var(--ink-soft);font-weight:500;font-size
 
         <div class="table-card">
             <div class="table-scroll">
-                <table>
+                <table class="leads">
                     <thead>
                         <tr>
-                            <th class="col-id">ID</th>
-                            <th class="col-pitch">Pitch</th>
-                            <th>Company / Organisation</th>
-                            <th>Contact Name</th>
-                            <th>Email</th>
-                            <th>Website / Instagram</th>
-                            <th>Location</th>
-                            <th>Category</th>
-                            <th class="col-yn">Emailed?</th>
-                            <th class="col-date">Date Emailed</th>
-                            <th class="col-date">Follow-up By</th>
-                            <th>Status</th>
-                            <th class="col-deck">Deck sent</th>
-                            <th>Comments</th>
-                            <th class="rm-col"></th>
+                            <th class="l-id hide-sm">ID</th>
+                            <th>Lead</th>
+                            <th class="l-st">Status</th>
+                            <th class="l-fu hide-sm">Follow up</th>
+                            <th class="col-deck hide-md">Deck sent</th>
+                            <th class="l-act"></th>
+                            <th class="l-go hide-sm"></th>
                         </tr>
                     </thead>
                     <tbody id="tbody"></tbody>
                 </table>
             </div>
+            <div class="op-scrim" id="opScrim"></div>
+            <aside class="op" id="op" role="dialog" aria-modal="true" aria-labelledby="opName">
+              <div class="op-head">
+                <div class="t"><b id="opName">Lead</b><small id="opSub"></small></div>
+                <button class="op-ib" type="button" id="opPrev" title="Previous lead" aria-label="Previous lead">&#8249;</button>
+                <button class="op-ib" type="button" id="opNext" title="Next lead" aria-label="Next lead">&#8250;</button>
+                <button class="op-ib" type="button" id="opX" title="Close" aria-label="Close">&times;</button>
+              </div>
+              <div class="op-body" id="opBody"></div>
+            </aside>
             <div class="empty" id="emptyState" style="display:none;">No leads yet - click <b>“+ Add lead”</b> to start tracking, or log one straight from the Email Generator tab.</div>
         </div>
     </div>
@@ -572,7 +637,7 @@ function cloudLeadStore(db){
                 if(editingCell){ pendingRender=true; } else safeRenderLeads();
             }, err=>{ console.warn('Firestore:',err); toast('Could not load leads - ' + (err.code==='permission-denied' ? 'check your Firestore rules allow the "leads" collection.' : (err.message||'connection error'))); });
         },
-        add(o){ FOM_BIZ.tag(o); o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); col().add(strip(o)).catch(err=>{ console.error(err); toast('Could not save - ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "leads" collection.' : (err.message||'try again.'))); }); },
+        add(o){ FOM_BIZ.tag(o); o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); const ref = col().doc(); ref.set(strip(o)).catch(err=>{ console.error(err); toast('Could not save - ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "leads" collection.' : (err.message||'try again.'))); }); return ref.id; },
         update(id){ clearTimeout(timers[id]); timers[id]=setTimeout(()=>{ const o=leads.find(x=>x.id===id); if(o) col().doc(id).set(strip(o),{merge:true}).catch(err=>{ console.error(err); toast('Could not save changes - '+(err.message||'try again.')); }); },500); },
         remove(id){ col().doc(id).delete().catch(err=>{ console.error(err); toast('Could not delete - '+(err.message||'try again.')); }); },
         clear(){ leads.slice().forEach(o=>col().doc(o.id).delete()); }
@@ -609,27 +674,26 @@ function renderLeads(){
         const hay = (o.company+' '+o.contact+' '+o.email+' '+o.location+' '+o.status+' '+o.category+' '+o.comments).toLowerCase();
         if(q && !hay.includes(q)) return;
         const tr = document.createElement('tr');
+        tr.dataset.i = i;
+        const web = o.source==='website';
+        const title = web ? (o.contact || 'Website enquiry') : (o.company || o.contact || 'New lead');
+        const sub = web ? [o.shootType, o.pkg, o.shootDate ? niceDate(o.shootDate) : '', o.phone].filter(Boolean).join(' · ')
+                        : [o.company ? o.contact : '', o.category, o.location].filter(Boolean).join(' · ');
+        const due = o.followUp && o.followUp <= new Date().toISOString().slice(0,10) && !['Accepted','Rejected'].includes(o.status);
         tr.innerHTML = `
-            <td class="col-id"><input data-i="${i}" data-f="leadId" value="${esc(o.leadId)}">${o.source==='website'?`<span class="web-tag" title="${esc(o.enquiry||'Website enquiry')}">🌐 Website</span>`:''}</td>
-            <td class="col-pitch"><button class="pitch" type="button" data-pitch="${i}" title="Fill the email and deck for this lead">Pitch</button><a class="pitch meet" href="meetings.html?new=lead:${encodeURIComponent(o.id)}" title="Start a client meeting with this lead (mood board, notes, quote)">Meet</a></td>
-            <td><input data-i="${i}" data-f="company" value="${esc(o.company)}" placeholder="Company / organisation"></td>
-            <td><input data-i="${i}" data-f="contact" value="${esc(o.contact)}" placeholder="Contact name"></td>
-            <td><input data-i="${i}" data-f="email" type="email" value="${esc(o.email)}" placeholder="email@example.com"></td>
-            <td><input data-i="${i}" data-f="web" value="${esc(o.web)}" placeholder="site or @instagram"></td>
-            <td><input data-i="${i}" data-f="location" value="${esc(o.location)}" placeholder="City, Country"></td>
-            <td><select data-i="${i}" data-f="category">${(catNames().includes(o.category)||!o.category?catNames():[o.category].concat(catNames())).map(c=>`<option ${c===o.category?'selected':''}>${esc(c)}</option>`).join('')}</select></td>
-            <td class="col-yn"><select data-i="${i}" data-f="emailed"><option ${o.emailed==='No'?'selected':''}>No</option><option ${o.emailed==='Yes'?'selected':''}>Yes</option></select></td>
-            <td class="col-date"><input type="date" data-i="${i}" data-f="dateEmailed" value="${esc(o.dateEmailed)}"></td>
-            <td class="col-date"><input type="date" data-i="${i}" data-f="followUp" value="${esc(o.followUp)}"></td>
-            <td><select class="status-select ${STATUS_CLASS[o.status]||''}" data-i="${i}" data-f="status">${STATUSES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></td>
-            <td class="col-deck">${o.deckSent?`<button class="deck-lnk" type="button" data-deck="${i}" title="Open the exact deck this lead received">${esc(o.deckSent.version||'Deck')}<small>${esc(niceDate(o.deckSent.at))}</small></button>`:'<span style="color:var(--ink-soft);font-size:12px;padding:0 6px">-</span>'}</td>
-            <td><input data-i="${i}" data-f="comments" value="${esc(o.comments)}" placeholder="e.g. emailed again 12 Apr, follow up in 2 weeks"></td>
-            <td class="rm-col"><button class="rm" data-rm="${i}" title="Delete">✕</button></td>`;
+            <td class="l-id hide-sm">${esc(o.leadId||'')}${web?'<br><span class="web-tag">🌐 Website</span>':''}</td>
+            <td class="l-who"><b>${esc(title)}</b>${sub?`<small>${esc(sub)}</small>`:''}<span class="st-chip ${STATUS_CLASS[o.status]||''}">${esc(o.status||'')}</span></td>
+            <td class="l-st"><select class="status-select ${STATUS_CLASS[o.status]||''}" data-i="${i}" data-f="status" aria-label="Status">${STATUSES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></td>
+            <td class="l-fu hide-sm${due?' due':''}">${o.followUp?esc(niceDate(o.followUp)):'<span style="color:var(--ink-soft)">-</span>'}</td>
+            <td class="col-deck hide-md">${o.deckSent?`<button class="deck-lnk" type="button" data-deck="${i}" title="Open the exact deck this lead received">${esc(o.deckSent.version||'Deck')}<small>${esc(niceDate(o.deckSent.at))}</small></button>`:'<span style="color:var(--ink-soft);font-size:12px;padding:0 6px">-</span>'}</td>
+            <td class="l-act"><div class="acts"><button class="pitch" type="button" data-pitch="${i}" title="Fill the email and deck for this lead">Pitch</button><a class="pitch meet" href="meetings.html?new=lead:${encodeURIComponent(o.id)}" title="Start a client meeting with this lead (mood board, notes, quote)">Meet</a></div></td>
+            <td class="l-go hide-sm">&#8250;</td>`;
         tbody.appendChild(tr);
     });
 
     $('countPill').textContent = leads.length + (leads.length===1?' lead':' leads');
     drawEnqBanner();
+    if(OPEN_ID) drawLead(false);
     $('emptyState').style.display = leads.length ? 'none' : 'block';
     renderLeadDashboard();
     try{ renderLeadPicker(); renderPitchBanner(); renderAdvisor(); }catch(e){}
@@ -696,13 +760,94 @@ leadTbody().addEventListener('change', e=>{
     renderLeadDashboard();
 });
 leadTbody().addEventListener('click', e=>{
-    const rm=e.target.dataset.rm; if(rm!==undefined){ if(confirm('Delete '+(leads[+rm].company||'this lead')+'?')) store.remove(leads[+rm].id); return; }
     const p=e.target.closest('[data-pitch]'); if(p){ pitchLead(leads[+p.dataset.pitch]); return; }
-    const d=e.target.closest('[data-deck]'); if(d){ openSentDeck(leads[+d.dataset.deck]); }
+    const d=e.target.closest('[data-deck]'); if(d){ openSentDeck(leads[+d.dataset.deck]); return; }
+    if(e.target.closest('a,select,button,input')) return;
+    const tr=e.target.closest('tr[data-i]'); if(tr) openLead(leads[+tr.dataset.i] && leads[+tr.dataset.i].id);
 });
+
+/* ================================================================
+   LEAD DETAILS PANEL (tap a row): every field, website enquiry details, actions
+   ================================================================ */
+var OPEN_ID = null;
+function visibleIds(){ return [].map.call(leadTbody().querySelectorAll('tr[data-i]'), tr=>leads[+tr.dataset.i] && leads[+tr.dataset.i].id).filter(Boolean); }
+function openLead(id, tries){
+    if(!id) return;
+    if(!leadById(id)){ if((tries||0) < 10) setTimeout(()=>openLead(id,(tries||0)+1), 300); return; }
+    OPEN_ID = id; drawLead(true);
+    $('op').classList.add('on'); $('opScrim').classList.add('on'); document.body.style.overflow='hidden';
+}
+function closeLead(){ OPEN_ID=null; $('op').classList.remove('on'); $('opScrim').classList.remove('on'); document.body.style.overflow=''; safeRenderLeads(); }
+function drawLead(fresh){
+    const o = leadById(OPEN_ID); if(!o){ closeLead(); return; }
+    if(!fresh && $('op').contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;   // do not redraw while typing
+    const web = o.source==='website', i = leads.indexOf(o);
+    $('opName').textContent = web ? (o.contact||'Website enquiry') : (o.company||o.contact||'New lead');
+    $('opSub').textContent = [o.leadId, web?'Website enquiry':o.category, o.status].filter(Boolean).join(' · ');
+    const ids = visibleIds(), k = ids.indexOf(o.id); $('opPrev').disabled = k<=0; $('opNext').disabled = k<0 || k>=ids.length-1;
+    const f = (key,label,type,wide,ph) => `<div class="op-f${wide?' w':''}"><label>${label}</label><input data-lf="${key}" ${type?`type="${type}"`:''} value="${esc(o[key]||'')}" placeholder="${esc(ph||'')}"></div>`;
+    const sel = (key,label,opts) => `<div class="op-f"><label>${label}</label><select data-lf="${key}">${opts.map(v=>`<option ${v===o[key]?'selected':''}>${esc(v)}</option>`).join('')}</select></div>`;
+    const cats = catNames().includes(o.category)||!o.category ? catNames() : [o.category].concat(catNames());
+    const intl = String(o.phone||'').replace(/\D/g,'').replace(/^0/,'27');
+    const wa = intl.length>=11 ? 'https://wa.me/'+intl+'?text='+encodeURIComponent('Hi '+String(o.contact||'').split(' ')[0]+', thanks for your enquiry with FOM Studios! ') : '';
+    $('opBody').innerHTML = `
+      ${web?`<div class="op-sec"><h3>🌐 Website enquiry</h3>
+        <div class="op-g" style="margin-bottom:10px">
+          <div class="op-f"><label>Shoot</label><div>${esc(o.shootType||'-')}</div></div>
+          <div class="op-f"><label>Package</label><div>${esc(o.pkg||'-')}</div></div>
+          <div class="op-f"><label>Date</label><div>${o.shootDate?esc(niceDate(o.shootDate)):'Not sure yet'}</div></div>
+          <div class="op-f"><label>Sent by</label><div>${o.via==='email'?'Email':'WhatsApp'}</div></div>
+        </div>
+        ${o.enquiry?`<div class="op-enq">${esc(o.enquiry)}</div>`:''}
+        <div class="op-acts">${wa?`<a class="op-btn wa" href="${wa}" target="_blank" rel="noopener">Reply on WhatsApp</a>`:''}${o.email?`<a class="op-btn" href="mailto:${esc(o.email)}">Email</a>`:''}<a class="op-btn pri" href="meetings.html?new=lead:${encodeURIComponent(o.id)}">Start a meeting</a></div>
+      </div>`:''}
+      <div class="op-sec"><h3>Contact</h3><div class="op-g">
+        ${f('company','Company / organisation','',true,'Company or organisation')}
+        ${f('contact','Contact name','','','Name')}
+        ${f('phone','WhatsApp number','tel','','082 123 4567')}
+        ${f('email','Email','email',true,'email@example.com')}
+        ${f('web','Website / Instagram','','','site or @instagram')}
+        ${f('location','Location','','','City, Country')}
+      </div></div>
+      <div class="op-sec"><h3>Outreach</h3><div class="op-g">
+        ${sel('status','Status',STATUSES)}
+        ${sel('category','Category',cats)}
+        ${sel('emailed','Emailed?',['No','Yes'])}
+        ${f('dateEmailed','Date emailed','date')}
+        ${f('followUp','Follow up by','date')}
+        ${f('leadId','Lead ID','','','L001')}
+      </div>
+      <div class="op-acts">${web?'':`<button class="op-btn pri" type="button" data-lact="pitch">Pitch</button><a class="op-btn" href="meetings.html?new=lead:${encodeURIComponent(o.id)}">Meet</a>`}${o.deckSent?`<button class="op-btn" type="button" data-lact="deck">Deck sent: ${esc(o.deckSent.version||'Deck')}</button>`:''}</div></div>
+      <div class="op-sec"><h3>Notes</h3><div class="op-f w"><textarea data-lf="comments" placeholder="e.g. emailed again 12 Apr, follow up in 2 weeks">${esc(o.comments||'')}</textarea></div></div>
+      <div class="op-sec"><div class="op-acts" style="margin-top:0"><button class="op-btn red" type="button" data-lact="del">Delete this lead</button></div></div>`;
+}
+$('opBody').addEventListener('input', e=>{ const el=e.target, k=el.dataset.lf; if(!k) return; const o=leadById(OPEN_ID); if(!o) return; o[k]=el.value; store.update(o.id); });
+$('opBody').addEventListener('change', e=>{
+    const el=e.target, k=el.dataset.lf; if(!k) return; const o=leadById(OPEN_ID); if(!o) return;
+    o[k]=el.value;
+    if(k==='email') { o.email = el.value.trim(); }
+    if(k==='status'){
+        const outreach = !['Not Emailed','New enquiry'].includes(el.value);
+        if(outreach && o.emailed==='No') o.emailed='Yes';
+        if(outreach && !o.dateEmailed) o.dateEmailed = new Date().toISOString().slice(0,10);
+        drawLead(true);
+    }
+    store.update(o.id); renderLeadDashboard();
+});
+$('opBody').addEventListener('click', e=>{
+    const b=e.target.closest('[data-lact]'); if(!b) return; const o=leadById(OPEN_ID); if(!o) return;
+    if(b.dataset.lact==='pitch'){ closeLead(); pitchLead(o); }
+    else if(b.dataset.lact==='deck') openSentDeck(o);
+    else if(b.dataset.lact==='del'){ if(confirm('Delete '+(o.company||o.contact||'this lead')+'? This cannot be undone.')){ store.remove(o.id); closeLead(); } }
+});
+$('opX').onclick = closeLead; $('opScrim').onclick = closeLead;
+$('opPrev').onclick = ()=>{ const ids=visibleIds(), k=ids.indexOf(OPEN_ID); if(k>0){ OPEN_ID=ids[k-1]; drawLead(true); } };
+$('opNext').onclick = ()=>{ const ids=visibleIds(), k=ids.indexOf(OPEN_ID); if(k>=0 && k<ids.length-1){ OPEN_ID=ids[k+1]; drawLead(true); } };
+$('opBody').addEventListener('focusout', ()=>setTimeout(()=>{ if(OPEN_ID && !$('op').contains(document.activeElement)) safeRenderLeads(); },0));
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && OPEN_ID) closeLead(); });
 leadSearch().addEventListener('input', renderLeads);
 
-$('addBtn').onclick = ()=>{ if(!store){ toast('Still connecting to the cloud - wait a second and try again.'); return; } store.add(blankLead()); };
+$('addBtn').onclick = ()=>{ if(!store){ toast('Still connecting to the cloud - wait a second and try again.'); return; } const id = store.add(blankLead()); if(id) openLead(id); };
 $('clearBtn').onclick = ()=>{ if(store && confirm('Delete ALL leads? This cannot be undone.')) store.clear(); };
 $('csvBtn').onclick = ()=>{
     const head=['Lead ID','Company','Contact','Email','Website/Instagram','Location','Category','Emailed','Date Emailed','Follow-up By','Status','Deck Sent','Comments'];
