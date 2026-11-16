@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-09",
+ "updated": "2026-11-16",
  "source": "Weekly refresh by Claude (scheduled task).",
  "items": [
   {
@@ -94,74 +94,22 @@
    "blurb": "Final two weeks of a feel good musical you can sing along to."
   },
   {
-   "title": "WGRUV: Angels in Africa",
-   "date": "2026-11-13",
-   "end": "2026-11-15",
-   "time": "19:00",
-   "venue": "UJ Arts and Culture",
-   "area": "Auckland Park",
-   "price": "From R120",
-   "url": "https://www.webtickets.co.za/v2/event.aspx?itemid=1603703031",
-   "kind": "arts",
-   "emoji": "💃",
-   "blurb": "High energy dance theatre with a proudly African feel."
-  },
-  {
-   "title": "Sibongile Khumalo Celebration",
-   "date": "2026-11-13",
-   "end": "",
-   "time": "",
-   "venue": "The Market Theatre",
-   "area": "Newtown",
-   "price": "From R300",
-   "url": "https://www.webtickets.co.za/v2/event.aspx?itemid=1605044511",
-   "kind": "music",
-   "emoji": "🎙️",
-   "blurb": "A tribute concert to one of SA's great voices."
-  },
-  {
-   "title": "Letters From Tomorrow",
-   "date": "2026-11-13",
-   "end": "2026-11-15",
-   "time": "",
-   "venue": "Soweto Theatre",
-   "area": "Jabavu",
-   "price": "From R100",
-   "url": "https://www.webtickets.co.za/v2/event.aspx?itemid=1602336149",
-   "kind": "theatre",
-   "emoji": "✉️",
-   "blurb": "Pair a play in Soweto with a food stop on Vilakazi Street."
-  },
-  {
-   "title": "SAES Season Finale: Nine Hours of Kyalami",
-   "date": "2026-11-13",
-   "end": "2026-11-14",
-   "time": "",
-   "venue": "Kyalami Grand Prix Circuit",
-   "area": "Kyalami",
-   "price": "From R150",
-   "url": "https://computicket-boxoffice.com/e/nine-hours-of-kyalami-m9s0Fd",
-   "kind": "sport",
-   "emoji": "🏎️",
-   "blurb": "Loud engines and night racing, plus great shots for the camera."
-  },
-  {
-   "title": "Joburg Family Fest",
-   "date": "2026-11-14",
-   "end": "",
-   "time": "06:00",
-   "venue": "The Cycle Shed at Kloofzicht",
-   "area": "Muldersdrift",
-   "price": "From R60",
-   "url": "https://www.howler.co.za/events/joburg-family-fest-2026-2bc8",
-   "kind": "outdoors",
-   "emoji": "🚴",
-   "blurb": "Get outside for a ride or walk in the green hills near the Cradle."
+   "title": "Parkview Christmas Market",
+   "date": "2026-11-20",
+   "end": "2026-11-22",
+   "time": "15:00",
+   "venue": "George Hay Park",
+   "area": "Parkview",
+   "price": "R60, kids under 12 free",
+   "url": "https://whatsoninjoburg.com/festive-markets-joburg-pretoria/",
+   "kind": "market",
+   "emoji": "🎄",
+   "blurb": "Early festive shopping and snacks in a pretty park."
   },
   {
    "title": "Fourways Farmers Market",
-   "date": "2026-11-14",
-   "end": "",
+   "date": "2026-11-21",
+   "end": "2026-11-22",
    "time": "09:00",
    "venue": "Taroko Farm",
    "area": "Modderfontein",
@@ -172,34 +120,8 @@
    "blurb": "Food stalls, live music and space to wander on a lazy weekend."
   },
   {
-   "title": "The Field Market Christmas Edition",
-   "date": "2026-11-14",
-   "end": "",
-   "time": "09:00",
-   "venue": "Field and Study Park",
-   "area": "Parkmore",
-   "price": "Free",
-   "url": "https://whatsoninjoburg.com/festive-markets-joburg-pretoria/",
-   "kind": "market",
-   "emoji": "🌿",
-   "blurb": "A relaxed festive market for a slow Saturday morning."
-  },
-  {
-   "title": "Legato Choral Festival",
-   "date": "2026-11-14",
-   "end": "2026-11-15",
-   "time": "",
-   "venue": "SA State Theatre",
-   "area": "Pretoria CBD",
-   "price": "From R150",
-   "url": "https://www.webtickets.co.za/v2/event.aspx?itemid=1602470088",
-   "kind": "music",
-   "emoji": "🎵",
-   "blurb": "Choirs filling a grand theatre, uplifting and affordable."
-  },
-  {
    "title": "The Playground market (Neighbourgoods)",
-   "date": "2026-11-14",
+   "date": "2026-11-21",
    "end": "",
    "time": "",
    "venue": "Braamfontein warehouse market",
@@ -211,43 +133,17 @@
    "blurb": "Graze on street food together and browse local designers."
   },
   {
-   "title": "Craighall Collective",
-   "date": "2026-11-15",
+   "title": "Parkview Carols by Candlelight",
+   "date": "2026-11-21",
    "end": "",
-   "time": "09:00",
-   "venue": "Craighall Primary School",
-   "area": "Craighall Park",
-   "price": "R20",
-   "url": "https://whatsoninjoburg.com/festive-markets-joburg-pretoria/",
-   "kind": "market",
-   "emoji": "🛍️",
-   "blurb": "A small local market that is easy to pair with brunch nearby."
-  },
-  {
-   "title": "Rosebank Sunday Market",
-   "date": "2026-11-15",
-   "end": "",
-   "time": "09:00",
-   "venue": "Rosebank Mall rooftop, level 4",
-   "area": "Rosebank",
-   "price": "Free",
-   "url": "https://capeargus.co.za/travel/south-africa/2026-07-06-tantrum-free-weekends-the-ultimate-guide-to-johannesburgs-best-family-markets/",
-   "kind": "market",
-   "emoji": "🛍️",
-   "blurb": "Rooftop browsing with food stalls and crafts on a Sunday morning."
-  },
-  {
-   "title": "Parkview Christmas Market",
-   "date": "2026-11-20",
-   "end": "2026-11-22",
-   "time": "15:00",
+   "time": "",
    "venue": "George Hay Park",
    "area": "Parkview",
-   "price": "R60",
-   "url": "https://whatsoninjoburg.com/festive-markets-joburg-pretoria/",
-   "kind": "market",
-   "emoji": "🎄",
-   "blurb": "Early festive shopping and snacks in a pretty park."
+   "price": "From R30",
+   "url": "https://www.quicket.co.za/events/401836-christmas-market-and-carols-by-candlelight/",
+   "kind": "festival",
+   "emoji": "🕯️",
+   "blurb": "Sing along to carols under the trees with market snacks in hand."
   },
   {
    "title": "Comedy in the Park",
@@ -269,11 +165,24 @@
    "time": "19:00",
    "venue": "Big Top Arena, Carnival City",
    "area": "Brakpan",
-   "price": "From R250",
+   "price": "R250 to R400",
    "url": "https://www.webtickets.co.za/v2/event.aspx?itemid=1597118427",
    "kind": "comedy",
    "emoji": "😄",
    "blurb": "A big name stand up show, good for a laugh out loud night."
+  },
+  {
+   "title": "Rosebank Sunday Market",
+   "date": "2026-11-22",
+   "end": "",
+   "time": "09:00",
+   "venue": "Rosebank Mall rooftop, level 4",
+   "area": "Rosebank",
+   "price": "Free",
+   "url": "https://capeargus.co.za/travel/south-africa/2026-07-06-tantrum-free-weekends-the-ultimate-guide-to-johannesburgs-best-family-markets/",
+   "kind": "market",
+   "emoji": "🛍️",
+   "blurb": "Rooftop browsing with food stalls and crafts on a Sunday morning."
   },
   {
    "title": "Alf Layla Belly Dance Showcase",
@@ -287,6 +196,19 @@
    "kind": "arts",
    "emoji": "💃",
    "blurb": "A colourful evening dance show with a Middle Eastern feel."
+  },
+  {
+   "title": "Drakensberg Boys Choir Noel Tour",
+   "date": "2026-11-22",
+   "end": "",
+   "time": "",
+   "venue": "The Venue, Melrose Arch",
+   "area": "Melrose Arch",
+   "price": "From R350",
+   "url": "https://www.webtickets.co.za/v2/event.aspx?itemid=1605847920",
+   "kind": "music",
+   "emoji": "🎄",
+   "blurb": "A world famous choir singing festive songs, a classy start to the season."
   },
   {
    "title": "South Africa vs Bangladesh, 2nd Test",
@@ -308,8 +230,8 @@
    "time": "09:00",
    "venue": "St David's Marist",
    "area": "Sandown",
-   "price": "R110",
-   "url": "https://www.kamers.co.za/tickets",
+   "price": "R110 day pass",
+   "url": "https://www.quicket.co.za/events/374630-kamersmakers-sandton-summer-2026/",
    "kind": "market",
    "emoji": "🎁",
    "blurb": "Hundreds of local makers, ideal for buying gifts together."
@@ -321,11 +243,24 @@
    "time": "19:00",
    "venue": "Johannesburg Zoo",
    "area": "Parkview",
-   "price": "R175",
+   "price": "From R175",
    "url": "https://www.webtickets.co.za/v2/event.aspx?itemid=1493977877",
    "kind": "festival",
    "emoji": "✨",
    "blurb": "Walk hand in hand through glowing light displays at night."
+  },
+  {
+   "title": "Dainfern Carols and Christmas Market",
+   "date": "2026-11-26",
+   "end": "",
+   "time": "15:00",
+   "venue": "Dainfern College",
+   "area": "Dainfern",
+   "price": "Free",
+   "url": "https://whatsoninjoburg.com/festive-markets-joburg-pretoria/",
+   "kind": "market",
+   "emoji": "🎅",
+   "blurb": "A free evening of carols and stalls on the north side of town."
   },
   {
    "title": "rAge Expo",
@@ -370,11 +305,11 @@
    "title": "The Linden Market Festive Edition",
    "date": "2026-11-28",
    "end": "2026-11-29",
-   "time": "09:00",
+   "time": "08:30",
    "venue": "Joburg Botanical Gardens",
    "area": "Emmarentia",
-   "price": "R70",
-   "url": "https://quicket.co.za/events/404976-the-linden-market-festive-edition-2026/",
+   "price": "R70, kids under 12 free",
+   "url": "https://thelindenmarket.com/tickets",
    "kind": "market",
    "emoji": "🌸",
    "blurb": "Food, crafts and a stroll in the botanical gardens."
@@ -391,6 +326,32 @@
    "kind": "music",
    "emoji": "🎸",
    "blurb": "Soulful songs under the open sky, a dreamy summer date."
+  },
+  {
+   "title": "A Christmas Abroad",
+   "date": "2026-11-28",
+   "end": "",
+   "time": "18:00",
+   "venue": "St Francis Anglican Church",
+   "area": "Parkview",
+   "price": "From R142",
+   "url": "https://www.quicket.co.za/events/396195-a-christmas-abroad-johannesburg/",
+   "kind": "music",
+   "emoji": "🎼",
+   "blurb": "A candle-lit evening of carols from around the world."
+  },
+  {
+   "title": "Christmas Village at Emperors Palace",
+   "date": "2026-11-28",
+   "end": "2027-01-03",
+   "time": "18:00",
+   "venue": "Emperors Palace",
+   "area": "Kempton Park",
+   "price": "From R75",
+   "url": "https://www.webtickets.co.za/v2/event.aspx?itemid=1578042884",
+   "kind": "family",
+   "emoji": "🎁",
+   "blurb": "Walk through a lit up festive village, best after dark."
   },
   {
    "title": "The Cake Picnic: Halaal Edition",
@@ -432,6 +393,58 @@
    "blurb": "An elegant recital in a historic house with garden views."
   },
   {
+   "title": "Vegan Christmas Market",
+   "date": "2026-11-29",
+   "end": "",
+   "time": "09:00",
+   "venue": "25 Braeside Road",
+   "area": "Parkhurst",
+   "price": "Free",
+   "url": "https://whatsoninjoburg.com/festive-markets-joburg-pretoria/",
+   "kind": "food",
+   "emoji": "🌱",
+   "blurb": "Relaxed Sunday morning browsing with plant based treats."
+  },
+  {
+   "title": "The Hilarious Deep Amazing Joburg Comedy Show",
+   "date": "2026-12-01",
+   "end": "2026-12-05",
+   "time": "20:00",
+   "venue": "Theatre on the Square",
+   "area": "Sandton",
+   "price": "R290",
+   "url": "https://www.quicket.co.za/events/386163-the-hilarious-deep-amazing-joburg-comedy-show-with-gilli-apter/",
+   "kind": "comedy",
+   "emoji": "😂",
+   "blurb": "Gilli Apter roasts everyday Joburg life in an intimate Sandton theatre."
+  },
+  {
+   "title": "Nina Hastie: TANGENTS",
+   "date": "2026-12-01",
+   "end": "2026-12-08",
+   "time": "19:00",
+   "venue": "The Whirlwind Theatre, Delta Park",
+   "area": "Victory Park",
+   "price": "From R200",
+   "url": "https://www.quicket.co.za/events/397629-nina-hastie-tangents/",
+   "kind": "comedy",
+   "emoji": "🎤",
+   "blurb": "Sharp stand-up from one of SA's funniest, with a park walk before."
+  },
+  {
+   "title": "Christmas Picnic at Hamilton Park",
+   "date": "2026-12-03",
+   "end": "",
+   "time": "15:00",
+   "venue": "Hamilton Park",
+   "area": "Craighall Park",
+   "price": "Free",
+   "url": "https://whatsoninjoburg.com/festive-markets-joburg-pretoria/",
+   "kind": "outdoors",
+   "emoji": "🧺",
+   "blurb": "Pack a blanket and snacks for a free festive afternoon in the park."
+  },
+  {
    "title": "The Firebird",
    "date": "2026-12-04",
    "end": "2026-12-06",
@@ -458,6 +471,32 @@
    "blurb": "Dance along to the hits you both grew up with."
   },
   {
+   "title": "Andre the Hilarious Hypnotist",
+   "date": "2026-12-04",
+   "end": "2027-01-31",
+   "time": "",
+   "venue": "Studio Theatre, Montecasino",
+   "area": "Fourways",
+   "price": "From R150",
+   "url": "https://www.webtickets.co.za/v2/event.aspx?itemid=1587810514",
+   "kind": "comedy",
+   "emoji": "🌀",
+   "blurb": "A silly, surprising show that will have you both in stitches."
+  },
+  {
+   "title": "Christmas with the Symphonic Choir and Sue Cook",
+   "date": "2026-12-05",
+   "end": "2026-12-06",
+   "time": "18:00",
+   "venue": "Linder Auditorium",
+   "area": "Parktown",
+   "price": "R265",
+   "url": "https://www.quicket.co.za/events/377362-christmas-with-the-scj-on-saturday/",
+   "kind": "music",
+   "emoji": "🎶",
+   "blurb": "A big choir and festive classics in a lovely concert hall."
+  },
+  {
    "title": "Pretoria Vintage Christmas and Gift Market",
    "date": "2026-12-05",
    "end": "2026-12-06",
@@ -471,43 +510,17 @@
    "blurb": "Browse vintage finds and gifts together, then grab a bite at the mall."
   },
   {
-   "title": "Design Quarter Christmas and Decor Gift Show",
+   "title": "Loyiso Gola: Political and Personal",
    "date": "2026-12-11",
    "end": "2026-12-13",
-   "time": "09:30",
-   "venue": "Design Quarter",
-   "area": "Fourways",
-   "price": "Free",
-   "url": "https://whatsoninjoburg.com/festive-markets-joburg-pretoria/",
-   "kind": "market",
-   "emoji": "🏡",
-   "blurb": "Pick out home decor and gifts as a team."
-  },
-  {
-   "title": "Melrose Arch Christmas Market",
-   "date": "2026-12-16",
-   "end": "2026-12-19",
-   "time": "",
-   "venue": "Melrose Arch Square",
-   "area": "Melrose",
-   "price": "Free",
-   "url": "https://whatsoninjoburg.com/festive-markets-joburg-pretoria/",
-   "kind": "market",
-   "emoji": "🎄",
-   "blurb": "A festive market over the Day of Reconciliation holiday, with plenty of food nearby."
-  },
-  {
-   "title": "Candlelight: Christmas Classics",
-   "date": "2026-12-19",
-   "end": "",
-   "time": "18:00",
-   "venue": "Voortrekker Monument",
-   "area": "Groenkloof",
-   "price": "From R395",
-   "url": "https://feverup.com/m/627886",
-   "kind": "music",
-   "emoji": "🕯️",
-   "blurb": "Classical music by candlelight in a grand setting."
+   "time": "20:00",
+   "venue": "Wits Chris Seabrooke Music Hall",
+   "area": "Braamfontein",
+   "price": "R285",
+   "url": "https://www.quicket.co.za/events/400361-loyiso-gola-doing-live-comedy/",
+   "kind": "comedy",
+   "emoji": "🎙️",
+   "blurb": "Clever, thoughtful stand-up from a South African comedy great."
   }
  ]
 }
