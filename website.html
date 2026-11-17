@@ -235,6 +235,14 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .sv-row{border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;}
 /* Book a shoot form editor */
 .bf-h{font-size:14px;font-weight:800;margin:18px 0 8px;}
+.st-row{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:10px;border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:10px;background:var(--bg);align-items:start;}
+.st-pic{width:96px;height:64px;border-radius:10px;border:1px solid var(--line);background:#eef1f6 center/contain no-repeat;cursor:pointer;display:grid;place-items:end center;font-size:10.5px;font-weight:800;color:var(--ink);padding:0;font-family:inherit;}
+.st-pic span{background:rgba(255,255,255,.88);border-radius:6px;padding:2px 6px;margin-bottom:4px;}
+.st-pic.cover{background-size:cover;}
+.st-f{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.st-f input{border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:15px;font-family:inherit;background:var(--bg-pill);color:var(--ink);min-width:0;width:100%;}
+.st-f input.w{grid-column:1/-1;}
+@media(max-width:560px){.st-row{grid-template-columns:72px minmax(0,1fr);}.st-pic{width:72px;height:52px;}.st-row .bf-ctl{grid-column:1/-1;justify-content:flex-end;}.st-f{grid-template-columns:minmax(0,1fr);}}
 .bf-row{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:8px;margin-bottom:8px;background:var(--bg);}
 .bf-row.off{opacity:.55;}
 .bf-row input{border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:15px;font-family:inherit;background:var(--bg-pill);color:var(--ink);min-width:0;}
@@ -414,6 +422,26 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
         <div id="bfPkgs"></div>
         <button type="button" class="bf-add" id="bfAddPkg">+ Add a package</button>
         <div class="gh-acts" style="margin-top:14px"><a class="rv-btn" href="https://www.fomstudios.co.za/?book=1" target="_blank" rel="noopener">Open the live form</a><button type="button" id="bfReset">Reset to the defaults</button></div>
+    </section>
+
+    <section class="ws-card" id="stCard">
+        <h2>Our studios</h2>
+        <p class="ws-help" id="stHelp">A section on the homepage showing both studios, FOM Studios and Shot by A, with a button to each. Each business has its own wording. Up to 4 studio cards.</p>
+        <label class="ws-toggle"><input type="checkbox" id="stOn"><span class="sw"></span><b>Show the section on the homepage</b></label>
+        <div class="ws-grid">
+            <div class="ws-f"><label for="stLabel">Small line above the heading</label><input id="stLabel" maxlength="40" placeholder="The FOM family"></div>
+            <div class="ws-f"><label for="stTitle">Heading</label><input id="stTitle" maxlength="60" placeholder="Our studios"></div>
+            <div class="ws-f ws-wide"><label for="stIntro">Intro</label><input id="stIntro" maxlength="300" placeholder="Two studios, two styles. Pick the one that fits your day."></div>
+        </div>
+        <div class="bf-h">Studio cards</div>
+        <p class="ws-help" style="margin-top:0">Name, a short line, a picture (upload one, or leave the logo), the button text and where it goes (a page like gallery.html, /shotbya/, #work, or a full https:// link).</p>
+        <div id="stCards"></div>
+        <button type="button" class="bf-add" id="stAdd">+ Add a studio card</button>
+        <input type="file" id="stFile" accept="image/*" hidden>
+        <div class="bf-h">Footer link</div>
+        <label class="ws-toggle"><input type="checkbox" id="stFoot"><span class="sw"></span><b>Show the link in the footer of every page</b></label>
+        <div class="ws-grid"><div class="ws-f ws-wide"><label for="stFootText">Footer link text</label><input id="stFootText" maxlength="60" placeholder="Sister studio: Shot by A"></div></div>
+        <div class="gh-acts" style="margin-top:14px"><a class="rv-btn" id="stLive" href="https://www.fomstudios.co.za/#studios" target="_blank" rel="noopener">Open the live section</a><button type="button" id="stReset">Reset to the defaults</button></div>
     </section>
 
     <section class="ws-card">
@@ -603,12 +631,77 @@ $('bfCard').addEventListener('click', e=>{
 $('bfCard').addEventListener('change', e=>{ if(e.target.matches('[data-k=on]')) e.target.closest('.bf-row').classList.toggle('off', !e.target.checked); if(e.target.matches('[data-k=label],[data-k=icon]')) bfRedraw(); });
 drawBF(null);
 
+/* ---- Our studios (both websites): saved as studios { on, label, title, intro, footer, footerText, cards:[{name,line,img,url,btn}] } ----
+   portfolio/studios.js draws it. Keep DEF_ST in step with DEF there. Pictures: upload (R2 portfolio/studio-*.jpg, saved as 'r2:<file>') or a path/link. */
+const ST_FOM = { name:'FOM Studios', line:'Sports, events, automotive and brand content. Photo, video and drone, all in one booking.', img:'/assets/mascot-head-color.png', url:'/', btn:'Visit FOM Studios' };
+const ST_SBA = { name:'Shot by A', line:"Amarah's studio for birthdays, families, portraits and intimate events, with a warm, personal style.", img:'/shotbya/logo.png', url:'/shotbya/', btn:'Visit Shot by A' };
+const DEF_ST = SBA
+  ? { on:true, label:'The family', title:'Our studios', intro:'Shot by A is part of the FOM Studios family. Need sports, brand or video work? Meet the team.', footer:true, footerText:'Part of the FOM Studios family', cards:[Object.assign({}, ST_SBA, { url:'gallery.html', btn:'See my work' }), ST_FOM] }
+  : { on:true, label:'The FOM family', title:'Our studios', intro:'Two studios, two styles. Pick the one that fits your day.', footer:true, footerText:'Sister studio: Shot by A', cards:[Object.assign({}, ST_FOM, { url:'#work', btn:'See our work' }), ST_SBA] };
+const ST_MAX = 4;
+const stStr = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
+function normST(x){
+  if(!x || typeof x !== 'object') x = DEF_ST;
+  const cards = (Array.isArray(x.cards) ? x.cards : DEF_ST.cards).filter(c => c && stStr(c.name, 50)).slice(0, ST_MAX)
+    .map(c => ({ name:stStr(c.name, 50), line:stStr(c.line, 220), img:stStr(c.img, 300), url:stStr(c.url, 300), btn:stStr(c.btn, 40) }));
+  return { on:x.on !== false, label:stStr(x.label, 40), title:stStr(x.title, 60) || DEF_ST.title, intro:stStr(x.intro, 300), footer:x.footer !== false, footerText:stStr(x.footerText, 60) || DEF_ST.footerText, cards };
+}
+const stPicUrl = s => !s ? '' : s.indexOf('r2:') === 0 ? GH_WORKER + '/file?g=portfolio%2F&n=' + encodeURIComponent(s.slice(3)) : s.charAt(0) === '/' ? 'https://www.fomstudios.co.za' + s : /^https?:\/\//i.test(s) ? s : 'https://www.fomstudios.co.za/' + (SBA ? 'shotbya/' : '') + s;
+function stRow(c){
+  const u = stPicUrl(c.img), cover = c.img && !/logo|mascot|icon/i.test(c.img);
+  return '<div class="st-row" data-st><button type="button" class="st-pic'+(cover?' cover':'')+'" data-stpic style="background-image:'+(u?'url(&quot;'+esc(u)+'&quot;)':'none')+'" title="Change the picture"><span>'+(c.img?'Change':'Add picture')+'</span></button>'+
+    '<div class="st-f"><input data-k="name" maxlength="50" value="'+esc(c.name)+'" placeholder="Studio name"><input data-k="btn" maxlength="40" value="'+esc(c.btn)+'" placeholder="Button, e.g. Visit Shot by A">'+
+    '<input class="w" data-k="line" maxlength="220" value="'+esc(c.line)+'" placeholder="Short line about this studio">'+
+    '<input class="w" data-k="url" maxlength="300" value="'+esc(c.url)+'" placeholder="Where the button goes, e.g. /shotbya/ or gallery.html">'+
+    '<input type="hidden" data-k="img" value="'+esc(c.img)+'"></div>'+
+    '<span class="bf-ctl"><button type="button" data-mv="-1" aria-label="Move up">&uarr;</button><button type="button" data-mv="1" aria-label="Move down">&darr;</button><button type="button" class="x" data-rms aria-label="Remove">&times;</button></span></div>';
+}
+function drawST(x){
+  const d = normST(x);
+  $('stOn').checked = d.on; $('stLabel').value = d.label; $('stTitle').value = d.title; $('stIntro').value = d.intro;
+  $('stFoot').checked = d.footer; $('stFootText').value = d.footerText;
+  $('stCards').innerHTML = d.cards.map(stRow).join('') || '<p class="ws-help" style="margin:0 0 8px">No studio cards. Add one, or turn the section off.</p>';
+  $('stAdd').style.display = d.cards.length >= ST_MAX ? 'none' : '';
+}
+function readST(){
+  const cards = [].map.call($('stCards').querySelectorAll('[data-st]'), r => { const o = {}; r.querySelectorAll('[data-k]').forEach(i => { o[i.dataset.k] = i.value; }); return o; });
+  return normST({ on:$('stOn').checked, label:$('stLabel').value, title:$('stTitle').value, intro:$('stIntro').value, footer:$('stFoot').checked, footerText:$('stFootText').value, cards });
+}
+let stPicRow = null;
+$('stAdd').onclick = () => { const cur = readST(); if(cur.cards.length >= ST_MAX) return; cur.cards.push({ name:'New studio', line:'', img:'', url:'', btn:'Visit' }); drawST(cur); setState(); const r = $('stCards').querySelectorAll('[data-k=name]'); const el = r[r.length-1]; el.focus(); el.select(); };
+$('stReset').onclick = () => { if(!confirm('Reset Our studios to the default wording and cards? Nothing changes on the website until you Publish.')) return; drawST(DEF_ST); setState(); };
+$('stCard').addEventListener('click', e => {
+  const row = e.target.closest('[data-st]');
+  const mv = e.target.closest('[data-mv]'); if(mv && row){ const d = +mv.dataset.mv, sib = d < 0 ? row.previousElementSibling : row.nextElementSibling; if(sib){ d < 0 ? row.parentNode.insertBefore(row, sib) : row.parentNode.insertBefore(sib, row); setState(); } return; }
+  if(e.target.closest('[data-rms]') && row){ const n = row.querySelector('[data-k=name]').value || 'this card'; if(!confirm('Remove "' + n + '" from Our studios?')) return; row.remove(); drawST(readST()); setState(); return; }
+  if(e.target.closest('[data-stpic]') && row){
+    const has = row.querySelector('[data-k=img]').value;
+    if(has && !confirm('Upload a new picture for this card? (Cancel keeps the current one.)')) return;
+    stPicRow = row; $('stFile').click();
+  }
+});
+$('stFile').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = ''; const row = stPicRow; stPicRow = null; if(!f || !row) return;
+  const btn = row.querySelector('[data-stpic]'); btn.disabled = true; btn.querySelector('span').textContent = 'Uploading...';
+  try{
+    const blob = await ghShrink(f, 1600), name = 'studio-' + (SBA ? 'sba' : 'fom') + '-' + Date.now().toString(36) + '.jpg';
+    const u = window.firebase && firebase.apps.length && firebase.auth().currentUser; if(!u) throw new Error('not signed in');
+    const r = await fetch(GH_WORKER + '/admin/upload?n=' + encodeURIComponent(name), { method:'POST', headers:{ 'Content-Type':'image/jpeg', Authorization:'Bearer ' + await u.getIdToken() }, body:blob });
+    const j = await r.json().catch(() => ({})); if(!r.ok || !j.ok) throw new Error(j.error || ('upload failed (' + r.status + ')'));
+    row.querySelector('[data-k=img]').value = 'r2:' + (j.name || name);
+    drawST(readST()); setState(); toast('Picture uploaded. Press Publish to put it on the website.');
+  }catch(err){ console.warn(err); toast('Upload failed: ' + err.message); btn.disabled = false; btn.querySelector('span').textContent = 'Change'; }
+});
+if(SBA){ $('stLive').href = 'https://www.fomstudios.co.za/shotbya/#studios'; $('stFootText').placeholder = 'Part of the FOM Studios family'; $('stLabel').placeholder = 'The family'; }
+drawST(null);
+
 function readForm(){
   const d={}; Object.keys(F).forEach(k=>{ const v=$(F[k]).value.trim(); if(v) d[k]=v; });
   d.banner={on:$('bOn').checked,text:$('bText').value.trim(),link:$('bLink').value.trim(),linkLabel:$('bLabel').value.trim()};
   d.blockedDates=readBD();
   d.galleryHeader=normGH(Object.assign({}, GH, { line:$('ghLine').value }));
   if(!SBA) d.bookingForm=readBF();
+  d.studios=readST();
   if(SBA){ const t={}; Object.keys(TX).forEach(k=>{ const v=$(TX[k]).value.trim(); if(v) t[k]=v; }); d.text=t; d.services=readSvc(); }
   return d;
 }
@@ -641,6 +734,7 @@ function readSaved(d){
   o.blockedDates=normBD(d&&d.blockedDates);
   o.galleryHeader=normGH(d&&d.galleryHeader);
   if(!SBA) o.bookingForm=normBF(d&&d.bookingForm);
+  o.studios=normST(d&&d.studios);
   if(SBA){ o.text=normText(d&&d.text); o.services=normSvc(d&&d.services); }
   return o;
 }
@@ -650,6 +744,7 @@ function fillForm(d){
   drawBD(normBD(d.blockedDates));
   { const g=normGH(d.galleryHeader); GH={ src:g.src, fx:g.fx, fy:g.fy }; $('ghLine').value=g.line; drawGH(); }
   if(!SBA) drawBF(d.bookingForm);
+  drawST(d.studios);
   if(SBA){ const t=d.text||{}; Object.keys(TX).forEach(k=>{ $(TX[k]).value=t[k]||''; }); drawSvc(d.services); }
   preview();
 }
