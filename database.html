@@ -216,6 +216,7 @@ table.orders thead th.sorted .ar{opacity:1;color:var(--accent);}
 .op-f label{font-size:12px;font-weight:700;color:var(--ink-soft);}
 .op-f input,.op-f select,.op-f textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:15px;background:#fff;color:var(--ink);}
 .op-f textarea{min-height:76px;resize:vertical;line-height:1.45;}
+.deep-flash{box-shadow:0 0 0 3px var(--accent)!important;transition:box-shadow .3s;}
 /* iPhone draws date boxes wider than their column and centres the date: keep them inside the card */
 .op-f input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;min-height:46px;text-align:left;}
 .op-f input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0;}
@@ -509,6 +510,23 @@ document.querySelector('table.orders thead').addEventListener('click', e => {
 });
 
 /* ---------------- table: short and readable; tap a row for everything else ---------------- */
+/* Preview as client: their real portal, read-only, in the right branding (portfolio/client-portal.html ?preview=<order id>) */
+function previewUrl(o){ return 'https://www.fomstudios.co.za/client-portal.html?preview=' + encodeURIComponent(o.id) + (FOM_BIZ.isSba ? '&b=sba' : ''); }
+/* Fix links from the preview checklist: database.html?open=<order id>&f=<field> opens that client and points at the field */
+function deepOpen(){
+  if(window.__deepOpen) return;
+  const u = new URLSearchParams(location.search), id = u.get('open'); if(!id) return;
+  const i = orders.findIndex(o => o.id === id); if(i < 0) return;
+  window.__deepOpen = 1; openPanel(i);
+  const f = u.get('f');
+  if(f) setTimeout(() => {
+    const el = f === 'login' ? document.querySelector('#opBody [data-login]') : $('op_' + f);
+    if(!el) return;
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    if(el.tagName !== 'BUTTON') try{ el.focus({ preventScroll:true }); }catch(e){}
+    el.classList.add('deep-flash'); setTimeout(() => el.classList.remove('deep-flash'), 2600);
+  }, 450);
+}
 function render(){
   const q=search.value.trim().toLowerCase();
   tbody.innerHTML='';
@@ -547,6 +565,7 @@ function render(){
   if(orders.length && !idx.length){ const tr=document.createElement('tr'); tr.innerHTML=`<td colspan="13" class="filter-empty">${FILTER!=='all'?'No orders are '+FILTERS[FILTER].empty+'.':'No orders match your search.'}</td>`; tbody.appendChild(tr); }
   if(OPEN_ID) renderPanel();
   fixFoot();
+  deepOpen();
 }
 /* the Totals row lines up with Total / Paid / Owing at every screen size (some columns hide on smaller screens) */
 function fixFoot(){
@@ -612,7 +631,9 @@ function renderPanel(fresh){
         ${F('invoiceUrl','Invoice link','placeholder="Cloudflare R2 link" autocomplete="off"','',true)}
       </div></section>
 
-    <section class="op-sec"><h3>Gallery and portal</h3><div class="op-g">
+    <section class="op-sec"><h3>Gallery and portal</h3>
+      <div class="op-acts" style="margin:0 0 12px"><a class="op-btn pri" href="${previewUrl(o)}" target="_blank" rel="noopener" title="Open ${esc(o.customer||'this client')}'s portal exactly as they see it, read-only">&#128065; Preview as client</a></div>
+      <div class="op-g">
       <div class="op-f w"><label for="op_galleryFolder">Gallery folder</label><div class="op-row"><input id="op_galleryFolder" data-i="${i}" data-f="galleryFolder" value="${esc(o.galleryFolder||'')}" placeholder="e.g. ${FOM_BIZ.b.galleryPrefix}jane-smith/" autocomplete="off"><button type="button" class="op-btn${o.galleryCover&&o.galleryCover.n?' pri':''}" data-cover="${i}">&#128444; ${o.galleryCover&&o.galleryCover.n?'Header set':'Header photo'}</button></div></div>
       <div class="op-f"><label for="op_deliverablesReady">Gallery in the portal</label><select id="op_deliverablesReady" data-i="${i}" data-f="deliverablesReady"><option value="false" ${!o.deliverablesReady?'selected':''}>Not ready</option><option value="true" ${o.deliverablesReady?'selected':''}>✓ Ready, show it</option></select></div>
       ${F('galleryExpiry','Gallery expiry','type="date"')}
