@@ -259,6 +259,12 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .ws-f select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);}
 .bk-checks{display:flex;gap:8px;flex-wrap:wrap;}
 .bk-ck input{position:absolute;opacity:0;pointer-events:none;} .bk-ck span{display:inline-block;border:1px solid var(--line);background:var(--bg);border-radius:99px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer;}
+.bk-len{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:99px;padding:6px 6px 6px 16px;font-weight:700;font-size:14px;}
+.bk-len button{border:0;background:rgba(255,255,255,.22);color:#fff;width:30px;height:30px;border-radius:50%;font-size:14px;font-weight:800;cursor:pointer;display:grid;place-items:center;}
+.bk-len button:focus-visible{outline:2px solid #fff;outline-offset:1px;}
+.bk-addlen{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.bk-addlen input{width:72px;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:inherit;}
+.bk-addlen span{font-weight:700;opacity:.7;margin-right:4px;}
 .bk-ck input:checked+span{background:var(--accent);border-color:var(--accent);color:#fff;} .bk-ck input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px;}
 .bd-day{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);}
 .bd-day:last-child{border-bottom:0;} .bd-day input[type=time]{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);}
@@ -365,8 +371,13 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 
     <section class="ws-card">
         <h2>Meeting lengths</h2>
-        <p class="ws-help">The options the client can pick.</p>
+        <p class="ws-help">The options the client can pick. Tap &#10005; to remove one, or add any length from 5 minutes to 4 hours (up to 8).</p>
         <div class="bk-checks" id="bLens"></div>
+        <div class="bk-addlen">
+            <input id="bLenH" type="number" inputmode="numeric" min="0" max="4" placeholder="0" aria-label="Hours"><span>h</span>
+            <input id="bLenM" type="number" inputmode="numeric" min="0" max="59" step="5" placeholder="20" aria-label="Minutes"><span>min</span>
+            <button class="rv-btn" id="bLenAdd" type="button">+ Add length</button>
+        </div>
     </section>
 
     <section class="ws-card">
@@ -423,13 +434,29 @@ const DEF = { on:true, lengths:[30,45,60], buffer:15, notice:24, ahead:30,
   days:{ '1':['17:30','20:00'], '2':['17:30','20:00'], '3':['17:30','20:00'], '4':['17:30','20:00'], '5':['17:30','20:00'], '6':['09:00','13:00'] },
   inPerson:{ on:false, place:'' }, phone:{ on:true }, video:{ on:true } };
 
+/* meeting lengths: any whole minutes from 5 to 240, up to 8, shortest first */
+const LEN_MIN = 5, LEN_MAX = 240, LEN_COUNT = 8;
+let LENS = [];
+function cleanLens(a){ return [...new Set((a||[]).map(n=>Math.round(+n)).filter(n=>n>=LEN_MIN && n<=LEN_MAX))].sort((x,y)=>x-y).slice(0,LEN_COUNT); }
+function drawLens(){
+  $('bLens').innerHTML = LENS.length ? LENS.map(n=>`<span class="bk-len">${lenL(n)}<button type="button" data-rmlen="${n}" aria-label="Remove ${lenL(n)}">&#10005;</button></span>`).join('')
+    : '<span class="ws-help" style="margin:0">No lengths yet. Add one below.</span>';
+}
+function addLen(){
+  const h = +$('bLenH').value || 0, m = +$('bLenM').value || 0, n = Math.round(h*60 + m);
+  if(!n){ toast('Type the hours and minutes first'); return; }
+  if(n < LEN_MIN || n > LEN_MAX){ toast('Pick a length from 5 minutes to 4 hours'); return; }
+  if(LENS.includes(n)){ toast(lenL(n) + ' is already there'); return; }
+  if(LENS.length >= LEN_COUNT){ toast('Up to 8 lengths. Remove one first'); return; }
+  LENS = cleanLens(LENS.concat(n)); drawLens(); $('bLenH').value = ''; $('bLenM').value = ''; setState();
+}
 let db=null, saved=null, savedLink='', dirty=false, loaded=false, REQS=[], filter='new', busyCount=0;
 
 /* ---------- availability form ---------- */
 function drawForm(c){
   c = Object.assign({}, DEF, c||{});
   $('bOn').checked = c.on !== false;
-  $('bLens').innerHTML = [30,45,60].map(n=>`<label class="bk-ck"><input type="checkbox" data-len="${n}" ${(c.lengths||[]).map(Number).includes(n)?'checked':''}><span>${n===60?'1 hour':n+' min'}</span></label>`).join('');
+  LENS = cleanLens(c.lengths); drawLens();
   $('bDays').innerHTML = DAYS.map(([k,n])=>{ const w=(c.days||{})[k]; return `<div class="bd-day${w?'':' off'}" data-d="${k}"><label class="ws-toggle" style="margin:0"><input type="checkbox" data-on ${w?'checked':''}><span class="sw"></span><b>${n}</b></label><input type="time" data-from value="${esc(w?w[0]:'17:30')}" aria-label="${n} from"><span class="bd-to">to</span><input type="time" data-to value="${esc(w?w[1]:'20:00')}" aria-label="${n} to"></div>`; }).join('');
   $('bBuf').value = String(c.buffer ?? 15); $('bNotice').value = String(c.notice ?? 24); $('bAhead').value = String(c.ahead ?? 30);
   if($('bIp')){ $('bIp').checked = !!(c.inPerson && c.inPerson.on === true); $('bPlace').value = (c.inPerson && c.inPerson.place) || ''; }   // hidden for now
@@ -439,12 +466,12 @@ function drawForm(c){
 function readForm(){
   const days = {};
   document.querySelectorAll('#bDays .bd-day').forEach(r=>{ const on=r.querySelector('[data-on]').checked; r.classList.toggle('off',!on); if(on) days[r.dataset.d]=[r.querySelector('[data-from]').value||'17:30', r.querySelector('[data-to]').value||'20:00']; });
-  return { on:$('bOn').checked, lengths:[...document.querySelectorAll('#bLens [data-len]')].filter(x=>x.checked).map(x=>+x.dataset.len),
+  return { on:$('bOn').checked, lengths:LENS.slice(),
     days, buffer:+$('bBuf').value, notice:+$('bNotice').value, ahead:+$('bAhead').value,
     inPerson:{ on:$('bIp') ? $('bIp').checked : false, place:$('bPlace') ? $('bPlace').value.trim() : ((saved&&saved.inPerson&&saved.inPerson.place)||'') },
     phone:{ on:$('bPh').checked }, video:{ on:$('bVid').checked } };
 }
-function norm(c){ c=Object.assign({},DEF,c||{}); return JSON.stringify({ on:c.on!==false, lengths:(c.lengths||[]).map(Number).sort(), days:c.days||{}, buffer:+c.buffer, notice:+c.notice, ahead:+c.ahead, inPerson:{on:!!(c.inPerson&&c.inPerson.on===true), place:(c.inPerson&&c.inPerson.place)||''}, phone:{on:!c.phone||c.phone.on!==false}, video:{on:!c.video||c.video.on!==false} }); }
+function norm(c){ c=Object.assign({},DEF,c||{}); return JSON.stringify({ on:c.on!==false, lengths:cleanLens(c.lengths), days:c.days||{}, buffer:+c.buffer, notice:+c.notice, ahead:+c.ahead, inPerson:{on:!!(c.inPerson&&c.inPerson.on===true), place:(c.inPerson&&c.inPerson.place)||''}, phone:{on:!c.phone||c.phone.on!==false}, video:{on:!c.video||c.video.on!==false} }); }
 function setState(){
   const now = norm(readForm()) + '|' + $('bLink').value.trim(), was = norm(saved) + '|' + savedLink;
   dirty = loaded && now !== was;
@@ -492,7 +519,7 @@ const fmtLong = r => { const d=new Date(r.start); return d.toLocaleDateString('e
 const fmtEnd = r => new Date(new Date(r.start).getTime()+(+r.len||30)*6e4).toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'});
 const waNum = p => { let d=String(p||'').replace(/\D/g,''); if(d.startsWith('0')) d='27'+d.slice(1); return d; };
 const first = n => String(n||'').trim().split(/\s+/)[0] || 'there';
-const lenL = n => +n===60 ? '1 hour' : n+' min';
+function lenL(n){ n = Math.round(+n)||0; const h = Math.floor(n/60), m = n%60; return !h ? m+' min' : h + (h===1?' hour':' hours') + (m ? ' ' + m + ' min' : ''); }
 const ST = { new:['New','#b0640b','#fbf0d6'], confirmed:['Confirmed','#1f8a4c','#e3f5ea'], moved:['Asked to rebook','#6f6f6d','#efece5'], declined:['Declined','#b0392b','#f6e7e5'] };
 function drawReqs(){
   const now=Date.now();
@@ -567,6 +594,9 @@ async function cleanHolds(){   // old holds (more than a day ago) are no longer 
 document.addEventListener('input',e=>{ if(e.target.closest('.ws-card')) setState(); });
 document.addEventListener('change',e=>{ if(e.target.closest('.ws-card')) setState(); });
 $('wsRevert').onclick=()=>{ drawForm(saved); setState(); };
+$('bLens').onclick=e=>{ const b=e.target.closest('[data-rmlen]'); if(!b) return; if(LENS.length<=1){ toast('Keep at least one length'); return; } LENS=LENS.filter(n=>n!==+b.dataset.rmlen); drawLens(); setState(); };
+$('bLenAdd').onclick=addLen;
+['bLenH','bLenM'].forEach(id=>$(id).addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addLen(); } }));
 $('wsSave').onclick=async()=>{
   const c=readForm(); if(!validate(c)) return;
   $('wsSave').disabled=true; $('wsSave').textContent='Publishing...';

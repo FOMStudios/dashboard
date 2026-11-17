@@ -110,7 +110,7 @@ service cloud.firestore {
       allow create: if request.resource.data.keys().hasOnly(['biz', 'start', 'len', 'at'])
                     && request.resource.data.biz in ['fom', 'sba']
                     && request.resource.data.start is string && request.resource.data.start.size() < 40
-                    && request.resource.data.len in [30, 45, 60]
+                    && request.resource.data.len is int && request.resource.data.len >= 5 && request.resource.data.len <= 240   // any length set on the Bookings page
                     && request.resource.data.at == request.time
                     && id == request.resource.data.biz + '_' + request.resource.data.start;   // one hold per start time
       allow update, delete: if isAdmin();
@@ -119,7 +119,7 @@ service cloud.firestore {
       allow create: if request.resource.data.keys().hasOnly(['biz', 'start', 'len', 'mode', 'name', 'phone', 'email', 'type', 'msg', 'status', 'hold', 'at'])
                     && request.resource.data.biz in ['fom', 'sba']
                     && request.resource.data.start is string && request.resource.data.start.size() < 40
-                    && request.resource.data.len in [30, 45, 60]
+                    && request.resource.data.len is int && request.resource.data.len >= 5 && request.resource.data.len <= 240   // any length set on the Bookings page
                     && request.resource.data.mode in ['phone', 'video', 'inperson']   // in person is hidden on the websites for now
                     && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 110
                     && request.resource.data.phone is string && request.resource.data.phone.size() <= 30
