@@ -294,6 +294,11 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .gh-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;}
 .gh-acts button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
 .gh-acts button.pri{background:var(--accent);border-color:var(--accent);color:#fff;}
+.gh-past{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin-top:10px;}
+.gh-past p{grid-column:1/-1;margin:0;font-size:13px;color:var(--ink-soft);}
+.gh-past button{position:relative;aspect-ratio:16/10;border-radius:12px;overflow:hidden;border:2px solid var(--line);padding:0;cursor:pointer;background:var(--bg-pill);}
+.gh-past button.on{border-color:var(--accent);}
+.gh-past img{width:100%;height:100%;object-fit:cover;display:block;}
 .gh-acts span{font-size:12.5px;color:var(--ink-soft);}
 @media(max-width:560px){.gh-prev{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);}}
 .ws-note{color:var(--ink-soft);font-size:12.5px;text-align:center;margin:6px 0 0;}
@@ -401,7 +406,8 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
             <div><div class="gh-box desk" data-gh><div class="gh-bg"></div><div class="gh-scrim"></div><div class="gh-txt"><span class="gh-eb"></span><b>Welcome,<i>Zara</i></b></div><span class="gh-dot"></span></div><div class="gh-cap">Computer</div></div>
             <div><div class="gh-box phone" data-gh><div class="gh-bg"></div><div class="gh-scrim"></div><div class="gh-txt"><span class="gh-eb"></span><b>Welcome,<i>Zara</i></b></div><span class="gh-dot"></span></div><div class="gh-cap">Phone</div></div>
         </div>
-        <div class="gh-acts"><button type="button" class="pri" id="ghUp">Upload image</button><button type="button" id="ghDel">Use the default</button><span id="ghMsg"></span></div>
+        <div class="gh-acts"><button type="button" class="pri" id="ghUp">Upload image</button><button type="button" id="ghDel">Use the default</button><button type="button" id="ghUndo" style="display:none">&#8617; Undo</button><button type="button" id="ghPast">Past headers</button><span id="ghMsg"></span></div>
+        <div class="gh-past" id="ghPastList" hidden></div>
         <input type="file" id="ghFile" accept="image/*" hidden>
         <div class="ws-grid" style="margin-top:14px">
             <div class="ws-f ws-wide"><label for="ghLine">Header text (the small line above the client's name)</label><input id="ghLine" maxlength="60" placeholder="FOM Studios · Your Gallery"></div>
@@ -542,6 +548,10 @@ const F={phone:'fPhone',whatsapp:'fWa',email:'fEmail',instagram:'fIg',whatsappCh
 const GH_WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
 const GH_DEFAULT = SBA ? '' : 'https://www.fomstudios.co.za/assets/email-hero.png';   // what clients see when nothing is set
 let GH = { src:'', fx:50, fy:50 };
+/* the header you removed or replaced, kept on this device so Undo can bring it back (the picture itself stays in R2) */
+const GH_PREV_KEY = 'fom.ghPrev.' + (SBA ? 'sba' : 'fom');
+let GH_PREV = (() => { try{ return JSON.parse(localStorage.getItem(GH_PREV_KEY)) || null; }catch(e){ return null; } })();
+function rememberGH(){ if(!GH.src) return; GH_PREV = Object.assign({}, GH); try{ localStorage.setItem(GH_PREV_KEY, JSON.stringify(GH_PREV)); }catch(e){} }
 const ghUrl = src => !src ? GH_DEFAULT : src.indexOf('r2:') === 0 ? GH_WORKER + '/file?g=portfolio%2F&n=' + encodeURIComponent(src.slice(3)) : src;
 function normGH(g){ g = (g && typeof g === 'object') ? g : {}; const n = v => Math.max(0, Math.min(100, Math.round(+v))); const o = { src:String(g.src || '').slice(0, 300), fx:isFinite(+g.fx) && g.fx !== '' ? n(g.fx) : 50, fy:isFinite(+g.fy) && g.fy !== '' ? n(g.fy) : 50, line:String(g.line || '').trim().slice(0, 60) }; return o; }
 function drawGH(){
@@ -553,6 +563,9 @@ function drawGH(){
     const d = b.querySelector('.gh-dot'); d.style.display = url ? '' : 'none'; d.style.left = GH.fx + '%'; d.style.top = GH.fy + '%';
   });
   $('ghDel').style.display = GH.src ? '' : 'none';
+  const canUndo = GH_PREV && GH_PREV.src && GH_PREV.src !== GH.src;
+  $('ghUndo').style.display = canUndo ? '' : 'none';
+  $('ghUndo').innerHTML = GH.src ? '&#8617; Previous header' : '&#8617; Undo';
   $('ghMsg').textContent = GH.src ? 'Your own header' : (SBA ? 'No header photo yet: clients see a plain dark band' : 'Using the default FOM banner');
 }
 document.querySelectorAll('[data-gh]').forEach(b => b.addEventListener('click', e => {
@@ -563,7 +576,28 @@ document.querySelectorAll('[data-gh]').forEach(b => b.addEventListener('click', 
   drawGH(); setState();
 }));
 $('ghUp').onclick = () => $('ghFile').click();
-$('ghDel').onclick = () => { GH = { src:'', fx:50, fy:50 }; drawGH(); setState(); };
+/* Past headers: every header uploaded for this business stays in R2 (portfolio/gallery-header-<biz>-*.jpg), so any of them can be picked again */
+$('ghPast').onclick = async () => {
+  const box = $('ghPastList');
+  if(!box.hidden){ box.hidden = true; return; }
+  box.hidden = false; box.innerHTML = '<p>Loading your past headers...</p>';
+  try{
+    const r = await fetch(GH_WORKER + '/list?g=portfolio%2F'); const j = await r.json();
+    const pre = 'gallery-header-' + (SBA ? 'sba' : 'fom') + '-';
+    const names = (j.files || []).map(f => f.name).filter(n => n.indexOf(pre) === 0).reverse();
+    box.innerHTML = names.length ? '<p>Tap one to use it again, then Publish.</p>' + names.map(n => '<button type="button" data-ghp="' + esc(n) + '" class="' + (GH.src === 'r2:' + n ? 'on' : '') + '" title="' + esc(n) + '"><img loading="lazy" alt="" src="' + esc(ghUrl('r2:' + n)) + '"></button>').join('')
+      : '<p>No past headers yet. Upload one and it will be kept here.</p>';
+  }catch(e){ console.warn(e); box.innerHTML = '<p>Could not load past headers. Check your connection and try again.</p>'; }
+};
+$('ghPastList').addEventListener('click', e => {
+  const b = e.target.closest('[data-ghp]'); if(!b) return;
+  const src = 'r2:' + b.dataset.ghp; if(GH.src === src) return;
+  rememberGH(); GH = { src, fx:50, fy:50 }; drawGH(); setState();
+  $('ghPastList').querySelectorAll('[data-ghp]').forEach(x => x.classList.toggle('on', x === b));
+  toast('Header picked. Tap the preview to set the focus, then Publish.');
+});
+$('ghDel').onclick = () => { rememberGH(); GH = { src:'', fx:50, fy:50 }; drawGH(); setState(); toast('Header removed. Tap Undo to bring it back.'); };
+$('ghUndo').onclick = () => { if(!GH_PREV || !GH_PREV.src) return; const cur = GH; GH = Object.assign({}, GH_PREV); if(cur.src){ GH_PREV = Object.assign({}, cur); try{ localStorage.setItem(GH_PREV_KEY, JSON.stringify(GH_PREV)); }catch(e){} } drawGH(); setState(); toast('Header back. Press Publish to keep it.'); };
 function ghShrink(file, max){
   return new Promise((res, rej) => { const img = new Image(), u = URL.createObjectURL(file);
     img.onload = () => { const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
@@ -578,7 +612,7 @@ $('ghFile').addEventListener('change', async e => {
     const u = window.firebase && firebase.apps.length && firebase.auth().currentUser; if(!u) throw new Error('not signed in');
     const r = await fetch(GH_WORKER + '/admin/upload?n=' + encodeURIComponent(name), { method:'POST', headers:{ 'Content-Type':'image/jpeg', Authorization:'Bearer ' + await u.getIdToken() }, body:blob });
     const j = await r.json().catch(() => ({})); if(!r.ok || !j.ok) throw new Error(j.error || ('upload failed (' + r.status + ')'));
-    GH = { src:'r2:' + (j.name || name), fx:50, fy:50 }; drawGH(); setState(); toast('Uploaded. Tap the preview to set the focus, then Publish.');
+    rememberGH(); GH = { src:'r2:' + (j.name || name), fx:50, fy:50 }; drawGH(); setState(); toast('Uploaded. Tap the preview to set the focus, then Publish.');
   }catch(err){ console.warn(err); $('ghMsg').textContent = 'Upload failed: ' + err.message; }
   $('ghUp').disabled = false;
 });

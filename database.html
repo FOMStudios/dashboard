@@ -154,6 +154,7 @@ thead th.portal-col{background:#dce8ff;color:var(--accent);}
 .ready-select option[value="true"]{color:#27ae60;}
 .ready-select option[value="false"]{color:var(--ink-soft);}
 .foot-row td{background:#f4f3ef;font-weight:700;border-top:2px solid var(--line);}
+@media(max-width:700px){.foot-row td{padding:12px 6px;font-size:14.5px;} .foot-row .c-owe{padding-right:10px;}}
 /* ---- short table: one tap opens the client's details panel ---- */
 table.orders{min-width:0;}
 table.orders thead th{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;padding:12px 12px;}
@@ -192,6 +193,8 @@ table.orders thead th.sorted .ar{opacity:1;color:var(--accent);}
 @media(max-width:1100px){.hide-md{display:none;}}
 .st-chip{display:none;font-size:12px;font-weight:800;border-radius:99px;padding:3px 9px;background:var(--surface-2,#e7e5df);white-space:nowrap;}
 @media(max-width:700px){.hide-sm{display:none;} table.orders thead th{padding:10px 8px;} table.orders tbody td{padding:10px 8px;font-size:13.5px;} .c-st{width:auto;} .c-st select{display:none;} .st-chip{display:inline-block;} .c-owe{width:auto;} .c-id{width:auto;}}
+/* phones: a little tighter so the whole table (and its totals) fits the screen with no sideways scroll */
+@media(max-width:430px){table.orders thead th{padding:10px 6px;font-size:10.5px;letter-spacing:.02em;} table.orders thead th .ar{width:8px;margin-left:2px;} table.orders tbody td{padding:10px 6px;} table.orders .st-chip{padding-left:9px;padding-right:9px;} table.orders tbody td.c-owe{padding-right:10px;}}
 
 /* ---- details panel ---- */
 .op-scrim{position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:1900;opacity:0;pointer-events:none;transition:opacity .2s;}
@@ -213,6 +216,9 @@ table.orders thead th.sorted .ar{opacity:1;color:var(--accent);}
 .op-f label{font-size:12px;font-weight:700;color:var(--ink-soft);}
 .op-f input,.op-f select,.op-f textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:15px;background:#fff;color:var(--ink);}
 .op-f textarea{min-height:76px;resize:vertical;line-height:1.45;}
+/* iPhone draws date boxes wider than their column and centres the date: keep them inside the card */
+.op-f input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;min-height:46px;text-align:left;}
+.op-f input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0;}
 .op-f input:focus,.op-f select:focus,.op-f textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent);}
 .op-f .hint{font-size:11.5px;color:var(--ink-soft);line-height:1.4;}
 .op-row{display:flex;gap:8px;align-items:center;}
@@ -547,7 +553,8 @@ function fixFoot(){
   const ths=[...document.querySelectorAll('table.orders thead th')], vis=th=>getComputedStyle(th).display!=='none';
   const k=ths.findIndex(th=>th.classList.contains('c-amt')||th.classList.contains('c-owe')), o=ths.findIndex(th=>th.classList.contains('c-owe'));
   $('footLbl').colSpan=Math.max(1, ths.slice(0,k).filter(vis).length);
-  $('footRest').colSpan=Math.max(1, ths.slice(o+1).filter(vis).length);
+  const rest=ths.slice(o+1).filter(vis).length;   // phones show nothing after Owing: hide the cell, or it adds a blank column and pushes the totals off screen
+  $('footRest').style.display=rest?'':'none'; if(rest) $('footRest').colSpan=rest;
 }
 addEventListener('resize', fixFoot);
 
@@ -1036,9 +1043,10 @@ function drawCover(){
 function covButtons(ready){
   const o = covO, had = o && o.galleryCover && o.galleryCover.n;
   document.getElementById('covActs').innerHTML = (ready && covSel ? '<button class="btn" type="button" id="covSave">Save header</button>' : '') +
-    (had ? '<button class="btn ghost" type="button" id="covClear">Use the business header</button>' : '') + '<button class="btn ghost" type="button" id="covClose">Close</button>';
-  const sv = document.getElementById('covSave'); if(sv) sv.onclick = () => { o.galleryCover = { n:covSel.n, fx:covSel.fx, fy:covSel.fy }; store.update(o.id); safeRender(); covClose(); };
-  const cl = document.getElementById('covClear'); if(cl) cl.onclick = () => { o.galleryCover = null; store.update(o.id); safeRender(); covClose(); };
+    (had ? '<button class="btn ghost" type="button" id="covClear">Use the business header</button>' : '') + (o && o.galleryCoverPrev && o.galleryCoverPrev.n && !(had && o.galleryCover.n === o.galleryCoverPrev.n) ? '<button class="btn ghost" type="button" id="covBack">&#8617; ' + (had ? 'Previous header' : 'Undo: bring back the last header') + '</button>' : '') + '<button class="btn ghost" type="button" id="covClose">Close</button>';
+  const sv = document.getElementById('covSave'); if(sv) sv.onclick = () => { if(o.galleryCover && o.galleryCover.n) o.galleryCoverPrev = o.galleryCover; o.galleryCover = { n:covSel.n, fx:covSel.fx, fy:covSel.fy }; store.update(o.id); safeRender(); covClose(); };
+  const cl = document.getElementById('covClear'); if(cl) cl.onclick = () => { o.galleryCoverPrev = o.galleryCover; o.galleryCover = null; store.update(o.id); safeRender(); covSel = null; drawCover(); document.getElementById('covSub').textContent = 'Removed. The business header shows for this client. Tap Undo to bring it back.'; };   // stays open so Undo is right there
+  const bk = document.getElementById('covBack'); if(bk) bk.onclick = () => { const cur = o.galleryCover; o.galleryCover = o.galleryCoverPrev; o.galleryCoverPrev = (cur && cur.n) ? cur : o.galleryCoverPrev; store.update(o.id); safeRender(); covSel = Object.assign({}, o.galleryCover); drawCover(); document.getElementById('covSub').textContent = 'Header back for this client.'; };   // undo: swaps back, nothing to upload again
   document.getElementById('covClose').onclick = covClose;
 }
 function covClose(){ document.getElementById('covScrim').classList.remove('on'); }
