@@ -45,6 +45,7 @@ var PAGES = [
   {n:'Leads & Outreach',h:'leads.html',     e:'📣'},
   {n:'Client Meetings', h:'meetings.html',  e:'🤝'},
   {n:'Bookings',        h:'bookings.html',  e:'📅'},   // meeting requests from the Book a meeting page on both websites
+  {n:'Website traffic', h:'traffic.html',   e:'📈'},   // visits, clicks and enquiries on both websites (gallery Worker /admin/stats)
   {n:'Content Planner', h:'content.html',   e:'🎬'},
   {n:'Price Calculator',h:'calculator.html',e:'🧮'},
   {n:'Email',           h:'email.html',     e:'✉️'},

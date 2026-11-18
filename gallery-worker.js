@@ -408,6 +408,8 @@ export default {
     const g = normPrefix(url.searchParams.get('g'));
     if (/^_(notify|push|events)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log)
     if (path === '/event') return handleEvent(request, env, ctx);
+    if (path === '/t') return handleTrack(request, env, ctx);
+    if (path === '/admin/stats' || path === '/admin/stats-alerts') return handleStatsAdmin(path, request, env, url);
     if (path === '/events') return handleEvents(request, env, url);
     if (path.startsWith('/push/')) return handlePush(path, request, env);
     if (path === '/notify') return handleNotify(request, env);
@@ -507,6 +509,8 @@ export default {
 
   // ---- Cron: auto-delete folders past expiry + grace ----
   async scheduled(event, env, ctx) {
+    // hourly: website traffic alerts (spike, daily summary, weekly report)
+    if (event.cron === '0 * * * *') { if (env.STATS) ctx.waitUntil(statsHourly(env).catch(() => null)); return; }
     ctx.waitUntil((async () => {
       if (!env.BUCKET) return;
       const now = Date.now();
@@ -557,4 +561,213 @@ function parseRange(h) {
   if (start !== undefined) return { offset: start };
   if (end !== undefined) return { suffix: end };
   return {};
+}
+
+/* ============================================================
+   WEBSITE TRAFFIC (18 Nov 2026)
+   Cookieless counts from both websites (portfolio/track.js), stored in the
+   Stats Durable Object (SQLite, free plan), shown on the dashboard Traffic page.
+     POST /t                    a page view, click, time-on-page or form step (no login; no IP, no cookies kept)
+     GET  /admin/stats          admin: aggregates for ?biz=fom|sba&from=yyyy-mm-dd&to=yyyy-mm-dd
+     POST /admin/stats-alerts   admin: { biz, alerts:{ daily, weekly, hot, spike } }
+   Alerts (to the phones in _push/subs.json): hot visitor (live), traffic spike (hourly check),
+   daily summary 18:00 and weekly report Monday 07:00 (South African time), via the hourly cron.
+   Days and hours are South African time (UTC+2). Rows older than 400 days are removed.
+   ============================================================ */
+const SAST = 2 * 3600e3;
+const sastDay = ts => new Date(ts + SAST).toISOString().slice(0, 10);
+const sastHour = ts => new Date(ts + SAST).getUTCHours();
+const SENT_STEPS = ['book_sent_wa', 'book_sent_email', 'meet_sent'];
+const ALERT_DEF = { daily: true, weekly: true, hot: true, spike: true };
+const HOT = { book_open: 'is filling in the Book a shoot form', meet_open: 'is picking a meeting time', whatsapp: 'just tapped WhatsApp' };
+
+export class Stats {
+  constructor(state, env) {
+    this.sql = state.storage.sql;
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS hits (ts INTEGER, day TEXT, hour INTEGER, wd INTEGER, biz TEXT, sid TEXT, type TEXT, path TEXT, label TEXT, src TEXT, dev TEXT, city TEXT, secs INTEGER, scroll INTEGER)`);
+    this.sql.exec(`CREATE INDEX IF NOT EXISTS hits_biz_day ON hits (biz, day)`);
+    this.sql.exec(`CREATE INDEX IF NOT EXISTS hits_ts ON hits (ts)`);
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT)`);
+  }
+  q(sql, ...a) { return this.sql.exec(sql, ...a).toArray(); }
+  get(k, d) { const r = this.q('SELECT v FROM kv WHERE k = ?', k)[0]; try { return r ? JSON.parse(r.v) : d; } catch (e) { return d; } }
+  set(k, v) { this.sql.exec('INSERT INTO kv (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v', k, JSON.stringify(v)); }
+  alerts(biz) { return Object.assign({}, ALERT_DEF, (this.get('alerts', {}) || {})[biz] || {}); }
+
+  async fetch(request) {
+    const path = new URL(request.url).pathname;
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    try {
+      if (path === '/add') return Response.json(this.add(b));
+      if (path === '/query') return Response.json(this.query(b));
+      if (path === '/alerts') { if (b.set) { const all = this.get('alerts', {}) || {}; all[b.biz] = Object.assign({}, ALERT_DEF, b.set); this.set('alerts', all); } return Response.json(this.alerts(b.biz)); }
+      if (path === '/hourly') return Response.json(this.hourly(b.now || Date.now()));
+    } catch (e) { return Response.json({ error: String(e && e.message || e) }, { status: 500 }); }
+    return Response.json({ error: 'not found' }, { status: 404 });
+  }
+
+  add(h) {
+    const ts = h.ts, day = sastDay(ts);
+    // a runaway tab or a script cannot flood the table: at most 400 rows per visit
+    const n = this.q('SELECT COUNT(*) AS n FROM hits WHERE sid = ? AND day = ?', h.sid, day)[0].n;
+    if (n >= 400) return { ok: true, skipped: 'busy' };
+    this.sql.exec('INSERT INTO hits (ts, day, hour, wd, biz, sid, type, path, label, src, dev, city, secs, scroll) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      ts, day, sastHour(ts), new Date(ts + SAST).getUTCDay(), h.biz, h.sid, h.type, h.path, h.label, h.src, h.dev, h.city, h.secs, h.scroll);
+    // hot visitor: once per visit per kind, and at most one per kind every 3 minutes per business
+    const kind = h.type === 'step' && HOT[h.label] && h.label !== 'whatsapp' ? h.label : (h.type === 'click' && /^whatsapp\b/i.test(h.label) ? 'whatsapp' : '');
+    if (!kind || !this.alerts(h.biz).hot) return { ok: true };
+    const marks = this.get('hot', {}) || {}, mk = h.biz + ':' + kind;
+    if (marks[h.sid + ':' + kind] || (marks[mk] && ts - marks[mk] < 180e3)) return { ok: true };
+    marks[h.sid + ':' + kind] = ts; marks[mk] = ts;
+    Object.keys(marks).forEach(k => { if (ts - marks[k] > 86400e3) delete marks[k]; });
+    this.set('hot', marks);
+    const first = this.q("SELECT src, city FROM hits WHERE sid = ? AND type = 'view' ORDER BY ts LIMIT 1", h.sid)[0] || {};
+    const from = [first.src && first.src !== 'Direct' ? 'from ' + first.src : '', first.city ? 'in ' + first.city : ''].filter(Boolean).join(', ');
+    return { ok: true, hot: { kind, text: 'Someone' + (from ? ' (' + from + ')' : '') + ' ' + HOT[kind] + (kind === 'whatsapp' && h.path ? ' on ' + pageName(h.path) : '') + '.' } };
+  }
+
+  range(biz, from, to) {
+    const rows = this.q('SELECT ts, day, hour, wd, sid, type, path, label, src, dev, city, secs, scroll FROM hits WHERE biz = ? AND day >= ? AND day <= ? ORDER BY ts', biz, from, to);
+    const visits = new Map(), enquired = new Set();
+    for (const r of rows) {
+      let v = visits.get(r.sid);
+      if (!v) { v = { src: '', dev: r.dev, city: r.city, day: r.day, pages: new Set() }; visits.set(r.sid, v); }
+      if (r.type === 'view') { if (!v.src) v.src = r.src || 'Direct'; v.pages.add(r.path); }
+      if (r.type === 'step' && SENT_STEPS.includes(r.label)) enquired.add(r.sid);
+    }
+    return { rows, visits, enquired };
+  }
+
+  query({ biz, from, to, prevFrom, prevTo }) {
+    const { rows, visits, enquired } = this.range(biz, from, to);
+    const views = rows.filter(r => r.type === 'view'), leaves = rows.filter(r => r.type === 'leave' && r.secs > 0);
+    const count = (arr, key) => { const m = {}; arr.forEach(x => { const k = key(x); if (k) m[k] = (m[k] || 0) + 1; }); return Object.entries(m).sort((a, b) => b[1] - a[1]); };
+    const days = {};
+    for (let d = new Date(from + 'T00:00:00Z'); d <= new Date(to + 'T00:00:00Z'); d = new Date(+d + 86400e3)) days[d.toISOString().slice(0, 10)] = { visits: 0, views: 0, enquiries: 0 };
+    visits.forEach((v, sid) => { if (days[v.day]) { days[v.day].visits++; if (enquired.has(sid)) days[v.day].enquiries++; } });
+    views.forEach(r => { if (days[r.day]) days[r.day].views++; });
+    // pages: views, visits, time, scroll, and how many of those visits went on to enquire
+    const pg = {};
+    views.forEach(r => { const p = pg[r.path] || (pg[r.path] = { path: r.path, views: 0, sids: new Set(), secs: 0, secN: 0, scroll: 0, scN: 0 }); p.views++; p.sids.add(r.sid); });
+    leaves.forEach(r => { const p = pg[r.path]; if (!p) return; p.secs += Math.min(r.secs, 1800); p.secN++; if (r.scroll != null) { p.scroll += r.scroll; p.scN++; } });
+    const pages = Object.values(pg).map(p => ({ path: p.path, name: pageName(p.path), views: p.views, visits: p.sids.size, avgSecs: p.secN ? Math.round(p.secs / p.secN) : 0, avgScroll: p.scN ? Math.round(p.scroll / p.scN) : 0, enquired: [...p.sids].filter(s => enquired.has(s)).length })).sort((a, b) => b.views - a.views).slice(0, 30);
+    // clicks: by label, with the page it is clicked on most
+    const ck = {};
+    rows.filter(r => r.type === 'click').forEach(r => { const c = ck[r.label] || (ck[r.label] = { label: r.label, n: 0, sids: new Set(), on: {} }); c.n++; c.sids.add(r.sid); c.on[r.path] = (c.on[r.path] || 0) + 1; });
+    const clicks = Object.values(ck).map(c => { const top = Object.entries(c.on).sort((a, b) => b[1] - a[1])[0]; return { label: c.label, clicks: c.n, visits: c.sids.size, topPage: top ? pageName(top[0]) : '', enquired: [...c.sids].filter(s => enquired.has(s)).length }; }).sort((a, b) => b.clicks - a.clicks).slice(0, 40);
+    const vs = [...visits.values()];
+    const funnel = {}; rows.filter(r => r.type === 'step').forEach(r => { (funnel[r.label] = funnel[r.label] || new Set()).add(r.sid); });
+    const grid = Array.from({ length: 7 }, () => Array(24).fill(0)); views.forEach(r => { grid[r.wd][r.hour]++; });
+    const totalSecs = leaves.reduce((s, r) => s + Math.min(r.secs, 1800), 0);
+    const now = Date.now();
+    const live = this.q("SELECT sid, MAX(ts) AS at, path FROM hits WHERE biz = ? AND ts > ? GROUP BY sid ORDER BY at DESC", biz, now - 5 * 60e3);
+    const out = {
+      biz, from, to,
+      totals: { visits: visits.size, views: views.length, enquiries: enquired.size, conversion: visits.size ? Math.round(enquired.size / visits.size * 1000) / 10 : 0, avgSecs: leaves.length ? Math.round(totalSecs / Math.max(1, visits.size)) : 0, pagesPerVisit: visits.size ? Math.round(views.length / visits.size * 10) / 10 : 0 },
+      days: Object.entries(days).map(([day, v]) => ({ day, ...v })),
+      pages, clicks,
+      sources: count(vs, v => v.src || 'Direct').map(([k, n]) => ({ k, n })),
+      devices: count(vs, v => v.dev || 'Other').map(([k, n]) => ({ k, n })),
+      cities: count(vs, v => v.city).slice(0, 12).map(([k, n]) => ({ k, n })),
+      funnel: Object.fromEntries(Object.entries(funnel).map(([k, s]) => [k, s.size])),
+      grid,
+      live: live.map(l => ({ page: pageName(l.path), ago: Math.round((now - l.at) / 1000) })),
+      alerts: this.alerts(biz)
+    };
+    if (prevFrom && prevTo) { const p = this.range(biz, prevFrom, prevTo); out.prev = { visits: p.visits.size, views: p.rows.filter(r => r.type === 'view').length, enquiries: p.enquired.size }; }
+    return out;
+  }
+
+  /* hourly cron: spike check every hour, daily summary at 18:00, weekly report Monday 07:00, tidy old rows */
+  hourly(now) {
+    const out = [], h = sastHour(now), wd = new Date(now + SAST).getUTCDay(), today = sastDay(now);
+    const dayStr = n => sastDay(now - n * 86400e3);
+    for (const biz of ['fom', 'sba']) {
+      const a = this.alerts(biz), who = biz === 'sba' ? 'Shot by A' : 'FOM';
+      if (a.spike) {
+        const last = this.q("SELECT COUNT(DISTINCT sid) AS n FROM hits WHERE biz = ? AND ts > ?", biz, now - 3600e3)[0].n;
+        const week = this.q("SELECT COUNT(DISTINCT sid || day) AS n FROM hits WHERE biz = ? AND ts > ? AND ts <= ?", biz, now - 7 * 86400e3, now - 3600e3)[0].n;
+        const avg = week / (7 * 24 - 1), sp = this.get('spike:' + biz, 0);
+        if (last >= Math.max(8, avg * 3) && now - sp > 6 * 3600e3) {
+          this.set('spike:' + biz, now);
+          const top = this.q("SELECT src, COUNT(DISTINCT sid) AS n FROM hits WHERE biz = ? AND ts > ? AND type = 'view' GROUP BY src ORDER BY n DESC LIMIT 1", biz, now - 3600e3)[0];
+          out.push({ biz, kind: 'spike', title: who + ': traffic spike', body: last + ' visits in the last hour, ' + (avg < 0.5 ? 'far more than usual' : 'about ' + Math.round(last / avg) + 'x normal') + (top && top.src ? '. Most from ' + top.src : '') + '.' });
+        }
+      }
+      if (a.daily && h === 18) {
+        const q = this.query({ biz, from: today, to: today });
+        if (q.totals.visits) out.push({ biz, kind: 'daily', title: who + ' today', body: q.totals.visits + ' visit' + (q.totals.visits === 1 ? '' : 's') + (q.pages[0] ? ', top page ' + q.pages[0].name : '') + (q.clicks[0] ? ', top click ' + q.clicks[0].label : '') + ', ' + q.totals.enquiries + ' enquir' + (q.totals.enquiries === 1 ? 'y' : 'ies') + '.' });
+      }
+      if (a.weekly && h === 7 && wd === 1) {
+        const q = this.query({ biz, from: dayStr(7), to: dayStr(1), prevFrom: dayStr(14), prevTo: dayStr(8) });
+        const ch = q.prev && q.prev.visits ? Math.round((q.totals.visits - q.prev.visits) / q.prev.visits * 100) : null;
+        if (q.totals.visits || (q.prev && q.prev.visits)) out.push({ biz, kind: 'weekly', title: who + ': your week', body: q.totals.visits + ' visits' + (ch == null ? '' : ' (' + (ch >= 0 ? '+' : '') + ch + '% on last week)') + (q.sources[0] ? ', best source ' + q.sources[0].k : '') + (q.pages[0] ? ', best page ' + q.pages[0].name : '') + ', ' + q.totals.enquiries + ' enquir' + (q.totals.enquiries === 1 ? 'y' : 'ies') + '.' });
+      }
+    }
+    if (h === 3) this.sql.exec('DELETE FROM hits WHERE ts < ?', now - 400 * 86400e3);
+    return out;
+  }
+}
+
+function pageName(p) {
+  p = String(p || '/');
+  const s = p.replace(/^\/shotbya/, '').replace(/\.html$/, '').replace(/^\/+|\/+$/g, '');
+  const names = { '': 'Home', index: 'Home', prices: 'Prices', gallery: 'Gallery', book: 'Book a meeting', contact: 'Contact', policy: 'Policy' };
+  return (names[s] != null ? names[s] : s.replace(/[-_]/g, ' ').replace(/^./, c => c.toUpperCase()));
+}
+function statsStub(env) { return env.STATS ? env.STATS.get(env.STATS.idFromName('stats')) : null; }
+async function statsCall(env, path, body) {
+  const st = statsStub(env); if (!st) return null;
+  const r = await st.fetch('https://stats' + path, { method: 'POST', body: JSON.stringify(body || {}) });
+  return r.json();
+}
+const SRC_OK = ['Instagram', 'Facebook', 'TikTok', 'Google', 'Bing', 'WhatsApp', 'YouTube', 'LinkedIn', 'Pinterest', 'Email', 'Direct'];
+async function handleTrack(request, env, ctx) {
+  if (request.method !== 'POST') return json({ error: 'POST only' }, 405);
+  if (!env.STATS) return json({ ok: true, off: true });
+  let b = {}; try { b = JSON.parse(await request.text()); } catch (e) { return json({ error: 'bad body' }, 400); }
+  const type = ['view', 'click', 'leave', 'step'].includes(b.t) ? b.t : '';
+  const sid = clean(b.s, 24).replace(/[^a-z0-9]/gi, '');
+  if (!type || sid.length < 8) return json({ error: 'bad hit' }, 400);
+  let src = clean(b.r, 40);
+  if (src && !SRC_OK.includes(src)) src = src.toLowerCase().replace(/^www\./, '').replace(/[^a-z0-9.-]/g, '').slice(0, 40);
+  const cf = request.cf || {};
+  const hit = {
+    ts: Date.now(), biz: b.b === 'sba' ? 'sba' : 'fom', sid, type,
+    path: (clean(b.p, 80).split('?')[0] || '/').replace(/[^\w\/.-]/g, ''),
+    label: clean(b.l, 60), src: type === 'view' ? (src || 'Direct') : '',
+    dev: ['phone', 'tablet', 'computer'].includes(b.d) ? b.d : '',
+    city: type === 'view' ? clean(cf.city, 40) : '',
+    secs: type === 'leave' ? Math.max(0, Math.min(7200, Math.round(+b.secs || 0))) : null,
+    scroll: type === 'leave' ? Math.max(0, Math.min(100, Math.round(+b.sc || 0))) : null
+  };
+  const res = await statsCall(env, '/add', hit);
+  if (res && res.hot) {
+    const who = hit.biz === 'sba' ? 'Shot by A: ' : '';
+    const msg = { title: who + (res.hot.kind === 'whatsapp' ? 'WhatsApp tap' : 'Hot visitor'), body: res.hot.text, url: 'traffic.html?biz=' + hit.biz, tag: 'fom-hot-' + hit.biz + '-' + res.hot.kind };
+    const job = pushAll(env, msg).catch(() => null);
+    if (ctx && ctx.waitUntil) ctx.waitUntil(job); else await job;
+  }
+  return json({ ok: true });
+}
+async function handleStatsAdmin(path, request, env, url) {
+  if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+  if (!env.STATS) return json({ error: 'Traffic is not switched on yet: the latest gallery-worker.js has not deployed (STATS binding missing).' }, 503);
+  const biz = url.searchParams.get('biz') === 'sba' ? 'sba' : 'fom';
+  if (path === '/admin/stats-alerts') {
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    const set = {}; Object.keys(ALERT_DEF).forEach(k => { set[k] = !!(b.alerts || {})[k]; });
+    return json({ ok: true, alerts: await statsCall(env, '/alerts', { biz, set }) });
+  }
+  const day = s => /^\d{4}-\d{2}-\d{2}$/.test(s || '') ? s : '';
+  const to = day(url.searchParams.get('to')) || sastDay(Date.now());
+  const from = day(url.searchParams.get('from')) || sastDay(Date.now() - 6 * 86400e3);
+  const span = Math.round((new Date(to) - new Date(from)) / 86400e3) + 1;
+  if (span < 1 || span > 400) return json({ error: 'bad range' }, 400);
+  const prevTo = sastDay(new Date(from + 'T12:00:00Z') - 86400e3 - SAST), prevFrom = sastDay(new Date(from + 'T12:00:00Z') - span * 86400e3 - SAST);
+  return json(await statsCall(env, '/query', { biz, from, to, prevFrom, prevTo }));
+}
+async function statsHourly(env) {
+  const msgs = await statsCall(env, '/hourly', { now: Date.now() });
+  for (const m of (msgs || [])) await pushAll(env, { title: m.title, body: m.body, url: 'traffic.html?biz=' + m.biz, tag: 'fom-' + m.kind + '-' + m.biz });
 }

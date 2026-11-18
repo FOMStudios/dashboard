@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f1f0ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FOM">
+<link rel="manifest" href="manifest.webmanifest">
+<title>FOM Studios | Website traffic</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/fom-icon-180.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1000px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* pill header + hamburger */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:1320px;margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:22px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.nav-cta{border:1px solid var(--ink);border-radius:var(--radius-pill);padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;background:none;}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:12px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--accent-hover);}
+.btn.block{width:100%;padding:13px;}
+
+/* page */
+.page{padding-top:108px;}
+.page-head{margin-bottom:24px;}
+.page-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.page-head p{color:var(--ink-soft);font-size:14px;margin-top:4px;max-width:60ch;}
+
+/* filter chips */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.filter-chip{
+    border:1px solid var(--line);background:var(--bg-pill);
+    border-radius:var(--radius-pill);padding:8px 16px;
+    font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.2s;
+}
+.filter-chip:hover{border-color:var(--ink);color:var(--ink);}
+.filter-chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg-pill);}
+
+/* empty state */
+.empty-state{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:48px 28px;text-align:center;}
+.empty-state h3{font-size:19px;font-weight:800;margin-bottom:6px;}
+.empty-state p{color:var(--ink-soft);max-width:40ch;margin:0 auto;font-size:14px;}
+
+/* ============================================================
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-dark);color:#fff;padding:12px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000;}
+.toast.show{opacity:1;}
+/* ============================================================
+   WEBSITE TRAFFIC
+   ============================================================ */
+.tr-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
+.tr-live{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;background:var(--bg-pill);border:1px solid var(--line);border-radius:99px;padding:8px 14px;}
+.tr-live i{width:9px;height:9px;border-radius:50%;background:#9a9a96;}
+.tr-live.on i{background:#1f8a4c;box-shadow:0 0 0 0 rgba(31,138,76,.5);animation:trPulse 1.8s infinite;}
+@keyframes trPulse{0%{box-shadow:0 0 0 0 rgba(31,138,76,.45)}70%{box-shadow:0 0 0 9px rgba(31,138,76,0)}100%{box-shadow:0 0 0 0 rgba(31,138,76,0)}}
+.tr-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px;}
+.tr-kpi{background:var(--bg-pill);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;min-width:0;}
+.tr-kpi span{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
+.tr-kpi b{display:block;font-size:28px;font-weight:800;line-height:1.15;margin-top:6px;}
+.tr-kpi small{font-size:12.5px;font-weight:700;color:var(--ink-soft);}
+.tr-kpi small.up{color:#1f8a4c;}.tr-kpi small.down{color:#c0392b;}
+.tr-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 20px 18px;margin-bottom:16px;min-width:0;}
+.tr-card h2{font-size:17px;font-weight:800;margin-bottom:4px;}
+.tr-card .tr-sub{font-size:13px;color:var(--ink-soft);margin-bottom:14px;}
+.tr-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.tr-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+.tr-chart{width:100%;height:190px;display:block;}
+.tr-chart .ax{font-size:10.5px;fill:var(--ink-soft);}
+.tr-legend{display:flex;gap:16px;font-size:12.5px;color:var(--ink-soft);margin-top:6px;}
+.tr-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
+.tr-tbl{width:100%;border-collapse:collapse;font-size:14px;}
+.tr-tbl th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;padding:0 6px 8px;}
+.tr-tbl td{padding:9px 6px;border-top:1px solid var(--line);vertical-align:top;}
+.tr-tbl td.n,.tr-tbl th.n{text-align:right;white-space:nowrap;}
+.tr-tbl td small{display:block;color:var(--ink-soft);font-size:12px;}
+.tr-good{color:#1f8a4c;font-weight:800;}
+.tr-bars{display:flex;flex-direction:column;gap:9px;}
+.tr-br{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;font-size:14px;}
+.tr-br .tk{grid-column:1/-1;height:8px;border-radius:99px;background:var(--line);overflow:hidden;}
+.tr-br .tk i{display:block;height:100%;border-radius:99px;background:var(--accent);}
+.tr-br b{font-weight:700;}
+.tr-funnel{display:flex;flex-direction:column;gap:8px;}
+.tr-fs{display:grid;grid-template-columns:150px minmax(0,1fr) 70px;gap:10px;align-items:center;font-size:14px;}
+.tr-fs .tk{height:26px;border-radius:8px;background:var(--line);overflow:hidden;}
+.tr-fs .tk i{display:block;height:100%;background:var(--accent);border-radius:8px;opacity:.85;}
+.tr-fs .n{text-align:right;font-weight:800;}
+.tr-fs .n small{display:block;font-weight:600;color:var(--ink-soft);font-size:11.5px;}
+.tr-heat{display:grid;grid-template-columns:34px repeat(24,minmax(0,1fr));gap:2px;font-size:10.5px;color:var(--ink-soft);}
+.tr-heat i{aspect-ratio:1;border-radius:3px;background:var(--line);}
+.tr-heat span{display:flex;align-items:center;}
+.tr-ins{display:flex;flex-direction:column;gap:10px;}
+.tr-in{display:flex;gap:12px;align-items:flex-start;background:var(--bg);border-radius:14px;padding:12px 14px;font-size:14.5px;line-height:1.45;}
+.tr-in em{font-style:normal;font-size:20px;line-height:1.2;}
+.tr-tg{display:flex;flex-direction:column;gap:2px;}
+.tr-tg label{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer;font-size:14.5px;}
+.tr-tg label:first-child{border-top:0;}
+.tr-tg label small{display:block;color:var(--ink-soft);font-size:12.5px;}
+.tr-sw{position:relative;width:46px;height:28px;flex-shrink:0;}
+.tr-sw input{opacity:0;width:0;height:0;position:absolute;}
+.tr-sw span{position:absolute;inset:0;background:var(--line);border-radius:99px;transition:.2s;}
+.tr-sw span:after{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.tr-sw input:checked+span{background:#1f8a4c;}
+.tr-sw input:checked+span:after{transform:translateX(18px);}
+.tr-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.tr-acts a,.tr-acts button{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:99px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+.tr-msg{background:var(--bg-pill);border:1px dashed var(--line);border-radius:var(--radius-card);padding:28px 22px;text-align:center;color:var(--ink-soft);margin-bottom:16px;}
+.tr-msg b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px;}
+.tr-empty{color:var(--ink-soft);font-size:14px;padding:6px 0;}
+@media(max-width:900px){.tr-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}.tr-grid3{grid-template-columns:minmax(0,1fr);}}
+@media(max-width:700px){.tr-grid2{grid-template-columns:minmax(0,1fr);}.tr-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.tr-kpi b{font-size:24px;}.tr-fs{grid-template-columns:110px minmax(0,1fr) 58px;}.tr-live{margin-left:0;}}
+</style>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js?v=2"></script>
+<script src="session.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="fom-splash" id="authCheck"><div class="in"><b>FOM STUDIOS</b><p>Checking session…</p></div></div>
+<script>setTimeout(function(){var a=document.getElementById("authCheck");if(a)a.style.display="none";},8000);</script>
+
+
+<!-- LOGIN GATE -->
+<div class="login-gate" id="loginGate">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="calculator.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+        <li><a href="reviews.html">Reviews</a></li>
+        <li><a href="website.html">Website</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+                <li><a href="reviews.html">Reviews</a></li>
+                <li><a href="website.html">Website</a></li>
+            </ul>
+            <button class="nav-cta" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </nav>
+</div>
+
+
+<div class="page wrap">
+    <div class="page-head">
+        <span class="eyebrow">Admin</span>
+        <h1>Website traffic</h1>
+        <p id="trIntro">Who visits fomstudios.co.za, where they come from, what they click and what leads to an enquiry. No cookies and no names: just counts.</p>
+    </div>
+    <div class="tr-bar">
+        <div class="filter-row" id="trRange" style="margin:0">
+            <button class="filter-chip" data-r="1">Today</button>
+            <button class="filter-chip on" data-r="7">7 days</button>
+            <button class="filter-chip" data-r="30">30 days</button>
+            <button class="filter-chip" data-r="90">90 days</button>
+        </div>
+        <span class="tr-live" id="trLive"><i></i><span>Live: 0</span></span>
+    </div>
+    <div id="trMsg"></div>
+    <div id="trBody" style="display:none">
+        <div class="tr-kpis" id="trKpis"></div>
+        <section class="tr-card"><h2>Visits</h2><p class="tr-sub" id="trChartSub">Each day, with enquiries.</p><div id="trChart"></div>
+            <div class="tr-legend"><span><i style="background:var(--accent)"></i>Visits</span><span><i style="background:#1f8a4c"></i>Enquiries</span></div></section>
+        <section class="tr-card"><h2>What's working</h2><p class="tr-sub">Worked out from the numbers below.</p><div class="tr-ins" id="trIns"></div></section>
+        <div class="tr-grid2">
+            <section class="tr-card"><h2>Top pages</h2><p class="tr-sub">Views, time on the page, how far down people scroll, and how many of those visits enquired.</p><div id="trPages"></div></section>
+            <section class="tr-card"><h2>What's clicked</h2><p class="tr-sub">Every button and link, most tapped first.</p><div id="trClicks"></div></section>
+        </div>
+        <div class="tr-grid3">
+            <section class="tr-card"><h2>Where they come from</h2><p class="tr-sub">The first page of each visit.</p><div class="tr-bars" id="trSrc"></div></section>
+            <section class="tr-card"><h2>Devices</h2><p class="tr-sub">Phone, computer or tablet.</p><div class="tr-bars" id="trDev"></div></section>
+            <section class="tr-card"><h2>Areas</h2><p class="tr-sub">Rough city, from the visitor's network.</p><div class="tr-bars" id="trCity"></div></section>
+        </div>
+        <div class="tr-grid2">
+            <section class="tr-card" id="trBookCard"><h2>Book a shoot form</h2><p class="tr-sub">How far people get, and where they drop off.</p><div class="tr-funnel" id="trBook"></div></section>
+            <section class="tr-card"><h2>Book a meeting</h2><p class="tr-sub">From the meeting page to a request.</p><div class="tr-funnel" id="trMeet"></div></section>
+        </div>
+        <section class="tr-card"><h2>Busiest times</h2><p class="tr-sub">Page views by day and hour (South African time). Darker is busier: a good guide for when to post.</p><div class="tr-heat" id="trHeat"></div></section>
+    </div>
+    <div class="tr-grid2">
+        <section class="tr-card"><h2>Notifications</h2><p class="tr-sub">Sent to the phones that have notifications turned on (Settings, Notifications).</p>
+            <div class="tr-tg" id="trAlerts">
+                <label><span>Hot visitor<small>Someone opens Book a shoot, picks a meeting time or taps WhatsApp</small></span><span class="tr-sw"><input type="checkbox" data-al="hot"><span></span></span></label>
+                <label><span>Traffic spike<small>Visits jump well above normal (checked every hour)</small></span><span class="tr-sw"><input type="checkbox" data-al="spike"><span></span></span></label>
+                <label><span>Daily summary<small>Every day at 18:00: visits, top page, top click, enquiries</small></span><span class="tr-sw"><input type="checkbox" data-al="daily"><span></span></span></label>
+                <label><span>Weekly report<small>Mondays at 07:00: the week against the week before</small></span><span class="tr-sw"><input type="checkbox" data-al="weekly"><span></span></span></label>
+            </div>
+        </section>
+        <section class="tr-card"><h2>Your own visits</h2><p class="tr-sub">So your numbers are only real visitors, switch off counting on each phone and computer you use. Open this on that device:</p>
+            <div class="tr-acts"><a href="https://www.fomstudios.co.za/?fomnotrack=1" target="_blank" rel="noopener">Don't count this device</a><a href="https://www.fomstudios.co.za/?fomnotrack=0" target="_blank" rel="noopener">Count it again</a></div>
+            <p class="tr-sub" style="margin:16px 0 0">Heatmaps and recordings of real visits (people who accept cookies): <a href="https://clarity.microsoft.com/projects" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">Microsoft Clarity</a>.</p>
+        </section>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script>
+/* ============================================================
+   Website traffic (per business): cookieless counts from portfolio/track.js,
+   stored by the gallery Worker (Stats Durable Object). GET /admin/stats, POST /admin/stats-alerts.
+   ============================================================ */
+const $ = id => document.getElementById(id);
+let toastT;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2400); }
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const BZ = window.FOM_BIZ, BIZ = BZ.id;
+const WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
+const SITE = BIZ === 'sba' ? 'fomstudios.co.za/shotbya' : 'fomstudios.co.za';
+let RANGE = 7, DATA = null, AUTH = null, timer = null;
+try{ const r = +localStorage.getItem('fom.trRange'); if([1,7,30,90].includes(r)) RANGE = r; }catch(e){}
+document.querySelectorAll('#trRange [data-r]').forEach(b => b.classList.toggle('on', +b.dataset.r === RANGE));
+if(BIZ === 'sba'){ $('trIntro').textContent = "Who visits Shot by A's website, where they come from, what they click and what leads to a booking. No cookies and no names: just counts."; $('trBookCard').style.display = 'none'; }
+
+const today = () => new Date().toLocaleDateString('en-CA', { timeZone:'Africa/Johannesburg' });
+const dayAdd = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+const fmtSecs = s => !s ? '0s' : s < 60 ? s + 's' : Math.floor(s / 60) + 'm ' + String(s % 60).padStart(2, '0') + 's';
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const dShort = d => new Date(d + 'T12:00:00Z').toLocaleDateString('en-ZA', { day:'numeric', month:'short' });
+
+async function load(quiet){
+  if(!AUTH || !AUTH.currentUser) return;
+  const to = today(), from = dayAdd(to, -(RANGE - 1));
+  if(!quiet && !DATA) $('trMsg').innerHTML = '<div class="tr-msg">Loading...</div>';
+  try{
+    const tok = await AUTH.currentUser.getIdToken();
+    const r = await fetch(WORKER + '/admin/stats?biz=' + BIZ + '&from=' + from + '&to=' + to, { headers:{ Authorization:'Bearer ' + tok } });
+    const j = await r.json().catch(() => ({}));
+    if(!r.ok) throw new Error(j.error || ('error ' + r.status));
+    DATA = j; draw();
+  }catch(e){
+    console.warn('traffic', e);
+    $('trBody').style.display = DATA ? '' : 'none';
+    $('trMsg').innerHTML = '<div class="tr-msg"><b>Could not load the traffic</b>' + esc(e.message) + '</div>';
+  }
+}
+
+function draw(){
+  const d = DATA, t = d.totals;
+  $('trMsg').innerHTML = !t.visits ? '<div class="tr-msg"><b>No visits ' + (RANGE === 1 ? 'yet today' : 'in this period yet') + '</b>Counting started on 18 Nov 2026. Visits to ' + esc(SITE) + ' show here within seconds.</div>' : '';
+  $('trBody').style.display = '';
+  const live = d.live || [];
+  $('trLive').classList.toggle('on', live.length > 0);
+  $('trLive').querySelector('span').textContent = 'Live: ' + live.length + (live.length ? ' on ' + live[0].page : '');
+  // KPIs with change against the period before
+  const ch = (a, b) => { if(!d.prev || !b) return a ? '<small class="up">new</small>' : '<small>&nbsp;</small>'; const c = Math.round((a - b) / b * 100); return '<small class="' + (c > 0 ? 'up' : c < 0 ? 'down' : '') + '">' + (c > 0 ? '+' : '') + c + '% vs before</small>'; };
+  $('trKpis').innerHTML = [
+    ['Visits', t.visits, ch(t.visits, d.prev && d.prev.visits)],
+    ['Page views', t.views, '<small>' + t.pagesPerVisit + ' per visit</small>'],
+    ['Enquiries', t.enquiries, ch(t.enquiries, d.prev && d.prev.enquiries)],
+    ['Enquiry rate', t.conversion + '%', '<small>of visits enquire</small>'],
+    ['Time per visit', fmtSecs(t.avgSecs), '<small>on average</small>']
+  ].map(k => '<div class="tr-kpi"><span>' + k[0] + '</span><b>' + k[1] + '</b>' + k[2] + '</div>').join('');
+  drawChart(d.days);
+  // pages
+  const P = d.pages || [];
+  $('trPages').innerHTML = P.length ? '<table class="tr-tbl"><tr><th>Page</th><th class="n">Views</th><th class="n">Time</th><th class="n">Enquired</th></tr>' + P.slice(0, 12).map(p =>
+    '<tr><td>' + esc(p.name) + '<small>' + (p.avgScroll ? 'scroll ' + p.avgScroll + '%' : '&nbsp;') + '</small></td><td class="n">' + p.views + '</td><td class="n">' + fmtSecs(p.avgSecs) + '</td><td class="n' + (p.enquired ? ' tr-good' : '') + '">' + (p.visits ? pct(p.enquired, p.visits) : 0) + '%</td></tr>').join('') + '</table>' : '<p class="tr-empty">No page views yet.</p>';
+  const C = d.clicks || [];
+  $('trClicks').innerHTML = C.length ? '<table class="tr-tbl"><tr><th>Button or link</th><th class="n">Taps</th><th class="n">Enquired</th></tr>' + C.slice(0, 15).map(c =>
+    '<tr><td>' + esc(c.label) + '<small>mostly on ' + esc(c.topPage || 'Home') + '</small></td><td class="n">' + c.clicks + '</td><td class="n' + (c.enquired ? ' tr-good' : '') + '">' + pct(c.enquired, c.visits) + '%</td></tr>').join('') + '</table>' : '<p class="tr-empty">No clicks yet.</p>';
+  bars('trSrc', d.sources); bars('trDev', (d.devices || []).map(x => ({ k: x.k.charAt(0).toUpperCase() + x.k.slice(1), n: x.n }))); bars('trCity', d.cities);
+  // funnels
+  const f = d.funnel || {}, bookViews = (P.find(p => /book\.html$/.test(p.path)) || {}).visits || 0;
+  funnel('trBook', [['Opened the form', f.book_open], ['Picked a package', f.book_step2], ['Picked a date', f.book_step3], ['Your details', f.book_step4], ['Sent', (f.book_sent_wa || 0) + (f.book_sent_email || 0), (f.book_sent_wa || 0) + ' WhatsApp, ' + (f.book_sent_email || 0) + ' email']]);
+  funnel('trMeet', [['Opened the page', bookViews], ['Picked a time', f.meet_open], ['Sent a request', f.meet_sent]]);
+  // busiest times: rows Monday..Sunday, 24 hours
+  const g = d.grid || [], max = Math.max(1, ...g.flat()), order = [1, 2, 3, 4, 5, 6, 0], names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  $('trHeat').innerHTML = '<span></span>' + Array.from({ length:24 }, (_, h) => '<span style="justify-content:center">' + (h % 6 === 0 ? h : '') + '</span>').join('') +
+    order.map(w => '<span>' + names[w] + '</span>' + (g[w] || Array(24).fill(0)).map((n, h) => '<i title="' + names[w] + ' ' + h + ':00, ' + n + ' views" style="' + (n ? 'background:var(--accent);opacity:' + (0.15 + 0.85 * n / max).toFixed(2) : '') + '"></i>').join('')).join('');
+  insights();
+  // alert switches
+  const al = d.alerts || {};
+  document.querySelectorAll('[data-al]').forEach(i => { i.checked = !!al[i.dataset.al]; });
+}
+
+function bars(id, list){
+  list = (list || []).slice(0, 8); const tot = list.reduce((s, x) => s + x.n, 0) || 1;
+  $(id).innerHTML = list.length ? list.map(x => '<div class="tr-br"><span>' + esc(x.k) + '</span><b>' + x.n + ' <small style="color:var(--ink-soft);font-weight:600">' + pct(x.n, tot) + '%</small></b><span class="tk"><i style="width:' + pct(x.n, tot) + '%"></i></span></div>').join('') : '<p class="tr-empty">Nothing yet.</p>';
+}
+function funnel(id, steps){
+  const top = Math.max(1, steps[0][1] || 0);
+  $(id).innerHTML = steps[0][1] ? steps.map((s, i) => '<div class="tr-fs"><span>' + s[0] + '</span><span class="tk"><i style="width:' + pct(s[1] || 0, top) + '%"></i></span><span class="n">' + (s[1] || 0) + '<small>' + (i ? pct(s[1] || 0, top) + '%' : 'start') + (s[2] ? '' : '') + '</small></span></div>' + (s[2] && s[1] ? '<p class="tr-sub" style="margin:-2px 0 0">' + s[2] + '</p>' : '')).join('') : '<p class="tr-empty">No one has started this yet in this period.</p>';
+}
+function drawChart(days){
+  const W = Math.max(280, Math.round($('trChart').clientWidth || 640)), H = 190, L = 30, R = 18, T = 14, B = 24, n = days.length;   // drawn at the real width so labels stay sharp on a phone
+  const max = Math.max(4, ...days.map(x => x.visits)), y = v => T + (H - T - B) * (1 - v / max), x = i => L + (W - L - R) * (n === 1 ? .5 : i / (n - 1));
+  const bw = Math.max(2, Math.min(26, (W - L - R) / n * .6));
+  let s = '<svg class="tr-chart" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">';
+  [0, .5, 1].forEach(f => { const v = Math.round(max * f), yy = y(v); s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yy + '" y2="' + yy + '" stroke="var(--line)" stroke-width="1"/><text class="ax" x="' + (L - 6) + '" y="' + (yy + 3) + '" text-anchor="end">' + v + '</text>'; });
+  days.forEach((d, i) => {
+    s += '<rect x="' + (x(i) - bw / 2) + '" y="' + y(d.visits) + '" width="' + bw + '" height="' + Math.max(0, H - B - y(d.visits)) + '" rx="3" fill="var(--accent)" opacity=".85"><title>' + dShort(d.day) + ': ' + d.visits + ' visits, ' + d.views + ' views, ' + d.enquiries + ' enquiries</title></rect>';
+    if(d.enquiries) s += '<circle cx="' + x(i) + '" cy="' + (y(d.visits) - 8) + '" r="4.5" fill="#1f8a4c"><title>' + d.enquiries + ' enquiries</title></circle>';
+    const every = Math.ceil(n / Math.max(3, Math.floor(W / 64))); if(i % every === 0 || i === n - 1) s += '<text class="ax" x="' + x(i) + '" y="' + (H - 6) + '" text-anchor="middle">' + dShort(d.day) + '</text>';
+  });
+  $('trChart').innerHTML = s + '</svg>';
+  $('trChartSub').textContent = RANGE === 1 ? 'Today so far.' : 'Each day, with enquiries (green dots).';
+}
+
+/* plain-English pointers from the numbers */
+function insights(){
+  const d = DATA, t = d.totals, out = [], P = d.pages || [], C = d.clicks || [], S = d.sources || [], f = d.funnel || {};
+  if(!t.visits){ $('trIns').innerHTML = '<p class="tr-empty">Tips show here once people visit.</p>'; return; }
+  const avg = t.visits ? t.enquiries / t.visits : 0;
+  const best = P.filter(p => p.visits >= 3 && p.enquired).sort((a, b) => b.enquired / b.visits - a.enquired / a.visits)[0];
+  if(best && avg && best.enquired / best.visits > avg * 1.3) out.push(['&#11088;', '<b>' + esc(best.name) + '</b> works: ' + pct(best.enquired, best.visits) + '% of people who see it enquire, against ' + Math.round(avg * 100) + '% overall. Link to it from your Instagram bio and stories.']);
+  if(S[0]) out.push(['&#128205;', '<b>' + esc(S[0].k) + '</b> brings the most visits (' + pct(S[0].n, t.visits) + '%).' + (S[0].k === 'Instagram' ? ' Your posts are doing the selling: keep a clear link in your bio.' : '')]);
+  const dev = (d.devices || [])[0]; if(dev && dev.k === 'phone' && pct(dev.n, t.visits) >= 60) out.push(['&#128241;', pct(dev.n, t.visits) + '% visit on a phone. Check every change on your phone first.']);
+  const quick = P.filter(p => p.views >= 5 && p.avgSecs && p.avgSecs < 12)[0]; if(quick) out.push(['&#9203;', 'People leave <b>' + esc(quick.name) + '</b> after ' + fmtSecs(quick.avgSecs) + ' on average. A stronger first screen (photo, one line, one button) could keep them.']);
+  if(f.book_open >= 3){ const sent = (f.book_sent_wa || 0) + (f.book_sent_email || 0), r = pct(sent, f.book_open); out.push([r >= 40 ? '&#9989;' : '&#9888;&#65039;', r + '% of people who open Book a shoot send it.' + (r < 40 ? ' Look at where they stop in the form below.' : ' The form is doing its job.')]); }
+  const wa = C.find(c => /^WhatsApp/.test(c.label)); if(wa) out.push(['&#128172;', wa.clicks + ' WhatsApp taps, mostly on ' + esc(wa.topPage) + '. These are enquiries too, even though they are not counted above.']);
+  const g = d.grid || []; let bw = 0, bh = 0, bn = 0; g.forEach((r, w) => r.forEach((n, h) => { if(n > bn){ bn = n; bw = w; bh = h; } }));
+  if(bn >= 3) out.push(['&#128337;', 'Busiest: <b>' + ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'][bw] + ' around ' + bh + ':00</b>. Post an hour before that.']);
+  $('trIns').innerHTML = out.length ? out.slice(0, 6).map(x => '<div class="tr-in"><em>' + x[0] + '</em><span>' + x[1] + '</span></div>').join('') : '<p class="tr-empty">More tips once there is a bit more traffic.</p>';
+}
+
+document.getElementById('trRange').onclick = e => {
+  const b = e.target.closest('[data-r]'); if(!b) return;
+  RANGE = +b.dataset.r; try{ localStorage.setItem('fom.trRange', RANGE); }catch(x){}
+  document.querySelectorAll('#trRange [data-r]').forEach(x => x.classList.toggle('on', x === b)); load();
+};
+document.getElementById('trAlerts').addEventListener('change', async () => {
+  const alerts = {}; document.querySelectorAll('[data-al]').forEach(i => { alerts[i.dataset.al] = i.checked; });
+  try{
+    const r = await fetch(WORKER + '/admin/stats-alerts?biz=' + BIZ, { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + await AUTH.currentUser.getIdToken() }, body:JSON.stringify({ alerts }) });
+    if(!r.ok) throw new Error(); toast('Saved');
+  }catch(e){ toast('Could not save. Try again.'); }
+});
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') load(true); });
+let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { if(DATA) drawChart(DATA.days); }, 200); });
+
+const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+(async function init(){
+  if(!configured) return;
+  try{
+    const b='https://www.gstatic.com/firebasejs/10.12.0/';
+    await loadScript(b+'firebase-app-compat.js');
+    await Promise.all([loadScript(b+'firebase-auth-compat.js'), loadScript(b+'firebase-firestore-compat.js')]);
+    try{ firebase.initializeApp(firebaseConfig); }catch(e){}
+    const auth=firebase.auth(), db=firebase.firestore(); AUTH = auth;
+    try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+    if(window.FOM_SESSION)FOM_SESSION.attach(auth);
+    const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value).catch(()=>{ $('lgErr').textContent='Incorrect email or password.'; }); };
+    $('lgBtn').onclick=login; $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+    $('logoutBtn').onclick=()=>auth.signOut();
+    auth.onAuthStateChanged(u=>{
+      $('logoutBtn').style.display=u?'inline-block':'none';
+      if(!u){ $('loginGate').style.display='flex'; return; }
+      db.collection('admins').doc(u.uid).get().then(ad=>{
+        if(!ad.exists){ $('lgErr').textContent='This account does not have admin access.'; auth.signOut(); return; }
+        $('loginGate').style.display='none'; load();
+        clearInterval(timer); timer = setInterval(() => { if(document.visibilityState === 'visible') load(true); }, 60000);   // live count stays fresh
+      }).catch(()=>{ $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
+    });
+  }catch(e){ console.error('Traffic init failed:', e.message||e); }
+})();
+</script>
+<script src="activity.js?v=2"></script>
+<script src="app.js?v=3"></script>
+</body>
+</html>

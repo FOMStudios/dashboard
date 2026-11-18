@@ -9,5 +9,9 @@
   "r2_buckets": [
     { "binding": "BUCKET", "bucket_name": "fom-deliverables" }
   ],
-  "triggers": { "crons": ["0 3 * * *"] }
+  // Website traffic (18 Nov 2026): SQLite Durable Object, free plan
+  "durable_objects": { "bindings": [ { "name": "STATS", "class_name": "Stats" } ] },
+  "migrations": [ { "tag": "v1-stats", "new_sqlite_classes": ["Stats"] } ],
+  // 03:00 UTC: gallery auto-delete. Every hour: traffic alerts (spike, daily summary, weekly report)
+  "triggers": { "crons": ["0 3 * * *", "0 * * * *"] }
 }
