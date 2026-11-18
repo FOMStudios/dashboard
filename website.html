@@ -222,6 +222,23 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .ws-pub[disabled]{opacity:.45;pointer-events:none;}
 .ws-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 22px;margin-bottom:14px;}
 .ws-card h2{font-size:17px;font-weight:800;}
+/* collapsible sections (18 Nov 2026): tap a heading to fold it; remembered per business on this device */
+.ws-card>h2.ws-fold{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;-webkit-user-select:none;margin:-4px -6px 0;padding:4px 6px;border-radius:10px;}
+.ws-card>h2.ws-fold:hover{background:rgba(0,0,0,.035);}
+.ws-card>h2.ws-fold:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ws-card>h2.ws-fold .ws-chev{margin-left:auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;flex-shrink:0;transition:transform .25s;font-size:12px;color:var(--ink-soft);}
+.ws-card.folded>h2.ws-fold .ws-chev{transform:rotate(-90deg);}
+.ws-card .ws-dot{width:8px;height:8px;border-radius:50%;background:#d4a017;display:none;flex-shrink:0;}
+.ws-card.touched .ws-dot{display:inline-block;}
+.ws-card>.ws-body{display:grid;grid-template-rows:1fr;transition:grid-template-rows .28s ease;}
+.ws-card>.ws-body>.ws-in{min-height:0;overflow:hidden;padding-top:2px;}
+.ws-card.folded>.ws-body{grid-template-rows:0fr;}
+.ws-card.folded{padding-bottom:16px;}
+.ws-card .ws-sum{font-size:13px;color:var(--ink-soft);font-weight:600;display:none;margin-left:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.ws-card.folded .ws-sum{display:block;}
+.ws-folds{display:flex;justify-content:flex-end;gap:8px;margin:-6px 0 12px;}
+.ws-folds button{border:0;background:none;color:var(--ink-soft);font-size:13px;font-weight:700;cursor:pointer;padding:6px 4px;font-family:inherit;}
+.ws-folds button:hover{color:var(--ink);}
 .ws-help{color:var(--ink-soft);font-size:13px;margin:4px 0 14px;}
 .ws-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;}
 .ws-wide{grid-column:1/-1;}
@@ -386,6 +403,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
             <button class="ws-pub" id="wsSave" type="button">Publish</button>
         </span>
     </div>
+    <div class="ws-folds"><button type="button" id="wsFoldAll">Collapse all</button><button type="button" id="wsOpenAll">Expand all</button></div>
 
     <section class="ws-card">
         <h2>Announcement banner</h2>
@@ -792,7 +810,52 @@ function setState(){
   const st=$('wsState'); st.className='ws-state'+(dirty?' dirty':' ok');
   st.textContent = !loaded ? 'Loading...' : dirty ? 'Unsaved changes' : (saved.updatedAtText?('Live. Last published '+saved.updatedAtText):'Live');
   $('wsSave').disabled=!dirty; $('wsRevert').disabled=!dirty;
+  if(!dirty) document.querySelectorAll('.ws-card.touched').forEach(c=>c.classList.remove('touched'));   // published or discarded
+  if(window.wsFoldSums) wsFoldSums();
 }
+
+/* ---- collapsible sections: tap a heading (or Enter/Space) to fold; a yellow dot marks a folded section with unpublished edits ---- */
+(function(){
+  const KEY = 'fom.wsFold.' + (SBA ? 'sba' : 'fom');
+  let folded = {}; try{ folded = JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){}
+  const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(folded)); }catch(e){} };
+  const cards = [...document.querySelectorAll('.ws-card')].filter(c => c.firstElementChild && c.firstElementChild.tagName === 'H2');
+  const idOf = c => c.id || c.firstElementChild.textContent.trim().toLowerCase().replace(/[^a-z]+/g, '-');
+  cards.forEach(c => {
+    const h = c.firstElementChild, body = document.createElement('div'), inner = document.createElement('div');
+    body.className = 'ws-body'; inner.className = 'ws-in';
+    while(h.nextSibling) inner.appendChild(h.nextSibling);   // moves the nodes, so every box keeps its listeners
+    body.appendChild(inner); c.appendChild(body);
+    h.classList.add('ws-fold'); h.tabIndex = 0; h.setAttribute('role', 'button');
+    h.insertAdjacentHTML('beforeend', '<span class="ws-dot" title="Unpublished changes"></span><span class="ws-sum"></span><span class="ws-chev" aria-hidden="true">&#9660;</span>');
+    const set = f => { c.classList.toggle('folded', f); h.setAttribute('aria-expanded', String(!f)); inner.inert = f; };
+    set(!!folded[idOf(c)]);
+    const flip = () => { const f = !c.classList.contains('folded'); set(f); folded[idOf(c)] = f; if(!f) delete folded[idOf(c)]; save(); if(window.wsFoldSums) wsFoldSums(); };
+    h.addEventListener('click', e => { if(e.target.closest('a,button,input,select,label')) return; flip(); });
+    h.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); flip(); } });
+    c.addEventListener('input', () => c.classList.add('touched'));
+    c.addEventListener('change', () => c.classList.add('touched'));
+    c.__set = set;
+  });
+  const all = f => { cards.forEach(c => { if(c.style.display === 'none') return; c.__set(f); if(f) folded[idOf(c)] = true; else delete folded[idOf(c)]; }); save(); if(window.wsFoldSums) wsFoldSums(); };
+  $('wsFoldAll').onclick = () => all(true);
+  $('wsOpenAll').onclick = () => all(false);
+  /* a one-line reminder of what is set, shown next to a folded heading */
+  window.wsFoldSums = () => {
+    const val = id => { const e = document.getElementById(id); return e ? (e.type === 'checkbox' ? e.checked : String(e.value || '').trim()) : ''; };
+    cards.forEach(c => {
+      const sum = c.querySelector('.ws-sum'); if(!sum || !c.classList.contains('folded')) return;
+      const n = c.querySelectorAll('input:not([type=hidden]):not([type=file]),select,textarea').length;
+      let t = '';
+      if(c.id === 'stCard') t = val('stOn') ? 'On' : 'Off';
+      else if(c.id === 'bfCard') t = val('bfOn') === false ? 'Old form' : 'Step-by-step';
+      else if(c.id === 'ghCard') t = (typeof GH !== 'undefined' && GH.src) ? 'Your photo' : 'Default';
+      else if(c.querySelector('#bOn')) t = val('bOn') ? 'On' : 'Off';
+      else if(c.querySelector('#bdList')) { const k = c.querySelectorAll('#bdList > *').length; t = k ? k + ' blocked' : 'None'; }
+      sum.textContent = t ? '\u00b7 ' + t : '';
+    });
+  };
+})();
 
 function validate(d){
   const bad=[]; const mark=(id,cond)=>{ $(id).classList.toggle('bad',!cond); if(!cond) bad.push(id); };

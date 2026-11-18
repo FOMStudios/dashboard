@@ -730,7 +730,7 @@ async function handleTrack(request, env, ctx) {
   const sid = clean(b.s, 24).replace(/[^a-z0-9]/gi, '');
   if (!type || sid.length < 8) return json({ error: 'bad hit' }, 400);
   let src = clean(b.r, 40);
-  if (src && !SRC_OK.includes(src)) src = src.toLowerCase().replace(/^www\./, '').replace(/[^a-z0-9.-]/g, '').slice(0, 40);
+  if (src && !SRC_OK.includes(src) && !/^QR: [a-z -]{1,20}$/.test(src)) src = src.toLowerCase().replace(/^www\./, '').replace(/[^a-z0-9.-]/g, '').slice(0, 40);
   const cf = request.cf || {};
   const hit = {
     ts: Date.now(), biz: b.b === 'sba' ? 'sba' : 'fom', sid, type,
