@@ -721,7 +721,7 @@ async function statsCall(env, path, body) {
   const r = await st.fetch('https://stats' + path, { method: 'POST', body: JSON.stringify(body || {}) });
   return r.json();
 }
-const SRC_OK = ['Instagram', 'Facebook', 'TikTok', 'Google', 'Bing', 'WhatsApp', 'YouTube', 'LinkedIn', 'Pinterest', 'Email', 'Direct'];
+const SRC_OK = ['Instagram', 'Instagram stories', 'Facebook', 'TikTok', 'Google', 'Google Business', 'Bing', 'WhatsApp', 'QR code', 'YouTube', 'LinkedIn', 'Pinterest', 'Email', 'Direct'];
 async function handleTrack(request, env, ctx) {
   if (request.method !== 'POST') return json({ error: 'POST only' }, 405);
   if (!env.STATS) return json({ ok: true, off: true });

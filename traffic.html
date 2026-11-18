@@ -145,6 +145,12 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .tr-sw input:checked+span:after{transform:translateX(18px);}
 .tr-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
 .tr-acts a,.tr-acts button{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:99px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+.tr-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.tr-link{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:11px 14px;cursor:pointer;font-family:inherit;color:var(--ink);min-width:0;}
+.tr-link b{font-size:14.5px;}
+.tr-link code{font-size:12px;color:var(--ink-soft);word-break:break-all;}
+.tr-link.ok{border-color:#1f8a4c;}
+@media(max-width:560px){.tr-links{grid-template-columns:minmax(0,1fr);}}
 .tr-msg{background:var(--bg-pill);border:1px dashed var(--line);border-radius:var(--radius-card);padding:28px 22px;text-align:center;color:var(--ink-soft);margin-bottom:16px;}
 .tr-msg b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px;}
 .tr-empty{color:var(--ink-soft);font-size:14px;padding:6px 0;}
@@ -247,6 +253,10 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
         </div>
         <section class="tr-card"><h2>Busiest times</h2><p class="tr-sub">Page views by day and hour (South African time). Darker is busier: a good guide for when to post.</p><div class="tr-heat" id="trHeat"></div></section>
     </div>
+    <section class="tr-card"><h2>Tracked links</h2><p class="tr-sub">Use these links instead of the plain website address, so Where they come from shows exactly which link brought each visit. Tap to copy.</p>
+        <div class="tr-links" id="trLinks"></div>
+        <p class="tr-sub" style="margin:12px 0 0">Already tagged for you: the Website link in your emails (Email) and the booking link in Bookings WhatsApp messages (WhatsApp).</p>
+    </section>
     <div class="tr-grid2">
         <section class="tr-card"><h2>Notifications</h2><p class="tr-sub">Sent to the phones that have notifications turned on (Settings, Notifications).</p>
             <div class="tr-tg" id="trAlerts">
@@ -396,6 +406,15 @@ document.getElementById('trAlerts').addEventListener('change', async () => {
     if(!r.ok) throw new Error(); toast('Saved');
   }catch(e){ toast('Could not save. Try again.'); }
 });
+/* tracked links: ?src= values track.js turns into source names (keep in step with its map) */
+const LINKS = [['ig', 'Instagram bio'], ['igs', 'Instagram stories'], ['wa', 'WhatsApp status and chats'], ['fb', 'Facebook'], ['tt', 'TikTok'], ['gbp', 'Google Business profile'], ['qr', 'QR code (cards, flyers)'], ['email', 'Email signature']];
+const linkFor = k => 'https://www.fomstudios.co.za/' + (BIZ === 'sba' ? 'shotbya/' : '') + '?src=' + k;
+$('trLinks').innerHTML = LINKS.map(([k, n]) => '<button type="button" class="tr-link" data-src="' + k + '"><b>' + n + '</b><code>' + esc(linkFor(k).replace('https://www.', '')) + '</code></button>').join('');
+$('trLinks').onclick = async e => {
+  const b = e.target.closest('[data-src]'); if(!b) return;
+  try{ await navigator.clipboard.writeText(linkFor(b.dataset.src)); }catch(x){ const t = document.createElement('textarea'); t.value = linkFor(b.dataset.src); document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); }catch(y){} t.remove(); }
+  b.classList.add('ok'); setTimeout(() => b.classList.remove('ok'), 1500); toast('Copied: ' + b.querySelector('b').textContent + ' link');
+};
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') load(true); });
 let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { if(DATA) drawChart(DATA.days); }, 200); });
 

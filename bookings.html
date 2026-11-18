@@ -566,7 +566,7 @@ async function act(r, a){
     }catch(e){ console.warn(e); toast('Could not confirm. Check the Firestore rules (meetings, meetingRequests).'); }
   }
   else if(a==='move'){
-    const msg='Hi '+first(r.name)+', it\'s '+(first(B.owner)||B.name)+' from '+B.name+'. Thanks for booking a meeting! Unfortunately '+fmtLong(r)+' no longer works for me. Could you pick another time here? '+PAGE_URL;
+    const msg='Hi '+first(r.name)+', it\'s '+(first(B.owner)||B.name)+' from '+B.name+'. Thanks for booking a meeting! Unfortunately '+fmtLong(r)+' no longer works for me. Could you pick another time here? '+PAGE_URL+'?src=wa';
     window.open('https://wa.me/'+waNum(r.phone)+'?text='+encodeURIComponent(msg),'_blank','noopener');
     await release(r,'moved'); toast('Time released. They can book again.');
   }
