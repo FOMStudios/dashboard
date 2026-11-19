@@ -933,6 +933,9 @@ export class Stats {
     this.sql.exec(`CREATE INDEX IF NOT EXISTS hits_biz_day ON hits (biz, day)`);
     this.sql.exec(`CREATE INDEX IF NOT EXISTS hits_ts ON hits (ts)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT)`);
+    // 19 Nov 2026: rough map position of the visitor's network (about 2 km), for the Traffic map
+    try { this.sql.exec('ALTER TABLE hits ADD COLUMN lat REAL'); } catch (e) {}
+    try { this.sql.exec('ALTER TABLE hits ADD COLUMN lon REAL'); } catch (e) {}
   }
   q(sql, ...a) { return this.sql.exec(sql, ...a).toArray(); }
   get(k, d) { const r = this.q('SELECT v FROM kv WHERE k = ?', k)[0]; try { return r ? JSON.parse(r.v) : d; } catch (e) { return d; } }
@@ -962,8 +965,8 @@ export class Stats {
     // a runaway tab or a script cannot flood the table: at most 400 rows per visit
     const n = this.q('SELECT COUNT(*) AS n FROM hits WHERE sid = ? AND day = ?', h.sid, day)[0].n;
     if (n >= 400) return { ok: true, skipped: 'busy' };
-    this.sql.exec('INSERT INTO hits (ts, day, hour, wd, biz, sid, type, path, label, src, dev, city, secs, scroll) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-      ts, day, sastHour(ts), new Date(ts + SAST).getUTCDay(), h.biz, h.sid, h.type, h.path, h.label, h.src, h.dev, h.city, h.secs, h.scroll);
+    this.sql.exec('INSERT INTO hits (ts, day, hour, wd, biz, sid, type, path, label, src, dev, city, secs, scroll, lat, lon) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      ts, day, sastHour(ts), new Date(ts + SAST).getUTCDay(), h.biz, h.sid, h.type, h.path, h.label, h.src, h.dev, h.city, h.secs, h.scroll, h.lat == null ? null : h.lat, h.lon == null ? null : h.lon);
     // hot visitor: once per visit per kind, and at most one per kind every 3 minutes per business
     const kind = h.type === 'step' && HOT[h.label] && h.label !== 'whatsapp' ? h.label : (h.type === 'click' && /^whatsapp\b/i.test(h.label) ? 'whatsapp' : '');
     if (!kind || !this.alerts(h.biz).hot) return { ok: true };
@@ -978,11 +981,12 @@ export class Stats {
   }
 
   range(biz, from, to) {
-    const rows = this.q('SELECT ts, day, hour, wd, sid, type, path, label, src, dev, city, secs, scroll FROM hits WHERE biz = ? AND day >= ? AND day <= ? ORDER BY ts', biz, from, to);
+    const rows = this.q('SELECT ts, day, hour, wd, sid, type, path, label, src, dev, city, secs, scroll, lat, lon FROM hits WHERE biz = ? AND day >= ? AND day <= ? ORDER BY ts', biz, from, to);
     const visits = new Map(), enquired = new Set();
     for (const r of rows) {
       let v = visits.get(r.sid);
       if (!v) { v = { src: '', dev: r.dev, city: r.city, day: r.day, pages: new Set() }; visits.set(r.sid, v); }
+      if (r.lat != null && v.lat == null) { v.lat = r.lat; v.lon = r.lon; if (!v.city) v.city = r.city; }
       if (r.type === 'view') { if (!v.src) v.src = r.src || 'Direct'; v.pages.add(r.path); }
       if (r.type === 'step' && SENT_STEPS.includes(r.label)) enquired.add(r.sid);
     }
@@ -1020,6 +1024,7 @@ export class Stats {
       sources: count(vs, v => v.src || 'Direct').map(([k, n]) => ({ k, n })),
       devices: count(vs, v => v.dev || 'Other').map(([k, n]) => ({ k, n })),
       cities: count(vs, v => v.city).slice(0, 12).map(([k, n]) => ({ k, n })),
+      places: (() => { const m = {}; visits.forEach((v, sid) => { if (v.lat == null) return; const k = v.lat.toFixed(2) + ',' + v.lon.toFixed(2); const p = m[k] || (m[k] = { lat: v.lat, lon: v.lon, city: v.city || '', n: 0, enq: 0 }); p.n++; if (enquired.has(sid)) p.enq++; }); return Object.values(m).sort((a, b) => b.n - a.n).slice(0, 300); })(),
       funnel: Object.fromEntries(Object.entries(funnel).map(([k, s]) => [k, s.size])),
       grid,
       live: live.map(l => ({ page: pageName(l.path), ago: Math.round((now - l.at) / 1000) })),
@@ -1095,7 +1100,9 @@ async function handleTrack(request, env, ctx) {
     city: type === 'view' ? clean(cf.city, 40) : '',
     secs: type === 'leave' ? Math.max(0, Math.min(7200, Math.round(+b.secs || 0))) : null,
     scroll: type === 'leave' ? Math.max(0, Math.min(100, Math.round(+b.sc || 0))) : null,
-    country: String(cf.country || '').slice(0, 2)
+    country: String(cf.country || '').slice(0, 2),
+    lat: type === 'view' && cf.latitude ? Math.round(+cf.latitude * 50) / 50 : null,
+    lon: type === 'view' && cf.longitude ? Math.round(+cf.longitude * 50) / 50 : null
   };
   const res = await statsCall(env, '/add', hit);
   if (res && res.hot) {

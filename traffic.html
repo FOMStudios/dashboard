@@ -139,6 +139,12 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .tr-tg label small{display:block;color:var(--ink-soft);font-size:12.5px;}
 .tr-sw{position:relative;width:46px;height:28px;flex-shrink:0;}
 .tr-rmcity{border:0;background:#f3dede;color:#b3261e;border-radius:999px;width:22px;height:22px;font-size:11px;font-weight:800;margin-right:8px;cursor:pointer;vertical-align:middle}
+.tr-map{height:380px;border-radius:16px;overflow:hidden;border:1px solid var(--line);z-index:0}
+@media(max-width:600px){.tr-map{height:320px}}
+.tr-mapbtns{display:flex;gap:6px;margin:0 0 10px}.tr-mapbtns button{border:1px solid var(--line);background:var(--bg-pill);color:var(--ink);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.tr-mapbtns button.on{background:#111;border-color:#111;color:#fff}
+.tr-wide{grid-column:1/-1}
+.leaflet-container{font-family:inherit}
 .tr-sw input{opacity:0;width:0;height:0;position:absolute;}
 .tr-sw span{position:absolute;inset:0;background:var(--line);border-radius:99px;transition:.2s;}
 .tr-sw span:after{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
@@ -172,6 +178,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 <script src="brand.js?v=2"></script>
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css?v=3">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 </head>
 <body>
 
@@ -256,6 +263,9 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
         <div class="tr-grid3">
             <section class="tr-card"><h2>Where they come from</h2><p class="tr-sub">The first page of each visit.</p><div class="tr-bars" id="trSrc"></div></section>
             <section class="tr-card"><h2>Devices</h2><p class="tr-sub">Phone, computer or tablet.</p><div class="tr-bars" id="trDev"></div></section>
+            <section class="tr-card tr-wide" id="trMapCard"><h2>Where visitors are</h2><p class="tr-sub">Rough area of each visit's network (about 2 km). Bigger circle = more visits, green ring = someone enquired. Tap a circle for details.</p>
+                <div class="tr-mapbtns"><button type="button" class="on" data-mv="gp">Gauteng</button><button type="button" data-mv="za">South Africa</button><button type="button" data-mv="all">All</button></div>
+                <div id="trMap" class="tr-map"></div><p class="tr-sub" id="trMapNote" style="margin-top:8px"></p></section>
             <section class="tr-card"><h2>Areas</h2><p class="tr-sub">Rough city, from the visitor's network. Cloud servers and visits from outside South Africa are no longer counted (switch in Notifications and settings). Tap ✕ to remove old visits from a city.</p><div class="tr-bars" id="trCity"></div></section>
         </div>
         <div class="tr-grid2">
@@ -327,6 +337,35 @@ const fmtSecs = s => !s ? '0s' : s < 60 ? s + 's' : Math.floor(s / 60) + 'm ' + 
 const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
 const dShort = d => new Date(d + 'T12:00:00Z').toLocaleDateString('en-ZA', { day:'numeric', month:'short' });
 
+/* ---------- map (Leaflet, OpenStreetMap tiles) ---------- */
+let MAP = null, MAPL = null, MAPV = 'gp', MAP_FIT = false;
+const VIEWS = { gp:[[-26.95, 27.4], [-25.35, 28.75]], za:[[-34.9, 16.3], [-22.1, 33.0]] };
+function drawMap(places){
+  if(!$('trMap')) return; if(!window.L){ setTimeout(() => drawMap(places), 400); return; }
+  if(!MAP){
+    MAP = L.map('trMap', { scrollWheelZoom:false, zoomControl:true, attributionControl:true });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:16, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }).addTo(MAP);
+    MAPL = L.layerGroup().addTo(MAP); MAP.fitBounds(VIEWS.gp);
+    document.querySelectorAll('[data-mv]').forEach(b => b.onclick = () => { MAPV = b.dataset.mv; document.querySelectorAll('[data-mv]').forEach(x => x.classList.toggle('on', x === b)); fitMap(); });
+  }
+  MAPL.clearLayers(); MAP_PTS = places || [];
+  const max = Math.max(1, ...MAP_PTS.map(p => p.n));
+  MAP_PTS.forEach(p => {
+    const r = 6 + 22 * Math.sqrt(p.n / max);
+    L.circleMarker([p.lat, p.lon], { radius:r, color:p.enq ? '#1f8a4c' : '#02367B', weight:p.enq ? 4 : 1.5, fillColor:'#02367B', fillOpacity:.35 })
+      .bindPopup('<b>' + esc(p.city || 'Unknown area') + '</b><br>' + p.n + ' visit' + (p.n === 1 ? '' : 's') + (p.enq ? '<br>' + p.enq + ' enquir' + (p.enq === 1 ? 'y' : 'ies') : '')).addTo(MAPL);
+  });
+  const gp = MAP_PTS.filter(p => p.lat > -27 && p.lat < -25.3 && p.lon > 27.3 && p.lon < 28.8).reduce((a, p) => a + p.n, 0), tot = MAP_PTS.reduce((a, p) => a + p.n, 0);
+  $('trMapNote').textContent = tot ? gp + ' of ' + tot + ' mapped visits (' + Math.round(gp / tot * 100) + '%) are in Gauteng.' : 'No mapped visits in this period yet. New visits get a map position from today.';
+  if(!MAP_FIT){ MAP_FIT = true; fitMap(); }
+  setTimeout(() => MAP.invalidateSize(), 50);
+}
+let MAP_PTS = [];
+function fitMap(){
+  if(!MAP) return;
+  if(MAPV === 'all' && MAP_PTS.length) MAP.fitBounds(L.latLngBounds(MAP_PTS.map(p => [p.lat, p.lon])).pad(0.3), { maxZoom:12 });
+  else MAP.fitBounds(VIEWS[MAPV === 'all' ? 'za' : MAPV]);
+}
 async function purgeCity(city){
   if(!confirm('Remove every visit from ' + city + '? Use this for bots, for example cities outside South Africa.')) return;
   try{ const r = await fetch(WORKER + '/admin/stats-purge?biz=' + BIZ, { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + await AUTH.currentUser.getIdToken() }, body:JSON.stringify({ city }) }); const j = await r.json(); toast('Removed ' + (j.removed || 0) + ' visit' + (j.removed === 1 ? '' : 's') + ' from ' + city); load(true); }catch(e){ toast('Could not remove: ' + e.message); }
@@ -372,7 +411,7 @@ function draw(){
   const C = d.clicks || [];
   $('trClicks').innerHTML = C.length ? '<table class="tr-tbl"><tr><th>Button or link</th><th class="n">Taps</th><th class="n">Enquired</th></tr>' + C.slice(0, 15).map(c =>
     '<tr><td>' + esc(c.label) + '<small>mostly on ' + esc(c.topPage || 'Home') + '</small></td><td class="n">' + c.clicks + '</td><td class="n' + (c.enquired ? ' tr-good' : '') + '">' + pct(c.enquired, c.visits) + '%</td></tr>').join('') + '</table>' : '<p class="tr-empty">No clicks yet.</p>';
-  bars('trSrc', d.sources); bars('trDev', (d.devices || []).map(x => ({ k: x.k.charAt(0).toUpperCase() + x.k.slice(1), n: x.n }))); bars('trCity', d.cities); $('trCity').querySelectorAll('.tr-br').forEach((r, i) => { const c = (d.cities || [])[i]; if(!c) return; const x = document.createElement('button'); x.type = 'button'; x.textContent = '✕'; x.title = 'Remove visits from ' + c.k; x.className = 'tr-rmcity'; x.onclick = () => purgeCity(c.k); r.querySelector('b').prepend(x); });
+  bars('trSrc', d.sources); bars('trDev', (d.devices || []).map(x => ({ k: x.k.charAt(0).toUpperCase() + x.k.slice(1), n: x.n }))); try{ drawMap(d.places); }catch(e){ console.warn('map', e); } bars('trCity', d.cities); $('trCity').querySelectorAll('.tr-br').forEach((r, i) => { const c = (d.cities || [])[i]; if(!c) return; const x = document.createElement('button'); x.type = 'button'; x.textContent = '✕'; x.title = 'Remove visits from ' + c.k; x.className = 'tr-rmcity'; x.onclick = () => purgeCity(c.k); r.querySelector('b').prepend(x); });
   // funnels
   const f = d.funnel || {}, bookViews = (P.find(p => /book\.html$/.test(p.path)) || {}).visits || 0;
   funnel('trBook', [['Opened the form', f.book_open], ['Picked a package', f.book_step2], ['Picked a date', f.book_step3], ['Your details', f.book_step4], ['Sent', (f.book_sent_wa || 0) + (f.book_sent_email || 0), (f.book_sent_wa || 0) + ' WhatsApp, ' + (f.book_sent_email || 0) + ' email']]);
@@ -548,6 +587,7 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
   }catch(e){ console.error('Traffic init failed:', e.message||e); }
 })();
 </script>
+<script src="vendor/leaflet/leaflet.js"></script>
 <script src="activity.js?v=2"></script>
 <script src="app.js?v=8"></script>
 </body>
