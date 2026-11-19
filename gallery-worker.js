@@ -410,6 +410,7 @@ export default {
     if (path === '/event') return handleEvent(request, env, ctx);
     if (path === '/t') return handleTrack(request, env, ctx);
     if (path === '/admin/channel-save') return handleChannelSave(request, env);
+    if (path === '/admin/channel-test') return handleChannelTest(request, env);
     if (path === '/admin/stats' || path === '/admin/stats-alerts') return handleStatsAdmin(path, request, env, url);
     if (path === '/events') return handleEvents(request, env, url);
     if (path.startsWith('/push/')) return handlePush(path, request, env);
@@ -814,6 +815,25 @@ async function handleChannelSave(request, env) {
     if (!r.ok) { const t = await r.text(); return json({ error: 'GitHub did not accept it (' + r.status + '): ' + t.slice(0, 160) }, 502); }
     return json({ ok: true });
   } catch (e) { return json({ error: String(e && e.message || e) }, 502); }
+}
+// "Test the GitHub link" on the WhatsApp Group page: says exactly which step is wrong
+async function handleChannelTest(request, env) {
+  if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+  const H = { Authorization: 'Bearer ' + env.GH_TOKEN, 'User-Agent': 'fom-gallery-worker', Accept: 'application/vnd.github+json' };
+  if (!env.GH_TOKEN) return json({ ok: false, step: 'secret', msg: 'The fom-gallery Worker has no GH_TOKEN. In Cloudflare open fom-gallery, Settings, Variables and Secrets (not Build variables), add a Secret named GH_TOKEN and press Deploy.' });
+  try {
+    const u = await fetch('https://api.github.com/user', { headers: H });
+    if (u.status === 401) return json({ ok: false, step: 'token', msg: 'GitHub does not recognise the token (wrong, expired or copied with a space). Make a new token and replace the GH_TOKEN secret.' });
+    const r = await fetch('https://api.github.com/repos/' + GH_REPO, { headers: H });
+    if (r.status === 404 || r.status === 403) return json({ ok: false, step: 'access', msg: 'The token works but cannot see FOMStudios/dashboard. Check: Resource owner FOMStudios, Only select repositories: dashboard, and approve it under FOMStudios, Settings, Personal access tokens, Pending requests.' });
+    if (!r.ok) return json({ ok: false, step: 'access', msg: 'GitHub answered ' + r.status + ' when opening the repo.' });
+    const path = 'channel/link-test.txt', cur = await ghFile(env, path);
+    const w = await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/' + path, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, H),
+      body: JSON.stringify({ message: 'GitHub link test from the dashboard', content: btoa('Link tested ' + new Date().toISOString() + '\n'), sha: cur ? cur.sha : undefined, branch: 'main' }) });
+    if (w.status === 403 || w.status === 404) return json({ ok: false, step: 'write', msg: 'The token can read the repo but not write. Edit the token: Repository permissions, Contents: Read and write, then save (the secret stays the same).' });
+    if (!w.ok) return json({ ok: false, step: 'write', msg: 'GitHub refused the write (' + w.status + '): ' + (await w.text()).slice(0, 120) });
+    return json({ ok: true, msg: 'All good: the Worker can write to your repo. Press Save.' });
+  } catch (e) { return json({ ok: false, step: 'network', msg: String(e && e.message || e) }); }
 }
 async function channelCheck(env) {
   // new messages from the scheduled task? (public file, no token needed)

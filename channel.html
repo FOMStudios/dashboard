@@ -173,6 +173,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 <link rel="stylesheet" href="app.css">
 <style>
 /* ============ WHATSAPP GROUP ============ */
+.ch-test{ padding:10px 16px; border-radius:999px; border:1px solid #111; background:#111; color:#fff; font-weight:700; cursor:pointer; }
 .ch-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
 .ch-period{font-weight:800;font-size:16px;}
 .ch-next{font-size:13px;color:var(--ink-soft);font-weight:600;}
@@ -353,6 +354,7 @@ html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7
             </ol>
             Then press Save on this page: the badge at the top turns green ("Claude has your settings").
         </div>
+        <div style="margin-top:12px"><button type="button" class="ch-test" id="chTest">Test the GitHub link</button><div id="chTestOut" class="ch-help" style="margin-top:8px"></div></div>
     </section>
     </div>
 </div>
@@ -532,12 +534,21 @@ async function save(extra){
     $('chLinkCard').classList.add('folded');
   }catch(e){
     console.warn(e);
-    if(e.saved){ setSync(false, 'Saved here, not sent to Claude yet'); $('chSaveBar').hidden = true; toast(e.message); $('chLinkCard').classList.remove('folded'); $('chLinkCard').scrollIntoView({ behavior:'smooth', block:'start' }); }
+    if(e.saved){ setSync(false, 'Saved here, not sent to Claude yet'); $('chSaveBar').hidden = true; toast(e.message); $('chTestOut').textContent = '❌ Last Save: ' + e.message; $('chTestOut').style.color = '#b3261e'; $('chLinkCard').classList.remove('folded'); $('chLinkCard').scrollIntoView({ behavior:'smooth', block:'start' }); }
     else { $('chSaveTxt').textContent = 'Could not save: ' + e.message; }
   }
   $('chSave').disabled = false;
 }
 $('chSave').onclick = () => save();
+$('chTest').onclick = async () => {
+  const o = $('chTestOut'); o.textContent = 'Testing...'; o.style.color = '';
+  try{
+    const r = await fetch(WORKER + '/admin/channel-test', { method:'POST', headers:{ Authorization:'Bearer ' + await AUTH.currentUser.getIdToken() } });
+    const j = await r.json().catch(() => ({ msg:'The Worker answered ' + r.status + '.' }));
+    o.textContent = (j.ok ? '✅ ' : '❌ ') + (j.msg || j.error || 'No answer');
+    o.style.color = j.ok ? '#1d7a3e' : '#b3261e';
+  }catch(e){ o.textContent = '❌ Could not reach the Worker: ' + e.message; o.style.color = '#b3261e'; }
+};
 $('chAsk').onclick = () => { if(!confirm('Ask Claude for a fresh set of messages tomorrow morning (about 07:45)? It also uses your latest settings.')) return; save({ refreshRequested:new Date().toISOString() }); };
 
 /* folding cards, remembered on this device */
