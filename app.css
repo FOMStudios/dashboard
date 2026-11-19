@@ -230,3 +230,11 @@ img.sba-logo{object-fit:contain;}
 .fom-mbtns{display:flex;gap:6px;flex:none;}
 .fom-mbtns button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line, rgba(0,0,0,.12));background:var(--surface-2);color:inherit;font-size:14px;cursor:pointer;}
 .fom-mbtns button:disabled{opacity:.3;cursor:default;}
+
+/* search sheet */
+.fom-sq{min-height:0;height:48px;font-size:16px;margin-bottom:4px}
+.fom-sh{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:14px 12px 4px}
+.fom-row b small{display:block;font-weight:500;font-size:12.5px;color:var(--ink-soft);margin-top:1px}
+.fom-nav button.js-search svg{width:23px;height:23px}
+.fom-dsearch{display:flex;align-items:center;gap:10px;width:100%;border:1px solid var(--line);background:var(--surface,#fafaf9);border-radius:999px;padding:12px 18px;font:inherit;font-size:15px;color:var(--ink-soft);cursor:text;margin:0 0 18px;text-align:left}
+.fom-dsearch svg{width:20px;height:20px;flex:none}

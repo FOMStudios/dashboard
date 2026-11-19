@@ -65,7 +65,8 @@ if(here === '' ) here = 'dashboard.html';
 var IC = {
   menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
   home:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.4V20a1 1 0 0 0 1 1h5v-6h6v6h5a1 1 0 0 0 1-1v-9.6z"/></svg>',
-  calc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2.2"/><path d="M8.5 7h7"/><path d="M8.5 11h0M12 11h0M15.5 11h0M8.5 14.5h0M12 14.5h0M15.5 14.5h0M8.5 18h0M12 18h0M15.5 18h0"/></svg>'
+  calc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2.2"/><path d="M8.5 7h7"/><path d="M8.5 11h0M12 11h0M15.5 11h0M8.5 14.5h0M12 14.5h0M15.5 14.5h0M8.5 18h0M12 18h0M15.5 18h0"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>'
 };
 
 /* ---- scrim + sheet (shared for hamburger list and settings) ---- */
@@ -273,10 +274,57 @@ var nav = D.createElement('nav'); nav.className = 'fom-nav'; nav.setAttribute('a
 nav.innerHTML =
   '<button class="js-menu" aria-label="All pages">'+IC.menu+'</button>'+
   '<button class="js-home'+(here==='dashboard.html'?' active':'')+'" aria-label="Dashboard">'+IC.home+'</button>'+
+  '<button class="js-search" aria-label="Search everything">'+IC.search+'</button>'+
   '<button class="js-calc'+(here==='calculator.html'?' active':'')+'" aria-label="Price Calculator">'+IC.calc+'</button>'+
   '<button class="js-prof" aria-label="Profile and settings"><span class="av"><img src="'+BZ.b.icon+'" alt=""></span></button>';
 D.body.appendChild(nav);
 nav.querySelector('.js-menu').onclick = openMenu;
+nav.querySelector('.js-search').onclick = function(){ openSearch(); };
+
+/* ---- search everything: pages, clients and orders, leads, meetings, content ideas, photo sales events ---- */
+var SRCH = { at:0, data:null };
+function sEsc(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function loadSearchData(){
+  if(SRCH.data && Date.now() - SRCH.at < 60000) return Promise.resolve(SRCH.data);
+  var f = fb(), db = null; try{ db = f && f.firestore && f.auth().currentUser ? f.firestore() : null; }catch(e){}
+  var mine = function(list){ try{ return BZ.mine ? BZ.mine(list) : list; }catch(e){ return list; } };
+  var grab = function(col){ if(!db) return Promise.resolve([]); return db.collection(col).get().then(function(s){ return mine(s.docs.map(function(d){ var x = d.data(); x.id = d.id; return x; })); }).catch(function(){ return []; }); };
+  var sales = fetch('https://fom-gallery.cold-moon-d65c.workers.dev/file?g=sales%2F&n=index.json&t=' + Date.now(), { cache:'no-store' }).then(function(r){ return r.ok ? r.json() : { events:[] }; }).then(function(j){ return j.events || []; }).catch(function(){ return []; });
+  return Promise.all([grab('orders'), grab('leads'), grab('meetings'), grab('contentPlanner'), BZ.isSba ? Promise.resolve([]) : sales]).then(function(r){
+    SRCH.data = { orders:r[0], leads:r[1], meetings:r[2], content:r[3], sales:r[4], signedIn:!!db }; SRCH.at = Date.now(); return SRCH.data; });
+}
+function openSearch(q){
+  D.getElementById('fomSheetTitle').textContent = 'Search';
+  D.getElementById('fomSheetBody').innerHTML = '<input id="fomSq" class="fom-ta fom-sq" type="search" placeholder="Client, phone, order, lead, page..." autocomplete="off" enterkeyhint="search"><div id="fomSr"><p class="fom-note" style="margin:10px 12px">Type a name, phone number, email, order number, company or page.</p></div>';
+  openSheet();
+  var inp = D.getElementById('fomSq'); inp.value = q || ''; setTimeout(function(){ inp.focus(); }, 60);
+  var tm; inp.oninput = function(){ clearTimeout(tm); tm = setTimeout(run, 120); };
+  inp.onkeydown = function(e){ if(e.key === 'Enter'){ var a = D.querySelector('#fomSr a'); if(a) a.click(); } };
+  loadSearchData().then(run);
+  function run(){
+    var raw = inp.value.trim().toLowerCase(), out = D.getElementById('fomSr'); if(!out) return;
+    if(!raw){ out.innerHTML = '<p class="fom-note" style="margin:10px 12px">Type a name, phone number, email, order number, company or page.</p>'; return; }
+    var terms = raw.split(/\s+/), digits = raw.replace(/\D/g, '');
+    var hit = function(){ var h = [].slice.call(arguments).join(' ').toLowerCase(), hd = h.replace(/\D/g, ''); return terms.every(function(t){ return h.indexOf(t) >= 0; }) || (digits.length >= 4 && hd.indexOf(digits.replace(/^0/, '')) >= 0); };
+    var d = SRCH.data || { orders:[], leads:[], meetings:[], content:[], sales:[] }, groups = [];
+    var pg = PAGES.filter(function(p){ return !(p.fomOnly && BZ.isSba) && hit(p.n, p.h.replace('.html', '')); }).map(function(p){ return { e:p.e, t:p.n, s:'Page', h:p.h }; });
+    if(pg.length) groups.push(['Pages', pg]);
+    var od = d.orders.filter(function(o){ return hit(o.customer, o.orderId, o.clientEmail, o.clientPhone, o.product, o.status, o.notes, o.location, o.shootDate); }).map(function(o){ return { e:'📋', t:(o.customer || 'Client') + (o.orderId ? ' · ' + o.orderId : ''), s:[o.product, o.status, o.shootDate].filter(Boolean).join(' · '), h:'database.html?open=' + encodeURIComponent(o.id) }; });
+    if(od.length) groups.push(['Clients and orders', od]);
+    var ld = d.leads.filter(function(o){ return hit(o.company, o.contact, o.email, o.phone, o.web, o.instagram, o.location, o.category, o.status, o.comments, o.shootType); }).map(function(o){ return { e:'📣', t:o.company || o.contact || 'Lead', s:[o.category, o.location, o.status].filter(Boolean).join(' · '), h:'leads.html?open=' + encodeURIComponent(o.id) }; });
+    if(ld.length) groups.push(['Leads', ld]);
+    var mt = d.meetings.filter(function(m){ var c = m.client || {}; return hit(c.name, c.phone, c.email, m.where, m.notes, m.status); }).map(function(m){ var c = m.client || {}; return { e:'🤝', t:'Meeting · ' + (c.name || 'Client'), s:[m.plannedAt ? String(m.plannedAt).slice(0, 10) : '', m.where, m.status].filter(Boolean).join(' · '), h:'meetings.html?m=' + encodeURIComponent(m.id) }; });
+    if(mt.length) groups.push(['Meetings', mt]);
+    var ct = d.content.filter(function(c){ return hit(c.title, c.notes, c.type, c.status, c.platform); }).map(function(c){ return { e:'🎬', t:c.title || 'Idea', s:[c.type, c.status, c.targetDate].filter(Boolean).join(' · '), h:'content.html' }; });
+    if(ct.length) groups.push(['Content ideas', ct]);
+    var sl = d.sales.filter(function(e){ return hit(e.title, e.place, e.id); }).map(function(e){ return { e:'🛒', t:e.title, s:(e.shop ? 'Prints shop' : 'Event photos') + ' · ' + (e.count || 0) + ' photos', h:'sales.html?ev=' + encodeURIComponent(e.id) }; });
+    if(sl.length) groups.push(['Photo sales', sl]);
+    out.innerHTML = groups.length ? groups.map(function(g){ return '<div class="fom-sh">' + g[0] + (g[1].length > 8 ? ' (' + g[1].length + ')' : '') + '</div>' + g[1].slice(0, 8).map(function(r){ return '<a class="fom-row" href="' + r.h + '"><span class="e">' + r.e + '</span><b>' + sEsc(r.t) + (r.s ? '<small>' + sEsc(r.s) + '</small>' : '') + '</b></a>'; }).join(''); }).join('')
+      : '<p class="fom-note" style="margin:10px 12px">Nothing found for "' + sEsc(inp.value) + '".' + (d.signedIn ? '' : ' Sign in on this page to search clients and leads too.') + '</p>';
+  }
+}
+window.FOM_SEARCH = openSearch;
+D.addEventListener('keydown', function(e){ if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); openSearch(); } });
 nav.querySelector('.js-home').onclick = function(){ if(here!=='dashboard.html') location.href='dashboard.html'; };
 nav.querySelector('.js-calc').onclick = function(){ if(here!=='calculator.html') location.href='calculator.html'; };
 nav.querySelector('.js-prof').onclick = openSettings;

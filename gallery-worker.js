@@ -750,7 +750,7 @@ export default {
     if (path === '/t') return handleTrack(request, env, ctx);
     if (path === '/admin/channel-save') return handleChannelSave(request, env);
     if (path === '/admin/channel-test') return handleChannelTest(request, env);
-    if (path === '/admin/stats' || path === '/admin/stats-alerts') return handleStatsAdmin(path, request, env, url);
+    if (path === '/admin/stats' || path === '/admin/stats-alerts' || path === '/admin/stats-purge') return handleStatsAdmin(path, request, env, url);
     if (path === '/events') return handleEvents(request, env, url);
     if (path.startsWith('/push/')) return handlePush(path, request, env);
     if (path === '/notify') return handleNotify(request, env);
@@ -923,7 +923,7 @@ const SAST = 2 * 3600e3;
 const sastDay = ts => new Date(ts + SAST).toISOString().slice(0, 10);
 const sastHour = ts => new Date(ts + SAST).getUTCHours();
 const SENT_STEPS = ['book_sent_wa', 'book_sent_email', 'meet_sent'];
-const ALERT_DEF = { daily: true, weekly: true, hot: true, spike: true };
+const ALERT_DEF = { daily: true, weekly: true, hot: true, spike: true, zaOnly: true };
 const HOT = { book_open: 'is filling in the Book a shoot form', meet_open: 'is picking a meeting time', whatsapp: 'just tapped WhatsApp' };
 
 export class Stats {
@@ -945,6 +945,11 @@ export class Stats {
     try {
       if (path === '/add') return Response.json(this.add(b));
       if (path === '/query') return Response.json(this.query(b));
+      if (path === '/purge') {   // remove every visit from one city (bots that got in before the filter)
+        const sids = this.q('SELECT DISTINCT sid FROM hits WHERE biz = ? AND city = ?', b.biz, String(b.city || '')).map(r => r.sid);
+        for (const sid of sids) this.sql.exec('DELETE FROM hits WHERE biz = ? AND sid = ?', b.biz, sid);
+        return Response.json({ ok: true, removed: sids.length });
+      }
       if (path === '/alerts') { if (b.set) { const all = this.get('alerts', {}) || {}; all[b.biz] = Object.assign({}, ALERT_DEF, b.set); this.set('alerts', all); } return Response.json(this.alerts(b.biz)); }
       if (path === '/hourly') return Response.json(this.hourly(b.now || Date.now()));
     } catch (e) { return Response.json({ error: String(e && e.message || e) }, { status: 500 }); }
@@ -953,6 +958,7 @@ export class Stats {
 
   add(h) {
     const ts = h.ts, day = sastDay(ts);
+    if (h.country && h.country !== 'ZA' && this.alerts(h.biz).zaOnly) return { ok: true, skipped: 'abroad' };   // only South African visitors count (Traffic page switch)
     // a runaway tab or a script cannot flood the table: at most 400 rows per visit
     const n = this.q('SELECT COUNT(*) AS n FROM hits WHERE sid = ? AND day = ?', h.sid, day)[0].n;
     if (n >= 400) return { ok: true, skipped: 'busy' };
@@ -1067,6 +1073,7 @@ async function statsCall(env, path, body) {
   return r.json();
 }
 const SRC_OK = ['WhatsApp group', 'WhatsApp channel', 'Instagram', 'Instagram stories', 'Facebook', 'TikTok', 'Google', 'Google Business', 'Bing', 'WhatsApp', 'QR code', 'YouTube', 'LinkedIn', 'Pinterest', 'Email', 'Direct'];
+const DC_ORG = /amazon|aws|google|microsoft|azure|facebook|meta platforms|digitalocean|ovh|hetzner|linode|oracle|alibaba|tencent|choopa|vultr|leaseweb|contabo|scaleway|m247|datacamp|psychz|hostinger|colocrossing|zenlayer|huawei|baidu|yandex|hurricane electric|ionos|cogent|servers\.com|hostwinds|interserver|quadranet|limestone|packet|equinix|rackspace|ibm|softlayer|serverion|netcup|kamatera|g-core|gcore|clouvider|datapacket|hivelocity|psinet/i;
 async function handleTrack(request, env, ctx) {
   if (request.method !== 'POST') return json({ error: 'POST only' }, 405);
   if (!env.STATS) return json({ ok: true, off: true });
@@ -1077,6 +1084,9 @@ async function handleTrack(request, env, ctx) {
   let src = clean(b.r, 40);
   if (src && !SRC_OK.includes(src) && !/^QR: [a-z -]{1,20}$/.test(src)) src = src.toLowerCase().replace(/^www\./, '').replace(/[^a-z0-9.-]/g, '').slice(0, 40);
   const cf = request.cf || {};
+  // bots: cloud and data-centre networks (crawlers, uptime checkers, ad and link checkers) and headless browsers are not counted.
+  // Akamai, Cloudflare and Fastly stay in: iPhone Private Relay visitors come through them.
+  if (DC_ORG.test(String(cf.asOrganization || '')) || /HeadlessChrome|PhantomJS|bot\b|crawl|spider|Lighthouse|GTmetrix|Pingdom|UptimeRobot/i.test(request.headers.get('user-agent') || '')) return json({ ok: true, skipped: 'bot' });
   const hit = {
     ts: Date.now(), biz: b.b === 'sba' ? 'sba' : 'fom', sid, type,
     path: (clean(b.p, 80).split('?')[0] || '/').replace(/[^\w\/.-]/g, ''),
@@ -1084,7 +1094,8 @@ async function handleTrack(request, env, ctx) {
     dev: ['phone', 'tablet', 'computer'].includes(b.d) ? b.d : '',
     city: type === 'view' ? clean(cf.city, 40) : '',
     secs: type === 'leave' ? Math.max(0, Math.min(7200, Math.round(+b.secs || 0))) : null,
-    scroll: type === 'leave' ? Math.max(0, Math.min(100, Math.round(+b.sc || 0))) : null
+    scroll: type === 'leave' ? Math.max(0, Math.min(100, Math.round(+b.sc || 0))) : null,
+    country: String(cf.country || '').slice(0, 2)
   };
   const res = await statsCall(env, '/add', hit);
   if (res && res.hot) {
@@ -1103,6 +1114,10 @@ async function handleStatsAdmin(path, request, env, url) {
     let b = {}; try { b = await request.json(); } catch (e) {}
     const set = {}; Object.keys(ALERT_DEF).forEach(k => { set[k] = !!(b.alerts || {})[k]; });
     return json({ ok: true, alerts: await statsCall(env, '/alerts', { biz, set }) });
+  }
+  if (path === '/admin/stats-purge') {
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    return json(await statsCall(env, '/purge', { biz, city: String(b.city || '').slice(0, 40) }));
   }
   const day = s => /^\d{4}-\d{2}-\d{2}$/.test(s || '') ? s : '';
   const to = day(url.searchParams.get('to')) || sastDay(Date.now());

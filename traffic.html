@@ -138,6 +138,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .tr-tg label:first-child{border-top:0;}
 .tr-tg label small{display:block;color:var(--ink-soft);font-size:12.5px;}
 .tr-sw{position:relative;width:46px;height:28px;flex-shrink:0;}
+.tr-rmcity{border:0;background:#f3dede;color:#b3261e;border-radius:999px;width:22px;height:22px;font-size:11px;font-weight:800;margin-right:8px;cursor:pointer;vertical-align:middle}
 .tr-sw input{opacity:0;width:0;height:0;position:absolute;}
 .tr-sw span{position:absolute;inset:0;background:var(--line);border-radius:99px;transition:.2s;}
 .tr-sw span:after{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
@@ -170,7 +171,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <script src="brand.js?v=2"></script>
 <script src="session.js"></script>
-<link rel="stylesheet" href="app.css?v=2">
+<link rel="stylesheet" href="app.css?v=3">
 </head>
 <body>
 
@@ -255,7 +256,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
         <div class="tr-grid3">
             <section class="tr-card"><h2>Where they come from</h2><p class="tr-sub">The first page of each visit.</p><div class="tr-bars" id="trSrc"></div></section>
             <section class="tr-card"><h2>Devices</h2><p class="tr-sub">Phone, computer or tablet.</p><div class="tr-bars" id="trDev"></div></section>
-            <section class="tr-card"><h2>Areas</h2><p class="tr-sub">Rough city, from the visitor's network.</p><div class="tr-bars" id="trCity"></div></section>
+            <section class="tr-card"><h2>Areas</h2><p class="tr-sub">Rough city, from the visitor's network. Cloud servers and visits from outside South Africa are no longer counted (switch in Notifications and settings). Tap ✕ to remove old visits from a city.</p><div class="tr-bars" id="trCity"></div></section>
         </div>
         <div class="tr-grid2">
             <section class="tr-card" id="trBookCard"><h2>Book a shoot form</h2><p class="tr-sub">How far people get, and where they drop off.</p><div class="tr-funnel" id="trBook"></div></section>
@@ -289,6 +290,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
                 <label><span>Hot visitor<small>Someone opens Book a shoot, picks a meeting time or taps WhatsApp</small></span><span class="tr-sw"><input type="checkbox" data-al="hot"><span></span></span></label>
                 <label><span>Traffic spike<small>Visits jump well above normal (checked every hour)</small></span><span class="tr-sw"><input type="checkbox" data-al="spike"><span></span></span></label>
                 <label><span>Daily summary<small>Every day at 18:00: visits, top page, top click, enquiries</small></span><span class="tr-sw"><input type="checkbox" data-al="daily"><span></span></span></label>
+                <label><span>Only count South Africa<small>Visits from other countries are mostly bots and checkers, so they are left out</small></span><span class="tr-sw"><input type="checkbox" data-al="zaOnly"><span></span></span></label>
                 <label><span>Weekly report<small>Mondays at 07:00: the week against the week before</small></span><span class="tr-sw"><input type="checkbox" data-al="weekly"><span></span></span></label>
             </div>
         </section>
@@ -325,6 +327,10 @@ const fmtSecs = s => !s ? '0s' : s < 60 ? s + 's' : Math.floor(s / 60) + 'm ' + 
 const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
 const dShort = d => new Date(d + 'T12:00:00Z').toLocaleDateString('en-ZA', { day:'numeric', month:'short' });
 
+async function purgeCity(city){
+  if(!confirm('Remove every visit from ' + city + '? Use this for bots, for example cities outside South Africa.')) return;
+  try{ const r = await fetch(WORKER + '/admin/stats-purge?biz=' + BIZ, { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + await AUTH.currentUser.getIdToken() }, body:JSON.stringify({ city }) }); const j = await r.json(); toast('Removed ' + (j.removed || 0) + ' visit' + (j.removed === 1 ? '' : 's') + ' from ' + city); load(true); }catch(e){ toast('Could not remove: ' + e.message); }
+}
 async function load(quiet){
   if(!AUTH || !AUTH.currentUser) return;
   const to = today(), from = dayAdd(to, -(RANGE - 1));
@@ -366,7 +372,7 @@ function draw(){
   const C = d.clicks || [];
   $('trClicks').innerHTML = C.length ? '<table class="tr-tbl"><tr><th>Button or link</th><th class="n">Taps</th><th class="n">Enquired</th></tr>' + C.slice(0, 15).map(c =>
     '<tr><td>' + esc(c.label) + '<small>mostly on ' + esc(c.topPage || 'Home') + '</small></td><td class="n">' + c.clicks + '</td><td class="n' + (c.enquired ? ' tr-good' : '') + '">' + pct(c.enquired, c.visits) + '%</td></tr>').join('') + '</table>' : '<p class="tr-empty">No clicks yet.</p>';
-  bars('trSrc', d.sources); bars('trDev', (d.devices || []).map(x => ({ k: x.k.charAt(0).toUpperCase() + x.k.slice(1), n: x.n }))); bars('trCity', d.cities);
+  bars('trSrc', d.sources); bars('trDev', (d.devices || []).map(x => ({ k: x.k.charAt(0).toUpperCase() + x.k.slice(1), n: x.n }))); bars('trCity', d.cities); $('trCity').querySelectorAll('.tr-br').forEach((r, i) => { const c = (d.cities || [])[i]; if(!c) return; const x = document.createElement('button'); x.type = 'button'; x.textContent = '✕'; x.title = 'Remove visits from ' + c.k; x.className = 'tr-rmcity'; x.onclick = () => purgeCity(c.k); r.querySelector('b').prepend(x); });
   // funnels
   const f = d.funnel || {}, bookViews = (P.find(p => /book\.html$/.test(p.path)) || {}).visits || 0;
   funnel('trBook', [['Opened the form', f.book_open], ['Picked a package', f.book_step2], ['Picked a date', f.book_step3], ['Your details', f.book_step4], ['Sent', (f.book_sent_wa || 0) + (f.book_sent_email || 0), (f.book_sent_wa || 0) + ' WhatsApp, ' + (f.book_sent_email || 0) + ' email']]);
@@ -543,6 +549,6 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
 })();
 </script>
 <script src="activity.js?v=2"></script>
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>

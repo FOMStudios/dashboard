@@ -202,7 +202,9 @@ $('otBody').addEventListener('click', async function(e){
 
 /* re-draw Today whenever the leads list changes */
 var _orig = window.safeRenderLeads;
-window.safeRenderLeads = function(){ _orig(); if(typeof store !== 'undefined' && store) OT.snap = true; try{ OT.render(); }catch(e){ console.warn(e); } };
+var OPEN_Q = new URLSearchParams(location.search).get('open');
+window.safeRenderLeads = function(){ _orig(); if(typeof store !== 'undefined' && store) OT.snap = true;
+  if(OPEN_Q && OT.snap && leads.some(function(x){ return x.id === OPEN_Q; })){ var id = OPEN_Q; OPEN_Q = null; setTimeout(function(){ D.querySelector('.tab-chip[data-tab="leads"]').click(); if(typeof openLead === 'function') openLead(id); }, 50); } try{ OT.render(); }catch(e){ console.warn(e); } };
 var waitDb = setInterval(function(){ if(typeof DB !== 'undefined' && DB && typeof store !== 'undefined' && store){ clearInterval(waitDb); OT.loadCfg(); setTimeout(function(){ OT.render(); }, 1200); } }, 400);
 
 /* ============================================================
