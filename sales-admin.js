@@ -50,8 +50,10 @@ async function loadEvents(){
 function drawEvents(){
   $('psEvents').innerHTML = EVENTS.length ? EVENTS.map(function(e){
     return '<div class="ps-ev" data-ev="' + esc(e.id) + '">' + (e.cover ? '<img src="' + W + '/file?g=' + encodeURIComponent('sales/' + e.id + '/t/') + '&n=' + encodeURIComponent(e.cover) + '" alt="">' : '<img alt="">') +
-      '<div><b>' + esc(e.title || e.id) + '</b><small>' + esc(nice(e.date)) + (e.place ? ', ' + esc(e.place) : '') + ' · ' + (e.count || 0) + ' photos</small></div><span class="ps-on' + (e.on ? '' : ' off') + '">' + (e.on ? 'On sale' : 'Hidden') + '</span></div>';
+      '<div><b>' + (e.shop ? '🖼 ' : '') + esc(e.title || e.id) + '</b><small>' + (e.shop ? 'Prints shop' : esc(nice(e.date))) + (e.place ? ', ' + esc(e.place) : '') + ' · ' + (e.count || 0) + ' photos</small></div><span class="ps-on' + (e.on ? '' : ' off') + '">' + (e.on ? 'On sale' : 'Hidden') + '</span></div>';
   }).join('') : '<p class="tr-empty">No events yet. Make your first one below.</p>';
+  if(!EVENTS.some(function(e){ return e.id === 'shop'; })) $('psEvents').insertAdjacentHTML('afterbegin', '<div class="ps-ev" id="psMakeShop"><img alt=""><div><b>🖼 Set up your Prints shop</b><small>Your best shots for sale as prints, frames, canvas and downloads (fomstudios.co.za/prints.html)</small></div></div>');
+  var ms = $('psMakeShop'); if(ms) ms.onclick = function(e){ e.stopPropagation(); EV = { id:'shop', shop:true, title:'Prints shop', date:new Date().toLocaleDateString('en-CA', { timeZone:'Africa/Johannesburg' }), place:'', about:'', prices:{ photo:0, bundle:0 }, on:false, cover:'', photos:[] }; ORDERS = []; SEL.clear(); dirty = true; drawEdit(); save().then(loadEvents); };
 }
 $('psEvents').addEventListener('click', function(e){ var r = e.target.closest('[data-ev]'); if(r) openEvent(r.dataset.ev); });
 $('psNew').onclick = function(){
@@ -70,33 +72,35 @@ async function openEvent(id){
 /* ---------- one event ---------- */
 function drawEdit(){
   if(!EV){ $('psEdit').innerHTML = ''; return; }
-  var link = SITE + '?ev=' + EV.id, untagged = EV.photos.filter(function(p){ return !(p.nums || []).length; }).length;
+  var SH = !!EV.shop;
+  var link = SH ? SITE.replace('photos.html', 'prints.html') + '?x=1' : SITE + '?ev=' + EV.id, untagged = EV.photos.filter(function(p){ return !(p.nums || []).length; }).length;
   $('psEdit').innerHTML =
     '<section class="tr-card"><h2>' + esc(EV.title) + '</h2>' +
+    (SH ? '<p class="tr-sub" style="margin:0 0 10px">Add your best shots and give each a title. Sizes, frames and prices are in Print settings above and apply to every print, also client gallery and event photo prints.</p><div class="ps-grid2"><div><label>Digital download price (R, empty = prints only)</label><input inputmode="numeric" data-p="photo" value="' + esc(EV.prices.photo || '') + '"></div></div>' :
     '<div class="ps-grid2"><div><label>Event name</label><input data-k="title" value="' + esc(EV.title) + '"></div><div><label>Date</label><input type="date" data-k="date" value="' + esc(EV.date) + '"></div>' +
     '<div><label>Place</label><input data-k="place" value="' + esc(EV.place) + '" placeholder="e.g. FNB Stadium"></div><div><label>Search box says</label><input data-k="numLabel" value="' + esc(EV.numLabel || '') + '" placeholder="Your race number"></div>' +
     '<div><label>Price per photo (R)</label><input inputmode="numeric" data-p="photo" value="' + esc(EV.prices.photo || '') + '"></div><div><label>All photos of one number (R, empty = off)</label><input inputmode="numeric" data-p="bundle" value="' + esc(EV.prices.bundle || '') + '"></div>' +
-    '<div style="grid-column:1/-1"><label>A line about the event (optional)</label><textarea data-k="about" rows="2" placeholder="e.g. Photos from the start, the Westcliff hill and the finish.">' + esc(EV.about || '') + '</textarea></div></div>' +
+    '<div style="grid-column:1/-1"><label>A line about the event (optional)</label><textarea data-k="about" rows="2" placeholder="e.g. Photos from the start, the Westcliff hill and the finish.">' + esc(EV.about || '') + '</textarea></div></div>') +
     '<div class="ps-row" style="margin-top:12px"><label class="tr-tg" style="margin:0"><span>On sale</span> <input type="checkbox" id="psOn"' + (EV.on ? ' checked' : '') + '></label>' +
-    '<button type="button" class="ps-btn go" id="psSave">Save</button><a class="ps-btn" href="' + link + (EV.on ? '' : '&preview=1') + '" target="_blank" rel="noopener">Open the page</a>' +
-    '<button type="button" class="ps-btn" id="psCopy">Copy link</button><button type="button" class="ps-btn red" id="psDelEv">Delete event</button><span id="psSaveMsg" class="tr-sub"></span></div></section>' +
+    '<button type="button" class="ps-btn go" id="psSave">Save</button><a class="ps-btn" href="' + link + (EV.on || SH ? '' : '&preview=1') + '" target="_blank" rel="noopener">Open the page</a>' +
+    '<button type="button" class="ps-btn" id="psCopy">Copy link</button><button type="button" class="ps-btn red" id="psDelEv">' + (SH ? 'Delete shop' : 'Delete event') + '</button><span id="psSaveMsg" class="tr-sub"></span></div></section>' +
 
     '<section class="tr-card"><h2>Photos <span class="tr-sub" style="font-weight:600">' + EV.photos.length + ' photos' + (untagged ? ', ' + untagged + ' without a number' : '') + '</span></h2>' +
     '<div class="ps-drop" id="psDrop">📤 Tap to add photos, or drop them here<br><small>JPG, PNG or HEIC. The full-size photo stays private until someone pays. Keep this page open while it uploads.</small><input type="file" id="psFiles" accept="image/*" multiple hidden></div>' +
     '<div id="psProg"' + (UP.msg ? '' : ' style="display:none"') + '><div class="tr-sub" id="psProgTx">' + esc(UP.msg || '') + '</div><div class="ps-bar"><i id="psProgBar"></i></div></div>' +
     '<div class="ps-tools"><button type="button" class="ps-btn' + (FILTER === 'all' ? ' go' : '') + '" data-f="all">All</button><button type="button" class="ps-btn' + (FILTER === 'untagged' ? ' go' : '') + '" data-f="untagged">No number yet</button>' +
     '<input class="ps-in" id="psFindNum" placeholder="Find a number" style="width:130px" value="' + (FILTER.indexOf('#') === 0 ? esc(FILTER.slice(1)) : '') + '">' +
-    (SEL.size ? '<span class="tr-sub"><b>' + SEL.size + ' selected</b></span><input class="ps-in" id="psTagSel" placeholder="Add number to selected" style="width:190px"><button type="button" class="ps-btn go" id="psTagGo">Add</button><button type="button" class="ps-btn red" id="psDelSel">Delete</button><button type="button" class="ps-btn" id="psSelNone">Clear</button>' : '<span class="tr-sub">Tap a photo to select it. Type numbers under each photo (123, 45). Enter jumps to the next.</span>') + '</div>' +
+    (SEL.size ? '<span class="tr-sub"><b>' + SEL.size + ' selected</b></span><input class="ps-in" id="psTagSel" placeholder="Add number to selected" style="width:190px"><button type="button" class="ps-btn go" id="psTagGo">Add</button><button type="button" class="ps-btn red" id="psDelSel">Delete</button><button type="button" class="ps-btn" id="psSelNone">Clear</button>' : '<span class="tr-sub">' + (SH ? 'Tap a photo to select it. Type a title under each photo.' : 'Tap a photo to select it. Type numbers under each photo (123, 45). Enter jumps to the next.') + '</span>') + '</div>' +
     '<div class="ps-photos" id="psPhotos"></div></section>' +
 
-    '<section class="tr-card"><h2>Sales</h2><div id="psSales"><p class="tr-empty">Loading...</p></div></section>';
+    (SH ? '' : '<section class="tr-card"><h2>Sales</h2><div id="psSales"><p class="tr-empty">Loading...</p></div></section>');
   drawPhotos(); drawSales();
   var ed = $('psEdit');
   ed.querySelectorAll('[data-k]').forEach(function(i){ i.oninput = function(){ EV[i.dataset.k] = i.value; dirty = true; }; });
   ed.querySelectorAll('[data-p]').forEach(function(i){ i.oninput = function(){ EV.prices[i.dataset.p] = +i.value.replace(/\D/g, '') || 0; dirty = true; }; });
   $('psOn').onchange = function(){ EV.on = this.checked; dirty = true; if(EV.on && !EV.photos.length) toast('Add photos before people can buy.'); save(); };
   $('psSave').onclick = function(){ save(); };
-  $('psCopy').onclick = function(){ navigator.clipboard.writeText(link + '&src=ig').then(function(){ toast('Link copied (tracked as Instagram on the Traffic page)'); }); };
+  $('psCopy').onclick = function(){ navigator.clipboard.writeText(SH ? 'https://www.fomstudios.co.za/prints.html?src=ig' : link + '&src=ig').then(function(){ toast('Link copied (tracked as Instagram on the Traffic page)'); }); };
   $('psDelEv').onclick = async function(){ if(!confirm('Delete ' + EV.title + ' and all its photos? Buyers lose their downloads. This cannot be undone.')) return;
     try{ await api('/sales/admin/delete', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ ev:EV.id, all:true }) }); EV = null; drawEdit(); loadEvents(); toast('Deleted'); }catch(e){ toast(e.message); } };
   var drop = $('psDrop'), inp = $('psFiles');
@@ -106,7 +110,7 @@ function drawEdit(){
   drop.ondragleave = function(){ drop.classList.remove('over'); };
   drop.ondrop = function(e){ e.preventDefault(); drop.classList.remove('over'); upload([].slice.call(e.dataTransfer.files).filter(function(f){ return /^image\//.test(f.type) || /\.(heic|jpe?g|png)$/i.test(f.name); })); };
   ed.querySelectorAll('[data-f]').forEach(function(b){ b.onclick = function(){ FILTER = b.dataset.f; drawEdit(); }; });
-  $('psFindNum').onchange = function(){ var v = nums(this.value)[0]; FILTER = v ? '#' + v : 'all'; drawEdit(); };
+  if($('psFindNum')) $('psFindNum').onchange = function(){ var v = nums(this.value)[0]; FILTER = v ? '#' + v : 'all'; drawEdit(); };
   if($('psTagGo')){
     var tagSel = function(){ var add = nums($('psTagSel').value); if(!add.length) return; EV.photos.forEach(function(p){ if(SEL.has(p.n)) p.nums = nums((p.nums || []).concat(add).join(' ')); }); dirty = true; SEL.clear(); drawEdit(); save(); };
     $('psTagGo').onclick = tagSel; $('psTagSel').onkeydown = function(e){ if(e.key === 'Enter') tagSel(); };
@@ -121,11 +125,11 @@ function drawPhotos(){
   var list = shown();
   host.innerHTML = list.length ? list.map(function(p){
     return '<div class="ps-ph' + (SEL.has(p.n) ? ' sel' : '') + '" data-n="' + esc(p.n) + '"><img src="' + thumb(p.n) + '" loading="lazy" alt=""><button type="button" class="ps-star' + (EV.cover === p.n ? ' on' : '') + '" title="Use as cover">' + (EV.cover === p.n ? '★ Cover' : '☆') + '</button>' +
-      '<input value="' + esc((p.nums || []).join(', ')) + '" placeholder="Numbers" aria-label="Numbers in this photo" inputmode="text"></div>';
+      (EV.shop ? '<input data-title="1" value="' + esc(p.title || '') + '" placeholder="Title" aria-label="Title" style="text-transform:none">' : '<input value="' + esc((p.nums || []).join(', ')) + '" placeholder="Numbers" aria-label="Numbers in this photo" inputmode="text">') + '</div>';
   }).join('') : '<p class="tr-empty">' + (EV.photos.length ? 'No photos match.' : 'No photos yet.') + '</p>';
 }
 D.addEventListener('click', function(e){
-  var ph = e.target.closest('.ps-ph'); if(!ph || !EV) return;
+  var ph = e.target.closest('.ps-ph'); if(!ph || !EV || !ph.dataset.n) return;
   var n = ph.dataset.n;
   if(e.target.closest('.ps-star')){ EV.cover = n; dirty = true; drawPhotos(); save(); return; }
   if(e.target.tagName === 'IMG'){ if(SEL.has(n)) SEL.delete(n); else SEL.add(n); drawEdit(); }
@@ -133,7 +137,7 @@ D.addEventListener('click', function(e){
 D.addEventListener('change', function(e){
   var ph = e.target.closest('.ps-ph'); if(!ph || !EV || e.target.tagName !== 'INPUT') return;
   var p = EV.photos.find(function(x){ return x.n === ph.dataset.n; }); if(!p) return;
-  p.nums = nums(e.target.value); e.target.value = p.nums.join(', '); dirty = true; clearTimeout(save.t); save.t = setTimeout(save, 1500);
+  if(e.target.dataset.title) p.title = e.target.value.trim().slice(0, 80); else { p.nums = nums(e.target.value); e.target.value = p.nums.join(', '); } dirty = true; clearTimeout(save.t); save.t = setTimeout(save, 1500);
 });
 D.addEventListener('keydown', function(e){
   if(e.key !== 'Enter') return; var ph = e.target.closest && e.target.closest('.ps-ph'); if(!ph) return;
@@ -228,11 +232,89 @@ D.addEventListener('click', async function(e){
   try{ var j = await api('/sales/admin/paid', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ o:b.dataset.paid }) }); toast('Unlocked'); loadOrders(); }catch(x){ toast(x.message); }
 });
 
+/* ---------- print settings ---------- */
+var CFG = null;
+var CFG_DEF = { sizes:[{ id:'a4', label:'A4 (21 x 30 cm)' },{ id:'a3', label:'A3 (30 x 42 cm)' },{ id:'a2', label:'A2 (42 x 59 cm)' }],
+  finishes:[{ id:'print', label:'Print only' },{ id:'framed-black', label:'Framed, black' },{ id:'framed-white', label:'Framed, white' },{ id:'framed-oak', label:'Framed, oak' },{ id:'canvas', label:'Canvas' }],
+  prices:{}, delivery:[{ id:'collect', label:'Collect in Joburg', fee:0, on:true, note:'We WhatsApp you when it is ready to collect.' },{ id:'gauteng', label:'Gauteng delivery', fee:0, on:false },{ id:'courier', label:'Courier anywhere in SA', fee:0, on:false }],
+  turnaround:'5 to 7 working days', note:'' };
+async function loadCfg(){ try{ var j = await (await fetch(W + '/sales/shop?t=' + Date.now(), { cache:'no-store' })).json(); CFG = j.cfg && j.cfg.sizes ? j.cfg : JSON.parse(JSON.stringify(CFG_DEF)); }catch(e){ CFG = JSON.parse(JSON.stringify(CFG_DEF)); } drawCfg(); }
+function drawCfg(){
+  var c = CFG, b = $('psCfgBody'), set = Object.keys(c.prices || {}).filter(function(k){ return +c.prices[k]; }).length;
+  if(!set) $('psCfg').classList.remove('folded');
+  b.innerHTML = '<p class="tr-sub" style="margin:0 0 10px">Your selling prices, used by the Prints shop, client galleries and event photos. Empty = not offered. Example: if your lab charges R180 for an A4 framed, you could sell it at R450.</p>' +
+    '<div style="overflow-x:auto"><table class="ps-tab"><thead><tr><th>Size</th>' + c.finishes.map(function(f){ return '<th>' + esc(f.label) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+    c.sizes.map(function(z){ return '<tr><td><b>' + esc(z.label) + '</b></td>' + c.finishes.map(function(f){ var k = z.id + '|' + f.id; return '<td><input class="ps-in" style="width:84px" inputmode="numeric" data-price="' + esc(k) + '" value="' + esc(c.prices[k] || '') + '" placeholder="R"></td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
+    '<div class="ps-grid2" style="margin-top:12px"><div><label>Sizes (one per line)</label><textarea class="ps-in" rows="4" id="psSizes">' + esc(c.sizes.map(function(z){ return z.label; }).join('\n')) + '</textarea></div>' +
+    '<div><label>Finishes (one per line)</label><textarea class="ps-in" rows="4" id="psFins">' + esc(c.finishes.map(function(z){ return z.label; }).join('\n')) + '</textarea></div></div>' +
+    '<h3 style="margin:16px 0 8px;font-size:15px">Delivery</h3>' + c.delivery.map(function(d, i){ return '<div class="ps-row" style="margin-bottom:6px"><label class="tr-tg" style="margin:0"><input type="checkbox" data-don="' + i + '"' + (d.on ? ' checked' : '') + '></label><input class="ps-in" data-dlabel="' + i + '" value="' + esc(d.label) + '"><input class="ps-in" style="width:90px;flex:none" inputmode="numeric" data-dfee="' + i + '" value="' + esc(d.fee || '') + '" placeholder="Fee R"></div>'; }).join('') +
+    '<div class="ps-grid2" style="margin-top:10px"><div><label>Ready in</label><input class="ps-in" id="psTurn" value="' + esc(c.turnaround || '') + '"></div><div><label>Line under each print (optional)</label><input class="ps-in" id="psNote" value="' + esc(c.note || '') + '" placeholder="Printed by a professional lab and checked by us before it goes out."></div></div>' +
+    '<div class="ps-row" style="margin-top:12px"><button type="button" class="ps-btn go" id="psCfgSave">Save print settings</button><span class="tr-sub" id="psCfgMsg"></span></div>';
+  $('psCfgSave').onclick = saveCfg;
+}
+function idOf(l){ return String(l).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24) || 'x'; }
+async function saveCfg(){
+  var c = CFG, b = $('psCfgBody');
+  b.querySelectorAll('[data-price]').forEach(function(i){ var v = +i.value.replace(/\D/g, '') || 0; if(v) c.prices[i.dataset.price] = v; else delete c.prices[i.dataset.price]; });
+  var lines = function(id){ return $(id).value.split('\n').map(function(x){ return x.trim(); }).filter(Boolean).slice(0, 12); };
+  var keepId = function(list, label){ var o = list.find(function(x){ return x.label === label; }); return o ? o.id : idOf(label); };
+  c.sizes = lines('psSizes').map(function(l){ return { id:keepId(c.sizes, l), label:l }; });
+  c.finishes = lines('psFins').map(function(l){ return { id:keepId(c.finishes, l), label:l }; });
+  b.querySelectorAll('[data-dlabel]').forEach(function(i){ c.delivery[+i.dataset.dlabel].label = i.value.trim(); });
+  b.querySelectorAll('[data-dfee]').forEach(function(i){ c.delivery[+i.dataset.dfee].fee = +i.value.replace(/\D/g, '') || 0; });
+  b.querySelectorAll('[data-don]').forEach(function(i){ c.delivery[+i.dataset.don].on = i.checked; });
+  c.turnaround = $('psTurn').value.trim(); c.note = $('psNote').value.trim();
+  try{ await api('/sales/admin/shopcfg', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(c) }); drawCfg(); $('psCfgMsg').textContent = 'Saved'; toast('Print settings saved'); }catch(e){ $('psCfgMsg').textContent = 'Could not save: ' + e.message; }
+}
+
+/* ---------- print orders ---------- */
+var PO = [], PO_ALL = false;
+var STAGES = [['new','New'],['ordered','Ordered from lab'],['ready','Ready'],['out','Out for delivery'],['delivered','Delivered']];
+var STAGE_MSG = { ordered:'your print is at the lab now and should be ready in {turn}', ready:'your print is ready! {how}', out:'your print is on its way to you today', delivered:'hope you love your print! If you share it, tag @fom_studios_ 📸' };
+async function loadPO(){ try{ PO = (await api('/sales/admin/orders?type=print')).orders || []; }catch(e){ PO = []; } drawPO(); }
+function drawPO(){
+  var host = $('psPO'); if(!host) return;
+  var paid = PO.filter(function(o){ return o.status === 'paid'; }), open = paid.filter(function(o){ return o.stage !== 'delivered'; });
+  var list = PO_ALL ? PO : open;
+  host.innerHTML = '<div class="ps-kpis"><div class="ps-kpi"><span class="tr-sub">To do</span><b>' + open.length + '</b></div><div class="ps-kpi"><span class="tr-sub">Sold (all time)</span><b>' + R(paid.reduce(function(a, o){ return a + (+o.amount || 0); }, 0)) + '</b></div></div>' +
+    (list.length ? list.map(function(o, oi){
+      var ph = String(o.buyer && o.buyer.phone || '').replace(/\D/g, ''); if(ph.charAt(0) === '0') ph = '27' + ph.slice(1);
+      var a = o.delivery && o.delivery.address;
+      return '<div class="ps-ev" style="display:block;cursor:default"><div class="ps-row" style="justify-content:space-between"><div><b>' + esc(o.buyer && o.buyer.name) + '</b> <span class="ps-st' + (o.status === 'paid' ? ' paid' : '') + '">' + (o.status === 'paid' ? R(o.amount) + ' paid' : 'Not paid') + '</span><div class="tr-sub">' + new Date(o.created).toLocaleString('en-ZA', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) + ' · ' + esc(o.buyer && o.buyer.email) + (ph ? ' · +' + ph : '') + (o.from ? ' · from ' + esc(o.from) : '') + '</div></div>' +
+        (o.status === 'paid' ? '<select class="ps-in" style="width:auto" data-stage="' + esc(o.o) + '">' + STAGES.map(function(s){ return '<option value="' + s[0] + '"' + ((o.stage || 'new') === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select>' : '<button type="button" class="ps-btn" data-popaid="' + esc(o.o) + '">Mark paid</button>') + '</div>' +
+        '<div class="ps-photos" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">' + (o.prints || []).map(function(p, i){ return '<div class="ps-ph"><img src="' + esc(p.thumb) + '" alt=""><div style="padding:6px 8px;font-size:12.5px">' + esc(p.label) + '<br><button type="button" class="ps-btn" style="margin-top:6px;padding:6px 10px" data-file="' + esc(o.o) + '|' + i + '">⬇ Full file</button></div></div>'; }).join('') + '</div>' +
+        '<div class="tr-sub" style="margin-top:8px">' + esc(o.delivery ? o.delivery.label : '') + (a ? ': ' + esc([a.street, a.suburb, a.city, a.code, a.province].filter(Boolean).join(', ')) + (a.notes ? ' (' + esc(a.notes) + ')' : '') : '') + ((o.count || 0) ? ' · plus ' + o.count + ' digital (sent automatically)' : '') + '</div>' +
+        (ph && o.status === 'paid' ? '<div class="ps-row" style="margin-top:8px"><button type="button" class="ps-btn" data-wa="' + oi + '">💬 WhatsApp update</button></div>' : '') + '</div>';
+    }).join('') : '<p class="tr-empty">' + (PO.length ? 'All print orders are delivered. 🎉' : 'No print orders yet.') + '</p>') +
+    '<div class="ps-row" style="margin-top:8px"><button type="button" class="ps-btn" id="psPOAll">' + (PO_ALL ? 'Show only open orders' : 'Show all orders') + '</button><button type="button" class="ps-btn" id="psPORefresh">Refresh</button></div>';
+  $('psPOAll').onclick = function(){ PO_ALL = !PO_ALL; drawPO(); };
+  $('psPORefresh').onclick = loadPO;
+  host.querySelectorAll('[data-wa]').forEach(function(b){ b.onclick = function(){ var o = list[+b.dataset.wa], st = o.stage || 'new';
+    var how = o.delivery && o.delivery.id === 'collect' ? 'When would you like to collect it?' : 'We will let you know when it is on the way.';
+    var line = (STAGE_MSG[st] || 'thank you for your order! We are getting your print made').replace('{turn}', (CFG && CFG.turnaround) || 'a few days').replace('{how}', how);
+    var ph = String(o.buyer.phone).replace(/\D/g, ''); if(ph.charAt(0) === '0') ph = '27' + ph.slice(1);
+    window.open('https://wa.me/' + ph + '?text=' + encodeURIComponent('Hi ' + String(o.buyer.name || '').split(' ')[0] + ', ' + line + '. FOM Studios'), '_blank'); }; });
+}
+D.addEventListener('change', async function(e){
+  var sel = e.target.closest && e.target.closest('[data-stage]'); if(!sel) return;
+  try{ await api('/sales/admin/stage', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ o:sel.dataset.stage, stage:sel.value }) }); var o = PO.find(function(x){ return x.o === sel.dataset.stage; }); if(o) o.stage = sel.value; toast('Updated. Tap WhatsApp update to tell them.'); drawPO(); }catch(x){ toast(x.message); }
+});
+D.addEventListener('click', async function(e){
+  var f = e.target.closest('[data-file],[data-popaid]'); if(!f) return;
+  if(f.dataset.popaid){ if(!confirm('Mark this print order as paid?')) return; try{ await api('/sales/admin/paid', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ o:f.dataset.popaid }) }); loadPO(); }catch(x){ toast(x.message); } return; }
+  var q = f.dataset.file.split('|'); f.disabled = true; f.textContent = 'Downloading...';
+  try{ var r = await fetch(W + '/sales/admin/file?o=' + encodeURIComponent(q[0]) + '&i=' + q[1], { headers:{ Authorization: await tok() } }); if(!r.ok) throw new Error('file ' + r.status);
+    var name = (/filename="([^"]+)"/.exec(r.headers.get('Content-Disposition') || '') || [])[1] || 'print.jpg', bl = await r.blob(), a = D.createElement('a');
+    a.href = URL.createObjectURL(bl); a.download = name; D.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+  }catch(x){ toast('Could not download: ' + x.message); }
+  f.disabled = false; f.textContent = '⬇ Full file';
+});
+
 /* ---------- start ---------- */
 window.FOM_SALES_START = function(auth){
   AUTH = auth;
   if(BZ && BZ.isSba){ $('psOffBiz').style.display = ''; $('psMain').style.display = 'none'; return; }
-  drawSetup(); loadEvents();
+  drawSetup(); loadEvents(); loadCfg(); loadPO();
   var q = new URLSearchParams(location.search).get('ev'); if(q) openEvent(q);
 };
 window.FOM_SALES = { ev:function(){ return EV; }, upload:upload, save:save };

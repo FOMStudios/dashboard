@@ -321,13 +321,15 @@ html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7
 <div class="page wrap">
     <div class="page-head">
         <span class="eyebrow">Admin</span>
-        <h1>Photo Sales</h1>
-        <p>Sell event photos: upload, tag each photo with the race, bib or car numbers in it, set your prices and share the link. Buyers pay with Yoco and download full size straight away.</p>
+        <h1>Photo Sales and Prints</h1>
+        <p>Sell event photos, prints and frames. Upload, tag, set prices and share the link. Buyers pay with Yoco; digital photos download straight away, and print orders land here for you to send to your lab.</p>
     </div>
     <div id="psOffBiz" class="tr-msg" style="display:none"><b>Photo Sales is set up for FOM Studios</b>Switch to FOM Studios to sell event photos. Ask Claude to switch it on for Shot by A when she needs it.</div>
     <div id="psMain">
         <section class="tr-card" id="psSetup"><h2 class="fold">Card payments setup</h2><div id="psSetupBody" class="ch-help">Checking...</div></section>
-        <section class="tr-card" id="psList"><h2>Events</h2><div id="psEvents"></div>
+        <section class="tr-card" id="psPrintOrders"><h2>Print orders</h2><div id="psPO"><p class="tr-empty">Loading...</p></div></section>
+        <section class="tr-card" id="psCfg"><h2 class="fold">Print settings (sizes, frames, prices, delivery)</h2><div id="psCfgBody"></div></section>
+        <section class="tr-card" id="psList"><h2>Events and Prints shop</h2><div id="psEvents"></div>
             <div class="ps-row" style="margin-top:12px"><input id="psNewTitle" placeholder="New event, e.g. 947 Ride Joburg 2026"><button type="button" class="ps-btn go" id="psNew">+ New event</button></div></section>
         <div id="psEdit"></div>
     </div>
@@ -336,7 +338,7 @@ html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7
 <div class="toast" id="toast"></div>
 
 <script src="firebase-config.js"></script>
-<script src="sales-admin.js?v=1"></script>
+<script src="sales-admin.js?v=2"></script>
 <script>
 const $ = id => document.getElementById(id);
 /* folding cards, remembered on this device */

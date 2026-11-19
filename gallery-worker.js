@@ -440,13 +440,14 @@ async function verifyYoco(request, body, env) {
 }
 async function markPaid(env, o, how) {
   if (o.status === 'paid') return o;
-  o.status = 'paid'; o.paidAt = new Date().toISOString(); o.paidBy = how;
+  o.status = 'paid'; o.paidAt = new Date().toISOString(); o.paidBy = how; if (o.type === 'print' && (o.prints || []).length) o.stage = 'new';
   await r2put(env, '_sales/orders/' + o.o + '.json', o);
   const link = SALES_SITE + '?ev=' + o.ev + '&o=' + o.o + '&k=' + o.k;
-  await pushAll(env, { title: 'Photo sale R' + o.amount, body: (o.buyer?.name || 'Someone') + ' bought ' + o.label + ' from ' + (o.evTitle || o.ev) + '.', url: 'sales.html?ev=' + o.ev, tag: 'fom-sale-' + o.o }).catch(() => null);
+  await pushAll(env, { title: (o.type === 'print' ? 'Print order R' : 'Photo sale R') + o.amount, body: (o.buyer?.name || 'Someone') + ' bought ' + o.label + (o.type === 'print' ? '' : ' from ' + (o.evTitle || o.ev)) + '.', url: 'sales.html?ev=' + o.ev, tag: 'fom-sale-' + o.o }).catch(() => null);
   if (env.BREVO_KEY && o.buyer?.email) {
-    const html = `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#2a2b2c"><h2 style="margin:0 0 10px">Your photos are ready 📸</h2><p>Hi ${htmlEsc((o.buyer.name || '').split(' ')[0] || 'there')}, thank you for buying ${htmlEsc(o.label)} from ${htmlEsc(o.evTitle || 'FOM Studios')}.</p><p><a href="${link}" style="display:inline-block;background:#111;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Download your photos</a></p><p style="font-size:13px;color:#6f6f6d">The link works for ${SALE_DAYS} days. Tag @fom_studios_ when you post them!</p><p>FOM Studios</p></div>`;
-    await sendBrevo(env, o.buyer.email, o.buyer.name || '', 'Your photos from ' + (o.evTitle || 'FOM Studios'), html).catch(() => null);
+    const html = o.type === 'print' ? `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#2a2b2c"><h2 style="margin:0 0 10px">Thank you for your order 🖼</h2><p>Hi ${htmlEsc((o.buyer.name || '').split(' ')[0] || 'there')}, we have your order for ${htmlEsc(o.label)} (R${o.amount}).</p>${(o.prints || []).length ? `<p>Your print${o.prints.length === 1 ? ' is' : 's are'} now being made. We will WhatsApp you when ${o.prints.length === 1 ? 'it is' : 'they are'} ready${o.delivery && o.delivery.id !== 'collect' ? ' and on the way' : ' to collect'}.</p>` : ''}${(o.dig || []).length ? `<p><a href="${link}" style="display:inline-block;background:#111;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Download your digital photos</a></p>` : `<p><a href="${link}">See your order</a></p>`}<p>FOM Studios</p></div>`
+      : `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#2a2b2c"><h2 style="margin:0 0 10px">Your photos are ready 📸</h2><p>Hi ${htmlEsc((o.buyer.name || '').split(' ')[0] || 'there')}, thank you for buying ${htmlEsc(o.label)} from ${htmlEsc(o.evTitle || 'FOM Studios')}.</p><p><a href="${link}" style="display:inline-block;background:#111;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Download your photos</a></p><p style="font-size:13px;color:#6f6f6d">The link works for ${SALE_DAYS} days. Tag @fom_studios_ when you post them!</p><p>FOM Studios</p></div>`;
+    await sendBrevo(env, o.buyer.email, o.buyer.name || '', o.type === 'print' ? 'Your FOM Studios order' : 'Your photos from ' + (o.evTitle || 'FOM Studios'), html).catch(() => null);
   }
   return o;
 }
@@ -455,7 +456,7 @@ async function handleSales(path, request, env, url) {
   // ---------- public ----------
   if (path === '/sales/events') {
     const idx = (await r2json(env, 'sales/index.json')) || { events: [] };
-    return json({ events: (idx.events || []).filter(e => e.on) });
+    return json({ events: (idx.events || []).filter(e => e.on && !e.shop) });
   }
   if (path === '/sales/event') {
     const ev = await r2json(env, 'sales/' + evId(url.searchParams.get('ev')) + '/event.json');
@@ -489,16 +490,19 @@ async function handleSales(path, request, env, url) {
     const o = await r2json(env, '_sales/orders/' + safeName(url.searchParams.get('o')) + '.json');
     if (!o || o.k !== url.searchParams.get('k')) return json({ error: 'not found' }, 404);
     const expired = o.paidAt && Date.now() - Date.parse(o.paidAt) > SALE_DAYS * 864e5;
+    const dig = o.dig || (o.items || []).map(n => ({ ev: o.ev, n }));   // digital files in this order
     if (path === '/sales/order') {
-      const out = { status: expired ? 'expired' : o.status, label: o.label, amount: o.amount, ev: o.ev, evTitle: o.evTitle, count: o.items.length };
-      if (o.status === 'paid' && !expired) out.items = o.items.map(n => ({ n, thumb: `${url.origin}/file?g=${encodeURIComponent('sales/' + o.ev + '/t/')}&n=${encodeURIComponent(n)}`, url: `${url.origin}/sales/dl?o=${o.o}&k=${o.k}&n=${encodeURIComponent(n)}` }));
+      const out = { type: o.type || 'photos', status: expired ? 'expired' : o.status, label: o.label, amount: o.amount, ev: o.ev, evTitle: o.evTitle, count: dig.length, stage: o.stage || '', prints: o.prints ? o.prints.map(p => ({ label: p.label, qty: p.qty, thumb: p.thumb })) : undefined, delivery: o.delivery ? o.delivery.label : undefined };
+      if (o.status === 'paid' && !expired) out.items = dig.map((d, i) => ({ n: d.n, thumb: `${url.origin}/file?g=${encodeURIComponent('sales/' + d.ev + '/t/')}&n=${encodeURIComponent(d.n)}`, url: `${url.origin}/sales/dl?o=${o.o}&k=${o.k}&i=${i}` }));
       return json(out);
     }
-    const n = url.searchParams.get('n');
-    if (o.status !== 'paid' || expired || !o.items.includes(n)) return json({ error: 'not available' }, 403);
-    const f = await B.get('_sales/' + o.ev + '/' + n); if (!f) return json({ error: 'not found' }, 404);
+    let d = null; const i = url.searchParams.get('i');
+    if (i != null) d = dig[+i]; else { const n0 = url.searchParams.get('n'); d = dig.find(x => x.n === n0); }
+    if (o.status !== 'paid' || expired || !d) return json({ error: 'not available' }, 403);
+    const n = d.n;
+    const f = await B.get('_sales/' + d.ev + '/' + n); if (!f) return json({ error: 'not found' }, 404);
     const h = new Headers(cors); f.writeHttpMetadata(h); h.set('Cache-Control', 'private, max-age=3600');
-    h.set('Content-Disposition', `attachment; filename="FOM-${o.ev}-${n.replace(/"/g, '')}"`);
+    h.set('Content-Disposition', `attachment; filename="FOM-${d.ev}-${n.replace(/"/g, '')}"`);
     return new Response(f.body, { headers: h });
   }
   if (path === '/sales/yoco' && request.method === 'POST') {
@@ -511,6 +515,61 @@ async function handleSales(path, request, env, url) {
     }
     return json({ ok: true });
   }
+  if (path === '/sales/shop') {   // print sizes, frames, prices and delivery (public)
+    const cfg = (await r2json(env, 'shop/config.json')) || {};
+    const shop = await r2json(env, 'sales/shop/event.json');
+    return json({ cfg, shop: shop && shop.on ? shop : null });
+  }
+  if (path === '/sales/print-checkout' && request.method === 'POST') {
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    if (!env.YOCO_SECRET_KEY) return json({ error: 'Card payments are not set up yet. Please WhatsApp us to order.' }, 503);
+    const cfg = (await r2json(env, 'shop/config.json')) || {}, evs = {};
+    const ev = async id => (evs[id] = evs[id] !== undefined ? evs[id] : await r2json(env, 'sales/' + evId(id) + '/event.json'));
+    const prints = [], dig = []; let total = 0, nPrint = 0;
+    for (const it of (b.items || []).slice(0, 30)) {
+      let thumb = '', src, title = '';
+      if (it.src === 'gallery') {
+        const g = normPrefix(it.g), n = String(it.n || '');
+        if (!g || /^_|^sales\//.test(g) || kind(n) !== 'image' || !(await B.head(g + n))) return json({ error: 'A photo in your cart is no longer available.' }, 400);
+        src = { src: 'gallery', g, n }; thumb = `${url.origin}/file?g=${encodeURIComponent(g)}&n=${encodeURIComponent(n)}`; title = 'Your photo (' + n + ')';
+      } else {
+        const e = await ev(it.ev); const p = e && e.on && (e.photos || []).find(x => x.n === it.n);
+        if (!p) return json({ error: 'A photo in your cart is no longer available.' }, 400);
+        src = { src: 'ev', ev: e.id, n: p.n }; thumb = `${url.origin}/file?g=${encodeURIComponent('sales/' + e.id + '/t/')}&n=${encodeURIComponent(p.n)}`; title = p.title || e.title;
+        if (it.digital) { const pr = +(e.prices && e.prices.photo) || 0; if (!pr) return json({ error: 'Digital downloads are not on sale for this photo.' }, 400); dig.push({ ev: e.id, n: p.n }); total += pr; continue; }
+      }
+      const size = (cfg.sizes || []).find(x => x.id === it.size), fin = (cfg.finishes || []).find(x => x.id === it.finish);
+      const price = size && fin ? +((cfg.prices || {})[size.id + '|' + fin.id]) || 0 : 0;
+      if (!price) return json({ error: 'That size and finish is not available.' }, 400);
+      const qty = Math.max(1, Math.min(10, Math.round(+it.qty || 1)));
+      prints.push(Object.assign(src, { size: size.id, finish: fin.id, qty, price, thumb, label: title + ', ' + size.label + ', ' + fin.label + (qty > 1 ? ' x' + qty : '') }));
+      total += price * qty; nPrint += qty;
+    }
+    if (!prints.length && !dig.length) return json({ error: 'Your cart is empty.' }, 400);
+    let delivery = null;
+    if (prints.length) {
+      const dv = (cfg.delivery || []).find(x => x.id === (b.delivery && b.delivery.id) && x.on);
+      if (!dv) return json({ error: 'Choose how to get your prints.' }, 400);
+      const a = b.delivery.address || {};
+      delivery = { id: dv.id, label: dv.label, fee: +dv.fee || 0, address: dv.id === 'collect' ? null : { street: String(a.street || '').slice(0, 100), suburb: String(a.suburb || '').slice(0, 60), city: String(a.city || '').slice(0, 60), code: String(a.code || '').slice(0, 10), province: String(a.province || '').slice(0, 30), notes: String(a.notes || '').slice(0, 200) } };
+      if (delivery.address && (!delivery.address.street || !delivery.address.city)) return json({ error: 'Add your delivery address.' }, 400);
+      total += delivery.fee;
+    }
+    const buyer = { name: String(b.buyer?.name || '').slice(0, 60), email: String(b.buyer?.email || '').slice(0, 80), phone: String(b.buyer?.phone || '').slice(0, 20) };
+    if (!buyer.name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(buyer.email)) return json({ error: 'Add your name and email.' }, 400);
+    if (prints.length && buyer.phone.replace(/\D/g, '').length < 9) return json({ error: 'Add your WhatsApp number so we can update you about your print.' }, 400);
+    if (total < 2) return json({ error: 'Nothing to pay.' }, 400);
+    const label = [nPrint ? nPrint + ' print' + (nPrint === 1 ? '' : 's') : '', dig.length ? dig.length + ' digital photo' + (dig.length === 1 ? '' : 's') : ''].filter(Boolean).join(' and ');
+    const o = { o: Date.now().toString(36) + rnd(4), k: rnd(16), type: 'print', ev: (prints[0] && prints[0].ev) || (dig[0] && dig[0].ev) || 'shop', evTitle: 'FOM Studios', prints, dig, delivery, label, amount: total, status: 'pending', created: new Date().toISOString(), buyer, from: String(b.from || '').slice(0, 40) };
+    const back = String(b.back || '').startsWith('https://www.fomstudios.co.za/') ? b.back : 'https://www.fomstudios.co.za/prints.html';
+    const r = await fetch('https://payments.yoco.com/api/checkouts', { method: 'POST', headers: { Authorization: 'Bearer ' + env.YOCO_SECRET_KEY, 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID() },
+      body: JSON.stringify({ amount: Math.round(total * 100), currency: 'ZAR', successUrl: SALES_SITE + '?o=' + o.o + '&k=' + o.k, cancelUrl: back, failureUrl: back, metadata: { sale: o.o, kind: 'print' } }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.redirectUrl) return json({ error: (d && d.message) || 'Could not start the payment. Please try again.' }, 502);
+    o.checkoutId = d.id; await r2put(env, '_sales/orders/' + o.o + '.json', o);
+    return json({ redirectUrl: d.redirectUrl, o: o.o });
+  }
+
   // ---------- admin ----------
   if (!path.startsWith('/sales/admin/')) return json({ error: 'not found' }, 404);
   if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
@@ -530,7 +589,7 @@ async function handleSales(path, request, env, url) {
     const body = JSON.stringify(ev); if (body.length > 900000) return json({ error: 'too many photos in one event' }, 413);
     await r2put(env, 'sales/' + ev.id + '/event.json', ev);
     const idx = (await r2json(env, 'sales/index.json')) || { events: [] };
-    const card = { id: ev.id, title: ev.title || '', date: ev.date || '', place: ev.place || '', cover: ev.cover || (ev.photos && ev.photos[0] && ev.photos[0].n) || '', count: (ev.photos || []).length, on: !!ev.on, prices: ev.prices || {} };
+    const card = { id: ev.id, title: ev.title || '', date: ev.date || '', place: ev.place || '', cover: ev.cover || (ev.photos && ev.photos[0] && ev.photos[0].n) || '', count: (ev.photos || []).length, on: !!ev.on, shop: !!ev.shop, prices: ev.prices || {} };
     idx.events = [card].concat((idx.events || []).filter(e => e.id !== ev.id)).sort((a, b) => String(b.date).localeCompare(String(a.date)));
     await r2put(env, 'sales/index.json', idx);
     return json({ ok: true });
@@ -551,7 +610,10 @@ async function handleSales(path, request, env, url) {
   if (path === '/sales/admin/orders') {
     const ev = evId(url.searchParams.get('ev')), out = [];
     let cursor; do { const r = await B.list({ prefix: '_sales/orders/', cursor, limit: 1000 });
-      for (const ob of r.objects) { const o = await r2json(env, ob.key); if (o && (!ev || o.ev === ev)) out.push({ o: o.o, ev: o.ev, label: o.label, amount: o.amount, status: o.status, created: o.created, paidAt: o.paidAt, buyer: o.buyer, count: o.items.length, link: SALES_SITE + '?ev=' + o.ev + '&o=' + o.o + '&k=' + o.k }); }
+      const type = url.searchParams.get('type');
+      for (const ob of r.objects) { const o = await r2json(env, ob.key); if (!o) continue;
+        if (type === 'print' ? o.type !== 'print' : (o.type === 'print' || (ev && o.ev !== ev))) continue;
+        out.push({ o: o.o, type: o.type || 'photos', ev: o.ev, label: o.label, amount: o.amount, status: o.status, stage: o.stage || '', created: o.created, paidAt: o.paidAt, buyer: o.buyer, count: (o.dig || o.items || []).length, prints: o.prints, delivery: o.delivery, from: o.from, link: SALES_SITE + (o.type === 'print' ? '?' : '?ev=' + o.ev + '&') + 'o=' + o.o + '&k=' + o.k }); }
       cursor = r.truncated ? r.cursor : undefined; } while (cursor);
     out.sort((a, b) => String(b.created).localeCompare(String(a.created)));
     return json({ orders: out.slice(0, 500) });
@@ -561,6 +623,27 @@ async function handleSales(path, request, env, url) {
     const o = await r2json(env, '_sales/orders/' + safeName(b.o) + '.json'); if (!o) return json({ error: 'not found' }, 404);
     await markPaid(env, o, 'manual');
     return json({ ok: true, link: SALES_SITE + '?ev=' + o.ev + '&o=' + o.o + '&k=' + o.k });
+  }
+  if (path === '/sales/admin/shopcfg' && request.method === 'POST') {
+    let c = {}; try { c = await request.json(); } catch (e) {}
+    const body = JSON.stringify(c); if (body.length > 50000) return json({ error: 'too big' }, 413);
+    c.updated = new Date().toISOString(); await r2put(env, 'shop/config.json', c);
+    return json({ ok: true });
+  }
+  if (path === '/sales/admin/stage' && request.method === 'POST') {
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    const o = await r2json(env, '_sales/orders/' + safeName(b.o) + '.json'); if (!o) return json({ error: 'not found' }, 404);
+    if (!['new', 'ordered', 'ready', 'out', 'delivered'].includes(b.stage)) return json({ error: 'bad stage' }, 400);
+    o.stage = b.stage; o.stages = Object.assign(o.stages || {}, { [b.stage]: new Date().toISOString() });
+    await r2put(env, '_sales/orders/' + o.o + '.json', o);
+    return json({ ok: true });
+  }
+  if (path === '/sales/admin/file') {   // the full-size file for a print, to send to the lab
+    const o = await r2json(env, '_sales/orders/' + safeName(url.searchParams.get('o')) + '.json');
+    const p = o && (o.prints || [])[+url.searchParams.get('i')]; if (!p) return json({ error: 'not found' }, 404);
+    const f = await B.get(p.src === 'gallery' ? p.g + p.n : '_sales/' + p.ev + '/' + p.n); if (!f) return json({ error: 'file not found' }, 404);
+    const h = new Headers(cors); f.writeHttpMetadata(h); h.set('Access-Control-Expose-Headers', 'Content-Disposition'); h.set('Content-Disposition', `attachment; filename="${o.o}-${+url.searchParams.get('i') + 1}-${p.size}-${p.finish}-${p.n.replace(/"/g, '')}"`);
+    return new Response(f.body, { headers: h });
   }
   if (path === '/sales/admin/setup') {
     const w = await r2json(env, '_sales/webhook.json');
