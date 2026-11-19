@@ -48,6 +48,7 @@ var PAGES = [
   {n:'Website traffic', h:'traffic.html',   e:'📈'},   // visits, clicks and enquiries on both websites (gallery Worker /admin/stats)
   {n:'WhatsApp Group', h:'channel.html', e:'💬'},   // group messages written by the scheduled Claude task (channel/pack.json)
   {n:'Content Planner', h:'content.html',   e:'🎬'},
+  {n:'Photo Sales',     h:'sales.html',     e:'🛒'},   // event photos people buy (gallery Worker /sales/*, public page photos.html)
   {n:'Price Calculator',h:'calculator.html',e:'🧮'},
   {n:'Email',           h:'email.html',     e:'✉️'},
   {n:'Contract',        h:'contract.html',  e:'📄'},

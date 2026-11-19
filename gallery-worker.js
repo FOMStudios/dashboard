@@ -398,6 +398,186 @@ async function handleMoodClient(path, request, env, url) {
   return json({ ok: true, name: n, url: `${url.origin}/file?g=${encodeURIComponent(prefix)}&n=${encodeURIComponent(n)}` });
 }
 
+
+/* ============================================================
+   PHOTO SALES (event photos people buy, Nov 2026)
+   ------------------------------------------------------------
+   R2 layout:
+     sales/index.json                public list of events
+     sales/<ev>/event.json           public: title, date, place, prices, photos [{n, nums, w, h}]
+     sales/<ev>/t/<n>, p/<n>         public watermarked thumbnail (480px) and preview (1400px)
+     _sales/<ev>/<n>                 private full-size photo (never served by /file or /list)
+     _sales/orders/<o>.json          private orders
+     _sales/webhook.json             private Yoco webhook id and signing secret
+   Public:  GET /sales/events, GET /sales/event?ev=, POST /sales/checkout,
+            GET /sales/order?o=&k=, GET /sales/dl?o=&k=&n=, POST /sales/yoco (Yoco webhook)
+   Admin:   POST /sales/admin/upload?ev=&n=&v=t|p|f, POST /sales/admin/save, POST /sales/admin/delete,
+            GET /sales/admin/orders?ev=, POST /sales/admin/paid, GET|POST /sales/admin/setup
+   Needs the secret YOCO_SECRET_KEY (the same sk_live key as the fom-yoco Worker).
+   ============================================================ */
+const SALES_SITE = 'https://www.fomstudios.co.za/photos.html';
+const SALE_DAYS = 60;                                       // download links work for 60 days
+const evId = v => String(v || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40);
+const rnd = n => Array.from(crypto.getRandomValues(new Uint8Array(n)), b => (b % 36).toString(36)).join('');
+async function r2json(env, key) { const o = await env.BUCKET.get(key); if (!o) return null; try { return JSON.parse(await o.text()); } catch (e) { return null; } }
+const r2put = (env, key, v) => env.BUCKET.put(key, JSON.stringify(v), { httpMetadata: { contentType: 'application/json' } });
+function salePrice(ev, items, num) {
+  const photo = Math.max(0, +ev.prices?.photo || 0), bundle = Math.max(0, +ev.prices?.bundle || 0);
+  if (num && bundle) return { amount: bundle, label: 'All photos of #' + num };
+  const per = items.length * photo;
+  return { amount: bundle && per > bundle ? bundle : per, label: items.length + ' photo' + (items.length === 1 ? '' : 's') };
+}
+async function yocoWebhookSecret(env) { const w = await r2json(env, '_sales/webhook.json'); return w && w.secret; }
+async function verifyYoco(request, body, env) {
+  const secret = await yocoWebhookSecret(env); if (!secret) return false;
+  const id = request.headers.get('webhook-id'), ts = request.headers.get('webhook-timestamp'), sig = request.headers.get('webhook-signature') || '';
+  if (!id || !ts || Math.abs(Date.now() / 1000 - Number(ts)) > 300) return false;
+  const raw = Uint8Array.from(atob(secret.replace(/^whsec_/, '')), c => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey('raw', raw, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(id + '.' + ts + '.' + body)));
+  const want = btoa(String.fromCharCode(...mac));
+  return sig.split(' ').some(p => p.split(',')[1] === want);
+}
+async function markPaid(env, o, how) {
+  if (o.status === 'paid') return o;
+  o.status = 'paid'; o.paidAt = new Date().toISOString(); o.paidBy = how;
+  await r2put(env, '_sales/orders/' + o.o + '.json', o);
+  const link = SALES_SITE + '?ev=' + o.ev + '&o=' + o.o + '&k=' + o.k;
+  await pushAll(env, { title: 'Photo sale R' + o.amount, body: (o.buyer?.name || 'Someone') + ' bought ' + o.label + ' from ' + (o.evTitle || o.ev) + '.', url: 'sales.html?ev=' + o.ev, tag: 'fom-sale-' + o.o }).catch(() => null);
+  if (env.BREVO_KEY && o.buyer?.email) {
+    const html = `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#2a2b2c"><h2 style="margin:0 0 10px">Your photos are ready 📸</h2><p>Hi ${htmlEsc((o.buyer.name || '').split(' ')[0] || 'there')}, thank you for buying ${htmlEsc(o.label)} from ${htmlEsc(o.evTitle || 'FOM Studios')}.</p><p><a href="${link}" style="display:inline-block;background:#111;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Download your photos</a></p><p style="font-size:13px;color:#6f6f6d">The link works for ${SALE_DAYS} days. Tag @fom_studios_ when you post them!</p><p>FOM Studios</p></div>`;
+    await sendBrevo(env, o.buyer.email, o.buyer.name || '', 'Your photos from ' + (o.evTitle || 'FOM Studios'), html).catch(() => null);
+  }
+  return o;
+}
+async function handleSales(path, request, env, url) {
+  const B = env.BUCKET;
+  // ---------- public ----------
+  if (path === '/sales/events') {
+    const idx = (await r2json(env, 'sales/index.json')) || { events: [] };
+    return json({ events: (idx.events || []).filter(e => e.on) });
+  }
+  if (path === '/sales/event') {
+    const ev = await r2json(env, 'sales/' + evId(url.searchParams.get('ev')) + '/event.json');
+    if (!ev || (!ev.on && url.searchParams.get('preview') !== '1')) return json({ error: 'not found' }, 404);
+    return json(ev);
+  }
+  if (path === '/sales/checkout' && request.method === 'POST') {
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    const ev = await r2json(env, 'sales/' + evId(b.ev) + '/event.json');
+    if (!ev || !ev.on) return json({ error: 'This event is not on sale.' }, 404);
+    if (!env.YOCO_SECRET_KEY) return json({ error: 'Card payments are not set up yet. Please WhatsApp us to buy.' }, 503);
+    const all = new Map((ev.photos || []).map(p => [p.n, p]));
+    let num = String(b.num || '').trim().toUpperCase().slice(0, 12), items;
+    if (num) { items = (ev.photos || []).filter(p => (p.nums || []).map(x => String(x).toUpperCase()).includes(num)).map(p => p.n); if (!items.length) return json({ error: 'No photos with that number.' }, 400); }
+    else { items = [...new Set((b.items || []).map(String))].filter(n => all.has(n)).slice(0, 200); num = ''; }
+    if (!items.length) return json({ error: 'Pick at least one photo.' }, 400);
+    const price = salePrice(ev, items, num);
+    if (price.amount < 2) return json({ error: 'This event has no price set yet.' }, 400);
+    const buyer = { name: String(b.buyer?.name || '').slice(0, 60), email: String(b.buyer?.email || '').slice(0, 80), phone: String(b.buyer?.phone || '').slice(0, 20) };
+    if (!buyer.name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(buyer.email)) return json({ error: 'Add your name and email so we can send your photos.' }, 400);
+    const o = { o: Date.now().toString(36) + rnd(4), k: rnd(16), ev: ev.id, evTitle: ev.title, items, num, label: price.label, amount: price.amount, status: 'pending', created: new Date().toISOString(), buyer };
+    const back = SALES_SITE + '?ev=' + ev.id;
+    const r = await fetch('https://payments.yoco.com/api/checkouts', { method: 'POST', headers: { Authorization: 'Bearer ' + env.YOCO_SECRET_KEY, 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID() },
+      body: JSON.stringify({ amount: Math.round(price.amount * 100), currency: 'ZAR', successUrl: back + '&o=' + o.o + '&k=' + o.k, cancelUrl: back, failureUrl: back, metadata: { sale: o.o, event: ev.id, kind: 'photos' } }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.redirectUrl) return json({ error: (d && d.message) || 'Could not start the payment. Please try again.' }, 502);
+    o.checkoutId = d.id; await r2put(env, '_sales/orders/' + o.o + '.json', o);
+    return json({ redirectUrl: d.redirectUrl, o: o.o });
+  }
+  if (path === '/sales/order' || path === '/sales/dl') {
+    const o = await r2json(env, '_sales/orders/' + safeName(url.searchParams.get('o')) + '.json');
+    if (!o || o.k !== url.searchParams.get('k')) return json({ error: 'not found' }, 404);
+    const expired = o.paidAt && Date.now() - Date.parse(o.paidAt) > SALE_DAYS * 864e5;
+    if (path === '/sales/order') {
+      const out = { status: expired ? 'expired' : o.status, label: o.label, amount: o.amount, ev: o.ev, evTitle: o.evTitle, count: o.items.length };
+      if (o.status === 'paid' && !expired) out.items = o.items.map(n => ({ n, thumb: `${url.origin}/file?g=${encodeURIComponent('sales/' + o.ev + '/t/')}&n=${encodeURIComponent(n)}`, url: `${url.origin}/sales/dl?o=${o.o}&k=${o.k}&n=${encodeURIComponent(n)}` }));
+      return json(out);
+    }
+    const n = url.searchParams.get('n');
+    if (o.status !== 'paid' || expired || !o.items.includes(n)) return json({ error: 'not available' }, 403);
+    const f = await B.get('_sales/' + o.ev + '/' + n); if (!f) return json({ error: 'not found' }, 404);
+    const h = new Headers(cors); f.writeHttpMetadata(h); h.set('Cache-Control', 'private, max-age=3600');
+    h.set('Content-Disposition', `attachment; filename="FOM-${o.ev}-${n.replace(/"/g, '')}"`);
+    return new Response(f.body, { headers: h });
+  }
+  if (path === '/sales/yoco' && request.method === 'POST') {
+    const body = await request.text();
+    if (!(await verifyYoco(request, body, env))) return json({ error: 'bad signature' }, 401);
+    let e = {}; try { e = JSON.parse(body); } catch (x) {}
+    if ((e.type || e.event_type) === 'payment.succeeded') {
+      const sale = e.payload?.metadata?.sale;
+      if (sale) { const o = await r2json(env, '_sales/orders/' + safeName(sale) + '.json'); if (o && Math.round(o.amount * 100) <= (e.payload.amount || 0)) await markPaid(env, o, 'card'); }
+    }
+    return json({ ok: true });
+  }
+  // ---------- admin ----------
+  if (!path.startsWith('/sales/admin/')) return json({ error: 'not found' }, 404);
+  if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+  if (path === '/sales/admin/upload' && request.method === 'POST') {
+    const ev = evId(url.searchParams.get('ev')), n = safeName(url.searchParams.get('n')), v = url.searchParams.get('v');
+    const type = (request.headers.get('Content-Type') || '').split(';')[0];
+    if (!ev || !n || !/^image\//.test(type) || !['t', 'p', 'f'].includes(v)) return json({ error: 'need ev, n, v and an image' }, 400);
+    const buf = await request.arrayBuffer();
+    if (!buf.byteLength || buf.byteLength > 25 * 1024 * 1024) return json({ error: 'bad file size (25 MB max)' }, 413);
+    await B.put(v === 'f' ? '_sales/' + ev + '/' + n : 'sales/' + ev + '/' + v + '/' + n, buf, { httpMetadata: { contentType: type } });
+    return json({ ok: true, n });
+  }
+  if (path === '/sales/admin/save' && request.method === 'POST') {
+    let ev = {}; try { ev = await request.json(); } catch (e) {}
+    ev.id = evId(ev.id); if (!ev.id) return json({ error: 'missing id' }, 400);
+    ev.updated = new Date().toISOString();
+    const body = JSON.stringify(ev); if (body.length > 900000) return json({ error: 'too many photos in one event' }, 413);
+    await r2put(env, 'sales/' + ev.id + '/event.json', ev);
+    const idx = (await r2json(env, 'sales/index.json')) || { events: [] };
+    const card = { id: ev.id, title: ev.title || '', date: ev.date || '', place: ev.place || '', cover: ev.cover || (ev.photos && ev.photos[0] && ev.photos[0].n) || '', count: (ev.photos || []).length, on: !!ev.on, prices: ev.prices || {} };
+    idx.events = [card].concat((idx.events || []).filter(e => e.id !== ev.id)).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    await r2put(env, 'sales/index.json', idx);
+    return json({ ok: true });
+  }
+  if (path === '/sales/admin/delete' && request.method === 'POST') {
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    const ev = evId(b.ev); if (!ev) return json({ error: 'missing ev' }, 400);
+    const names = b.all ? null : (b.n || []).map(safeName);
+    for (const pre of ['sales/' + ev + '/', '_sales/' + ev + '/']) {
+      let cursor; do { const r = await B.list({ prefix: pre, cursor, limit: 1000 });
+        const keys = r.objects.map(o => o.key).filter(k => names ? names.includes(k.split('/').pop()) : true);
+        if (keys.length) await B.delete(keys);
+        cursor = r.truncated ? r.cursor : undefined; } while (cursor);
+    }
+    if (b.all) { const idx = (await r2json(env, 'sales/index.json')) || { events: [] }; idx.events = (idx.events || []).filter(e => e.id !== ev); await r2put(env, 'sales/index.json', idx); }
+    return json({ ok: true });
+  }
+  if (path === '/sales/admin/orders') {
+    const ev = evId(url.searchParams.get('ev')), out = [];
+    let cursor; do { const r = await B.list({ prefix: '_sales/orders/', cursor, limit: 1000 });
+      for (const ob of r.objects) { const o = await r2json(env, ob.key); if (o && (!ev || o.ev === ev)) out.push({ o: o.o, ev: o.ev, label: o.label, amount: o.amount, status: o.status, created: o.created, paidAt: o.paidAt, buyer: o.buyer, count: o.items.length, link: SALES_SITE + '?ev=' + o.ev + '&o=' + o.o + '&k=' + o.k }); }
+      cursor = r.truncated ? r.cursor : undefined; } while (cursor);
+    out.sort((a, b) => String(b.created).localeCompare(String(a.created)));
+    return json({ orders: out.slice(0, 500) });
+  }
+  if (path === '/sales/admin/paid' && request.method === 'POST') {   // paid by EFT or cash: unlock it by hand
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    const o = await r2json(env, '_sales/orders/' + safeName(b.o) + '.json'); if (!o) return json({ error: 'not found' }, 404);
+    await markPaid(env, o, 'manual');
+    return json({ ok: true, link: SALES_SITE + '?ev=' + o.ev + '&o=' + o.o + '&k=' + o.k });
+  }
+  if (path === '/sales/admin/setup') {
+    const w = await r2json(env, '_sales/webhook.json');
+    if (request.method === 'POST') {
+      if (!env.YOCO_SECRET_KEY) return json({ ok: false, msg: 'Add the YOCO_SECRET_KEY secret to the fom-gallery Worker first (same sk_live key as fom-yoco).' });
+      if (w && w.id) await fetch('https://payments.yoco.com/api/webhooks/' + w.id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + env.YOCO_SECRET_KEY } }).catch(() => null);
+      const r = await fetch('https://payments.yoco.com/api/webhooks', { method: 'POST', headers: { Authorization: 'Bearer ' + env.YOCO_SECRET_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'fom-photo-sales', url: url.origin + '/sales/yoco' }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.secret) return json({ ok: false, msg: 'Yoco did not accept it (' + r.status + '): ' + JSON.stringify(d).slice(0, 160) });
+      await r2put(env, '_sales/webhook.json', { id: d.id, secret: d.secret, at: new Date().toISOString() });
+      return json({ ok: true, msg: 'Connected. Payments now unlock photos straight away.' });
+    }
+    return json({ key: !!env.YOCO_SECRET_KEY, webhook: !!(w && w.secret), at: w && w.at });
+  }
+  return json({ error: 'not found' }, 404);
+}
+
 export default {
   async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -406,7 +586,8 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const g = normPrefix(url.searchParams.get('g'));
-    if (/^_(notify|push|events)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log)
+    if (/^_(notify|push|events|sales|channel)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
+    if (path.startsWith('/sales/')) return handleSales(path, request, env, url);
     if (path === '/event') return handleEvent(request, env, ctx);
     if (path === '/t') return handleTrack(request, env, ctx);
     if (path === '/admin/channel-save') return handleChannelSave(request, env);
