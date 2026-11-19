@@ -434,7 +434,7 @@ document.getElementById('trAlerts').addEventListener('change', async () => {
   }catch(e){ toast('Could not save. Try again.'); }
 });
 /* tracked links: ?src= values track.js turns into source names (keep in step with its map) */
-const LINKS = [['ig', 'Instagram bio'], ['igs', 'Instagram stories'], ['wa', 'WhatsApp status and chats'], ['wach', 'WhatsApp Channel posts'], ['fb', 'Facebook'], ['tt', 'TikTok'], ['gbp', 'Google Business profile'], ['qr', 'QR code (cards, flyers)'], ['email', 'Email signature']];
+const LINKS = [['ig', 'Instagram bio'], ['igs', 'Instagram stories'], ['wa', 'WhatsApp status and chats'], ['wach', 'WhatsApp Group posts'], ['fb', 'Facebook'], ['tt', 'TikTok'], ['gbp', 'Google Business profile'], ['qr', 'QR code (cards, flyers)'], ['email', 'Email signature']];
 const linkFor = k => 'https://www.fomstudios.co.za/' + (BIZ === 'sba' ? 'shotbya/' : '') + '?src=' + k;
 $('trLinks').innerHTML = LINKS.map(([k, n]) => '<button type="button" class="tr-link" data-src="' + k + '"><b>' + n + '</b><code>' + esc(linkFor(k).replace('https://www.', '')) + '</code></button>').join('');
 $('trLinks').onclick = async e => {
@@ -543,6 +543,6 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
 })();
 </script>
 <script src="activity.js?v=2"></script>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

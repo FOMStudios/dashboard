@@ -513,7 +513,7 @@ export default {
     // hourly: website traffic alerts (spike, daily summary, weekly report)
     if (event.cron === '0 * * * *') {
       if (env.STATS) ctx.waitUntil(statsHourly(env).catch(() => null));
-      if (env.BUCKET) ctx.waitUntil(channelCheck(env).catch(() => null));   // WhatsApp Channel: new messages from the scheduled task
+      if (env.BUCKET) ctx.waitUntil(channelCheck(env).catch(() => null));   // WhatsApp Group: new messages from the scheduled task
       return;
     }
     ctx.waitUntil((async () => {
@@ -726,7 +726,7 @@ async function statsCall(env, path, body) {
   const r = await st.fetch('https://stats' + path, { method: 'POST', body: JSON.stringify(body || {}) });
   return r.json();
 }
-const SRC_OK = ['WhatsApp channel', 'Instagram', 'Instagram stories', 'Facebook', 'TikTok', 'Google', 'Google Business', 'Bing', 'WhatsApp', 'QR code', 'YouTube', 'LinkedIn', 'Pinterest', 'Email', 'Direct'];
+const SRC_OK = ['WhatsApp group', 'WhatsApp channel', 'Instagram', 'Instagram stories', 'Facebook', 'TikTok', 'Google', 'Google Business', 'Bing', 'WhatsApp', 'QR code', 'YouTube', 'LinkedIn', 'Pinterest', 'Email', 'Direct'];
 async function handleTrack(request, env, ctx) {
   if (request.method !== 'POST') return json({ error: 'POST only' }, 405);
   if (!env.STATS) return json({ ok: true, off: true });
@@ -784,7 +784,7 @@ async function statsHourly(env) {
    and writes channel/pack.json (the messages). Needs the GH_TOKEN secret: a fine-grained
    GitHub token with Contents read and write on FOMStudios/dashboard only.
      POST /admin/channel-save   admin: { biz, settings }  -> commits channel/settings.json (or settings_sba.json)
-   Hourly cron: when channel/pack.json has a new generatedAt, phones get "New channel messages".
+   Hourly cron: when channel/pack.json has a new generatedAt, phones get "New group messages".
    ============================================================ */
 const GH_REPO = 'FOMStudios/dashboard';
 async function ghFile(env, path) {
@@ -827,6 +827,6 @@ async function channelCheck(env) {
     await env.BUCKET.put(key, p.generatedAt);
     if (!seen) continue;   // first look: just remember it
     const n = (p.messages || []).length;
-    await pushAll(env, { title: (biz === 'sba' ? 'Shot by A: ' : '') + 'New channel messages', body: n + ' WhatsApp Channel message' + (n === 1 ? '' : 's') + ' ready to review' + (p.headline ? ': ' + p.headline : '.'), url: 'channel.html?biz=' + biz, tag: 'fom-channel-' + biz });
+    await pushAll(env, { title: (biz === 'sba' ? 'Shot by A: ' : '') + 'New group messages', body: n + ' WhatsApp Group message' + (n === 1 ? '' : 's') + ' ready to review' + (p.headline ? ': ' + p.headline : '.'), url: 'channel.html?biz=' + biz, tag: 'fom-channel-' + biz });
   }
 }

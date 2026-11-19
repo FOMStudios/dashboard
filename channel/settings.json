@@ -12,8 +12,38 @@
   "never": [],
   "signoff": "FOM Studios 📸",
   "link": "https://www.fomstudios.co.za/?src=wach",
-  "thisWeek": "",
-  "campaigns": [],
+  "thisWeek": "Mini Shoot giveaway launches Fri 20 Nov. Dated giveaway messages are already written; keep other messages light so the giveaway stays the focus.",
+  "campaigns": [
+    {
+      "id": "giveaway-nov-2026",
+      "type": "giveaway",
+      "on": true,
+      "title": "Mini Shoot giveaway",
+      "offer": "Grand prize: 1 free Mini Shoot (R500 value: 20 edited photos or one 30 second reel, 30 minutes of coverage). Runner-up: 20% off a Mini Shoot. Every entrant: 10% off a first booking with code FOMGIVEAWAY10.",
+      "howTo": "On Instagram (@fom_studios_): follow, like the giveaway post and comment tagging 2 friends. Each new comment tagging 2 different friends is another entry. Sharing the post to your Story and tagging us is an optional bonus entry.",
+      "rules": "Entries close Sun 29 Nov 18:00 SAST. Winners drawn at random and announced by Tue 1 Dec; they must reply within 48 hours. SA residents 18+. No purchase necessary. Prizes have no cash value and must be used by 31 Jan 2027. Not sponsored by or associated with Instagram.",
+      "link": "https://instagram.com/fom_studios_",
+      "start": "2026-11-20",
+      "end": "2026-11-29",
+      "winner": "",
+      "notes": "Do not reveal the code FOMGIVEAWAY10 before entries close on Sun 29 Nov 18:00. Bookings number: 068 690 1120."
+    },
+    {
+      "id": "code-fomgiveaway10",
+      "type": "promo",
+      "on": true,
+      "title": "Giveaway code FOMGIVEAWAY10",
+      "offer": "10% off a first booking for everyone who entered the giveaway",
+      "howTo": "Mention FOMGIVEAWAY10 when booking on 068 690 1120 or with the Book a shoot button on the website",
+      "rules": "Valid until Tue 29 Dec 2026, once per person, first booking only, cannot be combined with other offers.",
+      "link": "https://www.fomstudios.co.za/?src=wach",
+      "start": "2026-11-29",
+      "end": "2026-12-29",
+      "winner": "",
+      "notes": "Only mention it after entries close. Reminder post on Tue 22 Dec is already written."
+    }
+  ],
   "refreshRequested": "",
-  "updatedAt": ""
+  "updatedAt": "",
+  "fromClaude": "2026-11-19-giveaway"
 }

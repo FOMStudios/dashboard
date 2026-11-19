@@ -46,7 +46,7 @@ var PAGES = [
   {n:'Client Meetings', h:'meetings.html',  e:'🤝'},
   {n:'Bookings',        h:'bookings.html',  e:'📅'},   // meeting requests from the Book a meeting page on both websites
   {n:'Website traffic', h:'traffic.html',   e:'📈'},   // visits, clicks and enquiries on both websites (gallery Worker /admin/stats)
-  {n:'WhatsApp Channel', h:'channel.html', e:'📣'},   // channel messages written by the scheduled Claude task (channel/pack.json)
+  {n:'WhatsApp Group', h:'channel.html', e:'📣'},   // group messages written by the scheduled Claude task (channel/pack.json)
   {n:'Content Planner', h:'content.html',   e:'🎬'},
   {n:'Price Calculator',h:'calculator.html',e:'🧮'},
   {n:'Email',           h:'email.html',     e:'✉️'},

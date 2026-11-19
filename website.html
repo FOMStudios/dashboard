@@ -480,10 +480,10 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 
     <section class="ws-card">
         <h2>Social links</h2>
-        <p class="ws-help">Instagram replaces the existing links. The others appear in the footer once filled in. The WhatsApp Channel button and email line use your channel (whatsapp.com/channel/0029Vb8y9mxAYlURQF4cUD3h) unless you paste a different link here.</p>
+        <p class="ws-help">Instagram replaces the existing links. The others appear in the footer once filled in. The WhatsApp Group button and email line use your group invite (chat.whatsapp.com/EwI9Zg2tjfhGX8gISj1TpA) unless you paste a different link here.</p>
         <div class="ws-grid">
             <div class="ws-f"><label for="fIg">Instagram</label><input id="fIg" placeholder="@fom_studios_ or full link"></div>
-            <div class="ws-f"><label for="fWac">WhatsApp Channel link</label><input id="fWac" inputmode="url" placeholder="https://whatsapp.com/channel/..."></div>
+            <div class="ws-f"><label for="fWac">WhatsApp Group link</label><input id="fWac" inputmode="url" placeholder="https://chat.whatsapp.com/..."></div>
             <div class="ws-f"><label for="fFb">Facebook</label><input id="fFb" placeholder="https://facebook.com/..."></div>
             <div class="ws-f"><label for="fTt">TikTok</label><input id="fTt" placeholder="https://tiktok.com/@..."></div>
             <div class="ws-f ws-wide"><label for="fYt">YouTube</label><input id="fYt" placeholder="https://youtube.com/@..."></div>
@@ -792,6 +792,8 @@ function readSaved(d){
 }
 function fillForm(d){
   d=d||{}; Object.keys(F).forEach(k=>{ $(F[k]).value=d[k]||''; });
+  // Nov 2026: the old WhatsApp Channel link becomes the group invite (Publish to save it)
+  if(/0029Vb8y9mxAYlURQF4cUD3h/.test($('fWac').value)) $('fWac').value='https://chat.whatsapp.com/EwI9Zg2tjfhGX8gISj1TpA';
   const b=d.banner||{}; $('bOn').checked=!!b.on; $('bText').value=b.text||''; $('bLink').value=b.link||''; $('bLabel').value=b.linkLabel||'';
   drawBD(normBD(d.blockedDates));
   { const g=normGH(d.galleryHeader); GH={ src:g.src, fx:g.fx, fy:g.fy }; $('ghLine').value=g.line; drawGH(); }
@@ -942,7 +944,7 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
 })();
 </script>
 <script src="activity.js?v=2"></script>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 <script>
 /* Shot by A mode: this page edits her website at fomstudios.co.za/shotbya (siteContent/site_sba) */
 if(window.FOM_BIZ && FOM_BIZ.isSba){

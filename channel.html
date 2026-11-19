@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="FOM">
 <link rel="manifest" href="manifest.webmanifest">
-<title>FOM Studios | WhatsApp Channel</title>
+<title>FOM Studios | WhatsApp Group</title>
 <link rel="icon" type="image/png" href="assets/mascot.png">
 <link rel="apple-touch-icon" href="assets/fom-icon-180.png">
 <style>
@@ -172,7 +172,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 <script src="session.js"></script>
 <link rel="stylesheet" href="app.css">
 <style>
-/* ============ WHATSAPP CHANNEL ============ */
+/* ============ WHATSAPP GROUP ============ */
 .ch-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
 .ch-period{font-weight:800;font-size:16px;}
 .ch-next{font-size:13px;color:var(--ink-soft);font-weight:600;}
@@ -293,10 +293,10 @@ html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7
 <div class="page wrap">
     <div class="page-head">
         <span class="eyebrow">Admin</span>
-        <h1>WhatsApp Channel</h1>
-        <p>Claude writes your channel messages on a schedule, using what's trending and what you have on (giveaways, promos, events). Review, edit, approve, copy, then post them in WhatsApp.</p>
+        <h1>WhatsApp Group</h1>
+        <p>Claude writes your group messages on a schedule, using what's trending and what you have on (giveaways, promos, events). Review, edit, approve, copy, then post them in WhatsApp.</p>
     </div>
-    <div id="chOffBiz" class="tr-msg" style="display:none"><b>Shot by A has no WhatsApp Channel yet</b>Switch to FOM Studios to see FOM's channel messages. Ask Claude to switch it on for Shot by A when she has one.</div>
+    <div id="chOffBiz" class="tr-msg" style="display:none"><b>Shot by A has no WhatsApp Group yet</b>Switch to FOM Studios to see FOM's group messages. Ask Claude to switch it on for Shot by A when she has one.</div>
     <div id="chMain">
     <section class="tr-card" id="chNow">
         <h2 class="fold">This round's messages</h2>
@@ -304,7 +304,7 @@ html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7
         <div id="chHeadline" class="tr-sub"></div>
         <div class="ch-msgs" id="chMsgs"></div>
         <div class="tr-acts"><button type="button" id="chAsk">Ask for new messages</button></div>
-        <p class="tr-sub" style="margin:10px 0 0">How to post: Copy, open your channel in WhatsApp, paste, add the picture if there is a 📷 note, send. Then tap Mark as sent here.</p>
+        <p class="tr-sub" style="margin:10px 0 0">How to post: Copy, open your group in WhatsApp, paste, add the picture if there is a 📷 note, send. Then tap Mark as sent here.</p>
     </section>
 
     <section class="tr-card" id="chHappen">
@@ -317,7 +317,7 @@ html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7
 
     <section class="tr-card" id="chSched">
         <h2 class="fold">Schedule and style</h2>
-        <div class="tr-tg" style="margin-bottom:6px"><label><span>Channel messages<small>Off pauses Claude's new messages</small></span><span class="tr-sw"><input type="checkbox" id="chOn"><span></span></span></label></div>
+        <div class="tr-tg" style="margin-bottom:6px"><label><span>Group messages<small>Off pauses Claude's new messages</small></span><span class="tr-sw"><input type="checkbox" id="chOn"><span></span></span></label></div>
         <div class="ch-grid">
             <div class="ch-f"><span>New messages every</span><div class="filter-row" id="chEvery" style="margin:0"></div></div>
             <div class="ch-f"><span>Next new messages on</span><input type="date" id="chAnchor"></div>
@@ -361,7 +361,7 @@ html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7
 <script src="firebase-config.js"></script>
 <script>
 /* ============================================================
-   WHATSAPP CHANNEL (per business; FOM only for now)
+   WHATSAPP GROUP (per business; FOM only for now). Files and ids keep the old 'channel' name.
    Settings and your edits: Firestore settings/channel (settings/channel_sba).
    Save also sends the settings to channel/settings.json in this repo via the gallery Worker
    (/admin/channel-save, GH_TOKEN), where the daily Claude task reads them and writes
@@ -387,7 +387,7 @@ const wa = t => esc(t).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(^|[\s(])
 /* ---------- campaigns ---------- */
 const TYPES = { giveaway:'Giveaway', promo:'Promo or special', event:'Event', news:'Announcement' };
 const FIELDS = {
-  giveaway:[['title','Name','Festive giveaway'],['offer','Prize','A free 1 hour family shoot'],['howTo','How to enter','Follow the channel, share this message, reply with your name',1],['rules','Rules (short)','Gauteng only. Winner drawn 20 Dec.',1],['link','Link (optional)','']],
+  giveaway:[['title','Name','Festive giveaway'],['offer','Prize','A free 1 hour family shoot'],['howTo','How to enter','Join the group, share this message, reply with your name',1],['rules','Rules (short)','Gauteng only. Winner drawn 20 Dec.',1],['link','Link (optional)','']],
   promo:[['title','Name','Black Friday mini sessions'],['offer','Offer','R400 off any shoot booked this week'],['howTo','How to claim','Book on the website and mention BLACKFRIDAY',1],['rules','Fine print (optional)','',1],['link','Link (optional)','']],
   event:[['title','Event','947 Ride Joburg'],['offer','What you are doing','Shooting the finish line',1],['howTo','What people should do','Find your photos on our Instagram on Monday',1],['rules','Details (optional)','',1],['link','Link (optional)','']],
   news:[['title','Announcement','December bookings are open'],['offer','Details','',1],['howTo','What people should do','Book early on the website',1],['rules','More (optional)','',1],['link','Link (optional)','']]
@@ -503,7 +503,7 @@ $('chMsgs').addEventListener('click', async e => {
   const a = btn.dataset.a;
   if(a === 'copy'){
     try{ await navigator.clipboard.writeText(text); }catch(x){ const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); }catch(y){} t.remove(); }
-    toast(photo ? 'Copied. Remember the picture: ' + photo.slice(0, 70) : 'Copied. Paste it in your channel.'); return;
+    toast(photo ? 'Copied. Remember the picture: ' + photo.slice(0, 70) : 'Copied. Paste it in your group.'); return;
   }
   if(a === 'edit'){ s.editing = !s.editing; drawNow(); if(s.editing){ const ta = $('chMsgs').querySelector('[data-id="' + CSS.escape(id) + '"] textarea'); if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } } }
   if(a === 'approve'){ PACK.messages.forEach(x => { if(ST.msgs[x.id]) ST.msgs[x.id].approved = false; }); s.approved = true; toast('Approved'); }
@@ -562,6 +562,16 @@ async function start(db){
   ST = { settings:Object.assign(DEF(), d.settings || {}), msgs:d.msgs || {}, history:d.history || [] };
   drawSched(); drawCamps(); drawNow(); drawHist();
   const remote = await loadRemoteSettings();
+  // Claude can add campaigns straight into channel/settings.json (marked fromClaude): bring them in once, then you Save
+  if(remote && remote.fromClaude && remote.fromClaude !== ST.settings.importedClaude){
+    const have = new Set(ST.settings.campaigns.map(c => c.id || c.title));
+    const add = (remote.campaigns || []).filter(c => !have.has(c.id || c.title));
+    ST.settings.campaigns = add.concat(ST.settings.campaigns);
+    if(remote.thisWeek && !ST.settings.thisWeek) ST.settings.thisWeek = remote.thisWeek;
+    ST.settings.importedClaude = remote.fromClaude;
+    drawSched(); drawCamps(); drawNow();
+    if(add.length){ markDirty(); toast('Claude added: ' + add.map(c => c.title).join(', ') + '. Press Save to keep it.'); }
+  }
   if(!d.settings) setSync(false, 'Not set up yet: press Save');
   else if(remote && remote.updatedAt === ST.settings.updatedAt) { setSync(true, 'Claude has your settings'); $('chLinkCard').classList.add('folded'); }
   else setSync(false, remote ? 'Claude has older settings: press Save' : 'Not sent to Claude yet');
@@ -595,6 +605,6 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
 })();
 </script>
 <script src="activity.js?v=2"></script>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>
