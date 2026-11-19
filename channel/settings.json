@@ -15,34 +15,6 @@
   "thisWeek": "Mini Shoot giveaway launches Fri 20 Nov. Dated giveaway messages are already written; keep other messages light so the giveaway stays the focus.",
   "campaigns": [
     {
-      "link": "https://instagram.com/fom_studios_",
-      "type": "giveaway",
-      "end": "2026-11-29",
-      "id": "giveaway-nov-2026",
-      "winner": "",
-      "on": true,
-      "howTo": "On Instagram (@fom_studios_): follow, like the giveaway post and comment tagging 2 friends. Each new comment tagging 2 different friends is another entry. Sharing the post to your Story and tagging us is an optional bonus entry.",
-      "start": "2026-11-20",
-      "offer": "Grand prize: 1 free Mini Shoot (R500 value: 20 edited photos or one 30 second reel, 30 minutes of coverage). Runner-up: 20% off a Mini Shoot. Every entrant: 10% off a first booking with code FOMGIVEAWAY10.",
-      "rules": "Entries close Sun 29 Nov 18:00 SAST. Winners drawn at random and announced by Tue 1 Dec; they must reply within 48 hours. SA residents 18+. No purchase necessary. Prizes have no cash value and must be used by 31 Jan 2027. Not sponsored by or associated with Instagram.",
-      "title": "Mini Shoot giveaway",
-      "notes": "Do not reveal the code FOMGIVEAWAY10 before entries close on Sun 29 Nov 18:00. Bookings number: 068 690 1120."
-    },
-    {
-      "notes": "Only mention it after entries close. Reminder post on Tue 22 Dec is already written.",
-      "title": "Giveaway code FOMGIVEAWAY10",
-      "winner": "",
-      "rules": "Valid until Tue 29 Dec 2026, once per person, first booking only, cannot be combined with other offers.",
-      "offer": "10% off a first booking for everyone who entered the giveaway",
-      "howTo": "Mention FOMGIVEAWAY10 when booking on 068 690 1120 or with the Book a shoot button on the website",
-      "start": "2026-11-29",
-      "end": "2026-12-29",
-      "id": "code-fomgiveaway10",
-      "link": "https://www.fomstudios.co.za/?src=wach",
-      "on": true,
-      "type": "promo"
-    },
-    {
       "id": "event-947-ride-2026",
       "type": "event",
       "on": true,
@@ -69,10 +41,37 @@
       "end": "2026-11-30",
       "winner": "",
       "notes": "Festive gift angle works well: a shoot as a Christmas present."
+    },
+    {
+      "rules": "Entries close Sun 29 Nov 18:00 SAST. Winners drawn at random and announced by Tue 1 Dec; they must reply within 48 hours. SA residents 18+. No purchase necessary. Prizes have no cash value and must be used by 31 Jan 2027. Not sponsored by or associated with Instagram.",
+      "notes": "Do not reveal the code FOMGIVEAWAY10 before entries close on Sun 29 Nov 18:00. Bookings number: 068 690 1120.",
+      "winner": "",
+      "link": "https://instagram.com/fom_studios_",
+      "id": "giveaway-nov-2026",
+      "type": "giveaway",
+      "end": "2026-11-29",
+      "on": true,
+      "howTo": "On Instagram (@fom_studios_): follow, like the giveaway post and comment tagging 2 friends. Each new comment tagging 2 different friends is another entry. Sharing the post to your Story and tagging us is an optional bonus entry.",
+      "title": "Mini Shoot giveaway",
+      "start": "2026-11-20",
+      "offer": "Grand prize: 1 free Mini Shoot (R500 value: 20 edited photos or one 30 second reel, 30 minutes of coverage). Runner-up: 20% off a Mini Shoot. Every entrant: 10% off a first booking with code FOMGIVEAWAY10."
+    },
+    {
+      "rules": "Valid until Tue 29 Dec 2026, once per person, first booking only, cannot be combined with other offers.",
+      "on": true,
+      "link": "https://www.fomstudios.co.za/?src=wach",
+      "end": "2026-12-29",
+      "notes": "Only mention it after entries close. Reminder post on Tue 22 Dec is already written.",
+      "howTo": "Mention FOMGIVEAWAY10 when booking on 068 690 1120 or with the Book a shoot button on the website",
+      "winner": "",
+      "offer": "10% off a first booking for everyone who entered the giveaway",
+      "start": "2026-11-29",
+      "id": "code-fomgiveaway10",
+      "type": "promo",
+      "title": "Giveaway code FOMGIVEAWAY10"
     }
   ],
   "refreshRequested": "",
-  "updatedAt": "2026-11-19T13:40:46.655Z",
-  "importedClaude": "2026-11-19-giveaway",
-  "fromClaude": "2026-11-19-947-blackfriday"
+  "updatedAt": "2026-11-19T14:17:37.772Z",
+  "importedClaude": "2026-11-19-947-blackfriday"
 }
