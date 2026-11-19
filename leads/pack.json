@@ -3,6 +3,61 @@
  "generatedAt": "2026-11-19",
  "leads": [
   {
+   "company": "The Marabi Club",
+   "category": "Catering / Events",
+   "location": "Steyn City",
+   "web": "https://marabiclub.com",
+   "instagram": "themarabiclub",
+   "phone": "010 591 2879",
+   "email": "",
+   "why": "Relaunched at Steyn City in October after moving from Maboneng, so the new space needs fresh photos.",
+   "opener": "Hi, congrats on the move to Steyn City. I would like to shoot the new space and a jazz evening so you have fresh photos and a reel for the festive season."
+  },
+  {
+   "company": "The Bannister Hotel (Veranda rooftop)",
+   "category": "Catering / Events",
+   "location": "Braamfontein",
+   "web": "https://bannisterhotel.co.za",
+   "instagram": "",
+   "phone": "084 771 9303",
+   "email": "events@bannisterhotel.co.za",
+   "why": "Their Veranda rooftop is being promoted for year-end parties of up to 100 guests.",
+   "opener": "Hi, I saw the Veranda rooftop is taking year-end bookings for up to 100 guests. I could shoot one of the functions so you have real photos and a reel to sell next year's bookings, and I can also offer it to your clients."
+  },
+  {
+   "company": "Katy's Palace Bar",
+   "category": "Catering / Events",
+   "location": "Kramerville",
+   "web": "https://katyspalacebar.co.za/",
+   "instagram": "",
+   "phone": "",
+   "email": "",
+   "why": "They are pushing private year-end functions and launches for up to 270 guests.",
+   "opener": "Hi, I saw Katy's Palace Bar is taking year-end functions and launches. I do event photo and video from R1500, and I could be a supplier you recommend to clients booking with you."
+  },
+  {
+   "company": "LUXX at LXX Sandhurst",
+   "category": "Catering / Events",
+   "location": "Sandhurst",
+   "web": "https://www.luxxvenue.co.za/",
+   "instagram": "",
+   "phone": "",
+   "email": "",
+   "why": "A corporate function and party venue in its busiest season right now.",
+   "opener": "Hi, I saw LUXX is listed as a year-end venue in Sandhurst. I would like to shoot one of your functions this season so you have new photos and a reel, and I can offer the same to your clients."
+  },
+  {
+   "company": "The Edge at Wanderers",
+   "category": "Catering / Events",
+   "location": "Illovo",
+   "web": "https://theedge.co.za/",
+   "instagram": "",
+   "phone": "",
+   "email": "",
+   "why": "Offers exclusive hire for year-end groups of up to 70, with a cold plunge and sauna room that is unusual to show.",
+   "opener": "Hi, I saw The Edge is doing year-end hire with the Resilience Room. A short reel of a group using the space could sell it better than words, and I would like to shoot one."
+  },
+  {
    "company": "Padel Perfect",
    "category": "Sports Club / Event",
    "location": "Gallo Manor (Morning Glen Mall)",
@@ -34,94 +89,6 @@
    "email": "",
    "why": "Five courts with regular socials like the Ladies Coffee Club, Kholie's Americano and Before Work Social every week.",
    "opener": "Hi, I saw Club Padel at Morningside Country Club runs the Ladies Coffee Club and the Before Work Social. Weekly reels of those socials could keep the spots full, and we do a padel league package at R2500 a week."
-  },
-  {
-   "company": "Sunday Shuffle",
-   "category": "Sports Club / Event",
-   "location": "Sandton (Gold's Gym)",
-   "web": "https://www.sundayshuffle.co.za/",
-   "instagram": "sundayshuffle_",
-   "phone": "",
-   "email": "",
-   "why": "Weekly Sunday runs with an After Shuffle coffee social and DJ sets, a very visual community that lives on Instagram.",
-   "opener": "Hi, I love the no podiums, no egos idea behind Sunday Shuffle. I would like to shoot a Sunday run and the After Shuffle social so you have a proper reel and photos for the summer season."
-  },
-  {
-   "company": "Benchwarmers Runners Club",
-   "category": "Sports Club / Event",
-   "location": "Rosebank",
-   "web": "",
-   "instagram": "benchwarmers_runners_club",
-   "phone": "",
-   "email": "",
-   "why": "Their Wednesday runs pull 200 to 300 people with a social after, which is a big group to capture well.",
-   "opener": "Hi, I read that your Wednesday runs now get 200 to 300 people. That crowd would make a great reel and photo set, and I could shoot one of the evening runs and the social after."
-  },
-  {
-   "company": "Braamfie Runners",
-   "category": "Sports Club / Event",
-   "location": "Braamfontein",
-   "web": "https://braamfie.com",
-   "instagram": "braamfierunners",
-   "phone": "",
-   "email": "",
-   "why": "Saturday 6am runs through Braamfontein, a strong city backdrop for content.",
-   "opener": "Hi, I saw Braamfie Runners head out every Saturday at 6am through Braamfontein. The city at sunrise with your crew would make a great reel, and I would like to shoot one for you."
-  },
-  {
-   "company": "The Social Runners",
-   "category": "Sports Club / Event",
-   "location": "Sandton",
-   "web": "",
-   "instagram": "thesocial_runners",
-   "phone": "",
-   "email": "",
-   "why": "Weekly Wednesday evening runs in Sandton, a social club that grows through people sharing photos.",
-   "opener": "Hi, I saw The Social Runners meet every Wednesday evening in Sandton. I could shoot a run and send you a reel plus photos people can tag themselves in, which helps new runners find you."
-  },
-  {
-   "company": "Shelflife Running Club",
-   "category": "Sports Club / Event",
-   "location": "Rosebank Mall",
-   "web": "",
-   "instagram": "runshelflife",
-   "phone": "",
-   "email": "",
-   "why": "Runs twice a week from Rosebank Mall, tied to a store, so good content helps both the club and the shop.",
-   "opener": "Hi, I saw Shelflife Running Club meets at Rosebank Mall on Wednesdays and Saturdays. A reel of a Saturday run could help the club and the store at the same time, and I would love to shoot one."
-  },
-  {
-   "company": "Run Tell That (#Letthepeoplerun)",
-   "category": "Sports Club / Event",
-   "location": "Rosebank",
-   "web": "",
-   "instagram": "run_tell_that",
-   "phone": "",
-   "email": "",
-   "why": "They run almost every day of the week in Rosebank, so there is a lot happening that could be shown.",
-   "opener": "Hi, I saw Run Tell That runs most weekdays in Rosebank. I could shoot one of the sessions so you have fresh photos and a reel for the end of year push."
-  },
-  {
-   "company": "The Pack Running",
-   "category": "Sports Club / Event",
-   "location": "Rosebank",
-   "web": "",
-   "instagram": "thepackrunning",
-   "phone": "",
-   "email": "",
-   "why": "A women only Saturday run club, where good photos help new women feel welcome to join.",
-   "opener": "Hi, I saw The Pack runs every Saturday at 7am in Rosebank. Some relaxed photos and a short reel of a run could help more women feel comfortable joining you."
-  },
-  {
-   "company": "Pirates Road Running Club",
-   "category": "Sports Club / Event",
-   "location": "Greenside",
-   "web": "https://piratesclub.co.za/running",
-   "instagram": "",
-   "phone": "",
-   "email": "",
-   "why": "Tuesday time trials and a Homerun series at Pirates, regular events that suit a recap reel.",
-   "opener": "Hi, I saw Pirates runs Tuesday time trials and the Homerun series. I would like to shoot one of the time trials and give you a short recap reel and photos for the members."
   },
   {
    "company": "The Car Barber",
@@ -177,61 +144,6 @@
    "email": "",
    "why": "A new Stellantis dealership opened this year with six brands, including Leapmotor, which needs launch and stock content.",
    "opener": "Hi, I saw the new Stellantis showroom at Bidvest McCarthy Centurion with Jeep, Peugeot and Leapmotor. I shoot car reels and could do walkaround videos of new stock for your socials."
-  },
-  {
-   "company": "The Marabi Club",
-   "category": "Catering / Events",
-   "location": "Steyn City",
-   "web": "https://marabiclub.com",
-   "instagram": "themarabiclub",
-   "phone": "010 591 2879",
-   "email": "",
-   "why": "Relaunched at Steyn City in October after moving from Maboneng, so the new space needs fresh photos.",
-   "opener": "Hi, congrats on the move to Steyn City. I would like to shoot the new space and a jazz evening so you have fresh photos and a reel for the festive season."
-  },
-  {
-   "company": "The Bannister Hotel (Veranda rooftop)",
-   "category": "Catering / Events",
-   "location": "Braamfontein",
-   "web": "https://bannisterhotel.co.za",
-   "instagram": "",
-   "phone": "084 771 9303",
-   "email": "events@bannisterhotel.co.za",
-   "why": "Their Veranda rooftop is being promoted for year-end parties of up to 100 guests.",
-   "opener": "Hi, I saw the Veranda rooftop is taking year-end bookings for up to 100 guests. I could shoot one of the functions so you have real photos and a reel to sell next year's bookings, and I can also offer it to your clients."
-  },
-  {
-   "company": "Katy's Palace Bar",
-   "category": "Catering / Events",
-   "location": "Kramerville",
-   "web": "https://katyspalacebar.co.za/",
-   "instagram": "",
-   "phone": "",
-   "email": "",
-   "why": "They are pushing private year-end functions and launches for up to 270 guests.",
-   "opener": "Hi, I saw Katy's Palace Bar is taking year-end functions and launches. I do event photo and video from R1500, and I could be a supplier you recommend to clients booking with you."
-  },
-  {
-   "company": "LUXX at LXX Sandhurst",
-   "category": "Catering / Events",
-   "location": "Sandhurst",
-   "web": "https://www.luxxvenue.co.za/",
-   "instagram": "",
-   "phone": "",
-   "email": "",
-   "why": "A corporate function and party venue in its busiest season right now.",
-   "opener": "Hi, I saw LUXX is listed as a year-end venue in Sandhurst. I would like to shoot one of your functions this season so you have new photos and a reel, and I can offer the same to your clients."
-  },
-  {
-   "company": "The Edge at Wanderers",
-   "category": "Catering / Events",
-   "location": "Illovo",
-   "web": "https://theedge.co.za/",
-   "instagram": "",
-   "phone": "",
-   "email": "",
-   "why": "Offers exclusive hire for year-end groups of up to 70, with a cold plunge and sauna room that is unusual to show.",
-   "opener": "Hi, I saw The Edge is doing year-end hire with the Resilience Room. A short reel of a group using the space could sell it better than words, and I would like to shoot one."
   },
   {
    "company": "Tightline",
@@ -353,6 +265,94 @@
    "email": "",
    "why": "A bushveld wedding venue outside Pretoria East that is pushing a 2026 winter wedding offer.",
    "opener": "Hi, I saw Simbali is promoting its 2026 winter weddings. I shoot weddings and could do a styled shoot or video of the venue to help sell those dates."
+  },
+  {
+   "company": "Sunday Shuffle",
+   "category": "Sports Club / Event",
+   "location": "Sandton (Gold's Gym)",
+   "web": "https://www.sundayshuffle.co.za/",
+   "instagram": "sundayshuffle_",
+   "phone": "",
+   "email": "",
+   "why": "Weekly Sunday runs with an After Shuffle coffee social and DJ sets, a very visual community that lives on Instagram.",
+   "opener": "Hi, I love the no podiums, no egos idea behind Sunday Shuffle. I would like to shoot a Sunday run and the After Shuffle social so you have a proper reel and photos for the summer season."
+  },
+  {
+   "company": "Benchwarmers Runners Club",
+   "category": "Sports Club / Event",
+   "location": "Rosebank",
+   "web": "",
+   "instagram": "benchwarmers_runners_club",
+   "phone": "",
+   "email": "",
+   "why": "Their Wednesday runs pull 200 to 300 people with a social after, which is a big group to capture well.",
+   "opener": "Hi, I read that your Wednesday runs now get 200 to 300 people. That crowd would make a great reel and photo set, and I could shoot one of the evening runs and the social after."
+  },
+  {
+   "company": "Braamfie Runners",
+   "category": "Sports Club / Event",
+   "location": "Braamfontein",
+   "web": "https://braamfie.com",
+   "instagram": "braamfierunners",
+   "phone": "",
+   "email": "",
+   "why": "Saturday 6am runs through Braamfontein, a strong city backdrop for content.",
+   "opener": "Hi, I saw Braamfie Runners head out every Saturday at 6am through Braamfontein. The city at sunrise with your crew would make a great reel, and I would like to shoot one for you."
+  },
+  {
+   "company": "The Social Runners",
+   "category": "Sports Club / Event",
+   "location": "Sandton",
+   "web": "",
+   "instagram": "thesocial_runners",
+   "phone": "",
+   "email": "",
+   "why": "Weekly Wednesday evening runs in Sandton, a social club that grows through people sharing photos.",
+   "opener": "Hi, I saw The Social Runners meet every Wednesday evening in Sandton. I could shoot a run and send you a reel plus photos people can tag themselves in, which helps new runners find you."
+  },
+  {
+   "company": "Shelflife Running Club",
+   "category": "Sports Club / Event",
+   "location": "Rosebank Mall",
+   "web": "",
+   "instagram": "runshelflife",
+   "phone": "",
+   "email": "",
+   "why": "Runs twice a week from Rosebank Mall, tied to a store, so good content helps both the club and the shop.",
+   "opener": "Hi, I saw Shelflife Running Club meets at Rosebank Mall on Wednesdays and Saturdays. A reel of a Saturday run could help the club and the store at the same time, and I would love to shoot one."
+  },
+  {
+   "company": "Run Tell That (#Letthepeoplerun)",
+   "category": "Sports Club / Event",
+   "location": "Rosebank",
+   "web": "",
+   "instagram": "run_tell_that",
+   "phone": "",
+   "email": "",
+   "why": "They run almost every day of the week in Rosebank, so there is a lot happening that could be shown.",
+   "opener": "Hi, I saw Run Tell That runs most weekdays in Rosebank. I could shoot one of the sessions so you have fresh photos and a reel for the end of year push."
+  },
+  {
+   "company": "The Pack Running",
+   "category": "Sports Club / Event",
+   "location": "Rosebank",
+   "web": "",
+   "instagram": "thepackrunning",
+   "phone": "",
+   "email": "",
+   "why": "A women only Saturday run club, where good photos help new women feel welcome to join.",
+   "opener": "Hi, I saw The Pack runs every Saturday at 7am in Rosebank. Some relaxed photos and a short reel of a run could help more women feel comfortable joining you."
+  },
+  {
+   "company": "Pirates Road Running Club",
+   "category": "Sports Club / Event",
+   "location": "Greenside",
+   "web": "https://piratesclub.co.za/running",
+   "instagram": "",
+   "phone": "",
+   "email": "",
+   "why": "Tuesday time trials and a Homerun series at Pirates, regular events that suit a recap reel.",
+   "opener": "Hi, I saw Pirates runs Tuesday time trials and the Homerun series. I would like to shoot one of the time trials and give you a short recap reel and photos for the members."
   }
  ]
 }
