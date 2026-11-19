@@ -136,14 +136,14 @@ var OT = {
       (o.why ? '<div class="ot-why">💡 ' + esc(o.why) + '</div>' : '') +
       (kind === 'done' ? '<details style="margin-top:8px"><summary class="ot-sub" style="cursor:pointer">Show the message</summary><textarea class="ot-msg" data-k="msg">' + esc(o.undo && o.undo.kind === 'follow' ? OT.follow(o) : OT.msg(o)) + '</textarea></details><div class="ot-btns">' +
         (ph ? '<button type="button" class="wa" data-a="wa2">WhatsApp again</button>' : '') + (em ? '<button type="button" data-a="em2">Email again</button>' : '') + '<button type="button" data-a="copy">Copy</button>' +
-        '<button type="button" class="go" data-a="undo">↩ Undo</button></div>' : '<textarea class="ot-msg" data-k="msg">' + esc(msg) + '</textarea><div class="ot-btns">' +
+        '<button type="button" class="go" data-a="undo">↩ Undo</button><button type="button" data-a="remove" style="color:#b3261e">Remove</button></div>' : '<textarea class="ot-msg" data-k="msg">' + esc(msg) + '</textarea><div class="ot-btns">' +
         (ph ? '<button type="button" class="wa" data-a="wa">WhatsApp</button>' : '') +
         (ig ? '<button type="button" data-a="ig">Instagram DM</button>' : '') +
         (em ? '<button type="button" data-a="em">Email</button>' : '') +
         '<button type="button" data-a="copy">Copy</button>' +
         '<button type="button" class="go" data-a="done">' + (kind === 'follow' ? 'Followed up' : 'Contacted') + '</button>' +
         (kind === 'follow' ? '<button type="button" data-a="replied">They replied</button><button type="button" data-a="stop">No reply, stop</button>' : '<button type="button" data-a="skip">Skip today</button>') +
-        '<button type="button" data-a="open">Details</button></div>') + '</div>';
+        '<button type="button" data-a="open">Details</button><button type="button" data-a="remove" style="color:#b3261e">Remove</button></div>') + '</div>';
   },
   follow: function(o){ return 'Hi ' + (first(o.contact) || (o.company ? o.company + ' team' : 'there')) + ', just following up on my message about photos and video for ' + (o.company || 'you') + '. Happy to send a quick idea and price if it helps. Have a great week! Ishaaq, FOM Studios 📸'; },
   render: function(){
@@ -186,6 +186,7 @@ $('otBody').addEventListener('click', async function(e){
   if(a === 'copy'){ var t0 = c.querySelector('[data-k=msg]'); await copy(t0 ? t0.value : msg); toast('Copied'); }
   if(a === 'wa2'){ window.open('https://wa.me/' + intl(o.phone) + '?text=' + encodeURIComponent(c.querySelector('[data-k=msg]').value), '_blank'); }
   if(a === 'em2'){ location.href = 'mailto:' + encodeURIComponent(o.email) + '?subject=' + encodeURIComponent('Photos and video for ' + (o.company || 'you')) + '&body=' + encodeURIComponent(c.querySelector('[data-k=msg]').value); }
+  if(a === 'remove'){ if(confirm('Remove ' + (o.company || o.contact || 'this lead') + '? It goes from the Today list and the Leads Tracker. This cannot be undone.')){ store.remove(o.id); toast('Lead removed'); } return; }
   if(a === 'undo'){
     var u = o.undo || { status:'Not Emailed', emailed:'No', dateEmailed:'', followUp:'', contactedVia:'' };
     o.status = u.status || 'Not Emailed'; o.emailed = u.emailed || 'No'; o.dateEmailed = u.dateEmailed || ''; o.followUp = u.followUp || ''; o.contactedVia = u.contactedVia || '';

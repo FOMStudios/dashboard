@@ -282,6 +282,7 @@ table.leads .l-st select{width:100%;}
 table.leads .l-fu{width:120px;white-space:nowrap;font-size:13px;}
 table.leads .l-fu.due{color:#c0392b;font-weight:700;}
 table.leads .l-act{width:1%;white-space:nowrap;}
+.pitch.rm{color:#b3261e;min-width:34px;padding-left:10px;padding-right:10px}
 .acts{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;}
 .acts .pitch,.acts .pitch.meet{margin:0!important;display:inline-flex!important;align-items:center;justify-content:center;box-sizing:border-box;min-width:64px;height:32px;padding:0 12px!important;line-height:1!important;text-decoration:none;vertical-align:middle;}
 table.leads td select.status-select{border:0;padding:7px 12px;font-size:13px;}
@@ -686,7 +687,7 @@ function renderLeads(){
             <td class="l-st"><select class="status-select ${STATUS_CLASS[o.status]||''}" data-i="${i}" data-f="status" aria-label="Status">${STATUSES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></td>
             <td class="l-fu hide-sm${due?' due':''}">${o.followUp?esc(niceDate(o.followUp)):'<span style="color:var(--ink-soft)">-</span>'}</td>
             <td class="col-deck hide-md">${o.deckSent?`<button class="deck-lnk" type="button" data-deck="${i}" title="Open the exact deck this lead received">${esc(o.deckSent.version||'Deck')}<small>${esc(niceDate(o.deckSent.at))}</small></button>`:'<span style="color:var(--ink-soft);font-size:12px;padding:0 6px">-</span>'}</td>
-            <td class="l-act"><div class="acts"><button class="pitch" type="button" data-pitch="${i}" title="Fill the email and deck for this lead">Pitch</button><a class="pitch meet" href="meetings.html?new=lead:${encodeURIComponent(o.id)}" title="Start a client meeting with this lead (mood board, notes, quote)">Meet</a></div></td>
+            <td class="l-act"><div class="acts"><button class="pitch" type="button" data-pitch="${i}" title="Fill the email and deck for this lead">Pitch</button><a class="pitch meet" href="meetings.html?new=lead:${encodeURIComponent(o.id)}" title="Start a client meeting with this lead (mood board, notes, quote)">Meet</a><button class="pitch rm" type="button" data-rm="${i}" title="Remove this lead" aria-label="Remove this lead">✕</button></div></td>
             <td class="l-go hide-sm">&#8250;</td>`;
         tbody.appendChild(tr);
     });
@@ -760,6 +761,7 @@ leadTbody().addEventListener('change', e=>{
     renderLeadDashboard();
 });
 leadTbody().addEventListener('click', e=>{
+    const rm=e.target.closest('[data-rm]'); if(rm){ const o=leads[+rm.dataset.rm]; if(o && confirm('Remove '+(o.company||o.contact||'this lead')+'? It goes from the table and the Today list. This cannot be undone.')){ store.remove(o.id); toast('Lead removed'); } return; }
     const p=e.target.closest('[data-pitch]'); if(p){ pitchLead(leads[+p.dataset.pitch]); return; }
     const d=e.target.closest('[data-deck]'); if(d){ openSentDeck(leads[+d.dataset.deck]); return; }
     if(e.target.closest('a,select,button,input')) return;
@@ -1633,7 +1635,7 @@ if(!configured){ notConfigured(); } else { loadFirebase().then(initCloud).catch(
 /* initial deck preview */
 refreshDeckPreview();
 </script>
-<script src="outreach-today.js?v=3"></script>
+<script src="outreach-today.js?v=4"></script>
 <script src="activity.js?v=2"></script>
 <script src="app.js?v=7"></script>
 </body>
