@@ -90,7 +90,7 @@ var OT = {
   },
   contactedToday: function(){ var t = iso(); return leads.filter(function(o){ return o.dateEmailed === t && o.status === 'Emailed'; }).length; },
   importPack: async function(){
-    if(OT.importing || OT.imported || typeof store === 'undefined' || !store || !DB) return;
+    if(OT.importing || OT.imported || !OT.snap || typeof store === 'undefined' || !store || !DB) return;   // only after the leads list has loaded, so nothing is added twice
     OT.importing = true;
     try{
       var r = await fetch('leads/pack' + SUF + '.json?t=' + Date.now(), { cache:'no-store' });
@@ -190,7 +190,7 @@ $('otBody').addEventListener('click', async function(e){
 
 /* re-draw Today whenever the leads list changes */
 var _orig = window.safeRenderLeads;
-window.safeRenderLeads = function(){ _orig(); try{ OT.render(); }catch(e){ console.warn(e); } };
+window.safeRenderLeads = function(){ _orig(); if(typeof store !== 'undefined' && store) OT.snap = true; try{ OT.render(); }catch(e){ console.warn(e); } };
 var waitDb = setInterval(function(){ if(typeof DB !== 'undefined' && DB && typeof store !== 'undefined' && store){ clearInterval(waitDb); OT.loadCfg(); setTimeout(function(){ OT.render(); }, 1200); } }, 400);
 
 /* ============================================================
