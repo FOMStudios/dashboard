@@ -438,16 +438,35 @@ async function verifyYoco(request, body, env) {
   const want = btoa(String.fromCharCode(...mac));
   return sig.split(' ').some(p => p.split(',')[1] === want);
 }
+function voucherEmail(o, forRecipient) {
+  const v = o.voucher;
+  return `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#2a2b2c">${forRecipient ? `<p>Hi ${htmlEsc(v.to || 'there')}, ${htmlEsc(v.from || 'someone special')} sent you a gift from FOM Studios 🎁</p>` : `<p>Hi ${htmlEsc((o.buyer.name || '').split(' ')[0] || 'there')}, thank you! Here is your gift voucher${v.toEmail ? ' (we also emailed it to ' + htmlEsc(v.to || 'them') + ')' : ''}. Forward it or print it.</p>`}
+  <div style="background:#111;color:#fff;border-radius:20px;padding:28px 24px;text-align:center;margin:16px 0"><div style="letter-spacing:.2em;font-size:12px;opacity:.7">FOM STUDIOS GIFT VOUCHER</div><div style="font-size:40px;font-weight:800;margin:10px 0">R${v.amount}</div><div style="font-size:15px">${htmlEsc(v.label || '')}</div>${v.to ? `<div style="margin-top:14px;font-size:15px">For ${htmlEsc(v.to)}${v.from ? ', from ' + htmlEsc(v.from) : ''}</div>` : ''}${v.msg ? `<div style="margin-top:10px;font-style:italic;opacity:.85">"${htmlEsc(v.msg)}"</div>` : ''}<div style="margin-top:18px;background:#fff;color:#111;border-radius:12px;padding:12px;font-size:22px;font-weight:800;letter-spacing:.08em">${v.code}</div><div style="font-size:12px;opacity:.7;margin-top:10px">Valid until ${v.expires || 'one year from today'}</div></div>
+  <p>To use it, book on <a href="https://www.fomstudios.co.za/?src=email">fomstudios.co.za</a> or WhatsApp 068 690 1120 and quote the code. It works on shoots and prints, and any balance stays on the code.</p><p>FOM Studios</p></div>`;
+}
 async function markPaid(env, o, how) {
   if (o.status === 'paid') return o;
   o.status = 'paid'; o.paidAt = new Date().toISOString(); o.paidBy = how; if (o.type === 'print' && (o.prints || []).length) o.stage = 'new';
+  // limited editions: number each print and count it as sold
+  if (o.type === 'print' && (o.prints || []).some(p => p.edition)) {
+    const ed = (await r2json(env, 'shop/editions.json')) || {};
+    o.prints.forEach(p => { if (!p.edition) return; const from = (ed[p.n] || 0) + 1; ed[p.n] = (ed[p.n] || 0) + p.qty; p.edNos = Array.from({ length: p.qty }, (_, i) => from + i); p.label += ', edition ' + p.edNos.join(', ') + ' of ' + p.edition; });
+    await r2put(env, 'shop/editions.json', ed);
+  }
+  // gift vouchers: the code works from now
+  if (o.type === 'voucher' && o.voucher) {
+    const v = o.voucher, exp = new Date(Date.now() + 365 * 864e5).toISOString().slice(0, 10);
+    v.expires = exp;
+    await r2put(env, '_sales/vouchers/' + v.code + '.json', { code: v.code, amount: v.amount, balance: v.amount, label: v.label, to: v.to, from: v.from, order: o.o, created: o.paidAt, expires: exp, used: [] });
+  }
   await r2put(env, '_sales/orders/' + o.o + '.json', o);
   const link = SALES_SITE + '?ev=' + o.ev + '&o=' + o.o + '&k=' + o.k;
-  await pushAll(env, { title: (o.type === 'print' ? 'Print order R' : 'Photo sale R') + o.amount, body: (o.buyer?.name || 'Someone') + ' bought ' + o.label + (o.type === 'print' ? '' : ' from ' + (o.evTitle || o.ev)) + '.', url: 'sales.html?ev=' + o.ev, tag: 'fom-sale-' + o.o }).catch(() => null);
+  await pushAll(env, { title: (o.type === 'voucher' ? 'Gift voucher R' : o.type === 'print' ? 'Print order R' : 'Photo sale R') + o.amount, body: (o.buyer?.name || 'Someone') + ' bought ' + o.label + (o.type === 'print' ? '' : ' from ' + (o.evTitle || o.ev)) + '.', url: 'sales.html?ev=' + o.ev, tag: 'fom-sale-' + o.o }).catch(() => null);
   if (env.BREVO_KEY && o.buyer?.email) {
-    const html = o.type === 'print' ? `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#2a2b2c"><h2 style="margin:0 0 10px">Thank you for your order 🖼</h2><p>Hi ${htmlEsc((o.buyer.name || '').split(' ')[0] || 'there')}, we have your order for ${htmlEsc(o.label)} (R${o.amount}).</p>${(o.prints || []).length ? `<p>Your print${o.prints.length === 1 ? ' is' : 's are'} now being made. We will WhatsApp you when ${o.prints.length === 1 ? 'it is' : 'they are'} ready${o.delivery && o.delivery.id !== 'collect' ? ' and on the way' : ' to collect'}.</p>` : ''}${(o.dig || []).length ? `<p><a href="${link}" style="display:inline-block;background:#111;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Download your digital photos</a></p>` : `<p><a href="${link}">See your order</a></p>`}<p>FOM Studios</p></div>`
+    const html = o.type === 'voucher' ? voucherEmail(o) : o.type === 'print' ? `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#2a2b2c"><h2 style="margin:0 0 10px">Thank you for your order 🖼</h2><p>Hi ${htmlEsc((o.buyer.name || '').split(' ')[0] || 'there')}, we have your order for ${htmlEsc(o.label)} (R${o.amount}).</p>${(o.prints || []).length ? `<p>Your print${o.prints.length === 1 ? ' is' : 's are'} now being made. We will WhatsApp you when ${o.prints.length === 1 ? 'it is' : 'they are'} ready${o.delivery && o.delivery.id !== 'collect' ? ' and on the way' : ' to collect'}.</p>` : ''}${(o.dig || []).length ? `<p><a href="${link}" style="display:inline-block;background:#111;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Download your digital photos</a></p>` : `<p><a href="${link}">See your order</a></p>`}<p>FOM Studios</p></div>`
       : `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#2a2b2c"><h2 style="margin:0 0 10px">Your photos are ready 📸</h2><p>Hi ${htmlEsc((o.buyer.name || '').split(' ')[0] || 'there')}, thank you for buying ${htmlEsc(o.label)} from ${htmlEsc(o.evTitle || 'FOM Studios')}.</p><p><a href="${link}" style="display:inline-block;background:#111;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Download your photos</a></p><p style="font-size:13px;color:#6f6f6d">The link works for ${SALE_DAYS} days. Tag @fom_studios_ when you post them!</p><p>FOM Studios</p></div>`;
-    await sendBrevo(env, o.buyer.email, o.buyer.name || '', o.type === 'print' ? 'Your FOM Studios order' : 'Your photos from ' + (o.evTitle || 'FOM Studios'), html).catch(() => null);
+    if (o.type === 'voucher' && o.voucher && o.voucher.toEmail && o.voucher.toEmail !== o.buyer.email) await sendBrevo(env, o.voucher.toEmail, o.voucher.to || '', (o.voucher.from || 'Someone') + ' sent you a FOM Studios gift 🎁', voucherEmail(o, true)).catch(() => null);
+    await sendBrevo(env, o.buyer.email, o.buyer.name || '', o.type === 'voucher' ? 'Your FOM Studios gift voucher' : o.type === 'print' ? 'Your FOM Studios order' : 'Your photos from ' + (o.evTitle || 'FOM Studios'), html).catch(() => null);
   }
   return o;
 }
@@ -467,6 +486,7 @@ async function handleSales(path, request, env, url) {
     let b = {}; try { b = await request.json(); } catch (e) {}
     const ev = await r2json(env, 'sales/' + evId(b.ev) + '/event.json');
     if (!ev || !ev.on) return json({ error: 'This event is not on sale.' }, 404);
+    if (!b.preview && !((await r2json(env, 'shop/config.json')) || {}).live) return json({ error: 'Photo sales open soon.' }, 403);
     if (!env.YOCO_SECRET_KEY) return json({ error: 'Card payments are not set up yet. Please WhatsApp us to buy.' }, 503);
     const all = new Map((ev.photos || []).map(p => [p.n, p]));
     let num = String(b.num || '').trim().toUpperCase().slice(0, 12), items;
@@ -492,6 +512,7 @@ async function handleSales(path, request, env, url) {
     const expired = o.paidAt && Date.now() - Date.parse(o.paidAt) > SALE_DAYS * 864e5;
     const dig = o.dig || (o.items || []).map(n => ({ ev: o.ev, n }));   // digital files in this order
     if (path === '/sales/order') {
+      if (o.type === 'voucher') return json({ type: 'voucher', status: o.status, label: o.label, amount: o.amount, voucher: o.status === 'paid' ? { code: o.voucher.code, to: o.voucher.to, from: o.voucher.from, msg: o.voucher.msg, expires: o.voucher.expires, label: o.voucher.label } : null });
       const out = { type: o.type || 'photos', status: expired ? 'expired' : o.status, label: o.label, amount: o.amount, ev: o.ev, evTitle: o.evTitle, count: dig.length, stage: o.stage || '', prints: o.prints ? o.prints.map(p => ({ label: p.label, qty: p.qty, thumb: p.thumb })) : undefined, delivery: o.delivery ? o.delivery.label : undefined };
       if (o.status === 'paid' && !expired) out.items = dig.map((d, i) => ({ n: d.n, thumb: `${url.origin}/file?g=${encodeURIComponent('sales/' + d.ev + '/t/')}&n=${encodeURIComponent(d.n)}`, url: `${url.origin}/sales/dl?o=${o.o}&k=${o.k}&i=${i}` }));
       return json(out);
@@ -515,15 +536,51 @@ async function handleSales(path, request, env, url) {
     }
     return json({ ok: true });
   }
+  if (path === '/sales/live') {   // the master switch for photo sales and prints on the website
+    const cfg = (await r2json(env, 'shop/config.json')) || {};
+    return new Response(JSON.stringify({ live: !!cfg.live }), { headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' } });
+  }
   if (path === '/sales/shop') {   // print sizes, frames, prices and delivery (public)
     const cfg = (await r2json(env, 'shop/config.json')) || {};
     const shop = await r2json(env, 'sales/shop/event.json');
+    if (shop && shop.photos && shop.photos.some(p => p.edition)) { const ed = (await r2json(env, 'shop/editions.json')) || {}; shop.photos.forEach(p => { if (p.edition) p.sold = ed[p.n] || 0; }); }
     return json({ cfg, shop: shop && shop.on ? shop : null });
+  }
+  if (path === '/sales/voucher') {   // check a gift voucher code (the calculator and the cart use this)
+    const v = await r2json(env, '_sales/vouchers/' + String(url.searchParams.get('c') || '').toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 24) + '.json');
+    if (!v) return json({ valid: false, msg: 'Voucher not found.' });
+    if (v.expires < new Date().toISOString().slice(0, 10)) return json({ valid: false, msg: 'This voucher expired on ' + v.expires + '.' });
+    if (!(v.balance > 0)) return json({ valid: false, msg: 'This voucher has been used.' });
+    return json({ valid: true, code: v.code, balance: v.balance, amount: v.amount, label: v.label, expires: v.expires });
+  }
+  if (path === '/sales/voucher-checkout' && request.method === 'POST') {
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    const cfg = (await r2json(env, 'shop/config.json')) || {};
+    if (!cfg.live && !b.preview) return json({ error: 'Gift vouchers open soon.' }, 403);
+    if (!env.YOCO_SECRET_KEY) return json({ error: 'Card payments are not set up yet. Please WhatsApp us.' }, 503);
+    const opt = (cfg.vouchers || []).find(x => x.id === b.id);
+    let amount = opt ? +opt.amount : Math.round(+b.amount || 0), label = opt ? opt.label : 'Gift voucher';
+    if (!opt && (!cfg.voucherCustom || amount < (+cfg.voucherMin || 100) || amount > 20000)) return json({ error: 'Choose a voucher amount.' }, 400);
+    const buyer = { name: String(b.buyer?.name || '').slice(0, 60), email: String(b.buyer?.email || '').slice(0, 80), phone: String(b.buyer?.phone || '').slice(0, 20) };
+    if (!buyer.name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(buyer.email)) return json({ error: 'Add your name and email.' }, 400);
+    const toEmail = String(b.toEmail || '').slice(0, 80);
+    if (toEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(toEmail)) return json({ error: 'Check their email address.' }, 400);
+    const code = 'GIFT-' + rnd(4).toUpperCase() + '-' + rnd(4).toUpperCase();
+    const o = { o: Date.now().toString(36) + rnd(4), k: rnd(16), type: 'voucher', ev: 'voucher', evTitle: 'FOM Studios', label: label + ' gift voucher', amount, status: 'pending', created: new Date().toISOString(), buyer,
+      voucher: { code, amount, label, to: String(b.to || '').slice(0, 60), from: String(b.from || buyer.name).slice(0, 60), msg: String(b.msg || '').slice(0, 240), toEmail } };
+    const back = 'https://www.fomstudios.co.za/prints.html#gift';
+    const r = await fetch('https://payments.yoco.com/api/checkouts', { method: 'POST', headers: { Authorization: 'Bearer ' + env.YOCO_SECRET_KEY, 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID() },
+      body: JSON.stringify({ amount: Math.round(amount * 100), currency: 'ZAR', successUrl: SALES_SITE + '?o=' + o.o + '&k=' + o.k, cancelUrl: back, failureUrl: back, metadata: { sale: o.o, kind: 'voucher' } }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.redirectUrl) return json({ error: (d && d.message) || 'Could not start the payment. Please try again.' }, 502);
+    o.checkoutId = d.id; await r2put(env, '_sales/orders/' + o.o + '.json', o);
+    return json({ redirectUrl: d.redirectUrl, o: o.o });
   }
   if (path === '/sales/print-checkout' && request.method === 'POST') {
     let b = {}; try { b = await request.json(); } catch (e) {}
     if (!env.YOCO_SECRET_KEY) return json({ error: 'Card payments are not set up yet. Please WhatsApp us to order.' }, 503);
     const cfg = (await r2json(env, 'shop/config.json')) || {}, evs = {};
+    if (!cfg.live && !b.preview) return json({ error: 'Prints open soon.' }, 403);
     const ev = async id => (evs[id] = evs[id] !== undefined ? evs[id] : await r2json(env, 'sales/' + evId(id) + '/event.json'));
     const prints = [], dig = []; let total = 0, nPrint = 0;
     for (const it of (b.items || []).slice(0, 30)) {
@@ -535,7 +592,8 @@ async function handleSales(path, request, env, url) {
       } else {
         const e = await ev(it.ev); const p = e && e.on && (e.photos || []).find(x => x.n === it.n);
         if (!p) return json({ error: 'A photo in your cart is no longer available.' }, 400);
-        src = { src: 'ev', ev: e.id, n: p.n }; thumb = `${url.origin}/file?g=${encodeURIComponent('sales/' + e.id + '/t/')}&n=${encodeURIComponent(p.n)}`; title = p.title || e.title;
+        if (p.edition && !it.digital) { const ed = (await r2json(env, 'shop/editions.json')) || {}; const left = p.edition - (ed[p.n] || 0) - prints.filter(x => x.n === p.n && x.ev === e.id).reduce((a, x) => a + x.qty, 0); if (left < Math.max(1, Math.round(+it.qty || 1))) return json({ error: left > 0 ? 'Only ' + left + ' left of "' + (p.title || 'this print') + '".' : '"' + (p.title || 'This print') + '" is sold out.' }, 400); }
+        src = { src: 'ev', ev: e.id, n: p.n, edition: p.edition || 0 }; thumb = `${url.origin}/file?g=${encodeURIComponent('sales/' + e.id + '/t/')}&n=${encodeURIComponent(p.n)}`; title = p.title || e.title;
         if (it.digital) { const pr = +(e.prices && e.prices.photo) || 0; if (!pr) return json({ error: 'Digital downloads are not on sale for this photo.' }, 400); dig.push({ ev: e.id, n: p.n }); total += pr; continue; }
       }
       const size = (cfg.sizes || []).find(x => x.id === it.size), fin = (cfg.finishes || []).find(x => x.id === it.finish);
@@ -612,7 +670,7 @@ async function handleSales(path, request, env, url) {
     let cursor; do { const r = await B.list({ prefix: '_sales/orders/', cursor, limit: 1000 });
       const type = url.searchParams.get('type');
       for (const ob of r.objects) { const o = await r2json(env, ob.key); if (!o) continue;
-        if (type === 'print' ? o.type !== 'print' : (o.type === 'print' || (ev && o.ev !== ev))) continue;
+        if (type === 'print' ? o.type !== 'print' : type === 'voucher' ? o.type !== 'voucher' : (o.type === 'print' || o.type === 'voucher' || (ev && o.ev !== ev))) continue;
         out.push({ o: o.o, type: o.type || 'photos', ev: o.ev, label: o.label, amount: o.amount, status: o.status, stage: o.stage || '', created: o.created, paidAt: o.paidAt, buyer: o.buyer, count: (o.dig || o.items || []).length, prints: o.prints, delivery: o.delivery, from: o.from, link: SALES_SITE + (o.type === 'print' ? '?' : '?ev=' + o.ev + '&') + 'o=' + o.o + '&k=' + o.k }); }
       cursor = r.truncated ? r.cursor : undefined; } while (cursor);
     out.sort((a, b) => String(b.created).localeCompare(String(a.created)));
@@ -644,6 +702,22 @@ async function handleSales(path, request, env, url) {
     const f = await B.get(p.src === 'gallery' ? p.g + p.n : '_sales/' + p.ev + '/' + p.n); if (!f) return json({ error: 'file not found' }, 404);
     const h = new Headers(cors); f.writeHttpMetadata(h); h.set('Access-Control-Expose-Headers', 'Content-Disposition'); h.set('Content-Disposition', `attachment; filename="${o.o}-${+url.searchParams.get('i') + 1}-${p.size}-${p.finish}-${p.n.replace(/"/g, '')}"`);
     return new Response(f.body, { headers: h });
+  }
+  if (path === '/sales/admin/vouchers') {
+    const out = []; let cursor;
+    do { const r = await B.list({ prefix: '_sales/vouchers/', cursor, limit: 1000 }); for (const ob of r.objects) { const v = await r2json(env, ob.key); if (v) out.push(v); } cursor = r.truncated ? r.cursor : undefined; } while (cursor);
+    out.sort((a, b) => String(b.created).localeCompare(String(a.created)));
+    return json({ vouchers: out });
+  }
+  if (path === '/sales/admin/voucher-use' && request.method === 'POST') {
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    const key = '_sales/vouchers/' + String(b.code || '').toUpperCase().replace(/[^A-Z0-9-]/g, '') + '.json', v = await r2json(env, key);
+    if (!v) return json({ error: 'not found' }, 404);
+    const amt = Math.min(v.balance, Math.max(0, Math.round(+b.amount || 0)));
+    if (!amt) return json({ error: 'Nothing to take off.' }, 400);
+    v.balance -= amt; v.used.push({ amount: amt, at: new Date().toISOString(), note: String(b.note || '').slice(0, 100) });
+    await r2put(env, key, v);
+    return json({ ok: true, balance: v.balance });
   }
   if (path === '/sales/admin/setup') {
     const w = await r2json(env, '_sales/webhook.json');

@@ -776,6 +776,15 @@ function getActivePromo(){
   const code = input.value.trim().toUpperCase();
   if(!code){ msgEl.textContent = ''; return null; }
 
+  // gift vouchers (GIFT-XXXX-XXXX) sold on the website: takes the voucher balance off, checked with the gallery Worker
+  if(/^GIFT-/.test(code)){
+    const G = window.FOM_GIFTS = window.FOM_GIFTS || {}, g = G[code];
+    if(!g){ G[code] = { loading:true }; fetch('https://fom-gallery.cold-moon-d65c.workers.dev/sales/voucher?c=' + encodeURIComponent(code)).then(r => r.json()).then(j => { G[code] = j; render(); }).catch(() => { G[code] = { valid:false, msg:'Could not check the voucher. Try again.' }; render(); }); }
+    if(!g || g.loading){ msgEl.textContent = 'Checking voucher...'; msgEl.style.color = '#6f6f6d'; return null; }
+    if(!g.valid){ msgEl.textContent = g.msg || 'Voucher not valid.'; msgEl.style.color = '#c0392b'; return null; }
+    msgEl.textContent = `✓ Gift voucher, R${g.balance} available (until ${g.expires}). After the client pays, tap Use on Photo Sales, Gift vouchers.`; msgEl.style.color = '#27ae60';
+    return { type:'flat', value:g.balance, label:'Gift voucher ' + code };
+  }
   // referral codes (FRIEND-NAME) made on Leads, Past clients: 10% off for the friend's first shoot
   const ref = /^FRIEND-/.test(code) && window.FOM_REFS && FOM_REFS[code];
   const promo = PROMO_CODES[code] || (ref ? { type:'percent', value:10, label:'Referral from ' + (String(ref.name || '').split(' ')[0] || 'a client') + ' 10% off' } : null);

@@ -167,6 +167,14 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 @media(max-width:900px){.tr-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}.tr-grid3{grid-template-columns:minmax(0,1fr);}}
 @media(max-width:700px){.tr-grid2{grid-template-columns:minmax(0,1fr);}.tr-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.tr-kpi b{font-size:24px;}.tr-fs{grid-template-columns:110px minmax(0,1fr) 58px;}.tr-live{margin-left:0;}}
 /* ============ PHOTO SALES ============ */
+.ps-size{border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px;background:var(--bg-pill)}
+.ps-size>b{display:block;font-size:15px;margin-bottom:8px}
+.ps-pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.ps-pgrid label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:700;color:var(--ink-soft)}
+.ps-rin{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 10px}
+.ps-rin i{font-style:normal;font-weight:800;color:var(--ink)}
+.ps-rin input{border:0;background:transparent;font:inherit;font-size:16px;font-weight:700;color:var(--ink);padding:10px 6px;width:100%;min-width:0;outline:0}
+.ps-rin input::placeholder{font-weight:500;font-size:13px;color:var(--ink-soft)}
 .ps-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .ps-row input{flex:1;min-width:180px}
 .ps-in,.ps-row input,.ps-grid2 input,.ps-grid2 textarea,.ps-grid2 select{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:14px;background:var(--bg-pill);color:var(--ink);width:100%}
@@ -326,8 +334,10 @@ html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7
     </div>
     <div id="psOffBiz" class="tr-msg" style="display:none"><b>Photo Sales is set up for FOM Studios</b>Switch to FOM Studios to sell event photos. Ask Claude to switch it on for Shot by A when she needs it.</div>
     <div id="psMain">
+        <section class="tr-card" id="psLive"><div class="ps-row" style="justify-content:space-between"><div><h2 style="margin:0">Live on my website</h2><div class="tr-sub" id="psLiveTx">Checking...</div></div><label class="tr-tg" style="margin:0"><span class="tr-sw"><input type="checkbox" id="psLiveOn" disabled><span></span></span></label></div></section>
         <section class="tr-card" id="psSetup"><h2 class="fold">Card payments setup</h2><div id="psSetupBody" class="ch-help">Checking...</div></section>
         <section class="tr-card" id="psPrintOrders"><h2>Print orders</h2><div id="psPO"><p class="tr-empty">Loading...</p></div></section>
+        <section class="tr-card" id="psVoCard"><h2 class="fold">Gift vouchers</h2><div id="psVo"><p class="tr-empty">Loading...</p></div></section>
         <section class="tr-card" id="psCfg"><h2 class="fold">Print settings (sizes, frames, prices, delivery)</h2><div id="psCfgBody"></div></section>
         <section class="tr-card" id="psList"><h2>Events and Prints shop</h2><div id="psEvents"></div>
             <div class="ps-row" style="margin-top:12px"><input id="psNewTitle" placeholder="New event, e.g. 947 Ride Joburg 2026"><button type="button" class="ps-btn go" id="psNew">+ New event</button></div></section>
@@ -338,7 +348,7 @@ html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7
 <div class="toast" id="toast"></div>
 
 <script src="firebase-config.js"></script>
-<script src="sales-admin.js?v=2"></script>
+<script src="sales-admin.js?v=4"></script>
 <script>
 const $ = id => document.getElementById(id);
 /* folding cards, remembered on this device */

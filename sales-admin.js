@@ -82,7 +82,7 @@ function drawEdit(){
     '<div><label>Price per photo (R)</label><input inputmode="numeric" data-p="photo" value="' + esc(EV.prices.photo || '') + '"></div><div><label>All photos of one number (R, empty = off)</label><input inputmode="numeric" data-p="bundle" value="' + esc(EV.prices.bundle || '') + '"></div>' +
     '<div style="grid-column:1/-1"><label>A line about the event (optional)</label><textarea data-k="about" rows="2" placeholder="e.g. Photos from the start, the Westcliff hill and the finish.">' + esc(EV.about || '') + '</textarea></div></div>') +
     '<div class="ps-row" style="margin-top:12px"><label class="tr-tg" style="margin:0"><span>On sale</span> <input type="checkbox" id="psOn"' + (EV.on ? ' checked' : '') + '></label>' +
-    '<button type="button" class="ps-btn go" id="psSave">Save</button><a class="ps-btn" href="' + link + (EV.on || SH ? '' : '&preview=1') + '" target="_blank" rel="noopener">Open the page</a>' +
+    '<button type="button" class="ps-btn go" id="psSave">Save</button><a class="ps-btn" href="' + link + '&preview=1" target="_blank" rel="noopener">Open the page</a>' +
     '<button type="button" class="ps-btn" id="psCopy">Copy link</button><button type="button" class="ps-btn red" id="psDelEv">' + (SH ? 'Delete shop' : 'Delete event') + '</button><span id="psSaveMsg" class="tr-sub"></span></div></section>' +
 
     '<section class="tr-card"><h2>Photos <span class="tr-sub" style="font-weight:600">' + EV.photos.length + ' photos' + (untagged ? ', ' + untagged + ' without a number' : '') + '</span></h2>' +
@@ -90,7 +90,7 @@ function drawEdit(){
     '<div id="psProg"' + (UP.msg ? '' : ' style="display:none"') + '><div class="tr-sub" id="psProgTx">' + esc(UP.msg || '') + '</div><div class="ps-bar"><i id="psProgBar"></i></div></div>' +
     '<div class="ps-tools"><button type="button" class="ps-btn' + (FILTER === 'all' ? ' go' : '') + '" data-f="all">All</button><button type="button" class="ps-btn' + (FILTER === 'untagged' ? ' go' : '') + '" data-f="untagged">No number yet</button>' +
     '<input class="ps-in" id="psFindNum" placeholder="Find a number" style="width:130px" value="' + (FILTER.indexOf('#') === 0 ? esc(FILTER.slice(1)) : '') + '">' +
-    (SEL.size ? '<span class="tr-sub"><b>' + SEL.size + ' selected</b></span><input class="ps-in" id="psTagSel" placeholder="Add number to selected" style="width:190px"><button type="button" class="ps-btn go" id="psTagGo">Add</button><button type="button" class="ps-btn red" id="psDelSel">Delete</button><button type="button" class="ps-btn" id="psSelNone">Clear</button>' : '<span class="tr-sub">' + (SH ? 'Tap a photo to select it. Type a title under each photo.' : 'Tap a photo to select it. Type numbers under each photo (123, 45). Enter jumps to the next.') + '</span>') + '</div>' +
+    (SEL.size ? '<span class="tr-sub"><b>' + SEL.size + ' selected</b></span><input class="ps-in" id="psTagSel" placeholder="Add number to selected" style="width:190px"><button type="button" class="ps-btn go" id="psTagGo">Add</button><button type="button" class="ps-btn red" id="psDelSel">Delete</button><button type="button" class="ps-btn" id="psSelNone">Clear</button>' : '<span class="tr-sub">' + (SH ? 'Tap a photo to select it. Type a title under each photo, and a number to make it a limited edition (for example 25 prints).' : 'Tap a photo to select it. Type numbers under each photo (123, 45). Enter jumps to the next.') + '</span>') + '</div>' +
     '<div class="ps-photos" id="psPhotos"></div></section>' +
 
     (SH ? '' : '<section class="tr-card"><h2>Sales</h2><div id="psSales"><p class="tr-empty">Loading...</p></div></section>');
@@ -125,7 +125,7 @@ function drawPhotos(){
   var list = shown();
   host.innerHTML = list.length ? list.map(function(p){
     return '<div class="ps-ph' + (SEL.has(p.n) ? ' sel' : '') + '" data-n="' + esc(p.n) + '"><img src="' + thumb(p.n) + '" loading="lazy" alt=""><button type="button" class="ps-star' + (EV.cover === p.n ? ' on' : '') + '" title="Use as cover">' + (EV.cover === p.n ? '★ Cover' : '☆') + '</button>' +
-      (EV.shop ? '<input data-title="1" value="' + esc(p.title || '') + '" placeholder="Title" aria-label="Title" style="text-transform:none">' : '<input value="' + esc((p.nums || []).join(', ')) + '" placeholder="Numbers" aria-label="Numbers in this photo" inputmode="text">') + '</div>';
+      (EV.shop ? '<input data-title="1" value="' + esc(p.title || '') + '" placeholder="Title" aria-label="Title" style="text-transform:none"><input data-ed="1" inputmode="numeric" value="' + esc(p.edition || '') + '" placeholder="Limited to (empty = open)" aria-label="Limited edition size" style="text-transform:none;font-weight:500;font-size:12.5px">' : '<input value="' + esc((p.nums || []).join(', ')) + '" placeholder="Numbers" aria-label="Numbers in this photo" inputmode="text">') + '</div>';
   }).join('') : '<p class="tr-empty">' + (EV.photos.length ? 'No photos match.' : 'No photos yet.') + '</p>';
 }
 D.addEventListener('click', function(e){
@@ -137,7 +137,7 @@ D.addEventListener('click', function(e){
 D.addEventListener('change', function(e){
   var ph = e.target.closest('.ps-ph'); if(!ph || !EV || e.target.tagName !== 'INPUT') return;
   var p = EV.photos.find(function(x){ return x.n === ph.dataset.n; }); if(!p) return;
-  if(e.target.dataset.title) p.title = e.target.value.trim().slice(0, 80); else { p.nums = nums(e.target.value); e.target.value = p.nums.join(', '); } dirty = true; clearTimeout(save.t); save.t = setTimeout(save, 1500);
+  if(e.target.dataset.ed){ p.edition = +e.target.value.replace(/\D/g, '') || 0; if(!p.edition) delete p.edition; } else if(e.target.dataset.title) p.title = e.target.value.trim().slice(0, 80); else { p.nums = nums(e.target.value); e.target.value = p.nums.join(', '); } dirty = true; clearTimeout(save.t); save.t = setTimeout(save, 1500);
 });
 D.addEventListener('keydown', function(e){
   if(e.key !== 'Enter') return; var ph = e.target.closest && e.target.closest('.ps-ph'); if(!ph) return;
@@ -238,17 +238,33 @@ var CFG_DEF = { sizes:[{ id:'a4', label:'A4 (21 x 30 cm)' },{ id:'a3', label:'A3
   finishes:[{ id:'print', label:'Print only' },{ id:'framed-black', label:'Framed, black' },{ id:'framed-white', label:'Framed, white' },{ id:'framed-oak', label:'Framed, oak' },{ id:'canvas', label:'Canvas' }],
   prices:{}, delivery:[{ id:'collect', label:'Collect in Joburg', fee:0, on:true, note:'We WhatsApp you when it is ready to collect.' },{ id:'gauteng', label:'Gauteng delivery', fee:0, on:false },{ id:'courier', label:'Courier anywhere in SA', fee:0, on:false }],
   turnaround:'5 to 7 working days', note:'' };
-async function loadCfg(){ try{ var j = await (await fetch(W + '/sales/shop?t=' + Date.now(), { cache:'no-store' })).json(); CFG = j.cfg && j.cfg.sizes ? j.cfg : JSON.parse(JSON.stringify(CFG_DEF)); }catch(e){ CFG = JSON.parse(JSON.stringify(CFG_DEF)); } drawCfg(); }
+function drawLive(){
+  var on = !!(CFG && CFG.live), i = $('psLiveOn'); if(!i) return;
+  i.disabled = false; i.checked = on;
+  $('psLiveTx').innerHTML = on ? '✅ On: Event photos and Prints show in your website menu and footer, client galleries show 🖼 Print, and people can pay.'
+    : '⏸ Off: everything is hidden from your website and nobody can pay. You can still set up and test with the Open the page buttons (preview).';
+}
+async function postCfg(){ await api('/sales/admin/shopcfg', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(CFG) }); }
+D.addEventListener('change', async function(e){
+  if(e.target.id !== 'psLiveOn') return;
+  var on = e.target.checked;
+  if(on && !confirm('Switch photo sales and prints on for everyone on your website?')){ e.target.checked = false; return; }
+  CFG.live = on;
+  try{ await postCfg(); drawLive(); toast(on ? 'Live on your website (can take a minute)' : 'Hidden from your website'); }catch(x){ CFG.live = !on; drawLive(); toast('Could not save: ' + x.message); }
+});
+async function loadCfg(){ try{ var j = await (await fetch(W + '/sales/shop?t=' + Date.now(), { cache:'no-store' })).json(); CFG = j.cfg && j.cfg.sizes ? j.cfg : JSON.parse(JSON.stringify(CFG_DEF)); }catch(e){ CFG = JSON.parse(JSON.stringify(CFG_DEF)); } drawCfg(); drawLive(); }
 function drawCfg(){
   var c = CFG, b = $('psCfgBody'), set = Object.keys(c.prices || {}).filter(function(k){ return +c.prices[k]; }).length;
   if(!set) $('psCfg').classList.remove('folded');
   b.innerHTML = '<p class="tr-sub" style="margin:0 0 10px">Your selling prices, used by the Prints shop, client galleries and event photos. Empty = not offered. Example: if your lab charges R180 for an A4 framed, you could sell it at R450.</p>' +
-    '<div style="overflow-x:auto"><table class="ps-tab"><thead><tr><th>Size</th>' + c.finishes.map(function(f){ return '<th>' + esc(f.label) + '</th>'; }).join('') + '</tr></thead><tbody>' +
-    c.sizes.map(function(z){ return '<tr><td><b>' + esc(z.label) + '</b></td>' + c.finishes.map(function(f){ var k = z.id + '|' + f.id; return '<td><input class="ps-in" style="width:84px" inputmode="numeric" data-price="' + esc(k) + '" value="' + esc(c.prices[k] || '') + '" placeholder="R"></td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
+    c.sizes.map(function(z){ return '<div class="ps-size"><b>' + esc(z.label) + '</b><div class="ps-pgrid">' + c.finishes.map(function(f){ var k = z.id + '|' + f.id; return '<label><span>' + esc(f.label) + '</span><span class="ps-rin"><i>R</i><input inputmode="numeric" data-price="' + esc(k) + '" value="' + esc(c.prices[k] || '') + '" placeholder="Not offered"></span></label>'; }).join('') + '</div></div>'; }).join('') +
     '<div class="ps-grid2" style="margin-top:12px"><div><label>Sizes (one per line)</label><textarea class="ps-in" rows="4" id="psSizes">' + esc(c.sizes.map(function(z){ return z.label; }).join('\n')) + '</textarea></div>' +
     '<div><label>Finishes (one per line)</label><textarea class="ps-in" rows="4" id="psFins">' + esc(c.finishes.map(function(z){ return z.label; }).join('\n')) + '</textarea></div></div>' +
     '<h3 style="margin:16px 0 8px;font-size:15px">Delivery</h3>' + c.delivery.map(function(d, i){ return '<div class="ps-row" style="margin-bottom:6px"><label class="tr-tg" style="margin:0"><input type="checkbox" data-don="' + i + '"' + (d.on ? ' checked' : '') + '></label><input class="ps-in" data-dlabel="' + i + '" value="' + esc(d.label) + '"><input class="ps-in" style="width:90px;flex:none" inputmode="numeric" data-dfee="' + i + '" value="' + esc(d.fee || '') + '" placeholder="Fee R"></div>'; }).join('') +
     '<div class="ps-grid2" style="margin-top:10px"><div><label>Ready in</label><input class="ps-in" id="psTurn" value="' + esc(c.turnaround || '') + '"></div><div><label>Line under each print (optional)</label><input class="ps-in" id="psNote" value="' + esc(c.note || '') + '" placeholder="Printed by a professional lab and checked by us before it goes out."></div></div>' +
+    '<h3 style="margin:16px 0 8px;font-size:15px">Gift vouchers</h3><p class="tr-sub" style="margin:0 0 6px">One per line: name | amount. Empty = no vouchers. Sold on the Prints page and used in the Price Calculator with their GIFT code.</p>' +
+    '<textarea class="ps-in" rows="3" id="psVouchers" placeholder="Mini Shoot | 500\nPhoto shoot | 800\nFramed print | 450">' + esc((c.vouchers || []).map(function(v){ return v.label + ' | ' + v.amount; }).join('\n')) + '</textarea>' +
+    '<div class="ps-row" style="margin-top:8px"><label class="tr-tg" style="margin:0"><input type="checkbox" id="psVCustom"' + (c.voucherCustom ? ' checked' : '') + '> <span>Let people choose their own amount, from R</span></label><input class="ps-in" style="width:90px;flex:none" inputmode="numeric" id="psVMin" value="' + esc(c.voucherMin || 100) + '"></div>' +
     '<div class="ps-row" style="margin-top:12px"><button type="button" class="ps-btn go" id="psCfgSave">Save print settings</button><span class="tr-sub" id="psCfgMsg"></span></div>';
   $('psCfgSave').onclick = saveCfg;
 }
@@ -264,6 +280,8 @@ async function saveCfg(){
   b.querySelectorAll('[data-dfee]').forEach(function(i){ c.delivery[+i.dataset.dfee].fee = +i.value.replace(/\D/g, '') || 0; });
   b.querySelectorAll('[data-don]').forEach(function(i){ c.delivery[+i.dataset.don].on = i.checked; });
   c.turnaround = $('psTurn').value.trim(); c.note = $('psNote').value.trim();
+  c.vouchers = $('psVouchers').value.split('\n').map(function(l){ var m = /^(.*?)\s*\|\s*R?\s*(\d+)\s*$/.exec(l.trim()); return m && m[1] && +m[2] ? { id:idOf(m[1]), label:m[1], amount:+m[2] } : null; }).filter(Boolean).slice(0, 8);
+  c.voucherCustom = $('psVCustom').checked; c.voucherMin = +$('psVMin').value.replace(/\D/g, '') || 100;
   try{ await api('/sales/admin/shopcfg', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(c) }); drawCfg(); $('psCfgMsg').textContent = 'Saved'; toast('Print settings saved'); }catch(e){ $('psCfgMsg').textContent = 'Could not save: ' + e.message; }
 }
 
@@ -310,11 +328,24 @@ D.addEventListener('click', async function(e){
   f.disabled = false; f.textContent = '⬇ Full file';
 });
 
+/* ---------- gift vouchers sold ---------- */
+async function loadVouchers(){ var host = $('psVo'); if(!host) return;
+  var list = []; try{ list = (await api('/sales/admin/vouchers')).vouchers || []; }catch(e){}
+  var active = list.filter(function(v){ return v.balance > 0; });
+  host.innerHTML = '<div class="ps-kpis"><div class="ps-kpi"><span class="tr-sub">Vouchers sold</span><b>' + list.length + '</b></div><div class="ps-kpi"><span class="tr-sub">Still to be used</span><b>' + R(active.reduce(function(a, v){ return a + v.balance; }, 0)) + '</b></div></div>' +
+    (list.length ? '<div style="overflow-x:auto"><table class="ps-tab"><thead><tr><th>Code</th><th>For</th><th class="n">Left</th><th></th></tr></thead><tbody>' + list.map(function(v){
+      return '<tr><td><b style="font-family:ui-monospace,Menlo,monospace">' + esc(v.code) + '</b><div class="tr-sub">' + esc(v.label) + ' · ' + R(v.amount) + ' · until ' + esc(v.expires) + '</div></td><td>' + esc(v.to || '') + (v.from ? '<div class="tr-sub">from ' + esc(v.from) + '</div>' : '') + '</td><td class="n"><b>' + R(v.balance) + '</b>' + ((v.used || []).length ? '<div class="tr-sub">used ' + v.used.length + 'x</div>' : '') + '</td><td>' + (v.balance > 0 ? '<button type="button" class="ps-btn" data-vuse="' + esc(v.code) + '" data-bal="' + v.balance + '">Use</button>' : '<span class="tr-sub">Used</span>') + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="tr-empty">No vouchers sold yet. Add voucher amounts in Print settings.</p>') +
+    '<p class="tr-sub" style="margin-top:8px">The Price Calculator takes a GIFT code off the quote. When the client has paid the rest, tap Use here so the balance goes down.</p>';
+}
+D.addEventListener('click', async function(e){ var b = e.target.closest('[data-vuse]'); if(!b) return;
+  var amt = prompt('How much of ' + b.dataset.vuse + ' was used? (R, up to ' + b.dataset.bal + ')', b.dataset.bal); if(amt === null) return;
+  try{ var j = await api('/sales/admin/voucher-use', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ code:b.dataset.vuse, amount:+String(amt).replace(/\D/g, '') }) }); toast('Done. Balance ' + R(j.balance)); loadVouchers(); }catch(x){ toast(x.message); } });
+
 /* ---------- start ---------- */
 window.FOM_SALES_START = function(auth){
   AUTH = auth;
   if(BZ && BZ.isSba){ $('psOffBiz').style.display = ''; $('psMain').style.display = 'none'; return; }
-  drawSetup(); loadEvents(); loadCfg(); loadPO();
+  drawSetup(); loadEvents(); loadCfg(); loadPO(); loadVouchers();
   var q = new URLSearchParams(location.search).get('ev'); if(q) openEvent(q);
 };
 window.FOM_SALES = { ev:function(){ return EV; }, upload:upload, save:save };

@@ -37,7 +37,7 @@ css.textContent = [
 '.ot-goal b{font-size:22px}.ot-bar{height:8px;border-radius:9px;background:var(--line);margin-top:8px;overflow:hidden}.ot-bar i{display:block;height:100%;background:#1f8a4c;border-radius:9px}',
 '.ot-h{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:18px 2px 8px}',
 '.ot-card{background:var(--surface,#fff);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:12px}',
-'.ot-card.done{opacity:.55}',
+'.ot-card.done{opacity:.8;background:var(--bg-pill,#f1efe9)}',
 '.ot-row{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}',
 '.ot-name{font-weight:800;font-size:16px}.ot-sub{font-size:12.5px;color:var(--ink-soft);margin-top:2px}',
 '.ot-chip{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--bg-pill,#f1efe9);margin-right:6px}',
@@ -134,7 +134,9 @@ var OT = {
     return '<div class="ot-card' + (kind === 'done' ? ' done' : '') + '" data-id="' + esc(o.id) + '" data-kind="' + kind + '"><div class="ot-row"><div><div class="ot-name">' + esc(o.company || o.contact) + '</div>' +
       '<div class="ot-sub">' + [esc(o.category), esc(o.location), web, ph ? '+' + ph : '', ig ? '@' + esc(ig) : '', em ? esc(em) : ''].filter(Boolean).join(' · ') + '</div></div><div>' + chip + '</div></div>' +
       (o.why ? '<div class="ot-why">💡 ' + esc(o.why) + '</div>' : '') +
-      (kind === 'done' ? '' : '<textarea class="ot-msg" data-k="msg">' + esc(msg) + '</textarea><div class="ot-btns">' +
+      (kind === 'done' ? '<details style="margin-top:8px"><summary class="ot-sub" style="cursor:pointer">Show the message</summary><textarea class="ot-msg" data-k="msg">' + esc(o.undo && o.undo.kind === 'follow' ? OT.follow(o) : OT.msg(o)) + '</textarea></details><div class="ot-btns">' +
+        (ph ? '<button type="button" class="wa" data-a="wa2">WhatsApp again</button>' : '') + (em ? '<button type="button" data-a="em2">Email again</button>' : '') + '<button type="button" data-a="copy">Copy</button>' +
+        '<button type="button" class="go" data-a="undo">↩ Undo</button></div>' : '<textarea class="ot-msg" data-k="msg">' + esc(msg) + '</textarea><div class="ot-btns">' +
         (ph ? '<button type="button" class="wa" data-a="wa">WhatsApp</button>' : '') +
         (ig ? '<button type="button" data-a="ig">Instagram DM</button>' : '') +
         (em ? '<button type="button" data-a="em">Email</button>' : '') +
@@ -167,6 +169,7 @@ var OT = {
   loadCfg: function(){ if(!DB) return; DB.collection('settings').doc(BZ.sid('outreachToday')).get().then(function(d){ if(d.exists){ var j = JSON.parse(d.data().json || '{}'); if(j.tpl){ OT.tpl = j.tpl; LSset('fom.ot.tpl' + SUF, OT.tpl); OT.render(); } } }).catch(function(){}); },
   mark: function(o, via, kind){
     var t = iso();
+    o.undo = { status:o.status, emailed:o.emailed || '', dateEmailed:o.dateEmailed || '', followUp:o.followUp || '', contactedVia:o.contactedVia || '', comments:o.comments || '', kind:kind };
     o.status = 'Emailed'; o.emailed = 'Yes'; o.dateEmailed = t; o.contactedVia = via || o.contactedVia || '';
     o.followUp = kind === 'follow' ? '' : addDays(t, FOLLOW_DAYS);
     if(kind === 'follow'){ o.followedUp = t; o.comments = (o.comments ? o.comments + '\n' : '') + 'Followed up ' + t; }
@@ -180,7 +183,15 @@ $('otBody').addEventListener('click', async function(e){
   if(a === 'wa'){ window.open('https://wa.me/' + intl(o.phone) + '?text=' + encodeURIComponent(msg), '_blank'); OT.mark(o, 'WhatsApp', kind); }
   if(a === 'ig'){ await copy(msg); toast('Message copied. Paste it in the DM.'); window.open('https://instagram.com/' + igHandle(o.instagram || o.web), '_blank'); OT.mark(o, 'Instagram', kind); }
   if(a === 'em'){ location.href = 'mailto:' + encodeURIComponent(o.email) + '?subject=' + encodeURIComponent('Photos and video for ' + (o.company || 'you')) + '&body=' + encodeURIComponent(msg); OT.mark(o, 'Email', kind); }
-  if(a === 'copy'){ await copy(msg); toast('Copied'); }
+  if(a === 'copy'){ var t0 = c.querySelector('[data-k=msg]'); await copy(t0 ? t0.value : msg); toast('Copied'); }
+  if(a === 'wa2'){ window.open('https://wa.me/' + intl(o.phone) + '?text=' + encodeURIComponent(c.querySelector('[data-k=msg]').value), '_blank'); }
+  if(a === 'em2'){ location.href = 'mailto:' + encodeURIComponent(o.email) + '?subject=' + encodeURIComponent('Photos and video for ' + (o.company || 'you')) + '&body=' + encodeURIComponent(c.querySelector('[data-k=msg]').value); }
+  if(a === 'undo'){
+    var u = o.undo || { status:'Not Emailed', emailed:'No', dateEmailed:'', followUp:'', contactedVia:'' };
+    o.status = u.status || 'Not Emailed'; o.emailed = u.emailed || 'No'; o.dateEmailed = u.dateEmailed || ''; o.followUp = u.followUp || ''; o.contactedVia = u.contactedVia || '';
+    if(u.comments != null) o.comments = u.comments; delete o.undo;
+    store.update(o.id); safeRenderLeads(); toast('Undone. It is back on your list.');
+  }
   if(a === 'done') OT.mark(o, o.contactedVia || '', kind);
   if(a === 'skip'){ var t = iso(); OT.skip = { }; OT.skip[t] = (LSget('fom.ot.skip' + SUF, {})[t] || []).concat(o.id); LSset('fom.ot.skip' + SUF, OT.skip); OT.render(); }
   if(a === 'replied'){ o.status = 'Responded'; o.followUp = ''; store.update(o.id); safeRenderLeads(); toast('Nice! Marked as Responded.'); }
