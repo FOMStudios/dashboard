@@ -409,6 +409,7 @@ export default {
     if (/^_(notify|push|events)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log)
     if (path === '/event') return handleEvent(request, env, ctx);
     if (path === '/t') return handleTrack(request, env, ctx);
+    if (path === '/admin/channel-save') return handleChannelSave(request, env);
     if (path === '/admin/stats' || path === '/admin/stats-alerts') return handleStatsAdmin(path, request, env, url);
     if (path === '/events') return handleEvents(request, env, url);
     if (path.startsWith('/push/')) return handlePush(path, request, env);
@@ -510,7 +511,11 @@ export default {
   // ---- Cron: auto-delete folders past expiry + grace ----
   async scheduled(event, env, ctx) {
     // hourly: website traffic alerts (spike, daily summary, weekly report)
-    if (event.cron === '0 * * * *') { if (env.STATS) ctx.waitUntil(statsHourly(env).catch(() => null)); return; }
+    if (event.cron === '0 * * * *') {
+      if (env.STATS) ctx.waitUntil(statsHourly(env).catch(() => null));
+      if (env.BUCKET) ctx.waitUntil(channelCheck(env).catch(() => null));   // WhatsApp Channel: new messages from the scheduled task
+      return;
+    }
     ctx.waitUntil((async () => {
       if (!env.BUCKET) return;
       const now = Date.now();
@@ -721,7 +726,7 @@ async function statsCall(env, path, body) {
   const r = await st.fetch('https://stats' + path, { method: 'POST', body: JSON.stringify(body || {}) });
   return r.json();
 }
-const SRC_OK = ['Instagram', 'Instagram stories', 'Facebook', 'TikTok', 'Google', 'Google Business', 'Bing', 'WhatsApp', 'QR code', 'YouTube', 'LinkedIn', 'Pinterest', 'Email', 'Direct'];
+const SRC_OK = ['WhatsApp channel', 'Instagram', 'Instagram stories', 'Facebook', 'TikTok', 'Google', 'Google Business', 'Bing', 'WhatsApp', 'QR code', 'YouTube', 'LinkedIn', 'Pinterest', 'Email', 'Direct'];
 async function handleTrack(request, env, ctx) {
   if (request.method !== 'POST') return json({ error: 'POST only' }, 405);
   if (!env.STATS) return json({ ok: true, off: true });
@@ -770,4 +775,58 @@ async function handleStatsAdmin(path, request, env, url) {
 async function statsHourly(env) {
   const msgs = await statsCall(env, '/hourly', { now: Date.now() });
   for (const m of (msgs || [])) await pushAll(env, { title: m.title, body: m.body, url: 'traffic.html?biz=' + m.biz, tag: 'fom-' + m.kind + '-' + m.biz });
+}
+
+/* ============================================================
+   WHATSAPP CHANNEL (19 Nov 2026)
+   The dashboard Channel page saves its settings here; the Worker commits them to
+   channel/settings.json in this repo (public), where the scheduled Claude task reads them
+   and writes channel/pack.json (the messages). Needs the GH_TOKEN secret: a fine-grained
+   GitHub token with Contents read and write on FOMStudios/dashboard only.
+     POST /admin/channel-save   admin: { biz, settings }  -> commits channel/settings.json (or settings_sba.json)
+   Hourly cron: when channel/pack.json has a new generatedAt, phones get "New channel messages".
+   ============================================================ */
+const GH_REPO = 'FOMStudios/dashboard';
+async function ghFile(env, path) {
+  const r = await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/' + path + '?ref=main', { headers: { Authorization: 'Bearer ' + env.GH_TOKEN, 'User-Agent': 'fom-gallery-worker', Accept: 'application/vnd.github+json' } });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error('GitHub read failed (' + r.status + ')');
+  const j = await r.json();
+  return { sha: j.sha, text: decodeURIComponent(escape(atob(String(j.content || '').replace(/\n/g, '')))) };
+}
+async function handleChannelSave(request, env) {
+  if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+  if (!env.GH_TOKEN) return json({ error: 'The GitHub link is not set up yet: add the GH_TOKEN secret to the fom-gallery Worker (see the Channel page).' }, 503);
+  let b = {}; try { b = await request.json(); } catch (e) { return json({ error: 'bad body' }, 400); }
+  const s = b.settings;
+  if (!s || typeof s !== 'object') return json({ error: 'no settings' }, 400);
+  const body = JSON.stringify(s, null, 2);
+  if (body.length > 60000) return json({ error: 'Settings are too long' }, 413);
+  const path = 'channel/settings' + (b.biz === 'sba' ? '_sba' : '') + '.json';
+  try {
+    const cur = await ghFile(env, path);
+    if (cur && cur.text.trim() === body.trim()) return json({ ok: true, same: true });
+    const r = await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/' + path, {
+      method: 'PUT',
+      headers: { Authorization: 'Bearer ' + env.GH_TOKEN, 'User-Agent': 'fom-gallery-worker', Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'Channel settings saved from the dashboard', content: btoa(unescape(encodeURIComponent(body))), sha: cur ? cur.sha : undefined, branch: 'main' })
+    });
+    if (!r.ok) { const t = await r.text(); return json({ error: 'GitHub did not accept it (' + r.status + '): ' + t.slice(0, 160) }, 502); }
+    return json({ ok: true });
+  } catch (e) { return json({ error: String(e && e.message || e) }, 502); }
+}
+async function channelCheck(env) {
+  // new messages from the scheduled task? (public file, no token needed)
+  for (const biz of ['fom', 'sba']) {
+    const r = await fetch('https://raw.githubusercontent.com/' + GH_REPO + '/main/channel/pack' + (biz === 'sba' ? '_sba' : '') + '.json?t=' + Date.now(), { cf: { cacheTtl: 0 } }).catch(() => null);
+    if (!r || !r.ok) continue;
+    const p = await r.json().catch(() => null);
+    if (!p || !p.generatedAt) continue;
+    const key = '_channel/seen_' + biz + '.txt', seenObj = await env.BUCKET.get(key), seen = seenObj ? await seenObj.text() : '';
+    if (seen === p.generatedAt) continue;
+    await env.BUCKET.put(key, p.generatedAt);
+    if (!seen) continue;   // first look: just remember it
+    const n = (p.messages || []).length;
+    await pushAll(env, { title: (biz === 'sba' ? 'Shot by A: ' : '') + 'New channel messages', body: n + ' WhatsApp Channel message' + (n === 1 ? '' : 's') + ' ready to review' + (p.headline ? ': ' + p.headline : '.'), url: 'channel.html?biz=' + biz, tag: 'fom-channel-' + biz });
+  }
 }

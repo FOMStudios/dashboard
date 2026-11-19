@@ -1,0 +1,40 @@
+{
+  "biz": "fom",
+  "generatedAt": "2026-11-19T13:00:00+02:00",
+  "periodStart": "2026-11-19",
+  "nextRefresh": "2026-11-23",
+  "headline": "Festive season bookings, gift ideas and the 947 Ride weekend.",
+  "notes": "First set, written in the setup chat from the 16 Nov trends and the package prices on the website. No campaigns set yet.",
+  "messages": [
+    {
+      "id": "2026-11-19-1",
+      "role": "main",
+      "title": "Festive season bookings",
+      "text": "*Festive season is nearly here* 🎄\n\nYear-end functions, family photos, matric farewells and Christmas lunches are all coming up fast, and the good dates go first.\n\nIf you want photos or a reel of yours, now's the time to grab a date. Our Mini Shoot starts at R500 (30 minutes, 20 photos or a reel), and full photo and video packages are on the site.\n\nBook here 👉 https://www.fomstudios.co.za/?src=wach\n\nFOM Studios 📸",
+      "photo": "A warm, festive shot from a past event or family shoot (lights, smiles, a table set for a party).",
+      "campaign": "",
+      "stage": "",
+      "why": "Late November to mid December is peak function season in South Africa, and people book early for festive photos."
+    },
+    {
+      "id": "2026-11-19-2",
+      "role": "option",
+      "title": "Gift idea",
+      "text": "*Stuck on a gift idea?* 🎁\n\nA photo session is a present people actually keep. Think a couple shoot for your partner, a family session for your parents, or a fun Mini Shoot with your friends.\n\nMini Shoots start at R500 and you choose the date that suits you.\n\nHave a look 👉 https://www.fomstudios.co.za/?src=wach\n\nFOM Studios 📸",
+      "photo": "A couple or family photo with a natural, happy moment.",
+      "campaign": "",
+      "stage": "",
+      "why": "With Black Friday on 27 Nov, people are planning gifts now and save ideas to send to their partners."
+    },
+    {
+      "id": "2026-11-19-3",
+      "role": "option",
+      "title": "947 Ride weekend",
+      "text": "*Riding the 947 this Sunday?* 🚴\n\nGood luck to everyone taking on the 947 Ride Joburg! If your club or team wants proper photos or a reel of your ride this season, from training rides to race day, we'd love to shoot it.\n\nSports and event packages 👉 https://www.fomstudios.co.za/?src=wach\n\nFOM Studios 📸",
+      "photo": "An action sports shot (cycling, padel or any fast sport) to show off your sports work.",
+      "campaign": "",
+      "stage": "",
+      "why": "The 947 Ride Joburg is on Sunday 22 Nov, with thousands of riders in Joburg this weekend."
+    }
+  ]
+}

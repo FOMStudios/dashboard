@@ -1,0 +1,19 @@
+{
+  "biz": "fom",
+  "on": true,
+  "every": 7,
+  "anchor": "2026-11-23",
+  "perRefresh": "main+2",
+  "tone": "friendly",
+  "style": "",
+  "always": [
+    "Link to the website"
+  ],
+  "never": [],
+  "signoff": "FOM Studios 📸",
+  "link": "https://www.fomstudios.co.za/?src=wach",
+  "thisWeek": "",
+  "campaigns": [],
+  "refreshRequested": "",
+  "updatedAt": ""
+}

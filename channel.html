@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f1f0ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FOM">
+<link rel="manifest" href="manifest.webmanifest">
+<title>FOM Studios | WhatsApp Channel</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/fom-icon-180.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1000px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* pill header + hamburger */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:1320px;margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:22px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.nav-cta{border:1px solid var(--ink);border-radius:var(--radius-pill);padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;background:none;}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:12px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--accent-hover);}
+.btn.block{width:100%;padding:13px;}
+
+/* page */
+.page{padding-top:108px;}
+.page-head{margin-bottom:24px;}
+.page-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.page-head p{color:var(--ink-soft);font-size:14px;margin-top:4px;max-width:60ch;}
+
+/* filter chips */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.filter-chip{
+    border:1px solid var(--line);background:var(--bg-pill);
+    border-radius:var(--radius-pill);padding:8px 16px;
+    font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.2s;
+}
+.filter-chip:hover{border-color:var(--ink);color:var(--ink);}
+.filter-chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg-pill);}
+
+/* empty state */
+.empty-state{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:48px 28px;text-align:center;}
+.empty-state h3{font-size:19px;font-weight:800;margin-bottom:6px;}
+.empty-state p{color:var(--ink-soft);max-width:40ch;margin:0 auto;font-size:14px;}
+
+/* ============================================================
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-dark);color:#fff;padding:12px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000;}
+.toast.show{opacity:1;}
+/* ============================================================
+   WEBSITE TRAFFIC
+   ============================================================ */
+.tr-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
+.tr-live{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;background:var(--bg-pill);border:1px solid var(--line);border-radius:99px;padding:8px 14px;}
+.tr-live i{width:9px;height:9px;border-radius:50%;background:#9a9a96;}
+.tr-live.on i{background:#1f8a4c;box-shadow:0 0 0 0 rgba(31,138,76,.5);animation:trPulse 1.8s infinite;}
+@keyframes trPulse{0%{box-shadow:0 0 0 0 rgba(31,138,76,.45)}70%{box-shadow:0 0 0 9px rgba(31,138,76,0)}100%{box-shadow:0 0 0 0 rgba(31,138,76,0)}}
+.tr-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px;}
+.tr-kpi{background:var(--bg-pill);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;min-width:0;}
+.tr-kpi span{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
+.tr-kpi b{display:block;font-size:28px;font-weight:800;line-height:1.15;margin-top:6px;}
+.tr-kpi small{font-size:12.5px;font-weight:700;color:var(--ink-soft);}
+.tr-kpi small.up{color:#1f8a4c;}.tr-kpi small.down{color:#c0392b;}
+.tr-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 20px 18px;margin-bottom:16px;min-width:0;}
+.tr-card h2{font-size:17px;font-weight:800;margin-bottom:4px;}
+.tr-card .tr-sub{font-size:13px;color:var(--ink-soft);margin-bottom:14px;}
+.tr-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.tr-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+.tr-chart{width:100%;height:190px;display:block;}
+.tr-chart .ax{font-size:10.5px;fill:var(--ink-soft);}
+.tr-legend{display:flex;gap:16px;font-size:12.5px;color:var(--ink-soft);margin-top:6px;}
+.tr-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
+.tr-tbl{width:100%;border-collapse:collapse;font-size:14px;}
+.tr-tbl th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;padding:0 6px 8px;}
+.tr-tbl td{padding:9px 6px;border-top:1px solid var(--line);vertical-align:top;}
+.tr-tbl td.n,.tr-tbl th.n{text-align:right;white-space:nowrap;}
+.tr-tbl td small{display:block;color:var(--ink-soft);font-size:12px;}
+.tr-good{color:#1f8a4c;font-weight:800;}
+.tr-bars{display:flex;flex-direction:column;gap:9px;}
+.tr-br{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;font-size:14px;}
+.tr-br .tk{grid-column:1/-1;height:8px;border-radius:99px;background:var(--line);overflow:hidden;}
+.tr-br .tk i{display:block;height:100%;border-radius:99px;background:var(--accent);}
+.tr-br b{font-weight:700;}
+.tr-funnel{display:flex;flex-direction:column;gap:8px;}
+.tr-fs{display:grid;grid-template-columns:150px minmax(0,1fr) 70px;gap:10px;align-items:center;font-size:14px;}
+.tr-fs .tk{height:26px;border-radius:8px;background:var(--line);overflow:hidden;}
+.tr-fs .tk i{display:block;height:100%;background:var(--accent);border-radius:8px;opacity:.85;}
+.tr-fs .n{text-align:right;font-weight:800;}
+.tr-fs .n small{display:block;font-weight:600;color:var(--ink-soft);font-size:11.5px;}
+.tr-heat{display:grid;grid-template-columns:34px repeat(24,minmax(0,1fr));gap:2px;font-size:10.5px;color:var(--ink-soft);}
+.tr-heat i{aspect-ratio:1;border-radius:3px;background:var(--line);}
+.tr-heat span{display:flex;align-items:center;}
+.tr-ins{display:flex;flex-direction:column;gap:10px;}
+.tr-in{display:flex;gap:12px;align-items:flex-start;background:var(--bg);border-radius:14px;padding:12px 14px;font-size:14.5px;line-height:1.45;}
+.tr-in em{font-style:normal;font-size:20px;line-height:1.2;}
+.tr-tg{display:flex;flex-direction:column;gap:2px;}
+.tr-tg label{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer;font-size:14.5px;}
+.tr-tg label:first-child{border-top:0;}
+.tr-tg label small{display:block;color:var(--ink-soft);font-size:12.5px;}
+.tr-sw{position:relative;width:46px;height:28px;flex-shrink:0;}
+.tr-sw input{opacity:0;width:0;height:0;position:absolute;}
+.tr-sw span{position:absolute;inset:0;background:var(--line);border-radius:99px;transition:.2s;}
+.tr-sw span:after{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.tr-sw input:checked+span{background:#1f8a4c;}
+.tr-sw input:checked+span:after{transform:translateX(18px);}
+.tr-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.tr-acts a,.tr-acts button{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:99px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+.tr-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.tr-link{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:11px 14px;cursor:pointer;font-family:inherit;color:var(--ink);min-width:0;}
+.tr-link b{font-size:14.5px;}
+.tr-link code{font-size:12px;color:var(--ink-soft);word-break:break-all;}
+.tr-link.ok{border-color:#1f8a4c;}
+@media(max-width:560px){.tr-links{grid-template-columns:minmax(0,1fr);}}
+.qr-wrap{display:grid;grid-template-columns:260px minmax(0,1fr);gap:22px;align-items:start;}
+.qr-prev{background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px;}
+.qr-prev canvas{width:100%;height:auto;display:block;}
+.qr-opts{display:flex;flex-direction:column;gap:14px;min-width:0;}
+.qr-o>span{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+.qr-o input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-size:16px;font-family:inherit;background:var(--bg);color:var(--ink);}
+.qr-chk{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:600;cursor:pointer;}
+.qr-chk input{width:18px;height:18px;accent-color:var(--accent);}
+.qr-url{font-size:12.5px;color:var(--ink-soft);word-break:break-all;}
+@media(max-width:700px){.qr-wrap{grid-template-columns:minmax(0,1fr);}.qr-prev{max-width:280px;}}
+.tr-msg{background:var(--bg-pill);border:1px dashed var(--line);border-radius:var(--radius-card);padding:28px 22px;text-align:center;color:var(--ink-soft);margin-bottom:16px;}
+.tr-msg b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px;}
+.tr-empty{color:var(--ink-soft);font-size:14px;padding:6px 0;}
+@media(max-width:900px){.tr-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}.tr-grid3{grid-template-columns:minmax(0,1fr);}}
+@media(max-width:700px){.tr-grid2{grid-template-columns:minmax(0,1fr);}.tr-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.tr-kpi b{font-size:24px;}.tr-fs{grid-template-columns:110px minmax(0,1fr) 58px;}.tr-live{margin-left:0;}}
+</style>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js?v=2"></script>
+<script src="session.js"></script>
+<link rel="stylesheet" href="app.css">
+<style>
+/* ============ WHATSAPP CHANNEL ============ */
+.ch-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+.ch-period{font-weight:800;font-size:16px;}
+.ch-next{font-size:13px;color:var(--ink-soft);font-weight:600;}
+.ch-sync{font-size:12.5px;font-weight:700;border-radius:99px;padding:5px 11px;background:var(--bg);border:1px solid var(--line);}
+.ch-sync.ok{color:#1f8a4c;border-color:rgba(31,138,76,.35);} .ch-sync.warn{color:#b26a00;border-color:rgba(178,106,0,.4);}
+.ch-msgs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+.ch-msg{background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0;}
+.ch-msg.approved{border-color:#1f8a4c;box-shadow:0 0 0 2px rgba(31,138,76,.25);}
+.ch-msg.sent{opacity:.75;}
+.ch-top{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.ch-chip{font-size:11.5px;font-weight:800;letter-spacing:.03em;border-radius:99px;padding:4px 9px;background:var(--bg-pill);border:1px solid var(--line);}
+.ch-chip.main{background:var(--accent);color:#fff;border-color:var(--accent);}
+.ch-chip.ok{background:#1f8a4c;color:#fff;border-color:#1f8a4c;} .ch-chip.camp{background:#fff4d6;border-color:#f0d27a;color:#6b4f00;}
+.ch-bubble{background:#e7fbe0;color:#111;border-radius:4px 14px 14px 14px;padding:11px 13px;font-size:14.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word;box-shadow:0 1px 1px rgba(0,0,0,.08);}
+html[data-theme=dark] .ch-bubble{background:#1d3a2a;color:#e9f5ec;}
+.ch-msg textarea{width:100%;min-height:200px;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font:15px/1.5 inherit;font-family:inherit;background:var(--bg-pill);color:var(--ink);resize:vertical;}
+.ch-photo{display:flex;gap:8px;align-items:flex-start;background:#fff8e6;border:1px dashed #e6c35c;border-radius:12px;padding:9px 11px;font-size:13.5px;color:#5c4400;}
+html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7a6424;}
+.ch-photo textarea{flex:1;border:0;background:transparent;font:inherit;color:inherit;min-width:0;padding:0;resize:none;overflow:hidden;line-height:1.45;min-height:0;field-sizing:content;}
+.ch-why{font-size:12.5px;color:var(--ink-soft);}
+.ch-len{font-size:12px;color:var(--ink-soft);text-align:right;margin-top:-4px;}
+.ch-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;}
+.ch-btns button{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:99px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.ch-btns button.pri{background:var(--accent);border-color:var(--accent);color:#fff;}
+.ch-btns button.go{background:#1f8a4c;border-color:#1f8a4c;color:#fff;}
+.ch-day{font-size:12.5px;font-weight:800;color:var(--ink-soft);}
+.ch-camps{display:flex;flex-direction:column;gap:12px;}
+.ch-camp{border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--bg);}
+.ch-camp.off{opacity:.6;}
+.ch-camp-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+.ch-camp-h b{font-size:15.5px;}
+.ch-st{font-size:12px;font-weight:800;border-radius:99px;padding:3px 9px;background:var(--bg-pill);border:1px solid var(--line);}
+.ch-st.run{background:#1f8a4c;color:#fff;border-color:#1f8a4c;} .ch-st.soon{background:#fff4d6;color:#6b4f00;border-color:#f0d27a;}
+.ch-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.ch-f{display:flex;flex-direction:column;gap:5px;min-width:0;}
+.ch-f.w{grid-column:1/-1;}
+.ch-f>span{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
+.ch-f input,.ch-f select,.ch-f textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:16px;font-family:inherit;background:var(--bg-pill);color:var(--ink);min-width:0;}
+.ch-f input[type=date]{-webkit-appearance:none;appearance:none;min-height:44px;}
+.ch-f textarea{min-height:76px;resize:vertical;line-height:1.45;}
+.ch-x{margin-left:auto;display:flex;gap:6px;}
+.ch-x button{border:1px solid var(--line);background:var(--bg-pill);border-radius:99px;padding:6px 11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink);}
+.ch-add{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+.ch-add button{border:1px dashed var(--ink-soft);background:transparent;border-radius:99px;padding:8px 14px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink);}
+.ch-save{position:sticky;bottom:96px;z-index:40;display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:12px 16px;margin:6px 0 16px;box-shadow:0 8px 24px rgba(0,0,0,.08);}
+.ch-save[hidden]{display:none;}
+.ch-save button{background:var(--accent);color:#fff;border:0;border-radius:99px;padding:10px 20px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;}
+.ch-hist{display:flex;flex-direction:column;gap:8px;}
+.ch-h{display:flex;gap:10px;align-items:flex-start;border-top:1px solid var(--line);padding-top:10px;font-size:14px;}
+.ch-h:first-child{border-top:0;padding-top:0;}
+.ch-h p{flex:1;margin:0;white-space:pre-wrap;max-height:4.4em;overflow:hidden;color:var(--ink-soft);}
+.ch-h b{white-space:nowrap;font-size:12.5px;}
+.tr-card>h2.fold{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
+.tr-card>h2.fold:after{content:'\25BE';margin-left:auto;font-size:13px;color:var(--ink-soft);transition:transform .2s;}
+.tr-card.folded>h2.fold:after{transform:rotate(-90deg);}
+.tr-card.folded>*:not(h2){display:none!important;}
+.ch-help{background:var(--bg);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.55;}
+.ch-help ol{margin:8px 0 0 18px;padding:0;}
+@media(max-width:1000px){.ch-msgs{grid-template-columns:minmax(0,1fr);}}
+@media(max-width:600px){.ch-grid{grid-template-columns:minmax(0,1fr);}}
+</style>
+</head>
+<body>
+
+<div class="fom-splash" id="authCheck"><div class="in"><b>FOM STUDIOS</b><p>Checking session…</p></div></div>
+<script>setTimeout(function(){var a=document.getElementById("authCheck");if(a)a.style.display="none";},8000);</script>
+
+
+<!-- LOGIN GATE -->
+<div class="login-gate" id="loginGate">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="calculator.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+        <li><a href="reviews.html">Reviews</a></li>
+        <li><a href="website.html">Website</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+                <li><a href="reviews.html">Reviews</a></li>
+                <li><a href="website.html">Website</a></li>
+            </ul>
+            <button class="nav-cta" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </nav>
+</div>
+
+
+<div class="page wrap">
+    <div class="page-head">
+        <span class="eyebrow">Admin</span>
+        <h1>WhatsApp Channel</h1>
+        <p>Claude writes your channel messages on a schedule, using what's trending and what you have on (giveaways, promos, events). Review, edit, approve, copy, then post them in WhatsApp.</p>
+    </div>
+    <div id="chOffBiz" class="tr-msg" style="display:none"><b>Shot by A has no WhatsApp Channel yet</b>Switch to FOM Studios to see FOM's channel messages. Ask Claude to switch it on for Shot by A when she has one.</div>
+    <div id="chMain">
+    <section class="tr-card" id="chNow">
+        <h2 class="fold">This round's messages</h2>
+        <div class="ch-head"><span class="ch-period" id="chPeriod">Loading...</span><span class="ch-next" id="chNext"></span><span class="ch-sync" id="chSync"></span></div>
+        <div id="chHeadline" class="tr-sub"></div>
+        <div class="ch-msgs" id="chMsgs"></div>
+        <div class="tr-acts"><button type="button" id="chAsk">Ask for new messages</button></div>
+        <p class="tr-sub" style="margin:10px 0 0">How to post: Copy, open your channel in WhatsApp, paste, add the picture if there is a 📷 note, send. Then tap Mark as sent here.</p>
+    </section>
+
+    <section class="tr-card" id="chHappen">
+        <h2 class="fold">What's happening</h2>
+        <p class="tr-sub">Giveaways, promos and events, with their dates. Messages are tailored to where each one is: the launch, reminders, the last week, the last day, and the winner.</p>
+        <div class="ch-camps" id="chCamps"></div>
+        <div class="ch-add" id="chAdd"><button data-t="giveaway">+ Giveaway</button><button data-t="promo">+ Promo or special</button><button data-t="event">+ Event</button><button data-t="news">+ Announcement</button></div>
+        <div class="ch-f w" style="margin-top:16px"><span>Anything else this week?</span><textarea id="chWeek" placeholder="For example: shooting the 947 Ride on Sunday, new car reel coming Wednesday, fully booked on the 5th."></textarea></div>
+    </section>
+
+    <section class="tr-card" id="chSched">
+        <h2 class="fold">Schedule and style</h2>
+        <div class="tr-tg" style="margin-bottom:6px"><label><span>Channel messages<small>Off pauses Claude's new messages</small></span><span class="tr-sw"><input type="checkbox" id="chOn"><span></span></span></label></div>
+        <div class="ch-grid">
+            <div class="ch-f"><span>New messages every</span><div class="filter-row" id="chEvery" style="margin:0"></div></div>
+            <div class="ch-f"><span>Next new messages on</span><input type="date" id="chAnchor"></div>
+            <div class="ch-f"><span>Each time</span><div class="filter-row" id="chPer" style="margin:0">
+                <button class="filter-chip" data-v="main+2">1 + 2 options</button><button class="filter-chip" data-v="daily">One per day</button><button class="filter-chip" data-v="one">Just 1</button></div></div>
+            <div class="ch-f"><span>Tone</span><div class="filter-row" id="chTone" style="margin:0">
+                <button class="filter-chip" data-v="friendly">Friendly, few emojis</button><button class="filter-chip" data-v="clean">Clean, no emojis</button><button class="filter-chip" data-v="hype">Hype</button></div></div>
+            <div class="ch-f w"><span>More about your style (optional)</span><textarea id="chStyle" placeholder="For example: talk like a friend, short lines, always end with a question."></textarea></div>
+            <div class="ch-f"><span>Always include (one per line)</span><textarea id="chAlways"></textarea></div>
+            <div class="ch-f"><span>Never say (one per line)</span><textarea id="chNever"></textarea></div>
+            <div class="ch-f"><span>Sign-off</span><input id="chSign" maxlength="60"></div>
+            <div class="ch-f"><span>Website link in messages</span><input id="chLink" maxlength="200"></div>
+        </div>
+        <p class="tr-sub" style="margin:12px 0 0">Claude checks every morning at about 07:45 and writes new messages when they are due, so they are ready by 08:00. Changes here reach Claude when you press Save.</p>
+    </section>
+
+    <div class="ch-save" id="chSaveBar" hidden><span id="chSaveTxt">Unsaved changes</span><button type="button" id="chSave">Save</button></div>
+
+    <section class="tr-card" id="chHistCard">
+        <h2 class="fold">Sent</h2>
+        <div class="ch-hist" id="chHist"></div>
+    </section>
+
+    <section class="tr-card" id="chLinkCard">
+        <h2 class="fold">GitHub link (one-time setup)</h2>
+        <div class="ch-help">Claude's scheduled task can only read your GitHub repo, so Save sends these settings there through your gallery Worker. It needs a GitHub token saved in the Worker once:
+            <ol>
+                <li>GitHub, your profile picture, Settings, Developer settings, Personal access tokens, <b>Fine-grained tokens</b>, Generate new token.</li>
+                <li>Name it "FOM Worker channel", set an expiry (1 year), Resource owner <b>FOMStudios</b>, Repository access <b>Only select repositories</b>: <b>dashboard</b>.</li>
+                <li>Permissions, Repository permissions, <b>Contents: Read and write</b>. Nothing else. Generate, then copy the token.</li>
+                <li>If GitHub says the organisation must approve it: Organisation FOMStudios, Settings, Personal access tokens, Pending requests, Approve.</li>
+                <li>Cloudflare, Workers and Pages, <b>fom-gallery</b>, Settings, Variables and Secrets, Add, type <b>Secret</b>, name <b>GH_TOKEN</b>, paste, Deploy.</li>
+            </ol>
+            Then press Save on this page: the badge at the top turns green ("Claude has your settings").
+        </div>
+    </section>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script>
+/* ============================================================
+   WHATSAPP CHANNEL (per business; FOM only for now)
+   Settings and your edits: Firestore settings/channel (settings/channel_sba).
+   Save also sends the settings to channel/settings.json in this repo via the gallery Worker
+   (/admin/channel-save, GH_TOKEN), where the daily Claude task reads them and writes
+   channel/pack.json (the messages). Keep the settings shape in step with that task.
+   ============================================================ */
+const $ = id => document.getElementById(id);
+let toastT; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2600); }
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const BZ = window.FOM_BIZ, BIZ = BZ.id, CH_ON_BIZ = ['fom'];
+const WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
+const SUF = BIZ === 'sba' ? '_sba' : '';
+const today = () => new Date().toLocaleDateString('en-CA', { timeZone:'Africa/Johannesburg' });
+const addDays = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+const nice = d => d ? new Date(d + 'T12:00:00Z').toLocaleDateString('en-ZA', { weekday:'short', day:'numeric', month:'short' }) : '';
+const niceShort = d => d ? new Date(d + 'T12:00:00Z').toLocaleDateString('en-ZA', { day:'numeric', month:'short' }) : '';
+const nextMonday = () => { let d = today(); for(let i = 0; i < 7; i++){ if(new Date(d + 'T12:00:00Z').getUTCDay() === 1 && d > today()) return d; d = addDays(d, 1); } return addDays(today(), 7); };
+const DEF = () => ({ biz:BIZ, on:true, every:7, anchor:nextMonday(), perRefresh:'main+2', tone:'friendly', style:'', always:['Link to the website'], never:[], signoff:'FOM Studios 📸', link:'https://www.fomstudios.co.za/?src=wach', thisWeek:'', campaigns:[], refreshRequested:'', updatedAt:'' });
+let DB = null, AUTH = null, DOC = null, ST = { settings:DEF(), msgs:{}, history:[] }, PACK = null, dirty = false, synced = null;
+
+/* ---------- WhatsApp formatting preview: *bold* _italic_ ~strike~ ---------- */
+const wa = t => esc(t).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(^|[\s(])_([^_\n]+)_/g, '$1<i>$2</i>').replace(/~([^~\n]+)~/g, '<s>$1</s>');
+
+/* ---------- campaigns ---------- */
+const TYPES = { giveaway:'Giveaway', promo:'Promo or special', event:'Event', news:'Announcement' };
+const FIELDS = {
+  giveaway:[['title','Name','Festive giveaway'],['offer','Prize','A free 1 hour family shoot'],['howTo','How to enter','Follow the channel, share this message, reply with your name',1],['rules','Rules (short)','Gauteng only. Winner drawn 20 Dec.',1],['link','Link (optional)','']],
+  promo:[['title','Name','Black Friday mini sessions'],['offer','Offer','R400 off any shoot booked this week'],['howTo','How to claim','Book on the website and mention BLACKFRIDAY',1],['rules','Fine print (optional)','',1],['link','Link (optional)','']],
+  event:[['title','Event','947 Ride Joburg'],['offer','What you are doing','Shooting the finish line',1],['howTo','What people should do','Find your photos on our Instagram on Monday',1],['rules','Details (optional)','',1],['link','Link (optional)','']],
+  news:[['title','Announcement','December bookings are open'],['offer','Details','',1],['howTo','What people should do','Book early on the website',1],['rules','More (optional)','',1],['link','Link (optional)','']]
+};
+function campStatus(c){
+  const t = today();
+  if(!c.on) return ['', 'Paused'];
+  if(c.start && t < c.start){ const n = Math.round((new Date(c.start) - new Date(t)) / 864e5); return ['soon', 'Starts in ' + n + ' day' + (n === 1 ? '' : 's')]; }
+  if(c.end && t > c.end) return ['', 'Ended ' + niceShort(c.end)];
+  if(c.end){ const n = Math.round((new Date(c.end) - new Date(t)) / 864e5); return ['run', n === 0 ? 'Last day' : 'Running, ' + n + ' day' + (n === 1 ? '' : 's') + ' left']; }
+  return ['run', 'Running'];
+}
+function drawCamps(){
+  const C = ST.settings.campaigns;
+  $('chCamps').innerHTML = C.length ? C.map((c, i) => {
+    const [cl, txt] = campStatus(c), f = FIELDS[c.type] || FIELDS.news;
+    return '<div class="ch-camp' + (c.on ? '' : ' off') + '" data-i="' + i + '"><div class="ch-camp-h"><span class="ch-chip camp">' + esc(TYPES[c.type] || 'Other') + '</span><b>' + esc(c.title || 'Untitled') + '</b><span class="ch-st ' + cl + '">' + txt + '</span>' +
+      '<span class="ch-x"><button type="button" data-a="tog">' + (c.on ? 'Pause' : 'Resume') + '</button><button type="button" data-a="del">Remove</button></span></div>' +
+      '<div class="ch-grid">' + f.map(([k, lab, ph, big]) => '<div class="ch-f' + (big ? ' w' : '') + '"><span>' + lab + '</span>' + (big ? '<textarea data-k="' + k + '" placeholder="' + esc(ph) + '">' + esc(c[k] || '') + '</textarea>' : '<input data-k="' + k + '" value="' + esc(c[k] || '') + '" placeholder="' + esc(ph) + '">') + '</div>').join('') +
+      '<div class="ch-f"><span>Starts</span><input type="date" data-k="start" value="' + esc(c.start || '') + '"></div><div class="ch-f"><span>Ends</span><input type="date" data-k="end" value="' + esc(c.end || '') + '"></div>' +
+      (c.type === 'giveaway' ? '<div class="ch-f w"><span>Winner (fill in after the draw)</span><input data-k="winner" value="' + esc(c.winner || '') + '" placeholder="First name, or leave empty"></div>' : '') +
+      '<div class="ch-f w"><span>Notes for Claude (optional)</span><input data-k="notes" value="' + esc(c.notes || '') + '" placeholder="For example: push it hard in the last week"></div></div></div>';
+  }).join('') : '<p class="tr-empty">Nothing on right now. Add a giveaway, promo, event or announcement and the messages will build around it.</p>';
+}
+$('chCamps').addEventListener('input', e => { const b = e.target.closest('[data-i]'), k = e.target.dataset.k; if(!b || !k) return; ST.settings.campaigns[+b.dataset.i][k] = e.target.value; markDirty(); if(k === 'start' || k === 'end' || k === 'title'){ const c = ST.settings.campaigns[+b.dataset.i], [cl, txt] = campStatus(c), st = b.querySelector('.ch-st'); st.className = 'ch-st ' + cl; st.textContent = txt; b.querySelector('.ch-camp-h b').textContent = c.title || 'Untitled'; } });
+$('chCamps').addEventListener('click', e => {
+  const btn = e.target.closest('[data-a]'), b = e.target.closest('[data-i]'); if(!btn || !b) return;
+  const i = +b.dataset.i, c = ST.settings.campaigns[i];
+  if(btn.dataset.a === 'tog'){ c.on = !c.on; drawCamps(); markDirty(); }
+  if(btn.dataset.a === 'del' && confirm('Remove "' + (c.title || 'this') + '"? Messages stop mentioning it after the next refresh.')){ ST.settings.campaigns.splice(i, 1); drawCamps(); markDirty(); }
+});
+$('chAdd').onclick = e => {
+  const b = e.target.closest('[data-t]'); if(!b) return;
+  const t = today();
+  ST.settings.campaigns.unshift({ id:'c' + Date.now().toString(36), type:b.dataset.t, on:true, title:'', offer:'', howTo:'', rules:'', link:'', notes:'', start:t, end: b.dataset.t === 'giveaway' ? addDays(t, 30) : b.dataset.t === 'event' ? t : addDays(t, 7), winner:'' });
+  drawCamps(); markDirty(); const f = $('chCamps').querySelector('[data-k=title]'); if(f) f.focus();
+};
+
+/* ---------- schedule and style ---------- */
+const EVERY = [1, 2, 3, 4, 7, 14];
+function drawSched(){
+  const s = ST.settings;
+  $('chOn').checked = s.on !== false;
+  $('chEvery').innerHTML = EVERY.map(n => '<button class="filter-chip' + (+s.every === n ? ' on' : '') + '" data-v="' + n + '">' + (n === 1 ? 'Day' : n === 7 ? 'Week' : n === 14 ? '2 weeks' : n + ' days') + '</button>').join('');
+  $('chAnchor').value = s.anchor || '';
+  document.querySelectorAll('#chPer [data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === s.perRefresh));
+  document.querySelectorAll('#chTone [data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === s.tone));
+  $('chStyle').value = s.style || ''; $('chAlways').value = (s.always || []).join('\n'); $('chNever').value = (s.never || []).join('\n');
+  $('chSign').value = s.signoff || ''; $('chLink').value = s.link || ''; $('chWeek').value = s.thisWeek || '';
+}
+const lines = v => v.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 20);
+$('chEvery').onclick = e => { const b = e.target.closest('[data-v]'); if(b){ ST.settings.every = +b.dataset.v; drawSched(); drawNow(); markDirty(); } };
+$('chPer').onclick = e => { const b = e.target.closest('[data-v]'); if(b){ ST.settings.perRefresh = b.dataset.v; drawSched(); markDirty(); } };
+$('chTone').onclick = e => { const b = e.target.closest('[data-v]'); if(b){ ST.settings.tone = b.dataset.v; drawSched(); markDirty(); } };
+[['chOn','on',x=>x.checked],['chAnchor','anchor',x=>x.value],['chStyle','style',x=>x.value],['chAlways','always',x=>lines(x.value)],['chNever','never',x=>lines(x.value)],['chSign','signoff',x=>x.value],['chLink','link',x=>x.value.trim()],['chWeek','thisWeek',x=>x.value]]
+  .forEach(([id, k, f]) => $(id).addEventListener(id === 'chOn' ? 'change' : 'input', () => { ST.settings[k] = f($(id)); markDirty(); if(id === 'chAnchor') drawNow(); }));
+
+function markDirty(){ dirty = true; $('chSaveBar').hidden = false; $('chSaveTxt').textContent = 'Unsaved changes'; }
+window.addEventListener('beforeunload', e => { if(dirty){ e.preventDefault(); e.returnValue = ''; } });
+
+/* when the next new messages arrive: the anchor date, then every N days */
+function nextRefresh(){
+  const s = ST.settings, t = today(); let d = s.anchor || nextMonday();
+  if(d <= t){ const n = Math.ceil((new Date(t) - new Date(d)) / 864e5 / s.every) || 0; d = addDays(d, n * s.every); if(d <= t) d = addDays(d, s.every); }
+  return d;
+}
+
+/* ---------- this round's messages ---------- */
+function drawNow(){
+  const nx = nextRefresh();
+  $('chNext').textContent = ST.settings.on === false ? 'Paused' : 'Next new messages: ' + nice(nx) + ', 08:00';
+  if(!PACK || !(PACK.messages || []).length){
+    $('chPeriod').textContent = 'No messages yet';
+    $('chHeadline').textContent = 'Claude writes the first ones on the next scheduled morning after you Save. Or tap Ask for new messages.';
+    $('chMsgs').innerHTML = ''; return;
+  }
+  $('chPeriod').textContent = 'Messages from ' + nice(PACK.periodStart) + (PACK.nextRefresh ? ' to ' + nice(addDays(PACK.nextRefresh, -1)) : '');
+  $('chHeadline').innerHTML = PACK.headline ? esc(PACK.headline) : '';
+  const approvedId = Object.keys(ST.msgs).find(k => ST.msgs[k].approved && PACK.messages.some(m => m.id === k));
+  requestAnimationFrame(fitPhotos);
+  $('chMsgs').innerHTML = PACK.messages.map((m, i) => {
+    const my = ST.msgs[m.id] || {}, text = my.text != null ? my.text : m.text, photo = my.photo != null ? my.photo : (m.photo || '');
+    const camp = m.campaign && (ST.settings.campaigns.find(c => c.id === m.campaign) || {}).title;
+    const role = m.day ? '<span class="ch-day">' + nice(m.day) + '</span>' : '<span class="ch-chip' + (m.role === 'main' ? ' main' : '') + '">' + (m.role === 'main' ? 'Main' : 'Option ' + (i + 1)) + '</span>';
+    return '<div class="ch-msg' + (my.approved ? ' approved' : '') + (my.sentAt ? ' sent' : '') + '" data-id="' + esc(m.id) + '"><div class="ch-top">' + role +
+      (camp ? '<span class="ch-chip camp">' + esc(camp) + (m.stage ? ': ' + esc(m.stage) : '') + '</span>' : '') +
+      (my.sentAt ? '<span class="ch-chip ok">Sent ' + niceShort(my.sentAt.slice(0, 10)) + '</span>' : my.approved ? '<span class="ch-chip ok">Approved</span>' : '') +
+      (my.text != null && my.text !== m.text ? '<span class="ch-chip">Edited</span>' : '') + '</div>' +
+      (my.editing ? '<textarea data-k="text">' + esc(text) + '</textarea><div class="ch-len">' + text.length + ' characters</div>' : '<div class="ch-bubble">' + wa(text) + '</div>') +
+      '<label class="ch-photo">📷 <textarea data-k="photo" rows="1" placeholder="No picture needed. Type a note to add one.">' + esc(photo) + '</textarea></label>' +
+      (m.why ? '<div class="ch-why">' + esc(m.why) + '</div>' : '') +
+      '<div class="ch-btns"><button type="button" class="pri" data-a="copy">Copy</button><button type="button" data-a="edit">' + (my.editing ? 'Done' : 'Edit') + '</button>' +
+      (my.approved ? '' : '<button type="button" data-a="approve">Approve</button>') +
+      (my.sentAt ? '' : '<button type="button" class="go" data-a="sent">Mark as sent</button>') +
+      (my.text != null && my.text !== m.text ? '<button type="button" data-a="reset">Claude\'s version</button>' : '') + '</div></div>';
+  }).join('');
+}
+function fitPhotos(){ document.querySelectorAll('.ch-photo textarea').forEach(t => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }); }
+function msgOf(id){ return PACK.messages.find(m => m.id === id); }
+function my(id){ return ST.msgs[id] || (ST.msgs[id] = {}); }
+let stateT;
+function cleanMsgs(){ const o = {}; Object.keys(ST.msgs).forEach(k => { const v = Object.assign({}, ST.msgs[k]); delete v.editing; o[k] = v; }); return o; }   // 'editing' is screen-only
+function saveState(){ clearTimeout(stateT); stateT = setTimeout(() => { if(DOC) DOC.set({ msgs:cleanMsgs(), history:ST.history.slice(0, 200) }, { merge:true }).catch(e => toast('Could not save: ' + e.message)); }, 600); }
+$('chMsgs').addEventListener('input', e => {
+  const b = e.target.closest('[data-id]'), k = e.target.dataset.k; if(!b || !k) return;
+  my(b.dataset.id)[k] = e.target.value; saveState();
+  if(k === 'photo') fitPhotos();
+  if(k === 'text'){ const l = b.querySelector('.ch-len'); if(l) l.textContent = e.target.value.length + ' characters'; }
+});
+$('chMsgs').addEventListener('click', async e => {
+  const btn = e.target.closest('[data-a]'), b = e.target.closest('[data-id]'); if(!btn || !b) return;
+  const id = b.dataset.id, m = msgOf(id), s = my(id), text = s.text != null ? s.text : m.text, photo = s.photo != null ? s.photo : (m.photo || '');
+  const a = btn.dataset.a;
+  if(a === 'copy'){
+    try{ await navigator.clipboard.writeText(text); }catch(x){ const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); }catch(y){} t.remove(); }
+    toast(photo ? 'Copied. Remember the picture: ' + photo.slice(0, 70) : 'Copied. Paste it in your channel.'); return;
+  }
+  if(a === 'edit'){ s.editing = !s.editing; drawNow(); if(s.editing){ const ta = $('chMsgs').querySelector('[data-id="' + CSS.escape(id) + '"] textarea'); if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } } }
+  if(a === 'approve'){ PACK.messages.forEach(x => { if(ST.msgs[x.id]) ST.msgs[x.id].approved = false; }); s.approved = true; toast('Approved'); }
+  if(a === 'sent'){ s.sentAt = new Date().toISOString(); s.approved = true; ST.history.unshift({ id, text, photo, sentAt:s.sentAt }); drawHist(); toast('Marked as sent'); }
+  if(a === 'reset' && confirm("Go back to Claude's version? Your edits to this message are removed.")){ delete s.text; s.editing = false; }
+  drawNow();
+  if(DOC) DOC.set({ msgs:cleanMsgs(), history:ST.history.slice(0, 200) }, { merge:true }).catch(x => toast('Could not save: ' + x.message));
+});
+function drawHist(){
+  $('chHist').innerHTML = ST.history.length ? ST.history.slice(0, 30).map((h, i) => '<div class="ch-h"><b>' + new Date(h.sentAt).toLocaleDateString('en-ZA', { day:'numeric', month:'short' }) + '</b><p>' + esc(h.text) + '</p><span class="ch-x"><button type="button" data-h="' + i + '">Copy</button></span></div>').join('') : '<p class="tr-empty">Nothing marked as sent yet.</p>';
+}
+$('chHist').onclick = async e => { const b = e.target.closest('[data-h]'); if(!b) return; try{ await navigator.clipboard.writeText(ST.history[+b.dataset.h].text); toast('Copied'); }catch(x){} };
+
+/* ---------- save: Firestore, then GitHub through the Worker ---------- */
+function setSync(ok, txt){ synced = ok; $('chSync').className = 'ch-sync ' + (ok ? 'ok' : 'warn'); $('chSync').textContent = txt; }
+async function save(extra){
+  const s = Object.assign(ST.settings, extra || {}, { biz:BIZ, updatedAt:new Date().toISOString() });
+  $('chSave').disabled = true; $('chSaveTxt').textContent = 'Saving...';
+  try{
+    if(DOC) await DOC.set({ settings:s }, { merge:true });
+    dirty = false;
+    const r = await fetch(WORKER + '/admin/channel-save', { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + await AUTH.currentUser.getIdToken() }, body:JSON.stringify({ biz:BIZ, settings:s }) });
+    const j = await r.json().catch(() => ({}));
+    if(!r.ok) throw Object.assign(new Error(j.error || ('error ' + r.status)), { saved:true });
+    setSync(true, 'Claude has your settings'); $('chSaveBar').hidden = true; toast('Saved. Claude uses this from the next refresh.');
+    $('chLinkCard').classList.add('folded');
+  }catch(e){
+    console.warn(e);
+    if(e.saved){ setSync(false, 'Saved here, not sent to Claude yet'); $('chSaveBar').hidden = true; toast(e.message); $('chLinkCard').classList.remove('folded'); $('chLinkCard').scrollIntoView({ behavior:'smooth', block:'start' }); }
+    else { $('chSaveTxt').textContent = 'Could not save: ' + e.message; }
+  }
+  $('chSave').disabled = false;
+}
+$('chSave').onclick = () => save();
+$('chAsk').onclick = () => { if(!confirm('Ask Claude for a fresh set of messages tomorrow morning (about 07:45)? It also uses your latest settings.')) return; save({ refreshRequested:new Date().toISOString() }); };
+
+/* folding cards, remembered on this device */
+(function(){
+  let F = {}; try{ F = JSON.parse(localStorage.getItem('fom.chFold')) || {}; }catch(e){}
+  document.querySelectorAll('.tr-card > h2.fold').forEach(h => { const c = h.parentNode; if(F[c.id]) c.classList.add('folded');
+    h.onclick = () => { c.classList.toggle('folded'); F[c.id] = c.classList.contains('folded'); try{ localStorage.setItem('fom.chFold', JSON.stringify(F)); }catch(e){} }; });
+})();
+
+async function loadPack(){
+  try{ const r = await fetch('channel/pack' + SUF + '.json?t=' + Date.now(), { cache:'no-store' }); PACK = r.ok ? await r.json() : null; }catch(e){ PACK = null; }
+}
+async function loadRemoteSettings(){
+  // what Claude will actually read: compare with ours to show the badge
+  try{ const r = await fetch('channel/settings' + SUF + '.json?t=' + Date.now(), { cache:'no-store' }); if(!r.ok) return null; return await r.json(); }catch(e){ return null; }
+}
+async function start(db){
+  if(!CH_ON_BIZ.includes(BIZ)){ $('chOffBiz').style.display = ''; $('chMain').style.display = 'none'; return; }
+  DOC = db.collection('settings').doc('channel' + SUF);
+  const [snap] = await Promise.all([DOC.get().catch(() => null), loadPack()]);
+  const d = snap && snap.exists ? snap.data() : {};
+  ST = { settings:Object.assign(DEF(), d.settings || {}), msgs:d.msgs || {}, history:d.history || [] };
+  drawSched(); drawCamps(); drawNow(); drawHist();
+  const remote = await loadRemoteSettings();
+  if(!d.settings) setSync(false, 'Not set up yet: press Save');
+  else if(remote && remote.updatedAt === ST.settings.updatedAt) { setSync(true, 'Claude has your settings'); $('chLinkCard').classList.add('folded'); }
+  else setSync(false, remote ? 'Claude has older settings: press Save' : 'Not sent to Claude yet');
+  if(!d.settings){ $('chSaveBar').hidden = false; dirty = true; }
+}
+
+const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+(async function init(){
+  if(!configured) return;
+  try{
+    const b='https://www.gstatic.com/firebasejs/10.12.0/';
+    await loadScript(b+'firebase-app-compat.js');
+    await Promise.all([loadScript(b+'firebase-auth-compat.js'), loadScript(b+'firebase-firestore-compat.js')]);
+    try{ firebase.initializeApp(firebaseConfig); }catch(e){}
+    const auth=firebase.auth(), db=firebase.firestore(); AUTH = auth; DB = db;
+    try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+    if(window.FOM_SESSION)FOM_SESSION.attach(auth);
+    const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value).catch(()=>{ $('lgErr').textContent='Incorrect email or password.'; }); };
+    $('lgBtn').onclick=login; $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+    $('logoutBtn').onclick=()=>auth.signOut();
+    auth.onAuthStateChanged(u=>{
+      $('logoutBtn').style.display=u?'inline-block':'none';
+      if(!u){ $('loginGate').style.display='flex'; return; }
+      db.collection('admins').doc(u.uid).get().then(ad=>{
+        if(!ad.exists){ $('lgErr').textContent='This account does not have admin access.'; auth.signOut(); return; }
+        $('loginGate').style.display='none'; start(db);
+      }).catch(()=>{ $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
+    });
+  }catch(e){ console.error('Channel init failed:', e.message||e); }
+})();
+</script>
+<script src="activity.js?v=2"></script>
+<script src="app.js?v=4"></script>
+</body>
+</html>
