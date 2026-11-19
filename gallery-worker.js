@@ -803,14 +803,16 @@ async function handleChannelSave(request, env) {
   if (!s || typeof s !== 'object') return json({ error: 'no settings' }, 400);
   const body = JSON.stringify(s, null, 2);
   if (body.length > 60000) return json({ error: 'Settings are too long' }, 413);
-  const path = 'channel/settings' + (b.biz === 'sba' ? '_sba' : '') + '.json';
+  // kind 'ig': the Instagram scorecard from the Content Planner, read by the weekly Instagram pack task
+  const sfx = b.biz === 'sba' ? '_sba' : '';
+  const path = b.kind === 'ig' ? 'content/ig-scores' + sfx + '.json' : 'channel/settings' + sfx + '.json';
   try {
     const cur = await ghFile(env, path);
     if (cur && cur.text.trim() === body.trim()) return json({ ok: true, same: true });
     const r = await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/' + path, {
       method: 'PUT',
       headers: { Authorization: 'Bearer ' + env.GH_TOKEN, 'User-Agent': 'fom-gallery-worker', Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: 'Channel settings saved from the dashboard', content: btoa(unescape(encodeURIComponent(body))), sha: cur ? cur.sha : undefined, branch: 'main' })
+      body: JSON.stringify({ message: b.kind === 'ig' ? 'Instagram scorecard saved from the dashboard' : 'Group settings saved from the dashboard', content: btoa(unescape(encodeURIComponent(body))), sha: cur ? cur.sha : undefined, branch: 'main' })
     });
     if (!r.ok) { const t = await r.text(); return json({ error: 'GitHub did not accept it (' + r.status + '): ' + t.slice(0, 160) }, 502); }
     return json({ ok: true });

@@ -776,7 +776,14 @@ function getActivePromo(){
   const code = input.value.trim().toUpperCase();
   if(!code){ msgEl.textContent = ''; return null; }
 
-  const promo = PROMO_CODES[code];
+  // referral codes (FRIEND-NAME) made on Leads, Past clients: 10% off for the friend's first shoot
+  const ref = /^FRIEND-/.test(code) && window.FOM_REFS && FOM_REFS[code];
+  const promo = PROMO_CODES[code] || (ref ? { type:'percent', value:10, label:'Referral from ' + (String(ref.name || '').split(' ')[0] || 'a client') + ' 10% off' } : null);
+  if(!promo && /^FRIEND-/.test(code) && !window.FOM_REFS){
+    msgEl.textContent = 'Checking referral codes... sign in and try again.';
+    msgEl.style.color = '#c0392b';
+    return null;
+  }
   if(!promo){
     msgEl.textContent = 'Code not recognised.';
     msgEl.style.color = '#c0392b';
@@ -795,7 +802,7 @@ function getActivePromo(){
       return null;
     }
   }
-  msgEl.textContent = `✓ ${promo.label} applied`;
+  msgEl.textContent = `✓ ${promo.label} applied` + (ref ? `. On Leads, Past clients, tap "A friend booked" for ${String(ref.name||'them').split(' ')[0]} (they get 10% off their next shoot).` : '');
   msgEl.style.color = '#27ae60';
   return promo;
 }
@@ -1453,6 +1460,7 @@ function dataBoot(){
 }
 function calcCloudLoad(db){            // called once you are logged in
   CLOUD_DB = db;
+  db.collection('settings').doc(FOM_BIZ.sid('referrals')).get().then(d => { try{ window.FOM_REFS = d.exists ? (JSON.parse(d.data().json || '{}').codes || {}) : {}; }catch(e){ window.FOM_REFS = {}; } }).catch(() => {});
   FOM_BIZ.getSettings(db, 'calculator').then(snap => {
     if(!snap.exists) return;
     const j = snap.data().json; if(!j) return;

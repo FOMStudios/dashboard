@@ -272,7 +272,7 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
         <div>
             <span class="eyebrow">Marketing</span>
             <h1>Content Planner</h1>
-            <p>Brainstorm what to shoot next, then track it through to posted.</p>
+            <p>This week's Instagram ideas, hooks and scorecard, plus your idea board and posting tracker.</p>
         </div>
         <span class="badge local" id="syncBadge">Connecting…</span>
     </div>
@@ -793,6 +793,7 @@ async function loadAdvisor(db){
 fetch('trends.json?d=' + OUT.iso(new Date()), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(j => { TRENDS = j || { items:[] }; renderAdvisor(); }).catch(() => { TRENDS = { items:[] }; renderAdvisor(); });
 renderAdvisor();
 </script>
+<script src="igstudio.js?v=1"></script>
 <script src="activity.js?v=2"></script>
 <script src="app.js?v=6"></script>
 </body>
