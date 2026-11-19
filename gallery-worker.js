@@ -475,7 +475,8 @@ async function handleSales(path, request, env, url) {
   // ---------- public ----------
   if (path === '/sales/events') {
     const idx = (await r2json(env, 'sales/index.json')) || { events: [] };
-    return json({ events: (idx.events || []).filter(e => e.on && !e.shop) });
+    const pv = url.searchParams.get('preview') === '1';
+    return json({ events: (idx.events || []).filter(e => (e.on || pv) && !e.shop) });
   }
   if (path === '/sales/event') {
     const ev = await r2json(env, 'sales/' + evId(url.searchParams.get('ev')) + '/event.json');
