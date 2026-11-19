@@ -46,7 +46,7 @@ var PAGES = [
   {n:'Client Meetings', h:'meetings.html',  e:'🤝'},
   {n:'Bookings',        h:'bookings.html',  e:'📅'},   // meeting requests from the Book a meeting page on both websites
   {n:'Website traffic', h:'traffic.html',   e:'📈'},   // visits, clicks and enquiries on both websites (gallery Worker /admin/stats)
-  {n:'WhatsApp Group', h:'channel.html', e:'📣'},   // group messages written by the scheduled Claude task (channel/pack.json)
+  {n:'WhatsApp Group', h:'channel.html', e:'💬'},   // group messages written by the scheduled Claude task (channel/pack.json)
   {n:'Content Planner', h:'content.html',   e:'🎬'},
   {n:'Price Calculator',h:'calculator.html',e:'🧮'},
   {n:'Email',           h:'email.html',     e:'✉️'},
@@ -83,14 +83,59 @@ function fb(){ try{ return (window.firebase && firebase.apps && firebase.apps.le
 function currentEmail(){ var f=fb(); try{ return f && f.auth().currentUser ? f.auth().currentUser.email : ''; }catch(e){ return ''; } }
 function logout(){ var f=fb(); try{ if(f) f.auth().signOut(); }catch(e){} closeSheet(); }
 
+/* ---- menu layout: your order and hidden pages (this device, plus settings/menu in the cloud) ---- */
+var MENU_KEY = 'fom.menu.v1';
+function menuPrefs(){ try{ var m = JSON.parse(LS.get(MENU_KEY,'null')); if(m && Array.isArray(m.order)) return { order:m.order, hidden:m.hidden||[] }; }catch(e){} return { order:[], hidden:[] }; }
+function saveMenuPrefs(m, cloud){
+  m.updatedAt = Date.now(); LS.set(MENU_KEY, JSON.stringify(m));
+  var f = fb(); if(cloud && f){ try{ f.firestore().collection('settings').doc('menu').set({ json:JSON.stringify(m) }).catch(function(){}); }catch(e){} }
+}
+/* pull the cloud copy once per page so a change on the phone shows on the laptop */
+setTimeout(function(){ var f = fb(); if(!f) return; try{ f.auth().onAuthStateChanged(function(u){ if(!u) return;
+  f.firestore().collection('settings').doc('menu').get().then(function(d){ if(!d.exists) return; var c = JSON.parse(d.data().json || 'null'); if(c && (c.updatedAt||0) > (menuPrefs().updatedAt||0)) LS.set(MENU_KEY, JSON.stringify(c)); }).catch(function(){});
+}); }catch(e){} }, 1500);
+function menuPages(){
+  var m = menuPrefs(), all = PAGES.filter(function(p){ return !(p.fomOnly && BZ.isSba); });
+  var pos = function(p){ var i = m.order.indexOf(p.h); return i < 0 ? 1000 + PAGES.indexOf(p) : i; };   // new pages land at the end
+  return all.slice().sort(function(a, b){ return pos(a) - pos(b); }).map(function(p){ return { p:p, hidden:m.hidden.indexOf(p.h) >= 0 }; });
+}
+
 /* ---- hamburger: full page list ---- */
 function openMenu(){
   D.getElementById('fomSheetTitle').textContent = 'All pages';
-  D.getElementById('fomSheetBody').innerHTML = PAGES.filter(function(p){ return !(p.fomOnly && BZ.isSba); }).map(function(p){
-    var active = p.h === here ? ' active' : '';
+  var list = menuPages(), shown = list.filter(function(x){ return !x.hidden; }), nHid = list.length - shown.length;
+  D.getElementById('fomSheetBody').innerHTML = shown.map(function(x){
+    var p = x.p, active = p.h === here ? ' active' : '';
     return '<a class="fom-row'+active+'" href="'+p.h+'"'+(p.ext?' target="_blank" rel="noopener"':'')+'><span class="e">'+p.e+'</span><b>'+p.n+'</b></a>';
-  }).join('');
+  }).join('') + '<button class="fom-logout alt" id="fomMenuEdit">✏️ Edit menu'+(nHid ? ' ('+nHid+' hidden)' : '')+'</button>';
+  D.getElementById('fomMenuEdit').onclick = openMenuEditor;
   openSheet();
+}
+function openMenuEditor(){
+  var list = menuPages();
+  D.getElementById('fomSheetTitle').textContent = 'Edit menu';
+  function draw(){
+    D.getElementById('fomSheetBody').innerHTML = '<p class="fom-note" style="margin:6px 12px 10px">Use the arrows to move a page, and the eye to hide or show it. Hidden pages still work, they just leave the list. Saved on this device and your account.</p>' +
+      list.map(function(x, i){
+        return '<div class="fom-row fom-medit'+(x.hidden?' off':'')+'" data-i="'+i+'"><span class="e">'+x.p.e+'</span><b>'+x.p.n+'</b>'+
+          '<span class="fom-mbtns"><button type="button" data-a="up" aria-label="Move up"'+(i===0?' disabled':'')+'>▲</button><button type="button" data-a="down" aria-label="Move down"'+(i===list.length-1?' disabled':'')+'>▼</button>'+
+          '<button type="button" data-a="hide" aria-label="'+(x.hidden?'Show':'Hide')+'">'+(x.hidden?'🙈':'👁️')+'</button></span></div>';
+      }).join('') +
+      '<button class="fom-logout" id="fomMenuDone">Done</button><button class="fom-logout alt" id="fomMenuReset">Reset to the standard menu</button>';
+    D.getElementById('fomMenuDone').onclick = function(){ save(); openMenu(); };
+    D.getElementById('fomMenuReset').onclick = function(){ saveMenuPrefs({ order:[], hidden:[] }, true); list = menuPages(); draw(); };
+  }
+  function save(){ saveMenuPrefs({ order:list.map(function(x){ return x.p.h; }), hidden:list.filter(function(x){ return x.hidden; }).map(function(x){ return x.p.h; }) }, true); }
+  D.getElementById('fomSheetBody').onclick = function(e){
+    if(!D.getElementById('fomMenuDone')) return;   // only while the editor is showing
+    var b = e.target.closest('button[data-a]'), r = e.target.closest('[data-i]'); if(!b || !r) return;
+    var i = +r.getAttribute('data-i'), a = b.getAttribute('data-a'), t;
+    if(a === 'up' && i > 0){ t = list[i-1]; list[i-1] = list[i]; list[i] = t; }
+    if(a === 'down' && i < list.length-1){ t = list[i+1]; list[i+1] = list[i]; list[i] = t; }
+    if(a === 'hide'){ if(list[i].p.h === 'dashboard.html'){ return; } list[i].hidden = !list[i].hidden; }
+    save(); draw();
+  };
+  draw();
 }
 
 /* ---- shoot day checklist editor (one item per line, saved to settings/checklist) ---- */

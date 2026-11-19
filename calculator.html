@@ -326,7 +326,7 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <script src="brand.js?v=2"></script>
 <script src="session.js"></script>
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=2">
 </head>
 <body>
 
@@ -685,6 +685,7 @@ textarea{ width:100%; min-width:0; max-width:100%; box-sizing:border-box; border
 <div class="dm-toast" id="dmToast"></div>
 
 <script src="pay-config.js"></script>
+<script src="promos.js?v=1"></script>
 <script>
 /* ╔══════════════════════════════════════════════════════════════════╗
    ║  EDIT YOUR PRICES HERE - everything the calculator uses is below.   ║
@@ -755,20 +756,15 @@ let invoiceTotal = 0;   // set by buildInvoice, used to size the payment links
 let liveTotal = 0;      // current on-screen total, used to prefill the WhatsApp message
 
 /* ===== PROMO CODES =====================================================
-   Add a new code any time by adding a line below - nothing else in the
-   calculator needs to change. Each code can be:
+   Codes live in promos.js (also shown on the dashboard This week card).
+   Add a line there; nothing else needs to change. Each code can be:
      type: 'percent'  → value is a % taken off (e.g. 10 = 10% off)
      type: 'flat'      → value is a flat Rand amount taken off
    expires (optional): 'YYYY-MM-DD' - after this date the code is
      automatically rejected, so there's no need to remember to remove it.
    Codes are matched case-insensitively (FOMGIVEAWAY10 = fomgiveaway10).
    ========================================================================= */
-const PROMO_CODES = {
-  'FOMGIVEAWAY10': { type: 'percent', value: 10, label: 'Giveaway 10% off', expires: '2026-12-29' },   // Nov 2026 giveaway: valid to 29 Dec 2026 (first booking, once per person)
-  // Add future codes here, e.g.:
-  // 'REFER15':     { type: 'percent', value: 15, label: 'Referral - 15% off', expires: '2026-12-31' },
-  // 'LOYALTY200':  { type: 'flat',    value: 200, label: 'Loyalty - R200 off' },  // no expiry = never expires
-};
+const PROMO_CODES = window.FOM_PROMOS || {};   // the list lives in promos.js (shared with the dashboard)
 
 /* Reads whatever's typed in the promo field, validates it against the
    registry above (including expiry), and shows a status message.
@@ -783,6 +779,11 @@ function getActivePromo(){
   const promo = PROMO_CODES[code];
   if(!promo){
     msgEl.textContent = 'Code not recognised.';
+    msgEl.style.color = '#c0392b';
+    return null;
+  }
+  if(promo.starts && new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Johannesburg'}) < promo.starts){
+    msgEl.textContent = `This code starts on ${fmtDate(promo.starts)}.`;
     msgEl.style.color = '#c0392b';
     return null;
   }
@@ -1994,6 +1995,6 @@ function closePreview(){
 })();
 </script>
 <script src="activity.js?v=2"></script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

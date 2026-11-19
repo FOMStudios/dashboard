@@ -175,7 +175,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 <script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <script src="brand.js?v=2"></script>
 <script src="session.js"></script>
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=2">
 </head>
 <body>
 
@@ -252,6 +252,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 <div class="mascot-corner"><img src="assets/mascot.png" alt="" onerror="this.parentElement.style.display='none'"></div>
 
 <!-- Firebase config only (the SDK is loaded on demand, and only when configured) -->
+<script src="promos.js?v=1"></script>
 <script src="firebase-config.js"></script>
 <script src="health.js"></script>
 <script>
@@ -387,6 +388,51 @@ function cardMeetings(){
     ${due.length > 6 ? `<div class="ns-meta">and ${due.length - 6} more follow-ups</div>` : ''}</div>`;
 }
 
+/* ---- This week: campaigns, group posts, promo codes and shoots for the next 7 days (FOM; Shot by A shows shoots only) ---- */
+let WEEK = { camps:[], posts:[], sent:{}, note:'' };
+function loadWeek(db){
+  const SUF = BZ.id === 'sba' ? '_sba' : '';
+  fetch('channel/pack' + SUF + '.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(p => { WEEK.posts = (p && p.messages || []).filter(m => m.day); safeRender(); }).catch(() => {});
+  const fromRepo = () => fetch('channel/settings' + SUF + '.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(st => { if(st){ WEEK.camps = st.campaigns || []; WEEK.note = st.thisWeek || ''; safeRender(); } }).catch(() => {});
+  if(!db){ fromRepo(); return; }
+  db.collection('settings').doc('channel' + SUF).get().then(d => {
+    const x = d.exists ? d.data() : {};
+    if(!x.settings) return fromRepo();
+    WEEK.camps = x.settings.campaigns || []; WEEK.note = x.settings.thisWeek || ''; WEEK.sent = x.msgs || {};
+    fromRepo2(x.settings);
+    safeRender();
+  }).catch(fromRepo);
+  // campaigns Claude added to the repo copy that are not saved on the WhatsApp Group page yet still show here
+  function fromRepo2(mine){ fetch('channel/settings' + SUF + '.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(st => {
+    if(!st || !st.fromClaude || st.fromClaude === mine.importedClaude) return;
+    const have = new Set(WEEK.camps.map(c => c.id || c.title)); (st.campaigns || []).forEach(c => { if(!have.has(c.id || c.title)) WEEK.camps.push(c); }); safeRender();
+  }).catch(() => {}); }
+}
+function cardWeek(){
+  const iso = d => d.toLocaleDateString('en-CA', { timeZone:'Africa/Johannesburg' });
+  const t0 = new Date(), today = iso(t0), end = iso(new Date(Date.now() + 6 * 864e5));
+  const nice = d => { if(d === today) return 'Today'; if(d === iso(new Date(Date.now() + 864e5))) return 'Tomorrow'; return new Date(d + 'T12:00:00Z').toLocaleDateString('en-ZA', { weekday:'short', day:'numeric', month:'short' }); };
+  const rows = [];   // {d, sort, tag, cls, t, sub, href}
+  const ICON = { giveaway:'🎁', promo:'🏷️', event:'📍', news:'📢' };
+  WEEK.camps.filter(c => c.on !== false && (!c.start || c.start <= end) && (!c.end || c.end >= today)).forEach(c => {
+    const st = c.start && c.start > today ? 'Starts ' + nice(c.start) : c.end === today ? 'Last day' : c.end ? 'Until ' + nice(c.end) : 'Running';
+    rows.push({ d: c.start && c.start > today ? c.start : today, k:0, tag: st, cls: c.start && c.start > today ? 'soon' : 'run', t: (ICON[c.type] || '📌') + ' ' + c.title, sub: c.offer || '', href: 'channel.html' });
+  });
+  if(BZ.id === 'fom') Object.keys(window.FOM_PROMOS || {}).forEach(code => { const p = FOM_PROMOS[code];
+    if(p.expires && p.expires >= today && p.expires <= end) rows.push({ d:p.expires, k:1, tag:nice(p.expires), cls:'soon', t:'🏷️ Code ' + code + ' ends', sub:p.label, href:'calculator.html' });
+    if(p.starts && p.starts > today && p.starts <= end) rows.push({ d:p.starts, k:1, tag:nice(p.starts), cls:'soon', t:'🏷️ Code ' + code + ' starts', sub:p.label, href:'calculator.html' });
+  });
+  WEEK.posts.filter(m => m.day >= today && m.day <= end && !(WEEK.sent[m.id] && WEEK.sent[m.id].sentAt)).forEach(m => rows.push({ d:m.day, k:2, tag:nice(m.day), cls: m.day === today ? 'now' : '', t:'💬 Group post: ' + m.title, sub:'', href:'channel.html' }));
+  const H = window.FOM_HEALTH;
+  if(H) orders.filter(o => !['Completed','Delivered','Cancelled'].includes(o.status) && H.parseDate(o.shootDate)).forEach(o => { const d = iso(H.parseDate(o.shootDate)); if(d >= today && d <= end) rows.push({ d, k:3, tag:nice(d), cls: d === today ? 'now' : '', t:'📸 Shoot: ' + (o.customer || 'Client'), sub:o.product || '', href:'database.html?open=' + encodeURIComponent(o.id) }); });
+  if(!rows.length && !WEEK.note) return '';
+  rows.sort((a, b) => a.d.localeCompare(b.d) || a.k - b.k);
+  const C = { now:'background:#111;color:#fff', run:'background:#e8f6ee;color:#1f8a4c', soon:'background:#fff4e5;color:#7a4b00', '':'' };
+  return `<div class="card" style="margin-bottom:20px"><div class="ns-head"><h2>This week</h2><a class="ns-go" href="channel.html">WhatsApp Group</a></div>
+    ${WEEK.note ? `<div class="ns-meta" style="margin:0 0 8px">${esc(WEEK.note)}</div>` : ''}
+    ${rows.map(r => `<a class="ns-step" href="${r.href}"><span class="ns-who" style="${C[r.cls] || ''};white-space:nowrap">${esc(r.tag)}</span><span class="ns-t">${esc(r.t)}${r.sub ? ` <small style="color:var(--ink-soft);font-weight:500;display:block">${esc(r.sub.length > 70 ? r.sub.slice(0, 68) + '...' : r.sub)}</small>` : ''}</span></a>`).join('')}</div>`;
+}
+
 let sdPick = '';
 function cardShoot(){
   const H = window.FOM_HEALTH; if(!H) return '';
@@ -416,7 +462,7 @@ function render(){
   const el=$('content');
   const vo = VIEW === 'both' ? ALL : ALL.filter(o => bizOf(o) === VIEW);
   if(!ALL.length){
-    el.innerHTML=viewChips()+`<div class="card empty-card"><img src="assets/mascot.png" alt="" onerror="this.style.display='none'">
+    el.innerHTML=viewChips()+cardWeek()+`<div class="card empty-card"><img src="assets/mascot.png" alt="" onerror="this.style.display='none'">
       <h3>No orders yet</h3><p>Add some bookings in the database and they’ll show up here.</p>
       <a href="database.html" class="btn">Go to Database →</a></div>`;
     return;
@@ -455,6 +501,7 @@ function render(){
 
   el.innerHTML=`
     ${viewChips()}
+    ${cardWeek()}
     ${cardMessages()}
     ${cardActivity()}
     ${cardShoot()}
@@ -524,6 +571,7 @@ function startLocal(){ var _ac0=document.getElementById('authCheck'); if(_ac0)_a
   try{ orders=JSON.parse(localStorage.getItem('fom_orders'))||[]; }catch(e){ orders=[]; }
   try{ MEETS=JSON.parse(localStorage.getItem('fom_meetings'))||[]; }catch(e){ MEETS=[]; }
   ALL=orders.slice();
+  loadWeek(null);
   try{ ADV.calc=JSON.parse(localStorage.getItem('fom.calc.v1')); ADV.contract=JSON.parse(localStorage.getItem('fom.contract.v1')); }catch(e){}
   safeRender();
   window.addEventListener('storage',e=>{ if(e.key==='fom_orders'){ try{orders=JSON.parse(e.newValue)||[];}catch(x){orders=[];} safeRender(); } });
@@ -553,6 +601,7 @@ function initCloud(){
         }
         $('loginGate').style.display='none';
         loadAdvisorData(db);
+        loadWeek(db);
         db.collection('orders').onSnapshot(snap=>{ ALL=snap.docs.map(d=>({id:d.id,...d.data()})); ALL.sort((a,b)=>tsMillis(a.createdAt)-tsMillis(b.createdAt)); orders=BZ.mine(ALL); safeRender(); }, err=>console.warn('Firestore:',err));
         BZ.syncBrand(db);
         db.collection('meetings').onSnapshot(snap=>{ MEETS=snap.docs.map(d=>({id:d.id,...d.data()})); safeRender(); }, err=>console.warn('meetings (publish the latest Firestore rules):',err));
@@ -568,6 +617,6 @@ if(!configured){
 }
 </script>
 <script src="activity.js?v=2"></script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

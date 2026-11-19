@@ -222,3 +222,11 @@ img.sba-logo{object-fit:contain;}
 /* Shot by A invoice: one logo only, and never tinted for dark mode on the white page */
 :root[data-biz="sba"] #ivMascot{display:none !important;}
 #invoiceSheet img.sba-logo,.is-page img.sba-logo,.inv-sheet img.sba-logo{filter:none !important;}
+
+/* menu editor (Edit menu in the page list) */
+.fom-medit{cursor:default;}
+.fom-medit.off{opacity:.45;}
+.fom-medit b{flex:1;min-width:0;}
+.fom-mbtns{display:flex;gap:6px;flex:none;}
+.fom-mbtns button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line, rgba(0,0,0,.12));background:var(--surface-2);color:inherit;font-size:14px;cursor:pointer;}
+.fom-mbtns button:disabled{opacity:.3;cursor:default;}
