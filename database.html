@@ -525,7 +525,7 @@ document.querySelector('table.orders thead').addEventListener('click', e => {
 
 /* ---------------- table: short and readable; tap a row for everything else ---------------- */
 /* Preview as client: their real portal, read-only, in the right branding (portfolio/client-portal.html ?preview=<order id>) */
-function previewUrl(o){ return 'https://www.fomstudios.co.za/client-portal.html?preview=' + encodeURIComponent(o.id) + (FOM_BIZ.isSba ? '&b=sba' : ''); }
+function previewUrl(o){ const ae=(auth&&auth.currentUser&&auth.currentUser.email)||''; return 'https://www.fomstudios.co.za/client-portal.html?preview=' + encodeURIComponent(o.id) + (FOM_BIZ.isSba ? '&b=sba' : '') + (ae ? '&ae=' + encodeURIComponent(ae) : ''); }   // ae: your admin email, so the portal fills it in (browsers often autofill a client login there)
 /* Fix links from the preview checklist: database.html?open=<order id>&f=<field> opens that client and points at the field */
 function deepOpen(){
   if(window.__deepOpen) return;
