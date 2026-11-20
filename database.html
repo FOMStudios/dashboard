@@ -110,6 +110,17 @@ td.rm-col{width:38px;text-align:center;}
 .lg-btn{flex:none;font:inherit;font-size:11px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap;}
 .lg-btn.ok{border-color:#1f8a4c;color:#1f8a4c;}
 .lg-btn:disabled{opacity:.6;cursor:wait;}
+.lg-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
+.lg-box{background:var(--bg-pill,#fff);color:var(--ink);border-radius:18px;max-width:440px;width:100%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.lg-box h3{margin:0 0 6px;font-size:18px;} .lg-sub{margin:0 0 12px;color:var(--ink-soft);font-size:13.5px;line-height:1.5;}
+.lg-l{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:4px;}
+.lg-pw{display:flex;gap:8px;} .lg-pw input{flex:1;min-width:0;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:17px;font-weight:700;letter-spacing:.02em;background:var(--bg);color:var(--ink);}
+.lg-pw button{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:0 14px;font-size:18px;cursor:pointer;color:var(--ink);}
+.lg-err{color:#b3261e;font-size:13px;min-height:1em;margin-top:8px;}
+.lg-msg{width:100%;box-sizing:border-box;min-height:150px;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink);}
+.lg-acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px;}
+.lg-acts button,.lg-acts a{border:1px solid var(--line);background:var(--bg);border-radius:99px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer;color:var(--ink);text-decoration:none;}
+.lg-acts .lg-go{background:var(--accent);border-color:var(--accent);color:#fff;} .lg-acts .wa{background:#25D366;border-color:#25D366;}
 .wa-btn svg{width:19px;height:19px;} .wa-btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
 .col-meet{width:190px;}
 .meet-cell{display:flex;align-items:center;gap:5px;white-space:nowrap;}
@@ -605,7 +616,7 @@ function renderPanel(fresh){
       ${F('customer','Name','placeholder="Client name" autocomplete="off"','',true)}
       <div class="op-f"><label for="op_clientPhone">WhatsApp</label><div class="op-row"><input id="op_clientPhone" data-i="${i}" data-f="clientPhone" value="${esc(o.clientPhone||'')}" placeholder="082 123 4567" inputmode="tel" autocomplete="off"><button type="button" class="wa-btn" data-wa="${i}" title="Message on WhatsApp" aria-label="WhatsApp">${WA_SVG}</button></div>${o.waLast&&o.waLast.t?`<span class="hint">Last sent: ${esc(o.waLast.t)}${o.waLast.at?', '+new Date(o.waLast.at).toLocaleDateString('en-ZA',{day:'numeric',month:'short'}):''}</span>`:''}</div>
       <div class="op-f"><label for="op_clientEmail">Email (their portal login)</label><input id="op_clientEmail" data-i="${i}" data-f="clientEmail" value="${esc(o.clientEmail||'')}" placeholder="client@email.com" type="email" autocomplete="off">
-        <div><button type="button" class="lg-btn${o.portalLoginAt?' ok':''}" data-login="${i}" title="${o.portalLoginAt?'Login made '+esc(String(o.portalLoginAt).slice(0,10))+'. Tap to send the set-password email again':'Create this client\'s portal login and email them a link to set their password'}">${o.portalLoginAt?'✓ Login':'Create login'}</button></div></div>
+        <div><button type="button" class="lg-btn${o.portalLoginAt?' ok':''}" data-login="${i}" title="${o.portalLoginAt?'Login made '+esc(String(o.portalLoginAt).slice(0,10))+'. Tap to copy their login message':'Create this client\'s portal login with a password you choose'}">${o.portalLoginAt?'✓ Created':'Create login'}</button></div></div>
     </div></section>
 
     <section class="op-sec"><h3>Booking</h3><div class="op-g">
@@ -728,45 +739,73 @@ onOrders('click',e=>{ const cv=e.target.closest('[data-cover]'); if(cv){ showCov
     else { prompt('Copy this signing link:',link); done(true); }
   }
 });
-/* ---- Create client login: makes the portal login and emails a set-password link, without signing you out.
-   A second Firebase app (memory only) creates the user, so your admin session is never touched. ---- */
+/* ---- Create client login: you pick the password, nothing is emailed. Then send them their login on WhatsApp.
+   A second Firebase app (memory only) creates the user, so your admin session is never touched.
+   If the email already has a login, the button just turns to Created (they can use "Forgot password?" on the portal). ---- */
+function lgPassword(o){
+  const n=String(o.customer||'').trim().split(' ')[0].replace(/[^A-Za-z]/g,'').slice(0,10)||'Client';
+  return n.charAt(0).toUpperCase()+n.slice(1).toLowerCase()+String(1000+(crypto.getRandomValues(new Uint32Array(1))[0]%9000));
+}
+function lgMessage(o, email, pw){
+  const B=FOM_BIZ.b, first=String(o.customer||'').trim().split(' ')[0]||'there';
+  return `Hi ${first}! Your ${B.name} client portal is ready 📸\n\nLog in here: ${B.portal}\nEmail: ${email}\n${pw?'Password: '+pw:'Password: the one I sent you before'}\n\nYou'll find your booking, contract, invoice and gallery there.`;
+}
+function lgModal(html){
+  const ov=document.createElement('div'); ov.className='lg-ov'; ov.innerHTML='<div class="lg-box" role="dialog">'+html+'</div>';
+  document.body.appendChild(ov); ov.addEventListener('click',e=>{ if(e.target===ov||e.target.closest('[data-lgx]')) ov.remove(); });
+  return ov;
+}
+function lgDone(o, email, pw, existed){
+  const ph=String(o.clientPhone||'').replace(/\D/g,'').replace(/^0/,'27'), msg=lgMessage(o,email,existed?'':pw);
+  const ov=lgModal(`<h3>${existed?'Login already there ✓':'Login created ✓'}</h3>
+    <p class="lg-sub">${existed?esc(email)+' already has a portal login, so nothing changed. If they forgot the password, they can tap <b>Forgot password?</b> on the portal.':'Send them their login now. The password is not saved anywhere, so send it before you close this.'}</p>
+    <textarea class="lg-msg" readonly>${esc(msg)}</textarea>
+    <div class="lg-acts">${ph.length>=11?'<a class="lg-go wa" target="_blank" rel="noopener" href="https://wa.me/'+ph+'?text='+encodeURIComponent(msg)+'">Send on WhatsApp</a>':''}<button type="button" class="lg-go" data-lgcopy>Copy message</button><button type="button" data-lgx>Done</button></div>
+    <p class="lg-sub" style="margin-top:10px">Next: send the Booking Confirmation (Email page).</p>`);
+  const cb=ov.querySelector('[data-lgcopy]'); cb.onclick=()=>{ navigator.clipboard.writeText(msg).then(()=>{ cb.textContent='Copied ✓'; },()=>{ prompt('Copy this:',msg); }); };
+}
 async function createClientLogin(o, btn){
   if(!o || !auth) return;
   const email=String(o.clientEmail||'').trim().toLowerCase();
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ alert('Add the client\'s email in the Client Email box first.'); return; }
-  const again=!!o.portalLoginAt, B=FOM_BIZ.b;
-  if(!confirm(again
-    ? `Send ${email} the set-password email again?`
-    : `Create a ${B.name} portal login for ${email}?\n\nThey get an email with a link to set their own password, which then opens ${B.name}'s portal.`)) return;
-  const orig=btn.textContent; btn.disabled=true; btn.textContent='Working…';
-  let existed=again;
-  try{
-    // Firebase saves login emails in lower case; the portal only finds bookings when the Client Email matches exactly
-    if(o.clientEmail!==email){ o.clientEmail=email; store.update(o.id); }
-    if(!again){
+  if(o.portalLoginAt){ lgDone(o, email, '', true); return; }
+  const B=FOM_BIZ.b;
+  const ov=lgModal(`<h3>Create ${esc(B.name)} portal login</h3>
+    <p class="lg-sub">For <b>${esc(email)}</b>. Pick their password (at least 6 characters). No email is sent: you send it to them on WhatsApp next.</p>
+    <label class="lg-l">Password</label><div class="lg-pw"><input id="lgPw" value="${esc(lgPassword(o))}" autocomplete="off" spellcheck="false"><button type="button" id="lgNew" title="Make another">↻</button></div>
+    <div class="lg-err" id="lgErr"></div>
+    <div class="lg-acts"><button type="button" data-lgx>Cancel</button><button type="button" class="lg-go" id="lgMake">Create login</button></div>`);
+  const inp=ov.querySelector('#lgPw'); inp.focus(); inp.select();
+  ov.querySelector('#lgNew').onclick=()=>{ inp.value=lgPassword(o); inp.focus(); inp.select(); };
+  ov.querySelector('#lgMake').onclick=async()=>{
+    const pw=inp.value.trim(), mk=ov.querySelector('#lgMake'), er=ov.querySelector('#lgErr');
+    if(pw.length<6){ er.textContent='Use at least 6 characters.'; inp.focus(); return; }
+    mk.disabled=true; mk.textContent='Creating…'; er.textContent='';
+    const orig=btn.textContent; btn.disabled=true;
+    let existed=false;
+    try{
+      // Firebase saves login emails in lower case; the portal only finds bookings when the Client Email matches exactly
+      if(o.clientEmail!==email){ o.clientEmail=email; }
       const sec=firebase.apps.find(a=>a.name==='clientLogin') || firebase.initializeApp(firebaseConfig,'clientLogin');
       const sa=sec.auth();
       await sa.setPersistence(firebase.auth.Auth.Persistence.NONE);
-      const pw=Array.from(crypto.getRandomValues(new Uint8Array(24)),b=>('0'+b.toString(16)).slice(-2)).join('')+'Aa1!';
       try{ await sa.createUserWithEmailAndPassword(email,pw); }
       catch(err){ if(/already|exists/i.test(err.code||'')) existed=true; else throw err; }
       await sa.signOut().catch(()=>{});
+      o.portalLoginAt=new Date().toISOString(); store.update(o.id);
+      btn.classList.add('ok'); btn.textContent='✓ Created'; btn.disabled=false;
+      ov.remove(); lgDone(o, email, pw, existed);
+    }catch(err){
+      console.warn('Create login:',err); btn.textContent=orig; btn.disabled=false; mk.disabled=false; mk.textContent='Create login';
+      const c=err.code||'';
+      er.textContent = c==='auth/admin-restricted-operation'||c==='auth/operation-not-allowed'
+        ? 'Firebase blocked creating the login. In Firebase Console, Authentication, Settings, User actions, tick "Enable create (sign-up)", then try again.'
+        : c==='auth/weak-password' ? 'Firebase says that password is too weak. Make it longer.'
+        : c==='auth/invalid-email' ? 'That email address is not valid.'
+        : c==='auth/too-many-requests' ? 'Firebase is limiting requests. Wait a few minutes and try again.'
+        : 'Could not create the login: '+(err.message||c||'unknown error');
     }
-    try{ await auth.sendPasswordResetEmail(email,{url:B.portal}); }
-    catch(err){ if(/continue-uri|unauthorized/i.test(err.code||'')) await auth.sendPasswordResetEmail(email); else throw err; }
-    o.portalLoginAt=new Date().toISOString(); store.update(o.id);
-    btn.classList.add('ok'); btn.textContent='✓ Login';
-    alert((existed?`${email} already had a login, so `:`Login created. `)+`A set-password email is on its way to ${email}.\n\nNext: send the Booking Confirmation email (Email page). Their portal: ${B.portal}`);
-  }catch(err){
-    console.warn('Create login:',err); btn.textContent=orig;
-    const c=err.code||'';
-    alert(c==='auth/admin-restricted-operation'||c==='auth/operation-not-allowed'
-      ? 'Firebase blocked creating the login. In Firebase Console, Authentication, Settings, User actions, tick "Enable create (sign-up)", then try again. (Email/Password must also be on under Sign-in method.)'
-      : c==='auth/invalid-email' ? 'That email address is not valid.'
-      : c==='auth/too-many-requests' ? 'Firebase is limiting requests. Wait a few minutes and try again.'
-      : 'Could not create the login: '+(err.message||c||'unknown error'));
-  }
-  btn.disabled=false;
+  };
 }
 
 /* ================= TEST CLIENT =================

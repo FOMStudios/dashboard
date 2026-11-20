@@ -423,7 +423,7 @@ function buildEmailHtml(){
               <div style="color:${SOFT};font-size:13px;line-height:1.8;">
                 1. Click the button above or go to <b>${f.portal}</b><br>
                 2. Sign in with <b>${f.email||'your email address'}</b><br>
-                3. First time? Click <b>"Forgot password?"</b> to set your own password
+                3. Use the password we sent you on WhatsApp (forgot it? Click <b>"Forgot password?"</b>)
               </div>
             </td></tr>
           </table>
@@ -486,7 +486,7 @@ function buildEmailHtml(){
           <div style="color:${SOFT};font-size:14px;line-height:1.8;">
             1. Click the button above or go to <b>${f.portal}</b><br>
             2. Sign in with <b>${f.email||'your email address'}</b><br>
-            3. If it's your first time, click <b>"Forgot password?"</b> to set your own password<br>
+            3. Use the password we sent you on WhatsApp (forgot it? Click <b>"Forgot password?"</b>)<br>
             4. Open your booking and click <b>"Download files"</b>
           </div>
         </td></tr>
@@ -542,7 +542,7 @@ function plainText(){
   if(f.type === 'ready'){
     return `Hi ${f.name||'there'},\n\nYour FOM Studios files are ready!\n\n`
       + `Log in to your Client Portal to view and download your content:\n${f.portal}\n\n`
-      + `If it's your first time logging in, click "Forgot password?" on the login screen to set your own password.\n`
+      + `Use the password we sent you on WhatsApp. Forgot it? Click "Forgot password?" on the login screen.\n`
       + `Sign in with: ${f.email||'your email address'}\n\n`
       + `Thank you for choosing FOM Studios - it was a pleasure!\n\n`
       + `- FOM Studios\nwww.fomstudios.co.za · ${BRAND.instaHandle} · ${BRAND.email} · ${BRAND.phone}`;
