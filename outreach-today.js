@@ -78,14 +78,15 @@ setTimeout(function(){ var t = 'today'; try{ t = localStorage.getItem('fom.leads
 /* ============================================================
    TODAY
    ============================================================ */
-var TPL_DEF = "Hi {company} team 👋 I'm Ishaaq from FOM Studios, a photography and videography studio in Joburg.\n\n{opener}\n\nYou can see our work here: {link}\n\nWould it be okay if I send you a quick idea and quote? 📸";
+var TPL_DEF = "Hi {company} team! 👋\nI'm Ishaaq from FOM Studios, a photography and videography studio based in Joburg.\n{opener}\nYou can have a look at some of our work here:\n{link}\nWould you be open to me sending through a quick creative idea and quote? 📸";
+var TPL_VER = 2;   // 20 Nov 2026: new message style; older saved templates are replaced once
 var OT = {
-  tpl: LSget('fom.ot.tpl' + SUF, TPL_DEF),
+  tpl: LSget('fom.ot.tplv' + SUF, 0) >= TPL_VER ? LSget('fom.ot.tpl' + SUF, TPL_DEF) : TPL_DEF,
   skip: LSget('fom.ot.skip' + SUF, {}),
   imported: false, importing: false, pack: null,
   key: function(o){ return (String(o.company || '').toLowerCase().replace(/[^a-z0-9]/g, '') || '') + '|' + String(o.web || '').toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, ''); },
   msg: function(o){
-    var opener = o.opener || ('We shoot ' + ((o.category || 'business').toLowerCase()) + ' content in Gauteng, and I think we could make something great for you.');
+    var opener = o.opener || ('I came across ' + (o.company || 'your business') + (o.location ? ' in ' + o.location : '') + ". I'd love to explore the opportunity to capture a short, engaging reel that you could use to promote your business and help generate more interest and bookings.");
     return OT.tpl.replace(/\{company\}/g, o.company || 'there').replace(/\{opener\}/g, opener).replace(/\{link\}/g, SITE_LINK).replace(/\{contact\}/g, first(o.contact) || 'there');
   },
   contactedToday: function(){ var t = iso(); return leads.filter(function(o){ return o.dateEmailed === t && o.status === 'Emailed'; }).length; },
@@ -100,7 +101,11 @@ var OT = {
         var added = 0;
         OT.pack.leads.forEach(function(x){
           var k = OT.key(x), kc = String(x.company || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-          if(!x.company || have[k] || have[kc]) return;
+          if(x.company && (have[k] || have[kc])){
+            var ex = leads.find(function(o){ return OT.key(o) === k || String(o.company || '').toLowerCase().replace(/[^a-z0-9]/g, '') === kc; });
+            if(ex && ex.source === 'claude' && ex.status === 'Not Emailed' && x.opener && ex.opener !== x.opener){ ex.opener = x.opener; if(x.why) ex.why = x.why; store.update(ex.id); }
+            return;
+          }
           have[k] = have[kc] = 1; added++;
           store.add(blankLead({ company:x.company, contact:x.contact || '', email:x.email || '', web:x.web || '', phone:x.phone || '', instagram:igHandle(x.instagram),
             location:x.location || '', category:x.category || '', status:'Not Emailed', source:'claude', why:x.why || '', opener:x.opener || '', addedWeek:OT.pack.generatedAt || '',
@@ -135,12 +140,12 @@ var OT = {
       '<div class="ot-sub">' + [esc(o.category), esc(o.location), web, ph ? '+' + ph : '', ig ? '@' + esc(ig) : '', em ? esc(em) : ''].filter(Boolean).join(' · ') + '</div></div><div>' + chip + '</div></div>' +
       (o.why ? '<div class="ot-why">💡 ' + esc(o.why) + '</div>' : '') +
       (kind === 'done' ? '<details style="margin-top:8px"><summary class="ot-sub" style="cursor:pointer">Show the message</summary><textarea class="ot-msg" data-k="msg">' + esc(o.undo && o.undo.kind === 'follow' ? OT.follow(o) : OT.msg(o)) + '</textarea></details><div class="ot-btns">' +
-        (ph ? '<button type="button" class="wa" data-a="wa2">WhatsApp again</button>' : '') + (em ? '<button type="button" data-a="em2">Email again</button>' : '') + '<button type="button" data-a="copy">Copy</button>' +
+        (ph ? '<button type="button" class="wa" data-a="wa2">WhatsApp again</button>' : '') + (em ? '<button type="button" data-a="em2">Email again</button><button type="button" data-a="cpem">Copy email address</button>' : '') + '<button type="button" data-a="copy">Copy message</button>' +
         '<button type="button" class="go" data-a="undo">↩ Undo</button><button type="button" data-a="remove" style="color:#b3261e">Remove</button></div>' : '<textarea class="ot-msg" data-k="msg">' + esc(msg) + '</textarea><div class="ot-btns">' +
         (ph ? '<button type="button" class="wa" data-a="wa">WhatsApp</button>' : '') +
         (ig ? '<button type="button" data-a="ig">Instagram DM</button>' : '') +
-        (em ? '<button type="button" data-a="em">Email</button>' : '') +
-        '<button type="button" data-a="copy">Copy</button>' +
+        (em ? '<button type="button" data-a="em">Email</button><button type="button" data-a="cpem">Copy email address</button>' : '') +
+        '<button type="button" data-a="copy">Copy message</button>' +
         '<button type="button" class="go" data-a="done">' + (kind === 'follow' ? 'Followed up' : 'Contacted') + '</button>' +
         (kind === 'follow' ? '<button type="button" data-a="replied">They replied</button><button type="button" data-a="stop">No reply, stop</button>' : '<button type="button" data-a="skip">Skip today</button>') +
         '<button type="button" data-a="open">Details</button><button type="button" data-a="remove" style="color:#b3261e">Remove</button></div>') + '</div>';
@@ -162,11 +167,11 @@ var OT = {
       '<div class="ot-h">Contact today' + (L.left < DAILY ? ' (' + L.left + ' left)' : '') + '</div>' +
       (L.fresh.length ? L.fresh.map(function(o){ return OT.card(o, 'new'); }).join('') : '<div class="ot-empty">' + (L.left ? 'No uncontacted leads left. New ones arrive on Monday, or add your own on the Leads Tracker tab.' : 'Goal reached for today. Well done! 🎉') + '</div>') +
       (done ? '<div class="ot-h">Done today</div>' + L.done.map(function(o){ return OT.card(o, 'done'); }).join('') : '');
-    $('otTplSave').onclick = function(){ OT.tpl = $('otTpl').value; LSset('fom.ot.tpl' + SUF, OT.tpl); OT.saveCfg(); toast('Message saved'); OT.render(); };
+    $('otTplSave').onclick = function(){ OT.tpl = $('otTpl').value; LSset('fom.ot.tpl' + SUF, OT.tpl); LSset('fom.ot.tplv' + SUF, TPL_VER); OT.saveCfg(); toast('Message saved'); OT.render(); };
     $('otTplReset').onclick = function(){ $('otTpl').value = TPL_DEF; };
   },
-  saveCfg: function(){ if(DB) DB.collection('settings').doc(BZ.sid('outreachToday')).set({ json:JSON.stringify({ tpl:OT.tpl }) }, { merge:true }).catch(function(){}); },
-  loadCfg: function(){ if(!DB) return; DB.collection('settings').doc(BZ.sid('outreachToday')).get().then(function(d){ if(d.exists){ var j = JSON.parse(d.data().json || '{}'); if(j.tpl){ OT.tpl = j.tpl; LSset('fom.ot.tpl' + SUF, OT.tpl); OT.render(); } } }).catch(function(){}); },
+  saveCfg: function(){ if(DB) DB.collection('settings').doc(BZ.sid('outreachToday')).set({ json:JSON.stringify({ tpl:OT.tpl, v:TPL_VER }) }, { merge:true }).catch(function(){}); },
+  loadCfg: function(){ if(!DB) return; DB.collection('settings').doc(BZ.sid('outreachToday')).get().then(function(d){ var j = d.exists ? JSON.parse(d.data().json || '{}') : {}; if(j.tpl && (j.v || 0) >= TPL_VER){ OT.tpl = j.tpl; LSset('fom.ot.tpl' + SUF, OT.tpl); LSset('fom.ot.tplv' + SUF, TPL_VER); OT.render(); } else { OT.tpl = TPL_DEF; LSset('fom.ot.tpl' + SUF, OT.tpl); LSset('fom.ot.tplv' + SUF, TPL_VER); OT.saveCfg(); OT.render(); } }).catch(function(){}); },
   mark: function(o, via, kind){
     var t = iso();
     o.undo = { status:o.status, emailed:o.emailed || '', dateEmailed:o.dateEmailed || '', followUp:o.followUp || '', contactedVia:o.contactedVia || '', comments:o.comments || '', kind:kind };
@@ -184,6 +189,7 @@ $('otBody').addEventListener('click', async function(e){
   if(a === 'ig'){ await copy(msg); toast('Message copied. Paste it in the DM.'); window.open('https://instagram.com/' + igHandle(o.instagram || o.web), '_blank'); OT.mark(o, 'Instagram', kind); }
   if(a === 'em'){ location.href = 'mailto:' + encodeURIComponent(o.email) + '?subject=' + encodeURIComponent('Photos and video for ' + (o.company || 'you')) + '&body=' + encodeURIComponent(msg); OT.mark(o, 'Email', kind); }
   if(a === 'copy'){ var t0 = c.querySelector('[data-k=msg]'); await copy(t0 ? t0.value : msg); toast('Copied'); }
+  if(a === 'cpem'){ await copy(o.email); toast('Email address copied: ' + o.email); }
   if(a === 'wa2'){ window.open('https://wa.me/' + intl(o.phone) + '?text=' + encodeURIComponent(c.querySelector('[data-k=msg]').value), '_blank'); }
   if(a === 'em2'){ location.href = 'mailto:' + encodeURIComponent(o.email) + '?subject=' + encodeURIComponent('Photos and video for ' + (o.company || 'you')) + '&body=' + encodeURIComponent(c.querySelector('[data-k=msg]').value); }
   if(a === 'remove'){ if(confirm('Remove ' + (o.company || o.contact || 'this lead') + '? It goes from the Today list and the Leads Tracker. This cannot be undone.')){ store.remove(o.id); toast('Lead removed'); } return; }
