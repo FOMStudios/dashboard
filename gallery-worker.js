@@ -736,6 +736,67 @@ async function handleSales(path, request, env, url) {
   return json({ error: 'not found' }, 404);
 }
 
+/* ============================================================
+   CLIENT BRIEF LINK (no login): the dashboard makes a link per lead, the client taps through
+   a short brief on fomstudios.co.za/brief.html, the answers come back to that lead.
+   _briefs/index.json  { id: {id, biz, ref, name, type, at, opened, done, n} }   (n = times sent back)
+   _briefs/<id>.json   { ...same, answers }
+   ============================================================ */
+const BRIEF_KEYS = ['type','pkg','cover','length','date','time','area','guests','must','use','vertical','vibe','photos','note'];
+function cleanBrief(a) {
+  const o = {};
+  BRIEF_KEYS.forEach(k => {
+    const v = a && a[k];
+    if (Array.isArray(v)) o[k] = v.slice(0, k === 'photos' ? 12 : 20).map(x => clean(x, k === 'photos' ? 300 : 80)).filter(x => k !== 'photos' || /^https:\/\//.test(x));
+    else if (v != null && v !== '') o[k] = clean(v, k === 'note' ? 800 : 120);
+  });
+  return o;
+}
+async function handleBrief(path, request, env, url, ctx) {
+  const idx = await R2J(env, '_briefs/index.json', {});
+  if (path === '/admin/brief-new' || path === '/admin/briefs') {
+    if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+    if (path === '/admin/briefs') {
+      const out = [];
+      for (const id of Object.keys(idx)) { const b = idx[id]; out.push(b.done ? await R2J(env, '_briefs/' + id + '.json', b) : b); }
+      return json({ briefs: out });
+    }
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    const ref = clean(b.ref, 60).replace(/[^A-Za-z0-9_-]/g, '');
+    if (!ref) return json({ error: 'no lead' }, 400);
+    let id = Object.keys(idx).find(k => idx[k].ref === ref);
+    // the dashboard makes the id itself so WhatsApp opens straight from the tap; accept it when it is new
+    const want = String(b.id || '').toLowerCase();
+    if (!id && /^[a-z0-9]{8,16}$/.test(want) && !idx[want]) id = want;
+    if (!id) { id = (Date.now().toString(36).slice(-4) + crypto.randomUUID().replace(/-/g, '').slice(0, 6)); }
+    const rec = Object.assign(idx[id] || { id, at: Date.now(), opened: 0, done: 0, n: 0 }, { biz: b.biz === 'sba' ? 'sba' : 'fom', ref, name: clean(b.name, 60), type: clean(b.type, 40) });
+    idx[id] = rec; await R2P(env, '_briefs/index.json', idx);
+    if (!rec.done) await R2P(env, '_briefs/' + id + '.json', rec);
+    return json({ ok: true, id });
+  }
+  const id = clean(url.searchParams.get('id'), 20).replace(/[^a-z0-9]/g, '');
+  const rec = id && idx[id];
+  if (!rec) return json({ error: 'This link is not valid any more. Please ask for a new one.' }, 404);
+  if (path === '/brief/get') {
+    if (!rec.opened) { rec.opened = Date.now(); idx[id] = rec; await R2P(env, '_briefs/index.json', idx); }
+    const full = rec.done ? await R2J(env, '_briefs/' + id + '.json', rec) : rec;
+    return json({ biz: rec.biz, name: String(rec.name || '').split(' ')[0], type: rec.type, done: !!rec.done, answers: full.answers || null });
+  }
+  if (path === '/brief/send' && request.method === 'POST') {
+    if (rec.n >= 5) return json({ error: 'Thanks, we already have your answers.' }, 429);
+    let b = {}; try { b = JSON.parse(await request.text()); } catch (e) { return json({ error: 'bad body' }, 400); }
+    const answers = cleanBrief(b.answers || {});
+    rec.done = Date.now(); rec.n = (rec.n || 0) + 1; idx[id] = rec;
+    await R2P(env, '_briefs/' + id + '.json', Object.assign({}, rec, { answers }));
+    await R2P(env, '_briefs/index.json', idx);
+    const first = String(rec.name || 'A client').split(' ')[0];
+    const msg = { title: (rec.biz === 'sba' ? 'Shot by A: ' : '') + 'Brief received 📝', body: first + (rec.n > 1 ? ' updated their shoot brief.' : ' sent their shoot brief. Tap to see what they want.'), url: 'leads.html?biz=' + rec.biz + '&open=' + encodeURIComponent(rec.ref), tag: 'fom-brief-' + id };
+    if (ctx && ctx.waitUntil) ctx.waitUntil(pushAll(env, msg)); else await pushAll(env, msg);
+    return json({ ok: true });
+  }
+  return json({ error: 'not found' }, 404);
+}
+
 export default {
   async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -744,9 +805,10 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const g = normPrefix(url.searchParams.get('g'));
-    if (/^_(notify|push|events|sales|channel|remind)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
+    if (/^_(notify|push|events|sales|channel|remind|briefs)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
     if (path.startsWith('/sales/')) return handleSales(path, request, env, url);
     if (path === '/admin/remind' && request.method === 'POST') return handleRemind(request, env);
+    if (path === '/brief/get' || path === '/brief/send' || path === '/admin/brief-new' || path === '/admin/briefs') return handleBrief(path, request, env, url, ctx);
     if (path === '/event') return handleEvent(request, env, ctx);
     if (path === '/t') return handleTrack(request, env, ctx);
     if (path === '/admin/channel-save') return handleChannelSave(request, env);

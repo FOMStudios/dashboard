@@ -638,6 +638,7 @@ function cloudLeadStore(db){
                 leads = FOM_BIZ.mine(snap.docs.map(d=>({id:d.id, ...d.data()})));
                 leads.sort((a,b)=> tsMillis(a.createdAt) - tsMillis(b.createdAt));
                 if(editingCell){ pendingRender=true; } else safeRenderLeads();
+                if(!window.__briefsLoaded && window.FOM_BRIEF){ window.__briefsLoaded = true; setTimeout(()=>FOM_BRIEF.load(), 800); }
             }, err=>{ console.warn('Firestore:',err); toast('Could not load leads - ' + (err.code==='permission-denied' ? 'check your Firestore rules allow the "leads" collection.' : (err.message||'connection error'))); });
         },
         add(o){ FOM_BIZ.tag(o); o.createdAt = firebase.firestore.FieldValue.serverTimestamp(); const ref = col().doc(); ref.set(strip(o)).catch(err=>{ console.error(err); toast('Could not save - ' + (err.code==='permission-denied' ? 'add a Firestore rule for the "leads" collection.' : (err.message||'try again.'))); }); return ref.id; },
@@ -685,7 +686,7 @@ function renderLeads(){
         const due = o.followUp && o.followUp <= new Date().toISOString().slice(0,10) && !['Accepted','Rejected'].includes(o.status);
         tr.innerHTML = `
             <td class="l-id hide-sm">${esc(o.leadId||'')}${web?'<br><span class="web-tag">🌐 Website</span>':''}</td>
-            <td class="l-who"><b>${esc(title)}</b>${sub?`<small>${esc(sub)}</small>`:''}<span class="st-chip ${STATUS_CLASS[o.status]||''}">${esc(o.status||'')}</span></td>
+            <td class="l-who"><b>${esc(title)}</b>${o.briefDone?' <span title="Client brief in: tap to read it">📝</span>':''}${sub?`<small>${esc(sub)}</small>`:''}<span class="st-chip ${STATUS_CLASS[o.status]||''}">${esc(o.status||'')}</span></td>
             <td class="l-st"><select class="status-select ${STATUS_CLASS[o.status]||''}" data-i="${i}" data-f="status" aria-label="Status">${STATUSES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></td>
             <td class="l-fu hide-sm${due?' due':''}">${o.followUp?esc(niceDate(o.followUp)):'<span style="color:var(--ink-soft)">-</span>'}</td>
             <td class="col-deck hide-md">${o.deckSent?`<button class="deck-lnk" type="button" data-deck="${i}" title="Open the exact deck this lead received">${esc(o.deckSent.version||'Deck')}<small>${esc(niceDate(o.deckSent.at))}</small></button>`:'<span style="color:var(--ink-soft);font-size:12px;padding:0 6px">-</span>'}</td>
@@ -811,6 +812,7 @@ function drawLead(fresh){
         ${o.enquiry?`<div class="op-enq">${esc(o.enquiry)}</div>`:''}
         <div class="op-acts">${wa?`<a class="op-btn wa" href="${wa}" target="_blank" rel="noopener">Reply on WhatsApp</a>`:''}${o.email?`<a class="op-btn" href="mailto:${esc(o.email)}">Email</a>`:''}<a class="op-btn pri" href="meetings.html?new=lead:${encodeURIComponent(o.id)}">Start a meeting</a></div>
       </div>`:''}
+      ${window.FOM_BRIEF?FOM_BRIEF.section(o):''}
       <div class="op-sec"><h3>Contact</h3><div class="op-g">
         ${f('company','Company / organisation','',true,'Company or organisation')}
         ${f('contact','Contact name','','','Name')}
@@ -849,6 +851,8 @@ $('opBody').addEventListener('click', e=>{
     const b=e.target.closest('[data-lact]'); if(!b) return; const o=leadById(OPEN_ID); if(!o) return;
     if(b.dataset.lact==='pitch'){ closeLead(); pitchLead(o); }
     else if(b.dataset.lact==='deck') openSentDeck(o);
+    else if(b.dataset.lact==='brief'){ FOM_BRIEF.send(o); setTimeout(()=>drawLead(true), 1500); }
+    else if(b.dataset.lact==='briefcopy'){ const t=FOM_BRIEF.text(o); (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Brief copied'),()=>toast('Could not copy')); }
     else if(b.dataset.lact==='del'){ if(confirm('Delete '+(o.company||o.contact||'this lead')+'? This cannot be undone.')){ store.remove(o.id); closeLead(); } }
 });
 $('opX').onclick = closeLead; $('opScrim').onclick = closeLead;
@@ -1645,7 +1649,8 @@ if(!configured){ notConfigured(); } else { loadFirebase().then(initCloud).catch(
 refreshDeckPreview();
 </script>
 <script src="reel-ideas.js?v=1"></script>
-<script src="outreach-today.js?v=8"></script>
+<script src="brief-link.js?v=1"></script>
+<script src="outreach-today.js?v=9"></script>
 <script src="activity.js?v=2"></script>
 <script src="app.js?v=8"></script>
 </body>

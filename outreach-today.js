@@ -180,13 +180,13 @@ var OT = {
     var picked = all.filter(function(x){ return st.picked.indexOf(x.k) >= 0; });
     var ph = intl(o.phone), em = o.email;
     var msg = OT.ideaMsg(o, picked, st.price);
-    return '<div class="ot-card yes" data-id="' + esc(o.id) + '" data-kind="yes"><div class="ot-row"><div><div class="ot-name">' + esc(o.company || o.contact) + '</div><div class="ot-sub">' + [esc(o.category), esc(o.location), ph ? '+' + ph : '', em ? esc(em) : ''].filter(Boolean).join(' · ') + '</div></div><div><span class="ot-chip new">Said yes 🎉</span></div></div>' +
+    return '<div class="ot-card yes" data-id="' + esc(o.id) + '" data-kind="yes"><div class="ot-row"><div><div class="ot-name">' + esc(o.company || o.contact) + '</div><div class="ot-sub">' + [esc(o.category), esc(o.location), ph ? '+' + ph : '', em ? esc(em) : ''].filter(Boolean).join(' · ') + '</div></div><div><span class="ot-chip new">Said yes 🎉</span>' + (window.FOM_BRIEF ? FOM_BRIEF.badge(o) : '') + '</div></div>' + (o.briefDone && window.FOM_BRIEF ? '<div class="ot-why" style="white-space:pre-wrap;background:#e8f6ee;border-radius:10px;padding:8px 10px">' + esc(FOM_BRIEF.text(o)) + '</div>' : '') +
       '<div class="ot-why">Pick 1 or 2 ideas to send' + (genres.length ? ' (' + genres.map(function(g){ return FOM_IDEAS[g].name; }).join(', ') + ')' : '') + ':</div>' +
       '<div class="ot-ideas">' + all.map(function(x){ var on = st.picked.indexOf(x.k) >= 0; return '<button type="button" class="ot-idea' + (on ? ' on' : '') + '" data-idea="' + esc(x.k) + '"><b>' + (on ? '✓ ' : '') + esc(x.t) + '</b><span>' + esc(String(x.p || '').replace(/\{company\}/g, o.company || 'you')) + '</span><small>' + esc(x.get) + (x.pkg ? ' · ' + esc(x.pkg) : '') + '</small>' + (x.k.indexOf('claude') === 0 ? '<em>Written for them by Claude</em>' : '') + '</button>'; }).join('') + '</div>' +
       '<div class="ot-row" style="margin:10px 0 6px;align-items:center"><span class="ot-sub" style="font-weight:700">Price to quote (optional):</span><input class="ot-price" data-k="price" value="' + esc(st.price) + '" placeholder="e.g. R1500 for both"></div>' +
       '<textarea class="ot-msg" data-k="msg" style="min-height:200px">' + esc(msg) + '</textarea><div class="ot-btns">' +
       (ph ? '<button type="button" class="wa" data-a="ywa">WhatsApp</button>' : '') + (em ? '<button type="button" data-a="yem">Email</button><button type="button" data-a="cpem">Copy email address</button>' : '') +
-      '<button type="button" data-a="copy">Copy message</button><a class="ot-linkbtn" href="calculator.html" target="_blank" rel="noopener">🧮 Formal quote</a>' +
+      '<button type="button" data-a="copy">Copy message</button><button type="button" data-a="brief">📝 ' + (o.briefId ? 'Brief link again' : 'Send brief link') + '</button><a class="ot-linkbtn" href="calculator.html" target="_blank" rel="noopener">🧮 Formal quote</a>' +
       '<button type="button" class="go" data-a="ideasent">Sent ✓</button><button type="button" data-a="won">They booked! 🎉</button><button type="button" data-a="later">Not now, remind me</button></div></div>';
   },
   ideaMsg: function(o, picked, price){
@@ -270,6 +270,7 @@ $('otBody').addEventListener('click', async function(e){
   if(a === 'skip'){ var t = iso(); OT.skip = { }; OT.skip[t] = (LSget('fom.ot.skip' + SUF, {})[t] || []).concat(o.id); LSset('fom.ot.skip' + SUF, OT.skip); OT.render(); }
   if(a === 'replied'){ o.status = 'Responded'; o.followUp = ''; o.ideaSent = ''; store.update(o.id); safeRenderLeads(); toast('Nice! Pick ideas to send at the top of Today.'); setTimeout(function(){ var y = D.querySelector('.ot-card.yes[data-id="' + o.id + '"]'); if(y) y.scrollIntoView({ behavior:'smooth', block:'start' }); }, 300); }
   if(a === 'later'){ window.FOM_FOLLOWUP(o); }
+  if(a === 'brief' && window.FOM_BRIEF){ FOM_BRIEF.send(o); }
   if(a === 'ywa' || a === 'yem'){ var mm = c.querySelector('[data-k=msg]').value;
     if(a === 'ywa') window.open('https://wa.me/' + intl(o.phone) + '?text=' + encodeURIComponent(mm), '_blank');
     else location.href = 'mailto:' + encodeURIComponent(o.email) + '?subject=' + encodeURIComponent('Ideas and quote for ' + (o.company || 'you')) + '&body=' + encodeURIComponent(mm); }
