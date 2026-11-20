@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f1f0ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FOM">
+<link rel="manifest" href="manifest.webmanifest">
+<title>FOM Studios | Features and to-do</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/fom-icon-180.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1000px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* pill header + hamburger */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:1320px;margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:22px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.nav-cta{border:1px solid var(--ink);border-radius:var(--radius-pill);padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;background:none;}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:12px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--accent-hover);}
+.btn.block{width:100%;padding:13px;}
+
+/* page */
+.page{padding-top:108px;}
+.page-head{margin-bottom:24px;}
+.page-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.page-head p{color:var(--ink-soft);font-size:14px;margin-top:4px;max-width:60ch;}
+
+/* filter chips */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.filter-chip{
+    border:1px solid var(--line);background:var(--bg-pill);
+    border-radius:var(--radius-pill);padding:8px 16px;
+    font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.2s;
+}
+.filter-chip:hover{border-color:var(--ink);color:var(--ink);}
+.filter-chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg-pill);}
+
+/* empty state */
+.empty-state{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:48px 28px;text-align:center;}
+.empty-state h3{font-size:19px;font-weight:800;margin-bottom:6px;}
+.empty-state p{color:var(--ink-soft);max-width:40ch;margin:0 auto;font-size:14px;}
+
+/* ============================================================
+   PROJECT CARD - one per order, expandable checklist inside
+   ============================================================ */
+.project-list{display:flex;flex-direction:column;gap:16px;}
+
+.project-card{
+    background:var(--bg-pill);border:1px solid var(--line);
+    border-radius:var(--radius-card);overflow:hidden;
+}
+.project-card.complete{border-color:#b7d8c0;}
+
+.project-header{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:14px;padding:18px 22px;cursor:pointer;user-select:none;flex-wrap:wrap;
+}
+.project-header:hover{background:#f5f4f0;}
+.ph-left{min-width:0;}
+.ph-id{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;}
+.ph-title{font-size:17px;font-weight:800;letter-spacing:-.01em;margin-top:2px;}
+.ph-sub{font-size:13px;color:var(--ink-soft);margin-top:1px;}
+.ph-right{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+
+/* progress ring-style pill */
+.progress-pill{
+    display:flex;align-items:center;gap:8px;
+    background:var(--bg);border:1px solid var(--line);
+    border-radius:var(--radius-pill);padding:6px 14px;
+}
+.progress-pill .p-count{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;}
+.progress-track{width:70px;height:6px;background:var(--line);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .3s ease;}
+.project-card.complete .progress-fill{background:#27ae60;}
+.project-card.complete .progress-pill{border-color:#b7d8c0;background:#eef7f0;}
+
+.chevron{color:var(--ink-soft);font-size:13px;transition:transform .3s;}
+.project-card.open .chevron{transform:rotate(180deg);}
+
+/* checklist body */
+.project-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease;}
+.project-card.open .project-body{grid-template-rows:1fr;}
+.project-body-inner{overflow:hidden;min-height:0;}
+.checklist{padding:4px 22px 22px;border-top:1px solid var(--line);}
+
+.check-step{
+    display:flex;align-items:flex-start;gap:14px;
+    padding:13px 4px;border-bottom:1px solid #eceae4;
+    cursor:pointer;transition:background .15s;
+}
+.check-step:last-child{border-bottom:none;}
+.check-step:hover{background:#f5f4f0;}
+
+.check-box{
+    width:22px;height:22px;flex-shrink:0;margin-top:1px;
+    border:2px solid var(--line);border-radius:7px;
+    display:flex;align-items:center;justify-content:center;
+    transition:.2s;background:#fff;
+}
+.check-step.done .check-box{background:var(--accent);border-color:var(--accent);}
+.check-box svg{width:13px;height:13px;stroke:#fff;stroke-width:3;fill:none;opacity:0;transition:opacity .15s;}
+.check-step.done .check-box svg{opacity:1;}
+
+.check-text{min-width:0;}
+.check-title{font-size:14px;font-weight:600;color:var(--ink);}
+.check-step.done .check-title{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:#b9b8b5;}
+.check-note{font-size:12.5px;color:var(--ink-soft);margin-top:2px;line-height:1.55;}
+.check-step.done .check-note{opacity:.6;}
+.check-who{
+    display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;
+    text-transform:uppercase;border-radius:var(--radius-pill);
+    padding:2px 9px;margin-left:8px;vertical-align:1px;
+}
+.check-who.me{background:#e7f0ff;color:var(--accent);}
+.check-who.client{background:#efece5;color:var(--ink-soft);}
+.check-who.auto-badge{background:#e3f5ea;color:#1f8a4c;}
+.check-step.auto{cursor:default;}
+.check-step.auto .check-box{cursor:default;}
+
+/* quick links row inside checklist */
+.quick-links{display:flex;gap:8px;flex-wrap:wrap;padding:16px 4px 2px;}
+.quick-link{
+    display:inline-flex;align-items:center;gap:6px;
+    border:1px solid var(--line);border-radius:var(--radius-pill);
+    padding:7px 14px;font-size:12px;font-weight:600;color:var(--ink);
+    background:var(--bg-pill);transition:.2s;
+}
+.quick-link:hover{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-dark);color:#fff;padding:12px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000;}
+.toast.show{opacity:1;}
+
+@media(max-width:860px){nav.pill .nav-links{display:none;}.nav-shell{padding:14px var(--gutter) 0;}}
+@media(max-width:560px){
+    .project-header{padding:15px 16px;}
+    .checklist{padding:2px 14px 18px;}
+    .ph-right{width:100%;justify-content:space-between;}
+}
+
+/* ---- reviews ---- */
+.rv-summary{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:22px;align-items:center;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:22px 24px;margin-bottom:18px;}
+.rv-avg{text-align:center;}
+.rv-avg .num{font-size:52px;font-weight:800;letter-spacing:-.02em;line-height:1;}
+.rv-avg .st{color:#e0a93b;font-size:20px;letter-spacing:2px;margin-top:6px;}
+.rv-avg .ct{color:var(--ink-soft);font-size:13px;margin-top:4px;}
+.rv-bars{display:flex;flex-direction:column;gap:7px;min-width:0;}
+.rv-bar{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-soft);}
+.rv-bar b{width:34px;color:var(--ink);font-weight:700;}
+.rv-bar .tr{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden;min-width:0;}
+.rv-bar .tr i{display:block;height:100%;background:#e0a93b;border-radius:99px;}
+.rv-bar span{width:24px;text-align:right;}
+.rv-list{display:flex;flex-direction:column;gap:12px;}
+.rv-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:18px 20px;}
+.rv-card.feat{border-color:#e0a93b;box-shadow:0 0 0 1px #e0a93b inset;}
+.rv-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.rv-stars{color:#e0a93b;font-size:17px;letter-spacing:2px;white-space:nowrap;}
+.rv-stars .off{color:var(--line);}
+.rv-who{font-weight:800;font-size:15px;margin-top:4px;}
+.rv-meta{color:var(--ink-soft);font-size:12.5px;margin-top:2px;}
+.rv-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.rv-tag{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 10px;background:#efece5;color:var(--ink-soft);}
+.rv-tag.ok{background:#e3f5ea;color:#1f8a4c;} .rv-tag.no{background:#f6e7e5;color:#b0392b;} .rv-tag.feat{background:#fbf0d6;color:#8a6410;}
+.rv-msg{margin-top:12px;font-size:15px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;}
+.rv-msg.empty{color:var(--ink-soft);font-style:italic;}
+.rv-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.rv-btn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;}
+.rv-btn:hover{border-color:var(--ink);} .rv-btn.danger{color:#b0392b;} .rv-btn[disabled]{opacity:.4;pointer-events:none;}
+.rv-empty{text-align:center;color:var(--ink-soft);padding:46px 20px;background:var(--bg-pill);border:1px dashed var(--line);border-radius:var(--radius-card);}
+@media(max-width:640px){.rv-summary{grid-template-columns:minmax(0,1fr);}}
+
+/* ---- website editor ---- */
+.ws-bar{position:sticky;top:78px;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:12px 16px;margin-bottom:16px;}
+.ws-state{font-size:13px;color:var(--ink-soft);font-weight:600;}
+.ws-state.dirty{color:#b0640b;} .ws-state.ok{color:#1f8a4c;}
+.ws-bar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.ws-pub{border:0;background:var(--accent);color:#fff;border-radius:99px;padding:10px 22px;font-size:13.5px;font-weight:800;cursor:pointer;}
+.ws-pub[disabled]{opacity:.45;pointer-events:none;}
+.ws-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 22px;margin-bottom:14px;}
+.ws-card h2{font-size:17px;font-weight:800;}
+.ws-help{color:var(--ink-soft);font-size:13px;margin:4px 0 14px;}
+.ws-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;}
+.ws-wide{grid-column:1/-1;}
+.ws-f{min-width:0;}
+.ws-f label{display:block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+.ws-f input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);}
+.ws-f input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.ws-f input.bad{border-color:#c0392b;}
+.ws-f textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);min-height:96px;resize:vertical;line-height:1.5;}
+.ws-f textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.sv-row{border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;}
+.sv-row .ws-toggle{margin-bottom:10px;}
+.sv-row .ws-grid{gap:10px;}
+.ws-toggle{display:flex;align-items:center;gap:12px;margin-bottom:14px;cursor:pointer;font-size:14px;}
+.ws-toggle input{position:absolute;opacity:0;pointer-events:none;}
+.ws-toggle .sw{width:46px;height:26px;border-radius:99px;background:var(--line);position:relative;transition:.2s;flex:none;}
+.ws-toggle .sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.ws-toggle input:checked + .sw{background:#1f8a4c;}
+.ws-toggle input:checked + .sw::after{transform:translateX(20px);}
+.ws-prev{margin-top:14px;border-radius:12px;overflow:hidden;font-size:13.5px;font-weight:600;text-align:center;}
+.ws-prev .strip{background:#02367B;color:#fff;padding:10px 14px;}
+.ws-prev .strip b{text-decoration:underline;text-underline-offset:3px;}
+.ws-prev .off{padding:10px;color:var(--ink-soft);border:1px dashed var(--line);border-radius:12px;font-weight:500;}
+.ws-note{color:var(--ink-soft);font-size:12.5px;text-align:center;margin:6px 0 0;}
+
+.bd-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr) 38px;gap:8px;margin-bottom:8px;align-items:center;}
+.bd-row input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--ink);}
+.bd-row input.bad{border-color:#c0392b;}
+.bd-row .bd-x{border:1px solid var(--line);background:var(--bg);border-radius:10px;height:42px;cursor:pointer;color:#c0392b;font-weight:700;font-size:16px;}
+.bd-row.past{opacity:.5;}
+.bd-cap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr) 38px;gap:8px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+@media(max-width:640px){.bd-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}.bd-row input[data-bd=label]{grid-column:1/-1;}.bd-row .bd-x{grid-column:1/-1;height:34px;}.bd-cap{display:none;}}
+@media(max-width:640px){.ws-grid{grid-template-columns:minmax(0,1fr);}.ws-bar{top:66px;}}
+.bk-rules{background:#fbf0d6;border:1px solid #e0a93b;color:#8a6410;border-radius:var(--radius-card);padding:12px 16px;font-size:14px;margin-bottom:14px;}
+.ws-f select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);}
+.bk-checks{display:flex;gap:8px;flex-wrap:wrap;}
+.bk-ck input{position:absolute;opacity:0;pointer-events:none;} .bk-ck span{display:inline-block;border:1px solid var(--line);background:var(--bg);border-radius:99px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer;}
+.bk-len{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:99px;padding:6px 6px 6px 16px;font-weight:700;font-size:14px;}
+.bk-len button{border:0;background:rgba(255,255,255,.22);color:#fff;width:30px;height:30px;border-radius:50%;font-size:14px;font-weight:800;cursor:pointer;display:grid;place-items:center;}
+.bk-len button:focus-visible{outline:2px solid #fff;outline-offset:1px;}
+.bk-addlen{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.bk-addlen input{width:72px;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:inherit;}
+.bk-addlen span{font-weight:700;opacity:.7;margin-right:4px;}
+.bk-ck input:checked+span{background:var(--accent);border-color:var(--accent);color:#fff;} .bk-ck input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px;}
+.bd-day{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);}
+.bd-day:last-child{border-bottom:0;} .bd-day input[type=time]{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--ink);}
+.bd-day.off input[type=time],.bd-day.off .bd-to{opacity:.35;pointer-events:none;} .bd-to{font-size:13px;color:var(--ink-soft);}
+.rq-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;} .rq-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.rq-chips .rv-btn.on{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+.rq-list{display:flex;flex-direction:column;gap:10px;}
+.rq{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--bg);} .rq.past{opacity:.6;}
+.rq-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;} .rq-when{font-weight:800;font-size:16px;}
+.rq-who{font-size:14.5px;margin-top:2px;} .rq-who span{color:var(--ink-soft);font-size:12.5px;margin-left:4px;}
+.rq-st{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:4px 10px;white-space:nowrap;}
+.rq-meta{font-size:13px;color:var(--ink-soft);margin-top:8px;overflow-wrap:anywhere;} .rq-meta a{color:var(--accent);font-weight:600;}
+.rq-msg{margin-top:8px;font-size:14px;white-space:pre-wrap;background:var(--bg-pill);border-radius:10px;padding:10px 12px;overflow-wrap:anywhere;}
+.rq .ws-pub{padding:9px 18px;font-size:12.5px;}
+@media(max-width:640px){.bd-day{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}.bd-day .ws-toggle{grid-column:1/-1;}.bd-to{display:none;}}
+/* ---- features page ---- */
+.ft-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px;}
+.ft-tabs button{border:1.5px solid var(--line);background:var(--bg-pill);border-radius:99px;padding:9px 16px;font-weight:800;font-size:14px;cursor:pointer;color:var(--ink);display:flex;gap:8px;align-items:center;}
+.ft-tabs button img{width:22px;height:22px;border-radius:50%;object-fit:cover;}
+.ft-tabs button.on{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
+.ft-search{width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:99px;background:var(--bg-pill);font:inherit;font-size:15px;color:var(--ink);margin-bottom:14px;}
+.ft-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;}
+.ft-sum div{background:var(--bg-pill);border:1px solid var(--line);border-radius:16px;padding:14px;}
+.ft-sum b{display:block;font-size:26px;line-height:1.1;} .ft-sum small{color:var(--ink-soft);font-size:12.5px;font-weight:600;}
+.ft-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:20px;padding:6px 18px 10px;margin-bottom:14px;}
+.ft-card>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 0;font-weight:800;font-size:17px;}
+.ft-card>summary::-webkit-details-marker{display:none;}
+.ft-card>summary .n{margin-left:auto;font-size:12px;font-weight:800;background:var(--bg);border-radius:99px;padding:3px 10px;color:var(--ink-soft);}
+.ft-item{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line);align-items:flex-start;}
+.ft-item .ic{font-size:20px;width:26px;flex:none;text-align:center;}
+.ft-item .tx{flex:1;min-width:0;} .ft-item b{font-size:15px;} .ft-item p{font-size:13.5px;color:var(--ink-soft);margin-top:2px;}
+.ft-item .why{font-size:13px;margin-top:6px;background:var(--bg);border-radius:10px;padding:8px 10px;color:var(--ink);}
+.ft-item a.go{font-size:12.5px;font-weight:800;color:var(--accent);white-space:nowrap;margin-left:8px;}
+.ft-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:2px;}
+.ft-tag.both{background:#e8f6ee;color:#1f8a4c;} .ft-tag.only{background:#e7f1fb;color:#02367B;} .ft-tag.part{background:#fff4e5;color:#7a4b00;}
+.ft-h{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:800;margin:26px 2px 10px;}
+.ft-empty{color:var(--ink-soft);font-size:14px;padding:14px 0;}
+</style>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js?v=2"></script>
+<script src="session.js"></script>
+<link rel="stylesheet" href="app.css?v=3">
+</head>
+<body>
+<body>
+
+<div class="fom-splash" id="authCheck"><div class="in"><b>FOM STUDIOS</b><p>Checking session…</p></div></div>
+<script>setTimeout(function(){var a=document.getElementById("authCheck");if(a)a.style.display="none";},8000);</script>
+
+
+<!-- LOGIN GATE -->
+<div class="login-gate" id="loginGate">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="calculator.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+        <li><a href="reviews.html">Reviews</a></li>
+        <li><a href="website.html">Website</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+                <li><a href="reviews.html">Reviews</a></li>
+                <li><a href="website.html">Website</a></li>
+            </ul>
+            <button class="nav-cta" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </nav>
+</div>
+
+<div class="page wrap">
+    <div class="page-head">
+        <span class="eyebrow">Settings</span>
+        <h1>Features and to-do</h1>
+        <p>Everything each business dashboard can do, and what is still outstanding: what is not built yet for that business (and why), setup only you can do, and ideas we parked for later.</p>
+    </div>
+    <div class="ft-tabs" id="ftTabs"></div>
+    <input class="ft-search" id="ftQ" type="search" placeholder="Search features and to-dos" autocomplete="off">
+    <div id="ftBody"></div>
+    <p style="color:var(--ink-soft);font-size:12.5px;margin-top:20px">Last updated 20 Nov 2026. Claude updates this list whenever a feature is built or a to-do is done.</p>
+</div>
+<div class="toast" id="toast"></div>
+<script src="firebase-config.js"></script>
+<script>
+/* ============================================================
+   Features and to-do (Settings): what each business dashboard can do, and what is outstanding.
+   Static list kept up to date by Claude. b: 'both' | 'fom' (FOM Studios only) | 'sba' (Shot by A only).
+   A FOM-only feature with "why" shows on Shot by A as "Not built for Shot by A yet" with that reason.
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const AREAS = [
+  ['clients','👥','Clients, contracts and money'],
+  ['gallery','🖼','Galleries and delivery'],
+  ['sales','🛒','Selling photos and prints'],
+  ['leads','📣','Leads and finding clients'],
+  ['marketing','📱','Marketing and social'],
+  ['website','🌐','Website'],
+  ['app','⚙️','The dashboard itself']
+];
+const F = [
+  // clients
+  {a:'clients',i:'📋',t:'Order Database',b:'both',p:'database.html',d:'Every booking with money owing, contract, gallery and meeting at a glance. Filters (Unpaid, Unsigned, Shoots this week, Galleries expiring), sorting, a details panel per client and a Test client to try everything safely.'},
+  {a:'clients',i:'🔑',t:'Client portal logins',b:'both',p:'database.html',d:'Create login with a password you choose (no emails), send it on WhatsApp, ✓ Created with a 👁 to see the saved password, Change password, and a check whether the email already has a login.',part:'Change password and the login check need the FIREBASE_SA key (see Setup).'},
+  {a:'clients',i:'✍️',t:'Contracts and e-signing',b:'both',p:'contract.html',d:'Edit clauses, key terms and bank details with version history. Clients sign from a link with no login; the row turns Signed and you get a notification.'},
+  {a:'clients',i:'🧮',t:'Price Calculator and invoices',b:'both',p:'calculator.html',d:'Packages, travel, discounts, promo codes (codes follow their campaign dates), PDF invoices with deposit and balance.'},
+  {a:'clients',i:'💳',t:'Card payments (Yoco)',b:'fom',p:'calculator.html',d:'Invoices carry Yoco card payment links, and card payments show in your client activity.',why:'Shot by A invoices are EFT only for now. Card payments need her own Yoco account (so money lands in her bank) and her own payment Worker. Ask Claude once she has a Yoco account.'},
+  {a:'clients',i:'✅',t:'Project Workflow',b:'both',p:'workflow.html',d:'Step by step checklist per project. Steps tick themselves when the client signs, signs in, downloads or pays by card.'},
+  {a:'clients',i:'✉️',t:'Email templates',b:'both',p:'email.html',d:'Booking Confirmation, Files Ready and Gallery Expiring, branded per business, pointing clients to the password you sent on WhatsApp.'},
+  {a:'clients',i:'🤝',t:'Client Meetings',b:'both',p:'meetings.html',d:'Mood board library, live meetings with notes, questions, quote, shot list and follow-ups, client view, mood board links clients heart, and Make invoice.'},
+  {a:'clients',i:'📅',t:'Bookings (Book a meeting)',b:'both',p:'bookings.html',d:'Meeting requests from each website\'s Book a meeting page, your available hours, confirm into Client Meetings.'},
+  {a:'clients',i:'⭐',t:'Client Reviews',b:'both',p:'reviews.html',d:'Reviews from your own form, feature up to 3 on the website.'},
+  // gallery
+  {a:'gallery',i:'🖼',t:'Client gallery',b:'both',p:'database.html',d:'Branded gallery in the client portal: header photo, favourites, downloads (singles or a zip), video stills, an expiry banner and automatic clean-up after expiry.'},
+  {a:'gallery',i:'👥',t:'Group links',b:'both',p:'database.html',d:'One temporary link for everyone at an event: pick the photos, end date, free downloads or view only, optional 4-digit PIN, QR code, views and downloads count, and a Book your own shoot strip for guests.',part:'Watermarked, buy to download is FOM only (it uses Photo Sales).'},
+  {a:'gallery',i:'✔️',t:'Organiser chooses the group photos',b:'both',p:'database.html',d:'Switch Group photos to They choose and the client ticks, in her gallery, which photos the group link shows. Live on Done, with a notification.'},
+  {a:'gallery',i:'📝',t:'Client brief link',b:'both',p:'leads.html',d:'A one-minute tap-through brief you send on WhatsApp (shoot, package, when and where, notes). Answers land on the lead. Pages and options are editable on the Website page.'},
+  // sales
+  {a:'sales',i:'🛒',t:'Photo Sales (event photos)',b:'fom',p:'sales.html',d:'Sell event photos per photo or as a bundle, number search, watermarked previews, instant download after Yoco payment, orders list.',why:'Built and tested for FOM first. For Shot by A it needs her own watermark, prices, payment account and a page under /shotbya. Ask Claude to switch it on for her.'},
+  {a:'sales',i:'🖼',t:'Prints shop, frames and editions',b:'fom',p:'sales.html',d:'Prints, frames and canvas from your own lab with all delivery options, limited editions, a wall mock-up to scale and prints from client galleries.',why:'Part of Photo Sales, so it follows that (see above).'},
+  {a:'sales',i:'🎁',t:'Gift vouchers',b:'fom',p:'sales.html',d:'Vouchers people buy online, with codes, balances and Use voucher on the dashboard.',why:'Part of Photo Sales, so it follows that.'},
+  // leads
+  {a:'leads',i:'📣',t:'Leads tracker and Today tab',b:'both',p:'leads.html',d:'Up to 20 leads a day to message in your tone, copy email, said yes cards with reel ideas and a live quote message, Follow Up with a date and an 08:00 reminder, ideas library, foldable sections and weeks.'},
+  {a:'leads',i:'🤖',t:'Weekly new leads from Claude',b:'fom',p:'leads.html',d:'Every Monday Claude finds about 30 Gauteng businesses with openers and 2 tailored ideas each.',why:'The scheduled task only searches for FOM Studios clients. Ask Claude to add a Shot by A version (events, birthdays, wellness, families).'},
+  {a:'leads',i:'📊',t:'Pitch deck and email generator',b:'both',p:'leads.html',d:'A pitch deck per lead with your photos, versions, and email templates by category.'},
+  {a:'leads',i:'🌐',t:'Website enquiries into Leads',b:'fom',p:'leads.html',d:'The Book a shoot form on the website creates a lead marked New enquiry, with a notification and email.',why:'Her website uses the simpler Book a meeting page, not the step-by-step Book a shoot form. Ask Claude to add the form to her site.'},
+  // marketing
+  {a:'marketing',i:'💬',t:'WhatsApp Group messages',b:'fom',p:'channel.html',d:'Daily drafted group messages you approve and copy, campaigns (giveaways, promos, events) with Move dates that moves every date and linked code.',why:'Shot by A does not have a WhatsApp group yet. Once she has one, add the link on the Website page and ask Claude to point the messages task at her.'},
+  {a:'marketing',i:'🎬',t:'Content Planner',b:'both',p:'content.html',d:'Idea Board, Posting Tracker and Advisor per business.'},
+  {a:'marketing',i:'📸',t:'Instagram Studio and weekly pack',b:'fom',p:'content.html',d:'A weekly pack of 5 reel and carousel ideas with hooks, beats and captions, and a scorecard of what worked.',why:'The Monday Instagram pack and content trends tasks write for FOM Studios only. Ask Claude to add Shot by A versions in her voice.'},
+  {a:'marketing',i:'📈',t:'Website traffic',b:'both',p:'traffic.html',d:'Visits, clicks and enquiries on both websites, bot filter, South Africa only switch and a map.'},
+  // website
+  {a:'website',i:'🌐',t:'Website editor',b:'both',p:'website.html',d:'Contact details, banner, areas, hours, blocked dates, gallery header, Our studios section and the Client brief link settings. Shot by A also has page text and service cards.'},
+  {a:'website',i:'🗒',t:'Book a shoot form',b:'fom',p:'website.html',d:'The step-by-step form behind every Book a shoot button: shoot cards, packages and prices.',why:'Only on fomstudios.co.za for now (see Website enquiries into Leads).'},
+  {a:'website',i:'📸',t:'Photos page',b:'both',p:'photos.html',d:'Website and pitch deck photos with captions, categories and homepage picks.'},
+  {a:'website',i:'🩺',t:'Advisor',b:'both',p:'advisor.html',d:'Health checks and suggestions for the business you are in.',part:'Website checks run for FOM only.'},
+  // app
+  {a:'app',i:'🔔',t:'Phone notifications',b:'both',p:'dashboard.html',d:'Contract signed, portal sign-in, gallery opened, downloads, favourites, reviews, enquiries, briefs, group links and more.'},
+  {a:'app',i:'🔍',t:'Search and menu editor',b:'both',p:'dashboard.html',d:'Find any client, lead, meeting or page (Ctrl or Cmd K), and hide or reorder the menu.'},
+  {a:'app',i:'🏠',t:'Dashboard This week',b:'both',p:'dashboard.html',d:'Figures per business or both, client activity, meetings, next steps and what is on this week (campaigns and dated posts).'}
+];
+/* outstanding: k = 'setup' | 'idea' | 'built' (not built yet, not FOM-only based); b = which business it is for */
+const TODO = [
+  {k:'setup',b:'both',t:'Add the FIREBASE_SA key to the gallery Worker',d:'Lets you change client passwords and spot existing logins from the Database. Steps are in the project doc portal-logins (Firebase, Project settings, Service accounts, Generate key, then Cloudflare, fom-gallery, Variables and Secrets).'},
+  {k:'setup',b:'fom',t:'Switch Photo Sales live on the website',d:'Photo Sales page, Live on my website. Needed before watermarked group links and event sales work for the public.',p:'sales.html'},
+  {k:'setup',b:'fom',t:'Press Save once on the WhatsApp Group page',d:'Claude moved the giveaway to 21 Nov to 5 Dec and linked the promo codes. Open the page and press Save so it sticks.',p:'channel.html'},
+  {k:'setup',b:'fom',t:'Check the Canva giveaway poster dates',d:'It may still say 29 Nov. The giveaway now closes Sat 5 Dec at 18:00.'},
+  {k:'setup',b:'both',t:'Try the new features on a test client',d:'Create login, the client brief link, a group link (with a PIN) and They choose group photos, before a real client sees them.',p:'database.html'},
+  {k:'setup',b:'both',t:'Renew the GitHub link (GH_TOKEN) before it expires',d:'Fine-grained token on FOMStudios/dashboard, saved on the fom-gallery Worker. If the WhatsApp Group page says "Saved here, not sent to Claude yet", it has expired.'},
+  {k:'setup',b:'sba',t:'Her own domain',d:'Her site lives at fomstudios.co.za/shotbya for now. When she has a domain, see the project doc shotbya-brand.'},
+  {k:'idea',b:'both',t:'Get my photos sign-in on group links',d:'Guests type name and email before downloading and land in Leads with the event name.'},
+  {k:'idea',b:'both',t:'Find my photos with a selfie',d:'Face matching so guests at big events see only their photos. Big build, parked.'},
+  {k:'idea',b:'both',t:'Ask her to choose button',d:'A WhatsApp message next to Group photos asking the organiser to tick the photos for the group.'},
+  {k:'idea',b:'both',t:'Turn brief into quote',d:'Open the calculator with the package, date and client filled in from their brief.'},
+  {k:'idea',b:'both',t:'Preview the brief before publishing',d:'Tap through the brief link with unpublished Website page changes.'},
+  {k:'idea',b:'both',t:'Show last login',d:'"Last logged in 3 days ago" under each client (needs the FIREBASE_SA key).'},
+  {k:'idea',b:'both',t:'Only show leads that need me',d:'A switch on the Leads tracker that hides Accepted, Rejected and leads waiting until their follow-up date.'},
+  {k:'idea',b:'both',t:'Your reels on Said yes cards',d:'Show 2 or 3 of your own reels that match the lead\'s kind of business next to the ideas and quote.'},
+  {k:'idea',b:'fom',t:'Duplicate a campaign',d:'Copy a giveaway with its rules and dated messages into a new one, then Move dates it.'},
+  {k:'idea',b:'both',t:'AI video editor',d:'Planned in its own Claude project (FOM Video).'}
+];
+let BIZ = (window.FOM_BIZ && FOM_BIZ.id) || 'fom', Q = '';
+const NAME = { fom:'FOM Studios', sba:'Shot by A' };
+const hit = x => !Q || (x.t + ' ' + x.d + ' ' + (x.why || '') + ' ' + (x.part || '')).toLowerCase().includes(Q);
+function tag(x){
+  if(x.b === 'both') return x.part ? '<span class="ft-tag part">Both, with limits</span>' : '<span class="ft-tag both">Both</span>';
+  return '<span class="ft-tag only">' + NAME[x.b] + ' only</span>';
+}
+function item(x, extra){
+  return '<div class="ft-item"><span class="ic">' + (x.i || '•') + '</span><div class="tx"><b>' + esc(x.t) + '</b>' + (extra || '') + (x.p ? '<a class="go" href="' + x.p + '">Open ›</a>' : '') + '<p>' + esc(x.d) + '</p>' +
+    (x.part ? '<div class="why">' + esc(x.part) + '</div>' : '') + (x.whyShow ? '<div class="why"><b>Why not yet:</b> ' + esc(x.why) + '</div>' : '') + '</div></div>';
+}
+function card(title, icon, rows, open){
+  return rows.length ? '<details class="ft-card"' + (open ? ' open' : '') + '><summary>' + icon + ' ' + esc(title) + '<span class="n">' + rows.length + '</span></summary>' + rows.join('') + '</details>' : '';
+}
+function draw(){
+  $('ftTabs').innerHTML = ['fom','sba'].map(k => '<button type="button" data-b="' + k + '" class="' + (BIZ === k ? 'on' : '') + '"><img src="' + (k === 'sba' ? 'assets/shotbya-icon.png' : 'assets/mascot.png') + '" alt="">' + NAME[k] + '</button>').join('');
+  const can = F.filter(x => (x.b === 'both' || x.b === BIZ) && hit(x));
+  const notBuilt = BIZ === 'sba' ? F.filter(x => x.b === 'fom' && x.why && hit(x)).map(x => Object.assign({}, x, { whyShow:true })) : [];
+  const setup = TODO.filter(x => x.k === 'setup' && (x.b === 'both' || x.b === BIZ) && hit(x));
+  const ideas = TODO.filter(x => x.k === 'idea' && (x.b === 'both' || x.b === BIZ) && hit(x));
+  const allCan = F.filter(x => x.b === 'both' || x.b === BIZ).length;
+  let h = '<div class="ft-sum"><div><b>' + allCan + '</b><small>features in ' + NAME[BIZ] + '</small></div>' +
+    (BIZ === 'sba' ? '<div><b>' + F.filter(x => x.b === 'fom' && x.why).length + '</b><small>FOM features not built for her yet</small></div>' : '<div><b>' + F.filter(x => x.b === 'fom').length + '</b><small>FOM only (not on Shot by A yet)</small></div>') +
+    '<div><b>' + TODO.filter(x => x.k === 'setup' && (x.b === 'both' || x.b === BIZ)).length + '</b><small>setup for you to do</small></div><div><b>' + TODO.filter(x => x.k === 'idea' && (x.b === 'both' || x.b === BIZ)).length + '</b><small>ideas parked</small></div></div>';
+  h += '<div class="ft-h">What it can do</div>';
+  h += AREAS.map(a => card(a[2], a[1], can.filter(x => x.a === a[0]).map(x => item(x, tag(x))), !!Q)).join('') || '<p class="ft-empty">Nothing matches.</p>';
+  h += '<div class="ft-h">Outstanding</div>';
+  h += card('Not built for Shot by A yet', '⏳', notBuilt.map(x => item(x)), true);
+  h += card('Setup only you can do', '🔧', setup.map(x => item(Object.assign({ i:'🔧' }, x), x.b !== 'both' ? tag(x) : '')), true);
+  h += card('Ideas parked for later', '💡', ideas.map(x => item(Object.assign({ i:'💡' }, x))), !!Q);
+  if(!notBuilt.length && !setup.length && !ideas.length) h += '<p class="ft-empty">Nothing outstanding' + (Q ? ' matches your search' : '') + '.</p>';
+  $('ftBody').innerHTML = h;
+}
+$('ftTabs').onclick = e => { const b = e.target.closest('[data-b]'); if(b){ BIZ = b.dataset.b; draw(); } };
+$('ftQ').oninput = e => { Q = e.target.value.trim().toLowerCase(); draw(); };
+
+const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+(async function init(){
+  if(!configured){ $('loginGate').style.display='none'; draw(); return; }
+  try{
+    const b='https://www.gstatic.com/firebasejs/10.12.0/';
+    await loadScript(b+'firebase-app-compat.js');
+    await Promise.all([loadScript(b+'firebase-auth-compat.js'), loadScript(b+'firebase-firestore-compat.js')]);
+    try{ firebase.initializeApp(firebaseConfig); }catch(e){}
+    const auth=firebase.auth(), db=firebase.firestore();
+    try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+    if(window.FOM_SESSION)FOM_SESSION.attach(auth);
+    const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value).catch(()=>{ $('lgErr').textContent='Incorrect email or password.'; }); };
+    $('lgBtn').onclick=login; $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+    $('logoutBtn').onclick=()=>auth.signOut();
+    auth.onAuthStateChanged(u=>{
+      $('logoutBtn').style.display=u?'inline-block':'none';
+      if(!u){ $('loginGate').style.display='flex'; return; }
+      db.collection('admins').doc(u.uid).get().then(ad=>{
+        if(!ad.exists){ $('lgErr').textContent='This account does not have admin access.'; auth.signOut(); return; }
+        $('loginGate').style.display='none'; draw();
+      }).catch(()=>{ $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
+    });
+  }catch(e){ console.error('Features init failed:', e.message||e); }
+})();
+</script>
+<script src="activity.js?v=2"></script>
+<script src="app.js?v=9"></script>
+</body>
+</html>

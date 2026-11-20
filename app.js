@@ -56,6 +56,7 @@ var PAGES = [
   {n:'Website',         h:'website.html',   e:'🌐'},   // edits fomstudios.co.za, or fomstudios.co.za/shotbya in Shot by A mode
   {n:'Photos',          h:'photos.html',    e:'📸'},
   {n:'Advisor',         h:'advisor.html',   e:'🩺'},
+  {n:'Features & to-do',h:'features.html',  e:'🧭'},   // what each business dashboard can do and what is outstanding (Settings)
   {n:'Client Portal (view as client)', h:BZ.b.portal, e:'👤', ext:true}
 ];
 var here = (location.pathname.split('/').pop() || 'dashboard.html').toLowerCase();
@@ -225,6 +226,8 @@ function openSettings(){
       '<div><b>'+BZ.b.name+'</b><small>'+(email ? email : 'Admin')+'</small></div></div>'+
     '<div class="fom-set" data-norebrand style="flex-direction:column;align-items:stretch"><span><label>Business</label><small>Switches the theme, data and documents. Both share one login.</small></span>'+
       '<div class="biz-seg" id="fomBiz">'+bb('fom','FOM Studios','assets/mascot.png')+bb('sba','Shot by A','assets/shotbya-icon.png')+'</div></div>'+
+    '<div class="fom-set"><span><label>Features and to-do</label><small>What '+BZ.b.name+' can do, and what is still outstanding</small></span>'+
+      '<a class="fom-mini" href="features.html" style="text-decoration:none">Open</a></div>'+
     '<div class="fom-set"><span><label>Notifications</label><small id="fomPushSt">Client activity on this phone</small></span>'+
       '<button class="fom-mini" id="fomPush">Set up</button></div>'+
     '<div class="fom-set"><span><label>Business details</label><small>Name, email, phone and links used in '+BZ.b.name+' documents</small></span>'+
