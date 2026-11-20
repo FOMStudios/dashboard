@@ -15,6 +15,15 @@
     var r = await fetch(W + path + '?' + new URLSearchParams(q), { method:'POST', headers:{ Authorization:await tok(), 'Content-Type':type || 'application/json' }, body:body });
     var j = await r.json().catch(function(){ return {}; }); if(!r.ok) throw new Error(j.error || ('upload error ' + r.status)); return j;
   }
+  function jpgOn(){ try{ return localStorage.getItem('fom.gu.jpg') !== '0'; }catch(x){ return true; } }
+  /* PNG to high quality JPEG in the browser, same pixel size; see-through parts become white */
+  async function toJpeg(f){
+    var bmp = await createImageBitmap(f), c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height;
+    var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(bmp, 0, 0); bmp.close && bmp.close();
+    var b = await new Promise(function(res){ c.toBlob(res, 'image/jpeg', 0.92); }); c.width = c.height = 0;
+    if(!b) throw new Error('could not convert');
+    return new File([b], f.name.replace(/\.png$/i, '.jpg'), { type:'image/jpeg' });
+  }
   function css(){
     if(document.getElementById('guCss')) return;
     var s = document.createElement('style'); s.id = 'guCss';
@@ -32,12 +41,14 @@
     ov.innerHTML = '<div class="lg-box" role="dialog" style="max-width:560px"><h3>⬆ Upload ' + e(o.customer || 'client') + '\'s files</h3>' +
       '<p class="lg-sub">Photos and videos go straight into their gallery folder. No 100-file limit, big videos are fine, and files already there are skipped. Keep this page open while it uploads.</p>' +
       '<div class="gu-f" style="margin-bottom:12px"><label class="lg-l">Gallery folder</label><input id="guF" value="' + e(folder) + '"' + (o.galleryFolder ? ' readonly title="Change it in Gallery folder on the client"' : '') + '></div>' +
+      '<label style="display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;cursor:pointer;font-size:13.5px"><input type="checkbox" id="guJpg" style="width:18px;height:18px;margin-top:1px"' + (jpgOn() ? ' checked' : '') + '><span><b>Turn PNG photos into JPEG</b><br><span style="color:var(--ink-soft)">Same look and full size, about a fifth of the file size, so galleries load fast. Off: upload exactly as they are.</span></span></label>' +
       '<div class="gu-drop" id="guDrop"><b>Drop the files or the whole folder here</b>or tap to choose files<input type="file" id="guIn" multiple accept="image/*,video/*,.zip,.pdf" style="display:none"></div>' +
       '<div style="text-align:center;margin-top:6px"><button type="button" class="op-btn" id="guDir" style="font-size:12.5px">Choose a folder instead</button><input type="file" id="guDirIn" webkitdirectory multiple style="display:none"></div>' +
       '<div id="guProg" style="display:none"><div class="gu-bar"><i id="guBar"></i></div><div class="gu-stat" id="guStat"></div><div class="gu-list" id="guList"></div></div>' +
       '<div class="lg-err" id="guErr"></div><div class="lg-acts"><button type="button" id="guClose">Close</button><button type="button" class="lg-go" id="guReady" style="display:none">Set gallery to Ready ✓</button></div></div>';
     document.body.appendChild(ov);
     var $ = function(id){ return ov.querySelector('#' + id); }, busy = false;
+    $('guJpg').onchange = function(){ try{ localStorage.setItem('fom.gu.jpg', this.checked ? '1' : '0'); }catch(x){} };
     $('guClose').onclick = function(){ if(busy && !confirm('Uploads are still running. Stop them?')) return; busy = false; ov.remove(); };
     $('guDrop').onclick = function(){ $('guIn').click(); };
     $('guDir').onclick = function(){ $('guDirIn').click(); };
@@ -55,6 +66,7 @@
       if(!files.length){ $('guErr').textContent = 'No photos or videos in that selection.'; return; }
       var g = $('guF').value.trim().replace(/^\/+/, ''); if(!/\/$/.test(g)) g += '/';
       if(!o.galleryFolder){ o.galleryFolder = g; store.update(o.id); if(onFolder) onFolder(o); $('guF').readOnly = true; }
+      var conv = $('guJpg').checked; $('guJpg').disabled = true;
       busy = true; $('guErr').textContent = ''; $('guProg').style.display = ''; $('guDrop').style.display = 'none'; $('guDir').parentNode.style.display = 'none';
       var have = {};
       try{ var l = await (await fetch(W + '/list?g=' + encodeURIComponent(g))).json(); (l.files || []).forEach(function(f){ have[f.name] = f.size; }); }catch(x){}
@@ -68,8 +80,14 @@
       function line(n, t, bad){ list.insertAdjacentHTML('afterbegin', '<div' + (bad ? ' class="bad"' : '') + '><span>' + e(n) + '</span><span>' + e(t) + '</span></div>'); }
       paint();
       async function one(f){
+        var orig = f.size;
+        if(conv && /\.png$/i.test(f.name)){
+          var jn = clean(f.name.replace(/\.png$/i, '.jpg'));
+          if(have[jn] != null){ skipped++; sent += orig; return line(jn, 'already there'); }
+          f = await toJpeg(f);
+        }
         var n = clean(f.name), q = { g:g, n:n }, type = f.type || 'application/octet-stream';
-        if(have[n] === f.size){ skipped++; sent += f.size; return line(n, 'already there'); }
+        if(have[n] === f.size){ skipped++; sent += orig; return line(n, 'already there'); }
         if(f.size <= ONE){
           await call('/admin/gup', q, f, type);
         } else {
@@ -84,7 +102,7 @@
           }catch(x){ call('/admin/gup-abort', Object.assign({ u:st.u }, q), '').catch(function(){}); throw x; }
           delete live[n];
         }
-        sent += f.size; line(n, mb(f.size));
+        sent += orig; line(n, f.size !== orig ? mb(orig) + ' → ' + mb(f.size) : mb(f.size));
       }
       async function worker(){
         while(queue.length && busy){
