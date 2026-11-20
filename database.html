@@ -104,7 +104,17 @@ td.rm-col{width:38px;text-align:center;}
 .cov-prev .bg{position:absolute;inset:0;background-size:cover;filter:brightness(.75);}
 .cov-prev .dot{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.4);pointer-events:none;}
 .cov-prev .ph{position:absolute;right:10px;bottom:10px;width:22%;aspect-ratio:9/13;border-radius:8px;border:2px solid #fff;background-size:cover;box-shadow:0 4px 14px rgba(0,0,0,.5);}
-.cov-hint{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;}
+.cov-hint{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;flex:none;}
+.cov-focus{display:flex;gap:12px;align-items:stretch;flex:none;}
+.cov-full{flex:1;min-width:0;display:flex;justify-content:center;align-items:center;background:#15161a;border-radius:14px;padding:6px;}
+.cov-full .wrap{position:relative;display:inline-block;line-height:0;cursor:crosshair;}
+.cov-full img{display:block;max-width:100%;max-height:min(38vh,340px);width:auto;height:auto;border-radius:8px;user-select:none;-webkit-user-drag:none;}
+.cov-full .dot{position:absolute;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.45),0 0 12px rgba(0,0,0,.4);pointer-events:none;}
+.cov-crops{display:flex;flex-direction:column;gap:8px;width:150px;flex:none;}
+.cov-crops small{display:block;font-size:11px;font-weight:700;color:var(--ink-soft);margin-bottom:3px;}
+.cov-crops .pc{width:100%;aspect-ratio:16/7;border-radius:8px;background-size:cover;background-color:#15161a;}
+.cov-crops .mob{width:62%;aspect-ratio:9/13;border-radius:8px;background-size:cover;background-color:#15161a;}
+@media(max-width:560px){.cov-focus{flex-direction:column;}.cov-crops{flex-direction:row;width:auto;align-items:flex-end;}.cov-crops>div{flex:1;}.cov-crops .mob{width:55%;}}
 .wa-cell{display:flex;gap:6px;align-items:center;} .wa-cell input{min-width:0;flex:1;}
 .wa-btn{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:#25D366;color:#fff;display:grid;place-items:center;cursor:pointer;}
 .em-cell{display:flex;flex-direction:column;align-items:flex-start;gap:4px;} .em-cell input{width:100%;}
@@ -1148,11 +1158,24 @@ const covUrl = n => GALLERY_WORKER + '/file?g=' + encodeURIComponent(cleanFolder
 function drawCover(){
   const body = document.getElementById('covBody'), list = covImgs;
   const e2 = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-  body.innerHTML = (covSel ? `<div class="cov-prev" id="covPrev"><div class="bg" style="background-image:url('${e2(covUrl(covSel.n))}');background-position:${covSel.fx}% ${covSel.fy}%"></div><span class="dot" style="left:${covSel.fx}%;top:${covSel.fy}%"></span><div class="ph" style="background-image:url('${e2(covUrl(covSel.n))}');background-position:${covSel.fx}% ${covSel.fy}%"></div></div>
-    <p class="cov-hint">Tap the picture where the faces are. The small frame shows how a phone crops it.</p>` : '') +
+  const keep = body.querySelector('.cov-grid'), top = keep ? keep.scrollTop : 0;
+  // focus panel: the WHOLE photo (tap where the faces are), plus how the computer banner and a phone crop it
+  body.innerHTML = (covSel ? `<div class="cov-focus" id="covFocus">
+      <div class="cov-full"><div class="wrap" id="covWrap"><img id="covImg" alt="" src="${e2(covUrl(covSel.n))}"><span class="dot" id="covDot" style="left:${covSel.fx}%;top:${covSel.fy}%"></span></div></div>
+      <div class="cov-crops"><div><small>Computer</small><div class="pc" id="covPc" style="background-image:url('${e2(covUrl(covSel.n))}');background-position:${covSel.fx}% ${covSel.fy}%"></div></div>
+        <div><small>Phone</small><div class="mob" id="covMob" style="background-image:url('${e2(covUrl(covSel.n))}');background-position:${covSel.fx}% ${covSel.fy}%"></div></div></div>
+    </div><p class="cov-hint">Tap the photo where the faces are (the white circle). The two small boxes show how the header is cropped on a computer and on a phone.</p>` : '') +
     (list.length ? `<div class="cov-grid" style="margin-top:10px">${list.map(n => `<button type="button" data-cn="${e2(n)}" class="${covSel && covSel.n === n ? 'on' : ''}" title="${e2(n)}"><img loading="lazy" alt="" src="${e2(covUrl(n))}"></button>`).join('')}</div>` : '');
-  const pv = document.getElementById('covPrev');
-  if(pv) pv.onclick = e => { const r = pv.getBoundingClientRect(); covSel.fx = Math.round(Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100))); covSel.fy = Math.round(Math.max(0, Math.min(100, (e.clientY - r.top) / r.height * 100))); drawCover(); };
+  const g = body.querySelector('.cov-grid'); if(g) g.scrollTop = top;
+  const w = document.getElementById('covWrap');
+  if(w) w.onclick = e => {
+    const r = document.getElementById('covImg').getBoundingClientRect();
+    covSel.fx = Math.round(Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)));
+    covSel.fy = Math.round(Math.max(0, Math.min(100, (e.clientY - r.top) / r.height * 100)));
+    // update in place so the photo list does not jump
+    const d = document.getElementById('covDot'); d.style.left = covSel.fx + '%'; d.style.top = covSel.fy + '%';
+    ['covPc','covMob'].forEach(id => { document.getElementById(id).style.backgroundPosition = covSel.fx + '% ' + covSel.fy + '%'; });
+  };
   body.querySelectorAll('[data-cn]').forEach(b => b.onclick = () => { covSel = { n:b.dataset.cn, fx:50, fy:40 }; drawCover(); });
   covButtons(true);
 }
