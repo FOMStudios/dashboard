@@ -1055,6 +1055,38 @@ async function handleGup(path, request, env, url) {
   return json({ error: 'not found' }, 404);
 }
 
+/* ============================================================
+   ONE-TAP "PREVIEW AS CLIENT" (needs FIREBASE_SA): the Database makes a one-time code and opens the portal with it;
+   the portal swaps the code for a Firebase sign-in token for YOUR admin account, so you never type the password there.
+   POST /admin/preview-code {code}  (admin)      POST /preview/redeem {code}  (portal, once, within 2 minutes)
+   ============================================================ */
+async function saCustomToken(env, uid) {
+  const sa = JSON.parse(env.FIREBASE_SA), now = Math.floor(Date.now() / 1000);
+  const head = b64urlStr(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  const claim = b64urlStr(JSON.stringify({ iss: sa.client_email, sub: sa.client_email, aud: 'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit', iat: now, exp: now + 3600, uid }));
+  const pem = String(sa.private_key || '').replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
+  const key = await crypto.subtle.importKey('pkcs8', Uint8Array.from(atob(pem), c => c.charCodeAt(0)), { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(head + '.' + claim));
+  return head + '.' + claim + '.' + b64url(sig);
+}
+async function handlePreview(path, request, env) {
+  let b = {}; try { b = JSON.parse(await request.text()); } catch (e) {}
+  const code = String(b.code || '').replace(/[^a-z0-9]/gi, '').slice(0, 40);
+  if (code.length < 20) return json({ error: 'bad code' }, 400);
+  const key = '_preview/' + code + '.json';
+  if (path === '/admin/preview-code') {
+    const pay = await verifyAdmin(request, env); if (!pay) return json({ error: 'not allowed' }, 401);
+    if (!env.FIREBASE_SA) return json({ error: 'nosa' }, 400);
+    await R2P(env, key, { uid: pay.sub, exp: Date.now() + 120e3 });
+    return json({ ok: true });
+  }
+  const r = await R2J(env, key, null);
+  if (!r) return json({ error: 'not ready' }, 404);
+  await env.BUCKET.delete(key);
+  if (r.exp < Date.now()) return json({ error: 'expired' }, 410);
+  try { return json({ ok: true, token: await saCustomToken(env, r.uid) }); } catch (e) { return json({ error: 'Could not sign you in: ' + e.message }, 500); }
+}
+
 export default {
   async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -1063,9 +1095,10 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const g = normPrefix(url.searchParams.get('g'));
-    if (/^_(notify|push|events|sales|channel|remind|briefs|logins|groups)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
+    if (/^_(notify|push|events|sales|channel|remind|briefs|logins|groups|preview)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
     if (path.startsWith('/sales/')) return handleSales(path, request, env, url);
     if (path === '/admin/remind' && request.method === 'POST') return handleRemind(request, env);
+    if ((path === '/admin/preview-code' || path === '/preview/redeem') && request.method === 'POST') return handlePreview(path, request, env);
     if (path.startsWith('/admin/gup')) return handleGup(path, request, env, url);
     if (path.startsWith('/group/') || path === '/admin/groups' || path === '/admin/group') return handleGroup(path, request, env, url, ctx);
     if (path === '/admin/login' && request.method === 'POST') return handleLogin(request, env);
