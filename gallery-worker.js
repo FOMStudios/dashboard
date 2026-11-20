@@ -861,6 +861,141 @@ async function handleLogin(request, env) {
   return json({ error: 'not found' }, 404);
 }
 
+/* ============================================================
+   GROUP GALLERY LINKS (Nov 2026): one client's gallery shared with a whole group (a Pilates class, a team)
+   through a temporary link, without showing the client's folder. Controlled from the Database page.
+   _groups/index.json  { s: record }   record = { s, biz, order, name, folder, title, date, files:[names]|null (all),
+                       mode: 'free'|'view'|'paid', pin:'1234'|'', expires:'YYYY-MM-DD', on, views, dls, seen:{visitor:1}, created, lastPush, salesUrl }
+   _groups/key.json    random HMAC key for the per-visit access keys (made the first time)
+   Public:  GET /group/info?s=   POST /group/open {s, pin, v}   GET /group/file?s&n&k   POST /group/hit {s, k, n}
+   Admin:   GET /admin/groups?order=   POST /admin/group {...}   (action 'save' | 'delete')
+   ============================================================ */
+const G_MODES = ['free', 'view', 'paid'];
+const gToday = () => new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 10);   // Johannesburg date
+const gEnded = r => !r || !r.on || (r.expires && r.expires < gToday());
+async function gKey(env) {
+  let k = await R2J(env, '_groups/key.json', null);
+  if (!k) { k = { k: crypto.randomUUID() + crypto.randomUUID() }; await R2P(env, '_groups/key.json', k); }
+  return crypto.subtle.importKey('raw', new TextEncoder().encode(k.k), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+}
+async function gSign(env, r) {
+  const sig = await crypto.subtle.sign('HMAC', await gKey(env), new TextEncoder().encode(r.s + '.' + r.expires + '.' + (r.pin || '') + '.' + (r.created || 0)));
+  return [...new Uint8Array(sig)].slice(0, 12).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function gFiles(env, r) {
+  const out = [], want = Array.isArray(r.files) ? new Set(r.files) : null;
+  let cursor;
+  do {
+    const l = await env.BUCKET.list({ prefix: r.folder, cursor, limit: 1000 });
+    for (const o of l.objects) {
+      const name = o.key.slice(r.folder.length);
+      if (!name || name.endsWith('/') || name === '_gallery.json') continue;
+      const k = kind(name); if (k !== 'image' && k !== 'video') continue;
+      if (want && !want.has(name)) continue;
+      out.push({ name, size: o.size, kind: k });
+    }
+    cursor = l.truncated ? l.cursor : undefined;
+  } while (cursor);
+  out.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  return out;
+}
+function gPublic(r) { return { title: r.title, biz: r.biz, date: r.date || '', expires: r.expires, mode: r.mode, needPin: !!r.pin, ended: gEnded(r), salesUrl: r.mode === 'paid' ? (r.salesUrl || '') : '' }; }
+async function handleGroup(path, request, env, url, ctx) {
+  const idx = await R2J(env, '_groups/index.json', {});
+  // ---------- admin ----------
+  if (path === '/admin/groups' || path === '/admin/group') {
+    if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+    if (path === '/admin/groups') {
+      const order = url.searchParams.get('order') || '';
+      const list = Object.values(idx).filter(r => !order || r.order === order).map(r => Object.assign({}, r, { seen: undefined, ended: gEnded(r) }));
+      return json({ groups: list });
+    }
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    if (b.action === 'delete') { delete idx[b.s]; await R2P(env, '_groups/index.json', idx); return json({ ok: true }); }
+    let r = b.s && idx[b.s];
+    if (!r) {
+      let s; do { s = crypto.randomUUID().replace(/-/g, '').slice(0, 8); } while (idx[s]);
+      r = { s, created: Date.now(), views: 0, dls: 0, seen: {}, on: true };
+    }
+    const folder = String(b.folder || r.folder || '').replace(/^\/+/, '');
+    if (!folder || folder.includes('..') || /^_/.test(folder) || !folder.endsWith('/')) return json({ error: 'Set the client\'s gallery folder first (it ends with /).' }, 400);
+    if (b.pin && !/^\d{4}$/.test(String(b.pin))) return json({ error: 'The PIN must be 4 numbers.' }, 400);
+    if (!/^\d{4}-\d\d-\d\d$/.test(String(b.expires || ''))) return json({ error: 'Pick an end date.' }, 400);
+    Object.assign(r, {
+      biz: b.biz === 'sba' ? 'sba' : 'fom', order: clean(b.order, 60), name: clean(b.name, 80), folder,
+      title: clean(b.title, 80) || 'Event photos', date: /^\d{4}-\d\d-\d\d$/.test(b.date || '') ? b.date : '',
+      files: Array.isArray(b.files) ? b.files.map(x => String(x).slice(0, 200)).slice(0, 3000) : null,
+      mode: G_MODES.includes(b.mode) ? b.mode : 'free', pin: b.pin ? String(b.pin) : '', expires: b.expires,
+      on: b.on !== false, salesUrl: /^https:\/\//.test(b.salesUrl || '') ? String(b.salesUrl).slice(0, 300) : (r.salesUrl || '')
+    });
+    idx[r.s] = r; await R2P(env, '_groups/index.json', idx);
+    return json({ ok: true, group: Object.assign({}, r, { seen: undefined, ended: gEnded(r) }) });
+  }
+  // ---------- public ----------
+  const s = String(url.searchParams.get('s') || '').replace(/[^a-z0-9]/g, '').slice(0, 12);
+  if (path === '/group/info') {
+    const r = idx[s]; if (!r) return json({ error: 'This link is not valid.' }, 404);
+    return json(gPublic(r));
+  }
+  if (path === '/group/open' && request.method === 'POST') {
+    let b = {}; try { b = JSON.parse(await request.text()); } catch (e) {}
+    const r = idx[String(b.s || '').replace(/[^a-z0-9]/g, '')];
+    if (!r) return json({ error: 'This link is not valid.' }, 404);
+    if (gEnded(r)) return json(Object.assign(gPublic(r), { error: 'ended' }), 410);
+    if (r.mode === 'paid') return json(gPublic(r));
+    if (r.pin && (r.badAt || 0) > Date.now() - 3600e3 && (r.bad || 0) >= 30) return json({ error: 'Too many wrong PINs. Try again in an hour.' }, 429);
+    if (r.pin && String(b.pin || '') !== r.pin) {
+      if ((r.badAt || 0) < Date.now() - 3600e3) r.bad = 0;
+      r.bad = (r.bad || 0) + 1; r.badAt = Date.now(); idx[r.s] = r; await R2P(env, '_groups/index.json', idx);
+      return json({ error: 'That PIN is not right. Check the message you got with the link.' }, 403);
+    }
+    const k = await gSign(env, r), files = await gFiles(env, r);
+    const v = String(b.v || '').replace(/[^a-z0-9]/gi, '').slice(0, 24);
+    r.seen = r.seen || {};
+    if (v && !r.seen[v] && Object.keys(r.seen).length < 3000) {
+      r.seen[v] = 1; r.views = (r.views || 0) + 1;
+      const first = r.views === 1, due = Date.now() - (r.lastPush || 0) > 6 * 3600e3;
+      if (first || due) {
+        r.lastPush = Date.now();
+        const msg = { title: (r.biz === 'sba' ? 'Shot by A: ' : '') + 'Group gallery 👥', body: r.title + ': ' + r.views + (r.views === 1 ? ' person has' : ' people have') + ' opened the group link' + (r.dls ? ', ' + r.dls + ' downloads' : '') + '.', url: 'database.html', tag: 'fom-group-' + r.s };
+        if (ctx && ctx.waitUntil) ctx.waitUntil(pushAll(env, msg)); else await pushAll(env, msg);
+      }
+      idx[r.s] = r; await R2P(env, '_groups/index.json', idx);
+    }
+    const base = url.origin + '/group/file?s=' + r.s + '&k=' + k + '&n=';
+    return json(Object.assign(gPublic(r), { k, files: files.map(f => Object.assign(f, { url: base + encodeURIComponent(f.name) })) }));
+  }
+  if (path === '/group/file') {
+    const r = idx[s], n = url.searchParams.get('n') || '';
+    if (!r || gEnded(r) || r.mode === 'paid') return json({ error: 'This gallery has ended.' }, 410);
+    if ((url.searchParams.get('k') || '') !== await gSign(env, r)) return json({ error: 'not allowed' }, 403);
+    if (!n || n.includes('..') || (Array.isArray(r.files) && !r.files.includes(n))) return json({ error: 'not found' }, 404);
+    const kd = kind(n); if (kd !== 'image' && kd !== 'video') return json({ error: 'not found' }, 404);
+    const key = r.folder + n, range = request.headers.get('range');
+    let want = range ? parseRange(range) : null;
+    if (want && !('offset' in want) && !('suffix' in want)) want = null;
+    if (want) {
+      const head = await env.BUCKET.head(key); if (!head) return json({ error: 'not found' }, 404);
+      want = fitRange(want, head.size);
+      if (!want) return new Response(null, { status: 416, headers: { ...cors, 'Content-Range': `bytes */${head.size}` } });
+    }
+    const obj = want ? await env.BUCKET.get(key, { range: want }) : await env.BUCKET.get(key);
+    if (!obj) return json({ error: 'not found' }, 404);
+    const h = new Headers(cors); obj.writeHttpMetadata(h); h.set('etag', obj.httpEtag); h.set('Accept-Ranges', 'bytes'); h.set('Cache-Control', 'private, max-age=3600');
+    if (url.searchParams.get('dl') === '1' && r.mode === 'free') h.set('Content-Disposition', `attachment; filename="${n.split('/').pop().replace(/"/g, '')}"`);
+    if (want) { h.set('Content-Range', `bytes ${want.offset}-${want.offset + want.length - 1}/${obj.size}`); h.set('Content-Length', String(want.length)); return new Response(obj.body, { status: 206, headers: h }); }
+    h.set('Content-Length', String(obj.size)); return new Response(obj.body, { headers: h });
+  }
+  if (path === '/group/hit' && request.method === 'POST') {
+    let b = {}; try { b = JSON.parse(await request.text()); } catch (e) {}
+    const r = idx[String(b.s || '').replace(/[^a-z0-9]/g, '')];
+    if (!r || gEnded(r) || String(b.k || '') !== await gSign(env, r)) return json({ ok: false });
+    r.dls = (r.dls || 0) + Math.max(1, Math.min(500, +b.c || 1)); idx[r.s] = r; await R2P(env, '_groups/index.json', idx);
+    return json({ ok: true });
+  }
+  return json({ error: 'not found' }, 404);
+}
+
 export default {
   async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -869,9 +1004,10 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const g = normPrefix(url.searchParams.get('g'));
-    if (/^_(notify|push|events|sales|channel|remind|briefs|logins)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
+    if (/^_(notify|push|events|sales|channel|remind|briefs|logins|groups)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
     if (path.startsWith('/sales/')) return handleSales(path, request, env, url);
     if (path === '/admin/remind' && request.method === 'POST') return handleRemind(request, env);
+    if (path.startsWith('/group/') || path === '/admin/groups' || path === '/admin/group') return handleGroup(path, request, env, url, ctx);
     if (path === '/admin/login' && request.method === 'POST') return handleLogin(request, env);
     if (path === '/brief/get' || path === '/brief/send' || path === '/admin/brief-new' || path === '/admin/briefs') return handleBrief(path, request, env, url, ctx);
     if (path === '/event') return handleEvent(request, env, ctx);

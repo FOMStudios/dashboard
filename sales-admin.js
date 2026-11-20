@@ -347,6 +347,28 @@ window.FOM_SALES_START = function(auth){
   if(BZ && BZ.isSba){ $('psOffBiz').style.display = ''; $('psMain').style.display = 'none'; return; }
   drawSetup(); loadEvents(); loadCfg(); loadPO(); loadVouchers();
   var q = new URLSearchParams(location.search).get('ev'); if(q) openEvent(q);
+  var gq = new URLSearchParams(location.search).get('group'); if(gq) fromGroup(gq);
 };
+/* ---------- a group link set to "Watermarked, buy to download" (Database page): build its sale event from the chosen photos ---------- */
+async function fromGroup(s){
+  try{
+    var g = ((await api('/admin/groups')).groups || []).find(function(x){ return x.s === s; });
+    if(!g) throw new Error('group link not found');
+    await loadEvents();
+    var id = slug(g.title), i = 2; while((EVENTS || []).some(function(e){ return e.id === id; })) id = slug(g.title).slice(0, 30) + '-' + (i++);
+    EV = { id:id, title:g.title, date:g.date || new Date().toLocaleDateString('en-CA', { timeZone:'Africa/Johannesburg' }), place:'', about:'Photos from ' + g.title + '. Tap the ones you love to buy the full-quality download or a print.', numLabel:'', prices:{ photo:50, bundle:150 }, on:true, cover:'', photos:[], group:s };
+    ORDERS = []; SEL.clear(); dirty = true; drawEdit(); await save();
+    var list = await (await fetch(W + '/list?g=' + encodeURIComponent(g.folder))).json();
+    var names = (list.files || []).filter(function(f){ return f.kind === 'image' && (!Array.isArray(g.files) || g.files.indexOf(f.name) >= 0); });
+    toast('Copying ' + names.length + ' photos from the group link...');
+    var files = [];
+    for(var k = 0; k < names.length; k++){ var b = await (await fetch(names[k].url)).blob(); files.push(new File([b], names[k].name.split('/').pop(), { type:b.type || 'image/jpeg' })); }
+    await upload(files);
+    var url = SITE + '?ev=' + EV.id;
+    await api('/admin/group', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(Object.assign({}, g, { salesUrl:url })) });
+    toast('Done. The group link now opens this sale page. Check the prices, then Save.');
+    history.replaceState(null, '', 'sales.html?ev=' + EV.id);
+  }catch(e){ toast('Could not build it from the group link: ' + e.message); }
+}
 window.FOM_SALES = { ev:function(){ return EV; }, upload:upload, save:save };
 })();
