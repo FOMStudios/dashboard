@@ -646,7 +646,7 @@ function renderPanel(fresh){
       </div></section>
 
     <section class="op-sec"><h3>Gallery and portal</h3>
-      <div class="op-acts" style="margin:0 0 12px"><a class="op-btn pri" href="${previewUrl(o)}" target="_blank" rel="noopener" title="Open ${esc(o.customer||'this client')}'s portal exactly as they see it, read-only">&#128065; Preview as client</a><button type="button" class="op-btn" data-group="${i}" title="One temporary link for everyone at the event (a class, a team), with the photos you pick">&#128101; Group link</button></div>
+      <div class="op-acts" style="margin:0 0 12px"><a class="op-btn pri" href="${previewUrl(o)}" target="_blank" rel="noopener" title="Open ${esc(o.customer||'this client')}'s portal exactly as they see it, read-only">&#128065; Preview as client</a><button type="button" class="op-btn" data-group="${i}" title="One temporary link for everyone at the event (a class, a team), with the photos you pick">&#128101; Group link</button><button type="button" class="op-btn" data-upload="${i}" title="Upload their final photos and videos into the gallery folder (no 100-file limit)">&#11014; Upload files</button></div>
       <div class="op-g">
       <div class="op-f w"><label for="op_galleryFolder">Gallery folder</label><div class="op-row"><input id="op_galleryFolder" data-i="${i}" data-f="galleryFolder" value="${esc(o.galleryFolder||'')}" placeholder="e.g. ${FOM_BIZ.b.galleryPrefix}jane-smith/" autocomplete="off"><button type="button" class="op-btn${o.galleryCover&&o.galleryCover.n?' pri':''}" data-cover="${i}">&#128444; ${o.galleryCover&&o.galleryCover.n?'Header set':'Header photo'}</button></div></div>
       <div class="op-f"><label for="op_deliverablesReady">Gallery in the portal</label><select id="op_deliverablesReady" data-i="${i}" data-f="deliverablesReady"><option value="false" ${!o.deliverablesReady?'selected':''}>Not ready</option><option value="true" ${o.deliverablesReady?'selected':''}>✓ Ready, show it</option></select></div>
@@ -732,6 +732,7 @@ onOrders('change',e=>{
 });
 onOrders('click',e=>{ const cv=e.target.closest('[data-cover]'); if(cv){ showCover(orders[+cv.dataset.cover]); return; } const ml=e.target.closest('[data-meetlink]'); if(ml){ linkMeeting(ml.dataset.meetlink, ml.dataset.oid); return; } const fb=e.target.closest('[data-favs]'); if(fb){ showFavs(orders[+fb.dataset.favs]); return; } const wb=e.target.closest('[data-wa]'); if(wb){ openWa(orders[+wb.dataset.wa]); return; } const rm=e.target.dataset.rm; if(rm!==undefined){ const o=orders[+rm]; if(o && confirmDelete(o)){ if(o.id===OPEN_ID) closePanel(); store.remove(o.id); } return; }
   const lb=e.target.closest('[data-login]'); if(lb){ createClientLogin(orders[+lb.dataset.login], lb); return; }
+  const ub=e.target.closest('[data-upload]'); if(ub){ if(window.FOM_UPLOAD) FOM_UPLOAD.open(orders[+ub.dataset.upload], ()=>{ if(OPEN_ID) renderPanel(true); }); return; }
   const gb=e.target.closest('[data-group]'); if(gb){ if(window.FOM_GROUP) FOM_GROUP.open(orders[+gb.dataset.group]); return; }
   const eb=e.target.closest('[data-eye]'); if(eb){ const sp=eb.nextElementSibling; if(!sp.hidden){ sp.hidden=true; return; } sp.hidden=false; sp.textContent='…';
     lgApi({action:'get',email:String(orders[+eb.dataset.eye].clientEmail||'').trim().toLowerCase()}).then(j=>{ sp.textContent=j.password||'not saved'; }).catch(()=>{ sp.textContent='could not load'; }); return; }
@@ -1226,6 +1227,7 @@ document.getElementById('favScrim').onclick = e => { if(e.target.id === 'favScri
 <script src="activity.js?v=2"></script>
 <script src="vendor/qrcode.js"></script>
 <script src="group-link.js?v=2"></script>
+<script src="gallery-upload.js?v=1"></script>
 <script src="app.js?v=9"></script>
 </body>
 </html>

@@ -1027,6 +1027,34 @@ async function handleGroup(path, request, env, url, ctx) {
   return json({ error: 'not found' }, 404);
 }
 
+/* ============================================================
+   GALLERY UPLOADS FROM THE DASHBOARD (Database page, "⬆ Upload files"): no 100-file limit like the
+   Cloudflare dashboard. Small files in one request; big videos in 50 MB parts (R2 multipart).
+   POST /admin/gup?g=<folder>&n=<name>                       one file (up to 95 MB)
+   POST /admin/gup-start?g&n  -> {u}   PUT /admin/gup-part?g&n&u&p=<1..>  -> {etag}
+   POST /admin/gup-done?g&n&u {parts:[{p,etag}]}            POST /admin/gup-abort?g&n&u
+   ============================================================ */
+const gupFolder = f => { f = String(f || '').replace(/^\/+/, ''); return f && f.endsWith('/') && !f.includes('..') && !/^_/.test(f) && !/^(sales|portfolio|deck|channel|content|leads|hq)\//.test(f) ? f : ''; };
+const gupName = n => String(n || '').replace(/[\\/]/g, '-').replace(/[^\w .()+-]/g, '').replace(/^[.\s]+/, '').trim().slice(0, 180);
+async function handleGup(path, request, env, url) {
+  if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+  const g = gupFolder(url.searchParams.get('g')), n = gupName(url.searchParams.get('n'));
+  if (!g) return json({ error: 'Set a gallery folder that ends with / first.' }, 400);
+  if (!n) return json({ error: 'bad file name' }, 400);
+  const key = g + n, type = (request.headers.get('Content-Type') || 'application/octet-stream').split(';')[0];
+  if (path === '/admin/gup') {
+    const obj = await env.BUCKET.put(key, request.body, { httpMetadata: { contentType: type } });
+    return json({ ok: true, name: n, size: obj ? obj.size : 0 });
+  }
+  if (path === '/admin/gup-start') { const m = await env.BUCKET.createMultipartUpload(key, { httpMetadata: { contentType: type } }); return json({ ok: true, u: m.uploadId, name: n }); }
+  const u = url.searchParams.get('u') || ''; if (!u) return json({ error: 'no upload id' }, 400);
+  const m = env.BUCKET.resumeMultipartUpload(key, u);
+  if (path === '/admin/gup-part') { const p = +url.searchParams.get('p'); if (!(p >= 1 && p <= 10000)) return json({ error: 'bad part' }, 400); const part = await m.uploadPart(p, request.body); return json({ ok: true, etag: part.etag, p }); }
+  if (path === '/admin/gup-done') { let b = {}; try { b = await request.json(); } catch (e) {} const parts = (b.parts || []).map(x => ({ partNumber: +x.p, etag: String(x.etag) })); const obj = await m.complete(parts); return json({ ok: true, name: n, size: obj ? obj.size : 0 }); }
+  if (path === '/admin/gup-abort') { try { await m.abort(); } catch (e) {} return json({ ok: true }); }
+  return json({ error: 'not found' }, 404);
+}
+
 export default {
   async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -1038,6 +1066,7 @@ export default {
     if (/^_(notify|push|events|sales|channel|remind|briefs|logins|groups)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
     if (path.startsWith('/sales/')) return handleSales(path, request, env, url);
     if (path === '/admin/remind' && request.method === 'POST') return handleRemind(request, env);
+    if (path.startsWith('/admin/gup')) return handleGup(path, request, env, url);
     if (path.startsWith('/group/') || path === '/admin/groups' || path === '/admin/group') return handleGroup(path, request, env, url, ctx);
     if (path === '/admin/login' && request.method === 'POST') return handleLogin(request, env);
     if (path === '/brief/get' || path === '/brief/send' || path === '/admin/brief-new' || path === '/admin/briefs') return handleBrief(path, request, env, url, ctx);
