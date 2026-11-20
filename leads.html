@@ -130,6 +130,7 @@ select.status-select{font-weight:700;border-radius:var(--radius-pill);text-align
 .web-tag{display:inline-block;font-size:10.5px;font-weight:800;color:#6b3fb5;background:#f1e8ff;border-radius:99px;padding:1px 7px;margin-top:3px;}
 .st-emailed{background:#e7f0ff;color:#02367B;}
 .st-responded{background:#fff4e0;color:#a9720b;}
+.st-followup{background:#e7f0fc;color:#2d6fd1;}
 .st-accepted{background:#e8f7ee;color:#1f8a4c;}
 .st-rejected{background:#fdeceb;color:#c0392b;}
 .empty{padding:40px;text-align:center;color:var(--ink-soft);}
@@ -290,6 +291,7 @@ table.leads td select.st-newenq{background:#f1e8ff!important;color:#6b3fb5;}
 table.leads td select.st-notemailed{background:#efece5!important;color:#6f6f6d;}
 table.leads td select.st-emailed{background:#e7f0ff!important;color:#02367B;}
 table.leads td select.st-responded{background:#fff4e0!important;color:#a9720b;}
+table.leads td select.st-followup{background:#e7f0fc!important;color:#2d6fd1;}
 table.leads td select.st-accepted{background:#e8f7ee!important;color:#1f8a4c;}
 table.leads td select.st-rejected{background:#fdeceb!important;color:#c0392b;}
 table.leads .l-go{width:28px;color:var(--ink-soft);font-size:20px;text-align:center;}
@@ -603,9 +605,9 @@ sc.onclick=()=>{mm.classList.remove('open');sc.classList.remove('show');};
    dedicated cloud store. No local-storage fallback, so leads always
    match across devices (desktop + mobile).
    ================================================================ */
-const STATUSES = ['New enquiry','Not Emailed','Emailed','Responded','Accepted','Rejected'];   // New enquiry: sent from the Book a shoot form on the website
-const STATUS_CLASS = { 'New enquiry':'st-newenq','Not Emailed':'st-notemailed','Emailed':'st-emailed','Responded':'st-responded','Accepted':'st-accepted','Rejected':'st-rejected' };
-const STATUS_DOT   = { 'New enquiry':'#6b3fb5','Not Emailed':'#6f6f6d','Emailed':(window.FOM_BIZ?FOM_BIZ.b.accent:'#02367B'),'Responded':'#c98a1f','Accepted':'#1f8a4c','Rejected':'#c0392b' };
+const STATUSES = ['New enquiry','Not Emailed','Emailed','Responded','Follow Up','Accepted','Rejected'];   // Follow Up: said not now, reminder on the day you pick (Today tab)   // New enquiry: sent from the Book a shoot form on the website
+const STATUS_CLASS = { 'New enquiry':'st-newenq','Not Emailed':'st-notemailed','Emailed':'st-emailed','Responded':'st-responded','Follow Up':'st-followup','Accepted':'st-accepted','Rejected':'st-rejected' };
+const STATUS_DOT   = { 'New enquiry':'#6b3fb5','Not Emailed':'#6f6f6d','Emailed':(window.FOM_BIZ?FOM_BIZ.b.accent:'#02367B'),'Responded':'#c98a1f','Follow Up':'#2d6fd1','Accepted':'#1f8a4c','Rejected':'#c0392b' };
 
 let leads = [];
 let store, editingCell=false, pendingRender=false;
@@ -743,14 +745,20 @@ leadTbody().addEventListener('focusin',()=>{editingCell=true;});
 leadTbody().addEventListener('focusout',()=>{ editingCell=false; if(pendingRender){pendingRender=false; renderLeads();} });
 leadTbody().addEventListener('input', e=>{
     const el=e.target, i=el.dataset.i, f=el.dataset.f; if(i===undefined) return;
+    if(f==='status' && el.value==='Follow Up') return;   // the change handler opens the follow-up picker first
     leads[i][f]=el.value;
     if(f!=='comments' && f!=='company' && f!=='contact' && f!=='email' && f!=='web' && f!=='location' && f!=='leadId'){ renderLeadDashboard(); }
     store.update(leads[i].id);
 });
+leadTbody().addEventListener('focusin', e=>{ const el=e.target; if(el.dataset && el.dataset.f==='status' && leads[el.dataset.i]) leads[el.dataset.i].undoStatus = el.value; });
 leadTbody().addEventListener('change', e=>{
     const el=e.target; if(!el.dataset.f) return;
     const f=el.dataset.f, i=el.dataset.i;
     leads[i][f]=el.value;
+    if(f==='status' && el.value==='Follow Up'){
+        const prev = leads[i].undoStatus || 'Responded';
+        if(window.FOM_FOLLOWUP){ window.FOM_FOLLOWUP(leads[i], ok => { if(!ok){ leads[i].status = prev; renderLeads(); } }); return; }
+    }
     if(f==='status'){
         el.className = 'status-select ' + (STATUS_CLASS[el.value]||'');
         const outreach = !['Not Emailed','New enquiry'].includes(el.value);
@@ -823,9 +831,10 @@ function drawLead(fresh){
       <div class="op-sec"><h3>Notes</h3><div class="op-f w"><textarea data-lf="comments" placeholder="e.g. emailed again 12 Apr, follow up in 2 weeks">${esc(o.comments||'')}</textarea></div></div>
       <div class="op-sec"><div class="op-acts" style="margin-top:0"><button class="op-btn red" type="button" data-lact="del">Delete this lead</button></div></div>`;
 }
-$('opBody').addEventListener('input', e=>{ const el=e.target, k=el.dataset.lf; if(!k) return; const o=leadById(OPEN_ID); if(!o) return; o[k]=el.value; store.update(o.id); });
+$('opBody').addEventListener('input', e=>{ const el=e.target, k=el.dataset.lf; if(!k) return; if(k==='status' && el.value==='Follow Up') return; const o=leadById(OPEN_ID); if(!o) return; o[k]=el.value; store.update(o.id); });
 $('opBody').addEventListener('change', e=>{
     const el=e.target, k=el.dataset.lf; if(!k) return; const o=leadById(OPEN_ID); if(!o) return;
+    if(k==='status' && el.value==='Follow Up' && window.FOM_FOLLOWUP){ const prev=o.status; window.FOM_FOLLOWUP(o, ok=>{ if(!ok) el.value=prev; drawLead(true); }); return; }
     o[k]=el.value;
     if(k==='email') { o.email = el.value.trim(); }
     if(k==='status'){
@@ -1635,7 +1644,8 @@ if(!configured){ notConfigured(); } else { loadFirebase().then(initCloud).catch(
 /* initial deck preview */
 refreshDeckPreview();
 </script>
-<script src="outreach-today.js?v=6"></script>
+<script src="reel-ideas.js?v=1"></script>
+<script src="outreach-today.js?v=8"></script>
 <script src="activity.js?v=2"></script>
 <script src="app.js?v=8"></script>
 </body>

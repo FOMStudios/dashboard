@@ -52,7 +52,22 @@ css.textContent = [
 '.ot-filters{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}',
 '.ot-filters button{border:1px solid var(--line);background:var(--bg-pill,#f1efe9);border-radius:999px;padding:7px 14px;font-weight:700;font-size:12.5px;cursor:pointer;color:inherit}',
 '.ot-filters button.on{background:#111;color:#fff;border-color:#111}',
-'.ot-code{font-family:ui-monospace,Menlo,monospace;font-weight:800;letter-spacing:.03em}'
+'.ot-code{font-family:ui-monospace,Menlo,monospace;font-weight:800;letter-spacing:.03em}',
+'.ot-card.yes{border-color:#1f8a4c;box-shadow:0 0 0 2px rgba(31,138,76,.12)}',
+'.ot-ideas{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-top:6px}',
+'.ot-idea{text-align:left;border:1px solid var(--line);background:var(--bg,#fafaf7);border-radius:14px;padding:10px 12px;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column;gap:4px}',
+'.ot-idea b{font-size:14px}.ot-idea span{font-size:12.5px;color:var(--ink-soft)}.ot-idea small{font-size:11.5px;font-weight:700}.ot-idea em{font-size:11px;color:#1f8a4c;font-style:normal;font-weight:800}',
+'.ot-idea.on{border-color:#1f8a4c;background:#e8f6ee}',
+'.ot-price{flex:1;min-width:160px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:14px;background:var(--bg,#fafaf7);color:inherit}',
+'.ot-linkbtn{border:1px solid var(--line);background:var(--bg-pill,#f1efe9);color:inherit;border-radius:999px;padding:8px 14px;font-weight:700;font-size:13px;text-decoration:none}',
+'.fu-ov{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}',
+'@media(min-width:700px){.fu-ov{align-items:center}}',
+'.fu-box{background:var(--surface,#fff);color:var(--ink);width:min(440px,100%);border-radius:22px 22px 0 0;padding:20px 20px 26px}',
+'@media(min-width:700px){.fu-box{border-radius:22px}}',
+'.fu-box h3{margin:0 0 4px;font-size:19px}.fu-chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}',
+'.fu-chips button{border:1px solid var(--line);background:var(--bg-pill,#f1efe9);color:inherit;border-radius:999px;padding:8px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}',
+'.fu-chips button.on{background:#111;color:#fff;border-color:#111}',
+'.fu-box input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font:inherit;font-size:15px;background:var(--bg,#fafaf7);color:inherit;margin-bottom:8px}'
 ].join('\n');
 D.head.appendChild(css);
 
@@ -104,11 +119,12 @@ var OT = {
           if(x.company && (have[k] || have[kc])){
             var ex = leads.find(function(o){ return OT.key(o) === k || String(o.company || '').toLowerCase().replace(/[^a-z0-9]/g, '') === kc; });
             if(ex && ex.source === 'claude' && ex.status === 'Not Emailed' && x.opener && ex.opener !== x.opener){ ex.opener = x.opener; if(x.why) ex.why = x.why; store.update(ex.id); }
+            if(ex && Array.isArray(x.ideas) && x.ideas.length && !(ex.ideas || []).length){ ex.ideas = x.ideas.slice(0, 3); store.update(ex.id); }
             return;
           }
           have[k] = have[kc] = 1; added++;
           store.add(blankLead({ company:x.company, contact:x.contact || '', email:x.email || '', web:x.web || '', phone:x.phone || '', instagram:igHandle(x.instagram),
-            location:x.location || '', category:x.category || '', status:'Not Emailed', source:'claude', why:x.why || '', opener:x.opener || '', addedWeek:OT.pack.generatedAt || '',
+            location:x.location || '', category:x.category || '', status:'Not Emailed', source:'claude', why:x.why || '', opener:x.opener || '', ideas:Array.isArray(x.ideas) ? x.ideas.slice(0, 3) : [], addedWeek:OT.pack.generatedAt || '',
             comments:'Found by Claude ' + iso() + (x.why ? ': ' + x.why : '') }));
         });
         if(added) toast(added + ' new leads from Claude added');
@@ -119,38 +135,73 @@ var OT = {
   },
   lists: function(){
     var t = iso(), sk = OT.skip[t] || [];
-    var follow = leads.filter(function(o){ return o.status === 'Emailed' && o.followUp && o.followUp <= t; })
+    var follow = leads.filter(function(o){ return ['Emailed', 'Follow Up', 'Responded'].indexOf(o.status) >= 0 && o.followUp && o.followUp <= t && !(o.status === 'Responded' && !o.ideaSent); })
       .sort(function(a, b){ return String(a.followUp).localeCompare(String(b.followUp)); });
     var left = Math.max(0, DAILY - OT.contactedToday());
     var fresh = leads.filter(function(o){ return o.status === 'Not Emailed' && o.source !== 'website' && sk.indexOf(o.id) < 0 && (o.company || o.contact); })
       .sort(function(a, b){ return (b.source === 'claude') - (a.source === 'claude') || String(a.addedWeek || '').localeCompare(String(b.addedWeek || '')); })
       .slice(0, left);
     var doneToday = leads.filter(function(o){ return o.dateEmailed === t && o.status === 'Emailed'; });
-    return { follow:follow, fresh:fresh, done:doneToday, left:left };
+    var yes = leads.filter(function(o){ return o.status === 'Responded' && !o.ideaSent; });
+    return { follow:follow, fresh:fresh, done:doneToday, left:left, yes:yes };
   },
   card: function(o, kind){
     var t = iso(), late = kind === 'follow' && o.followUp < t;
     var ph = intl(o.phone), ig = igHandle(o.instagram || (/instagram\.com/i.test(o.web || '') ? o.web : '')), em = o.email;
-    var msg = kind === 'follow' ? OT.follow(o) : OT.msg(o);
-    var chip = kind === 'follow' ? '<span class="ot-chip ' + (late ? 'late' : 'due') + '">Follow up' + (late ? ', ' + Math.round((new Date(t) - new Date(o.followUp)) / 864e5) + 'd late' : ' today') + '</span>'
+    var msg = kind === 'follow' ? (o.status === 'Follow Up' ? OT.checkBack(o) : o.status === 'Responded' ? OT.ideaCheck(o) : OT.follow(o)) : OT.msg(o);
+    var chip = kind === 'follow' ? '<span class="ot-chip ' + (late ? 'late' : 'due') + '">' + (o.status === 'Follow Up' ? 'Check back' : o.status === 'Responded' ? 'Idea sent, check in' : 'Follow up') + (late ? ', ' + Math.round((new Date(t) - new Date(o.followUp)) / 864e5) + 'd late' : ' today') + '</span>'
       : kind === 'done' ? '<span class="ot-chip">Contacted today' + (o.contactedVia ? ' by ' + esc(o.contactedVia) : '') + '</span>'
       : '<span class="ot-chip new">' + (o.source === 'claude' ? 'New from Claude' : 'Not contacted') + '</span>';
     var web = o.web && !/instagram\.com/i.test(o.web) ? '<a href="' + esc(/^https?:/i.test(o.web) ? o.web : 'https://' + o.web) + '" target="_blank" rel="noopener">website</a>' : '';
     return '<div class="ot-card' + (kind === 'done' ? ' done' : '') + '" data-id="' + esc(o.id) + '" data-kind="' + kind + '"><div class="ot-row"><div><div class="ot-name">' + esc(o.company || o.contact) + '</div>' +
       '<div class="ot-sub">' + [esc(o.category), esc(o.location), web, ph ? '+' + ph : '', ig ? '@' + esc(ig) : '', em ? esc(em) : ''].filter(Boolean).join(' · ') + '</div></div><div>' + chip + '</div></div>' +
       (o.why ? '<div class="ot-why">💡 ' + esc(o.why) + '</div>' : '') +
+      (kind === 'follow' && o.followNote ? '<div class="ot-why">📝 ' + esc(o.followNote) + '</div>' : '') +
       (kind === 'done' ? '<details style="margin-top:8px"><summary class="ot-sub" style="cursor:pointer">Show the message</summary><textarea class="ot-msg" data-k="msg">' + esc(o.undo && o.undo.kind === 'follow' ? OT.follow(o) : OT.msg(o)) + '</textarea></details><div class="ot-btns">' +
         (ph ? '<button type="button" class="wa" data-a="wa2">WhatsApp again</button>' : '') + (em ? '<button type="button" data-a="em2">Email again</button><button type="button" data-a="cpem">Copy email address</button>' : '') + '<button type="button" data-a="copy">Copy message</button>' +
-        '<button type="button" class="go" data-a="undo">↩ Undo</button><button type="button" data-a="remove" style="color:#b3261e">Remove</button></div>' : '<textarea class="ot-msg" data-k="msg">' + esc(msg) + '</textarea><div class="ot-btns">' +
+        '<button type="button" data-a="replied">They said yes</button><button type="button" data-a="later">Not now, remind me</button><button type="button" class="go" data-a="undo">↩ Undo</button><button type="button" data-a="remove" style="color:#b3261e">Remove</button></div>' : '<textarea class="ot-msg" data-k="msg">' + esc(msg) + '</textarea><div class="ot-btns">' +
         (ph ? '<button type="button" class="wa" data-a="wa">WhatsApp</button>' : '') +
         (ig ? '<button type="button" data-a="ig">Instagram DM</button>' : '') +
         (em ? '<button type="button" data-a="em">Email</button><button type="button" data-a="cpem">Copy email address</button>' : '') +
         '<button type="button" data-a="copy">Copy message</button>' +
         '<button type="button" class="go" data-a="done">' + (kind === 'follow' ? 'Followed up' : 'Contacted') + '</button>' +
-        (kind === 'follow' ? '<button type="button" data-a="replied">They replied</button><button type="button" data-a="stop">No reply, stop</button>' : '<button type="button" data-a="skip">Skip today</button>') +
+        (kind === 'follow' ? '<button type="button" data-a="replied">They said yes</button><button type="button" data-a="later">Not now, remind me</button><button type="button" data-a="stop">No reply, stop</button>' : '<button type="button" data-a="skip">Skip today</button>') +
         '<button type="button" data-a="open">Details</button><button type="button" data-a="remove" style="color:#b3261e">Remove</button></div>') + '</div>';
   },
+  checkBack: function(o){ return 'Hi ' + (first(o.contact) || (o.company ? o.company + ' team' : 'there')) + '! 👋\nHope you are well. It is Ishaaq from FOM Studios. We chatted a while back about photos and video for ' + (o.company || 'you') + ', and you mentioned checking in again around now.\nWould now be a good time for me to send through a quick creative idea and quote? 📸'; },
+  ideaCheck: function(o){ return 'Hi ' + (first(o.contact) || (o.company ? o.company + ' team' : 'there')) + '! 👋\nJust checking in on the idea and quote I sent through for ' + (o.company || 'you') + '. Happy to adjust anything or answer any questions, and I can hold a date for you if it helps. 📸'; },
   follow: function(o){ return 'Hi ' + (first(o.contact) || (o.company ? o.company + ' team' : 'there')) + ', just following up on my message about photos and video for ' + (o.company || 'you') + '. Happy to send a quick idea and price if it helps. Have a great week! Ishaaq, FOM Studios 📸'; },
+  yesState: {},
+  yesCard: function(o){
+    var st = OT.yesState[o.id] = OT.yesState[o.id] || { picked:[], price:'' };
+    var genres = FOM_IDEAS_FOR(o), mine = (o.ideas || []).map(function(x, i){ return { k:'claude|' + i, t:x.title || x.t, p:x.pitch || x.p, get:x.get || '', pkg:x.pkg || '' }; });
+    var all = mine.slice(); genres.forEach(function(g){ FOM_IDEAS[g].ideas.forEach(function(x, i){ all.push({ k:g + '|' + i, t:x.t, p:x.p, get:x.get, pkg:x.pkg, g:FOM_IDEAS[g].name }); }); });
+    if(!st.picked.length && all[0]) st.picked = [all[0].k];
+    var picked = all.filter(function(x){ return st.picked.indexOf(x.k) >= 0; });
+    var ph = intl(o.phone), em = o.email;
+    var msg = OT.ideaMsg(o, picked, st.price);
+    return '<div class="ot-card yes" data-id="' + esc(o.id) + '" data-kind="yes"><div class="ot-row"><div><div class="ot-name">' + esc(o.company || o.contact) + '</div><div class="ot-sub">' + [esc(o.category), esc(o.location), ph ? '+' + ph : '', em ? esc(em) : ''].filter(Boolean).join(' · ') + '</div></div><div><span class="ot-chip new">Said yes 🎉</span></div></div>' +
+      '<div class="ot-why">Pick 1 or 2 ideas to send' + (genres.length ? ' (' + genres.map(function(g){ return FOM_IDEAS[g].name; }).join(', ') + ')' : '') + ':</div>' +
+      '<div class="ot-ideas">' + all.map(function(x){ var on = st.picked.indexOf(x.k) >= 0; return '<button type="button" class="ot-idea' + (on ? ' on' : '') + '" data-idea="' + esc(x.k) + '"><b>' + (on ? '✓ ' : '') + esc(x.t) + '</b><span>' + esc(String(x.p || '').replace(/\{company\}/g, o.company || 'you')) + '</span><small>' + esc(x.get) + (x.pkg ? ' · ' + esc(x.pkg) : '') + '</small>' + (x.k.indexOf('claude') === 0 ? '<em>Written for them by Claude</em>' : '') + '</button>'; }).join('') + '</div>' +
+      '<div class="ot-row" style="margin:10px 0 6px;align-items:center"><span class="ot-sub" style="font-weight:700">Price to quote (optional):</span><input class="ot-price" data-k="price" value="' + esc(st.price) + '" placeholder="e.g. R1500 for both"></div>' +
+      '<textarea class="ot-msg" data-k="msg" style="min-height:200px">' + esc(msg) + '</textarea><div class="ot-btns">' +
+      (ph ? '<button type="button" class="wa" data-a="ywa">WhatsApp</button>' : '') + (em ? '<button type="button" data-a="yem">Email</button><button type="button" data-a="cpem">Copy email address</button>' : '') +
+      '<button type="button" data-a="copy">Copy message</button><a class="ot-linkbtn" href="calculator.html" target="_blank" rel="noopener">🧮 Formal quote</a>' +
+      '<button type="button" class="go" data-a="ideasent">Sent ✓</button><button type="button" data-a="won">They booked! 🎉</button><button type="button" data-a="later">Not now, remind me</button></div></div>';
+  },
+  ideaMsg: function(o, picked, price){
+    var name = first(o.contact) || (o.company ? o.company + ' team' : 'there');
+    var lines = ['Hi ' + name + '! 👋', 'Thanks so much for getting back to me, really appreciate it. Here ' + (picked.length > 1 ? 'are a couple of ideas' : 'is an idea') + ' for ' + (o.company || 'you') + ':', ''];
+    picked.forEach(function(x, i){ lines.push((picked.length > 1 ? (i + 1) + '. ' : '🎬 ') + x.t); lines.push(String(x.p || '').replace(/\{company\}/g, o.company || 'you')); if(x.get) lines.push('What you get: ' + x.get); if(x.pkg && !price) lines.push('Investment: ' + x.pkg); lines.push(''); });
+    if(price) { lines.push('Investment: ' + price); lines.push(''); }
+    lines.push('Happy to tweak any of this to suit you. If you like it, let me know a date that works and I will lock it in and send through a formal quote. 📸');
+    lines.push('Ishaaq, FOM Studios');
+    return lines.join('\n');
+  },
+  libraryHtml: function(){
+    return '<details class="ot-tpl" style="margin-top:22px"><summary>📚 Reel and shoot ideas by genre</summary><p class="ot-sub">The ideas you can offer when a business says yes. Edit them in reel-ideas.js, or ask Claude to add more.</p>' +
+      Object.keys(FOM_IDEAS).map(function(g){ var G = FOM_IDEAS[g]; return '<div class="ot-card" style="margin-top:8px"><div class="ot-name">' + esc(G.name) + '</div>' + G.ideas.map(function(x){ return '<div style="margin-top:8px"><b>' + esc(x.t) + '</b><div class="ot-sub">' + esc(x.p.replace(/\{company\}/g, 'them')) + '</div><div class="ot-sub"><i>' + esc(x.get) + ' · ' + esc(x.pkg) + '</i></div></div>'; }).join('') + '</div>'; }).join('') + '</details>';
+  },
   render: function(){
     var host = $('otBody'); if(!host) return;
     if(typeof store === 'undefined' || !store || !DB){ host.innerHTML = '<div class="ot-empty">Sign in to see today\'s list.</div>'; return; }
@@ -161,12 +212,14 @@ var OT = {
     var packLine = OT.pack && OT.pack.generatedAt ? 'Claude added new leads on ' + nice(OT.pack.generatedAt) + '. Next batch: Monday morning.' : 'Claude adds about 30 new Gauteng leads every Monday morning.';
     host.innerHTML =
       '<div class="ot-top"><div class="ot-goal"><div class="ot-sub">Today\'s goal</div><b>' + done + ' of ' + DAILY + '</b> contacted<div class="ot-bar"><i style="width:' + pct + '%"></i></div></div>' +
-      '<div class="ot-goal"><div class="ot-sub">Follow-ups due</div><b>' + L.follow.length + '</b><div class="ot-sub" style="margin-top:6px">' + packLine + '</div></div></div>' +
+      '<div class="ot-goal"><div class="ot-sub">Said yes · follow-ups due</div><b>' + L.yes.length + ' · ' + L.follow.length + '</b><div class="ot-sub" style="margin-top:6px">' + packLine + '</div></div></div>' +
       '<details class="ot-tpl"><summary>✏️ Edit the first message</summary><p class="ot-sub">Use {company}, {contact}, {opener} (Claude\'s line about that business) and {link} (your website, tracked as outreach on the Traffic page).</p><textarea class="ot-msg" id="otTpl" style="min-height:140px">' + esc(OT.tpl) + '</textarea><div class="ot-btns"><button type="button" class="go" id="otTplSave">Save message</button><button type="button" id="otTplReset">Reset</button></div></details>' +
+      (L.yes.length ? '<div class="ot-h">They said yes: send ideas and a quote</div>' + L.yes.map(function(o){ return OT.yesCard(o); }).join('') : '') +
       (L.follow.length ? '<div class="ot-h">Follow-ups due</div>' + L.follow.map(function(o){ return OT.card(o, 'follow'); }).join('') : '') +
       '<div class="ot-h">Contact today' + (L.left < DAILY ? ' (' + L.left + ' left)' : '') + '</div>' +
       (L.fresh.length ? L.fresh.map(function(o){ return OT.card(o, 'new'); }).join('') : '<div class="ot-empty">' + (L.left ? 'No uncontacted leads left. New ones arrive on Monday, or add your own on the Leads Tracker tab.' : 'Goal reached for today. Well done! 🎉') + '</div>') +
-      (done ? '<div class="ot-h">Done today</div>' + L.done.map(function(o){ return OT.card(o, 'done'); }).join('') : '');
+      (done ? '<div class="ot-h">Done today</div>' + L.done.map(function(o){ return OT.card(o, 'done'); }).join('') : '') +
+      OT.libraryHtml();
     $('otTplSave').onclick = function(){ OT.tpl = $('otTpl').value; LSset('fom.ot.tpl' + SUF, OT.tpl); LSset('fom.ot.tplv' + SUF, TPL_VER); OT.saveCfg(); toast('Message saved'); OT.render(); };
     $('otTplReset').onclick = function(){ $('otTpl').value = TPL_DEF; };
   },
@@ -177,10 +230,24 @@ var OT = {
     o.undo = { status:o.status, emailed:o.emailed || '', dateEmailed:o.dateEmailed || '', followUp:o.followUp || '', contactedVia:o.contactedVia || '', comments:o.comments || '', kind:kind };
     o.status = 'Emailed'; o.emailed = 'Yes'; o.dateEmailed = t; o.contactedVia = via || o.contactedVia || '';
     o.followUp = kind === 'follow' ? '' : addDays(t, FOLLOW_DAYS);
-    if(kind === 'follow'){ o.followedUp = t; o.comments = (o.comments ? o.comments + '\n' : '') + 'Followed up ' + t; }
+    if(kind === 'follow'){ o.followedUp = t; o.comments = (o.comments ? o.comments + '\n' : '') + 'Followed up ' + t; if(o.undo.status === 'Follow Up'){ o.followUp = addDays(t, FOLLOW_DAYS); o.followNote = ''; } if(o.undo.status === 'Responded'){ o.status = 'Responded'; o.followUp = addDays(t, 4); } }
     store.update(o.id); safeRenderLeads();
   }
 };
+$('otBody').addEventListener('click', function(e){
+  var ib = e.target.closest('[data-idea]'), c = e.target.closest('.ot-card'); if(!ib || !c) return;
+  var st = OT.yesState[c.dataset.id] = OT.yesState[c.dataset.id] || { picked:[], price:'' }, k = ib.dataset.idea, i = st.picked.indexOf(k);
+  if(i >= 0){ if(st.picked.length > 1) st.picked.splice(i, 1); } else { st.picked.push(k); if(st.picked.length > 2) st.picked.shift(); }
+  OT.redrawYes(c.dataset.id);
+});
+$('otBody').addEventListener('input', function(e){
+  if(e.target.dataset.k !== 'price') return; var c = e.target.closest('.ot-card'); var st = OT.yesState[c.dataset.id] = OT.yesState[c.dataset.id] || { picked:[], price:'' };
+  st.price = e.target.value; var o = leads.find(function(x){ return x.id === c.dataset.id; });
+  var all = []; (o.ideas || []).forEach(function(x, i){ all.push({ k:'claude|' + i, t:x.title || x.t, p:x.pitch || x.p, get:x.get || '', pkg:x.pkg || '' }); });
+  FOM_IDEAS_FOR(o).forEach(function(g){ FOM_IDEAS[g].ideas.forEach(function(x, i){ all.push({ k:g + '|' + i, t:x.t, p:x.p, get:x.get, pkg:x.pkg }); }); });
+  c.querySelector('[data-k=msg]').value = OT.ideaMsg(o, all.filter(function(x){ return st.picked.indexOf(x.k) >= 0; }), st.price);
+});
+OT.redrawYes = function(id){ var o = leads.find(function(x){ return x.id === id; }), c = D.querySelector('.ot-card.yes[data-id="' + id + '"]'); if(!o || !c) return; var tmp = D.createElement('div'); tmp.innerHTML = OT.yesCard(o); c.replaceWith(tmp.firstChild); };
 $('otBody').addEventListener('click', async function(e){
   var b = e.target.closest('[data-a]'), c = e.target.closest('.ot-card'); if(!b || !c) return;
   var o = leads.find(function(x){ return x.id === c.dataset.id; }); if(!o) return;
@@ -201,10 +268,41 @@ $('otBody').addEventListener('click', async function(e){
   }
   if(a === 'done') OT.mark(o, o.contactedVia || '', kind);
   if(a === 'skip'){ var t = iso(); OT.skip = { }; OT.skip[t] = (LSget('fom.ot.skip' + SUF, {})[t] || []).concat(o.id); LSset('fom.ot.skip' + SUF, OT.skip); OT.render(); }
-  if(a === 'replied'){ o.status = 'Responded'; o.followUp = ''; store.update(o.id); safeRenderLeads(); toast('Nice! Marked as Responded.'); }
+  if(a === 'replied'){ o.status = 'Responded'; o.followUp = ''; o.ideaSent = ''; store.update(o.id); safeRenderLeads(); toast('Nice! Pick ideas to send at the top of Today.'); setTimeout(function(){ var y = D.querySelector('.ot-card.yes[data-id="' + o.id + '"]'); if(y) y.scrollIntoView({ behavior:'smooth', block:'start' }); }, 300); }
+  if(a === 'later'){ window.FOM_FOLLOWUP(o); }
+  if(a === 'ywa' || a === 'yem'){ var mm = c.querySelector('[data-k=msg]').value;
+    if(a === 'ywa') window.open('https://wa.me/' + intl(o.phone) + '?text=' + encodeURIComponent(mm), '_blank');
+    else location.href = 'mailto:' + encodeURIComponent(o.email) + '?subject=' + encodeURIComponent('Ideas and quote for ' + (o.company || 'you')) + '&body=' + encodeURIComponent(mm); }
+  if(a === 'ideasent'){ var st0 = OT.yesState[o.id] || {}; o.ideaSent = iso(); o.ideasPicked = (st0.picked || []).join(','); o.followUp = addDays(iso(), 3); o.comments = (o.comments ? o.comments + '\n' : '') + 'Ideas and quote sent ' + iso(); store.update(o.id); safeRenderLeads(); toast('Sent. I will remind you to check in on ' + nice(o.followUp) + '.'); }
+  if(a === 'won'){ o.status = 'Accepted'; o.followUp = ''; o.comments = (o.comments ? o.comments + '\n' : '') + 'Booked ' + iso(); store.update(o.id); safeRenderLeads(); toast('Booked! 🎉 Add the shoot in the Order Database.'); }
   if(a === 'stop'){ o.followUp = ''; o.comments = (o.comments ? o.comments + '\n' : '') + 'No reply after follow-up ' + iso(); store.update(o.id); safeRenderLeads(); }
   if(a === 'open'){ D.querySelector('.tab-chip[data-tab="leads"]').click(); if(typeof openLead === 'function') openLead(o.id); }
 });
+
+/* ---------- Follow up later: pick a day, get a phone reminder that morning ---------- */
+window.FOM_FOLLOWUP = function(o, done){
+  var t = iso(), pick = o.followUp && o.followUp > t ? o.followUp : addDays(t, 30);
+  var ov = D.createElement('div'); ov.className = 'fu-ov';
+  var chips = [[7, '1 week'], [14, '2 weeks'], [30, '1 month'], [60, '2 months'], [90, '3 months']];
+  ov.innerHTML = '<div class="fu-box"><h3>Follow up later</h3><div class="ot-sub">' + esc(o.company || o.contact || 'This lead') + ' said not now. Pick a day: it shows on your Today list and your phone gets a reminder at 08:00 that morning.</div>' +
+    '<div class="fu-chips">' + chips.map(function(c){ return '<button type="button" data-d="' + c[0] + '">' + c[1] + '</button>'; }).join('') + '</div>' +
+    '<input type="date" id="fuDate" value="' + pick + '" min="' + addDays(t, 1) + '"><input id="fuNote" placeholder="Note, e.g. Busy until after the festive season" value="' + esc(o.followNote || '') + '">' +
+    '<div class="ot-btns"><button type="button" data-x="1">Cancel</button><button type="button" class="go" data-ok="1" style="flex:1">Save follow-up</button></div></div>';
+  D.body.appendChild(ov);
+  var close = function(ok){ ov.remove(); if(done) done(ok); };
+  ov.addEventListener('click', async function(e){
+    if(e.target === ov || e.target.closest('[data-x]')) return close(false);
+    var d = e.target.closest('[data-d]'); if(d){ $('fuDate').value = addDays(t, +d.dataset.d); ov.querySelectorAll('[data-d]').forEach(function(b){ b.classList.toggle('on', b === d); }); return; }
+    if(!e.target.closest('[data-ok]')) return;
+    var day = $('fuDate').value; if(!day || day <= t){ toast('Pick a day after today'); return; }
+    o.status = 'Follow Up'; o.followUp = day; o.followNote = $('fuNote').value.trim().slice(0, 140);
+    o.comments = (o.comments ? o.comments + '\n' : '') + 'Not now, follow up on ' + day + (o.followNote ? ' (' + o.followNote + ')' : '');
+    store.update(o.id); safeRenderLeads(); close(true);
+    toast('Follow-up saved for ' + nice(day));
+    try{ var u = firebase.auth().currentUser; if(u){ var tk = await u.getIdToken();
+      fetch('https://fom-gallery.cold-moon-d65c.workers.dev/admin/remind', { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + tk }, body:JSON.stringify({ id:'lead-' + o.id, at:day, title:'Follow up: ' + (o.company || o.contact || 'a lead'), body:o.followNote || 'They said not now. Today is the day to check back in.', url:'leads.html?open=' + encodeURIComponent(o.id) }) }); } }catch(x){}
+  });
+};
 
 /* re-draw Today whenever the leads list changes */
 var _orig = window.safeRenderLeads;

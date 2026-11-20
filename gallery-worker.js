@@ -744,8 +744,9 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const g = normPrefix(url.searchParams.get('g'));
-    if (/^_(notify|push|events|sales|channel)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
+    if (/^_(notify|push|events|sales|channel|remind)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
     if (path.startsWith('/sales/')) return handleSales(path, request, env, url);
+    if (path === '/admin/remind' && request.method === 'POST') return handleRemind(request, env);
     if (path === '/event') return handleEvent(request, env, ctx);
     if (path === '/t') return handleTrack(request, env, ctx);
     if (path === '/admin/channel-save') return handleChannelSave(request, env);
@@ -854,6 +855,7 @@ export default {
     if (event.cron === '0 * * * *') {
       if (env.STATS) ctx.waitUntil(statsHourly(env).catch(() => null));
       if (env.BUCKET) ctx.waitUntil(channelCheck(env).catch(() => null));   // WhatsApp Group: new messages from the scheduled task
+      if (env.BUCKET) ctx.waitUntil(remindCheck(env).catch(() => null));    // lead follow-up reminders set on the Leads page
       return;
     }
     ctx.waitUntil((async () => {
@@ -1197,6 +1199,32 @@ async function handleChannelTest(request, env) {
     if (!w.ok) return json({ ok: false, step: 'write', msg: 'GitHub refused the write (' + w.status + '): ' + (await w.text()).slice(0, 120) });
     return json({ ok: true, msg: 'All good: the Worker can write to your repo. Press Save.' });
   } catch (e) { return json({ ok: false, step: 'network', msg: String(e && e.message || e) }); }
+}
+// ---------- reminders (Leads page: Follow up on a day you pick) ----------
+// R2 _remind/<id>.json { at:'YYYY-MM-DD', title, body, url }. Sent from 08:00 SAST on that day by the hourly cron, then deleted.
+async function remindCheck(env) {
+  const now = new Date(Date.now() + 2 * 3600e3), today = now.toISOString().slice(0, 10);
+  if (now.getUTCHours() < 8) return;
+  let cursor; do {
+    const r = await env.BUCKET.list({ prefix: '_remind/', cursor, limit: 1000 });
+    for (const ob of r.objects) {
+      const o = await r2json(env, ob.key); if (!o) { await env.BUCKET.delete(ob.key); continue; }
+      if (o.at > today) continue;
+      await pushAll(env, { title: o.title || 'Follow-up reminder', body: o.body || '', url: o.url || 'leads.html', tag: 'fom-remind-' + ob.key.split('/').pop() }).catch(() => null);
+      await env.BUCKET.delete(ob.key);
+    }
+    cursor = r.truncated ? r.cursor : undefined;
+  } while (cursor);
+}
+async function handleRemind(request, env) {
+  if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+  let b = {}; try { b = await request.json(); } catch (e) {}
+  const id = safeName(b.id); if (!id) return json({ error: 'missing id' }, 400);
+  const key = '_remind/' + id + '.json';
+  if (!b.at) { await env.BUCKET.delete(key); return json({ ok: true, cleared: true }); }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(b.at)) return json({ error: 'bad date' }, 400);
+  await r2put(env, key, { at: b.at, title: String(b.title || '').slice(0, 80), body: String(b.body || '').slice(0, 200), url: String(b.url || 'leads.html').slice(0, 200) });
+  return json({ ok: true });
 }
 async function channelCheck(env) {
   // new messages from the scheduled task? (public file, no token needed)
