@@ -271,6 +271,8 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .bf-ctl{display:flex;gap:4px;flex:none;align-items:center;}
 .bf-ctl button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--bg-pill);color:var(--ink);cursor:pointer;font-size:14px;font-family:inherit;line-height:1;}
 .bf-ctl button.x{color:#c0392b;}
+.br-more summary{cursor:pointer;font-weight:700;margin-top:14px;}
+.br-more textarea{width:100%;box-sizing:border-box;}
 .bf-sw{position:relative;width:40px;height:24px;flex:none;cursor:pointer;}
 .bf-sw input{position:absolute;opacity:0;}
 .bf-sw span{position:absolute;inset:0;border-radius:99px;background:var(--line);transition:.2s;}
@@ -446,6 +448,33 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
         <div id="bfPkgs"></div>
         <button type="button" class="bf-add" id="bfAddPkg">+ Add a package</button>
         <div class="gh-acts" style="margin-top:14px"><a class="rv-btn" href="https://www.fomstudios.co.za/?book=1" target="_blank" rel="noopener">Open the live form</a><button type="button" id="bfReset">Reset to the defaults</button></div>
+    </section>
+
+    <section class="ws-card" id="brCard">
+        <h2>Client brief link</h2>
+        <p class="ws-help">The one-minute brief you send on WhatsApp from the Leads page (📝 Send brief link). It always starts with "What are we shooting?" (the shoot cards from the Book a shoot form), never asks for contact details, and ends with your thank-you line and a Visit our website button. Turn pages on or off and change the tap options here, then Publish.</p>
+        <div class="bf-h">Pages</div>
+        <label class="ws-toggle"><input type="checkbox" id="brPkg"><span class="sw"></span><b id="brPkgL">Package</b></label>
+        <label class="ws-toggle"><input type="checkbox" id="brWhen"><span class="sw"></span><b>When and where</b> <span style="color:var(--ink-soft);font-weight:600">(date, start time, venue, how many people)</span></label>
+        <label class="ws-toggle"><input type="checkbox" id="brMust"><span class="sw"></span><b>Must-have shots</b></label>
+        <label class="ws-toggle"><input type="checkbox" id="brLook"><span class="sw"></span><b>What look do you love</b> <span style="color:var(--ink-soft);font-weight:600">(vibe and your photos)</span></label>
+        <label class="ws-toggle"><input type="checkbox" id="brNote"><span class="sw"></span><b>Anything else</b> <span style="color:var(--ink-soft);font-weight:600">(a note box)</span></label>
+        <div class="ws-grid" style="margin-top:12px">
+            <div class="ws-f ws-wide"><label for="brIntro">Opening line (under "Hi Sarah 👋")</label><input id="brIntro" maxlength="160"></div>
+            <div class="ws-f ws-wide"><label for="brThanks">Thank-you line</label><input id="brThanks" maxlength="160"></div>
+        </div>
+        <details class="br-more"><summary>Tap options (one per line)</summary>
+            <div class="ws-grid" style="margin-top:10px">
+                <div class="ws-f" id="brLenF"><label for="brLen">How long (Shot by A, instead of packages)</label><textarea id="brLen" rows="5"></textarea></div>
+                <div class="ws-f"><label for="brGuests">How many people</label><textarea id="brGuests" rows="5"></textarea></div>
+                <div class="ws-f"><label for="brUses">Where will you use it (brands, events, sports)</label><textarea id="brUses" rows="5"></textarea></div>
+                <div class="ws-f"><label for="brVibes">Look and vibe</label><textarea id="brVibes" rows="5"></textarea></div>
+            </div>
+            <label class="ws-toggle" style="margin-top:10px"><input type="checkbox" id="brPhotos"><span class="sw"></span><b>Show our photos to tap on the look page</b></label>
+            <div class="bf-h">Must-have shots for each kind of shoot</div>
+            <div class="ws-grid" id="brMustList"></div>
+        </details>
+        <div class="gh-acts" style="margin-top:14px"><button type="button" id="brReset">Reset to the defaults</button></div>
     </section>
 
     <section class="ws-card" id="stCard">
@@ -683,6 +712,39 @@ $('bfCard').addEventListener('click', e=>{
 $('bfCard').addEventListener('change', e=>{ if(e.target.matches('[data-k=on]')) e.target.closest('.bf-row').classList.toggle('off', !e.target.checked); if(e.target.matches('[data-k=label],[data-k=icon]')) bfRedraw(); });
 drawBF(null);
 
+/* ---- Client brief link (both websites): saved as briefForm { steps:{pkg,when,must,look,note}, intro, thanks, photos, lengths[], guests[], uses[], vibes[], must:{group:[...]} }
+   portfolio/brief.html reads it. Keep DEF_BR in step with DEF_BR there. */
+const BR_GROUPS = [['wedding','Weddings'],['party','Birthdays and parties'],['corporate','Corporate and events'],['family','Family and portraits'],['product','Products and brands'],['sports','Sports'],['other','Everything else']];
+const DEF_BR = { steps:{ pkg:true, when:true, must:false, look:false, note:true }, photos:true,
+  intro:"A few quick taps so I can send you the right quote. Skip anything you're not sure about.", thanks:"Got everything. I'll send your quote on WhatsApp soon.",
+  lengths:['1 hour','2 hours','Half day','Full day','Not sure'], guests:['Just us','Under 20','20 to 50','50 to 100','100+'], uses:['Instagram','TikTok','Website','Ads','LinkedIn','Print'], vibes:['Bright and natural','Moody and cinematic','Candid and fun','Classic and posed'],
+  must:{ wedding:['Getting ready','Ceremony','Rings','First kiss','Family groups','Couple portraits','First dance','Speeches','Decor and details'], party:['Cake and candles','Decor','Guests arriving','Group photos','Games and dancing','Gifts','Candid moments'],
+    corporate:['Speakers','Branding and banners','Networking candids','Team photo','Headshots','Venue and decor','Highlight reel'], family:['Whole family','Kids on their own','Parents','Siblings','Candid play','Pets'],
+    product:['Product close-ups','Lifestyle in use','Flat lays','Behind the scenes','Team at work','Short reels'], sports:['Action shots','Team photo','Celebrations','Supporters','Coach and bench','Individual players','Highlight reel'], other:['Group photos','Candids','Details and decor','Highlight reel'] } };
+const brList = (v, d) => { const a = (Array.isArray(v) ? v : String(v || '').split('\n')).map(x => String(x || '').trim().slice(0, 40)).filter(Boolean).slice(0, 16); return a.length ? a : d.slice(); };
+function normBR(x){
+  x = (x && typeof x === 'object') ? x : {}; const st = x.steps || {}, m = x.must || {}, must = {};
+  BR_GROUPS.forEach(([k]) => { must[k] = brList(m[k], DEF_BR.must[k]); });
+  const steps = {}; Object.keys(DEF_BR.steps).forEach(k => { steps[k] = typeof st[k] === 'boolean' ? st[k] : DEF_BR.steps[k]; });
+  return { steps, photos:x.photos !== false, intro:String(x.intro || DEF_BR.intro).trim().slice(0, 160), thanks:String(x.thanks || DEF_BR.thanks).trim().slice(0, 160),
+    lengths:brList(x.lengths, DEF_BR.lengths), guests:brList(x.guests, DEF_BR.guests), uses:brList(x.uses, DEF_BR.uses), vibes:brList(x.vibes, DEF_BR.vibes), must };
+}
+function drawBR(x){
+  const b = normBR(x);
+  $('brPkg').checked = b.steps.pkg; $('brWhen').checked = b.steps.when; $('brMust').checked = b.steps.must; $('brLook').checked = b.steps.look; $('brNote').checked = b.steps.note; $('brPhotos').checked = b.photos;
+  $('brIntro').value = b.intro; $('brThanks').value = b.thanks;
+  $('brLen').value = b.lengths.join('\n'); $('brGuests').value = b.guests.join('\n'); $('brUses').value = b.uses.join('\n'); $('brVibes').value = b.vibes.join('\n');
+  $('brMustList').innerHTML = BR_GROUPS.map(([k, n]) => '<div class="ws-f"><label>' + esc(n) + '</label><textarea data-brm="' + k + '" rows="5">' + esc(b.must[k].join('\n')) + '</textarea></div>').join('');
+}
+function readBR(){
+  const must = {}; document.querySelectorAll('[data-brm]').forEach(t => { must[t.dataset.brm] = t.value; });
+  return normBR({ steps:{ pkg:$('brPkg').checked, when:$('brWhen').checked, must:$('brMust').checked, look:$('brLook').checked, note:$('brNote').checked }, photos:$('brPhotos').checked,
+    intro:$('brIntro').value, thanks:$('brThanks').value, lengths:$('brLen').value, guests:$('brGuests').value, uses:$('brUses').value, vibes:$('brVibes').value, must });
+}
+$('brReset').onclick = () => { if(!confirm('Reset the brief link pages and tap options to the defaults? Nothing changes for clients until you Publish.')) return; drawBR(DEF_BR); setState(); };
+if(SBA){ $('brPkgL').textContent = 'How long and photos or video'; } else { $('brPkgL').textContent = 'Package'; $('brLenF').style.display = 'none'; }
+drawBR(null);
+
 /* ---- Our studios (both websites): saved as studios { on, label, title, intro, footer, footerText, cards:[{name,line,img,url,btn}] } ----
    portfolio/studios.js draws it. Keep DEF_ST in step with DEF there. Pictures: upload (R2 portfolio/studio-*.jpg, saved as 'r2:<file>') or a path/link. */
 const ST_FOM = { name:'FOM Studios', line:'Sports, events, automotive and brand content. Photo, video and drone, all in one booking.', img:'/assets/mascot-head-color.png', url:'/', btn:'Visit FOM Studios' };
@@ -753,6 +815,7 @@ function readForm(){
   d.blockedDates=readBD();
   d.galleryHeader=normGH(Object.assign({}, GH, { line:$('ghLine').value }));
   if(!SBA) d.bookingForm=readBF();
+  d.briefForm=readBR();
   d.studios=readST();
   if(SBA){ const t={}; Object.keys(TX).forEach(k=>{ const v=$(TX[k]).value.trim(); if(v) t[k]=v; }); d.text=t; d.services=readSvc(); }
   return d;
@@ -786,6 +849,7 @@ function readSaved(d){
   o.blockedDates=normBD(d&&d.blockedDates);
   o.galleryHeader=normGH(d&&d.galleryHeader);
   if(!SBA) o.bookingForm=normBF(d&&d.bookingForm);
+  o.briefForm=normBR(d&&d.briefForm);
   o.studios=normST(d&&d.studios);
   if(SBA){ o.text=normText(d&&d.text); o.services=normSvc(d&&d.services); }
   return o;
@@ -798,6 +862,7 @@ function fillForm(d){
   drawBD(normBD(d.blockedDates));
   { const g=normGH(d.galleryHeader); GH={ src:g.src, fx:g.fx, fy:g.fy }; $('ghLine').value=g.line; drawGH(); }
   if(!SBA) drawBF(d.bookingForm);
+  drawBR(d.briefForm);
   drawST(d.studios);
   if(SBA){ const t=d.text||{}; Object.keys(TX).forEach(k=>{ $(TX[k]).value=t[k]||''; }); drawSvc(d.services); }
   preview();
@@ -850,6 +915,7 @@ function setState(){
       const n = c.querySelectorAll('input:not([type=hidden]):not([type=file]),select,textarea').length;
       let t = '';
       if(c.id === 'stCard') t = val('stOn') ? 'On' : 'Off';
+      else if(c.id === 'brCard') t = ['brPkg','brWhen','brMust','brLook','brNote'].filter(val).length + 1 + ' pages';
       else if(c.id === 'bfCard') t = val('bfOn') === false ? 'Old form' : 'Step-by-step';
       else if(c.id === 'ghCard') t = (typeof GH !== 'undefined' && GH.src) ? 'Your photo' : 'Default';
       else if(c.querySelector('#bOn')) t = val('bOn') ? 'On' : 'Off';
