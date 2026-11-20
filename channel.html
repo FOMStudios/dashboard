@@ -214,7 +214,24 @@ html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7
 .ch-f input,.ch-f select,.ch-f textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:16px;font-family:inherit;background:var(--bg-pill);color:var(--ink);min-width:0;}
 .ch-f input[type=date]{-webkit-appearance:none;appearance:none;min-height:44px;}
 .ch-f textarea{min-height:76px;resize:vertical;line-height:1.45;}
-.ch-x{margin-left:auto;display:flex;gap:6px;}
+.ch-x{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;}
+.mv-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;}
+.mv{background:var(--bg-pill,#fff);color:var(--ink);border-radius:18px;max-width:560px;width:100%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.mv h3{margin:0 0 4px;font-size:18px;} .mv p.s{margin:0 0 14px;color:var(--ink-soft);font-size:13.5px;}
+.mv .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.mv label.f span{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:4px;}
+.mv input[type=date]{width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--bg);color:var(--ink);}
+.mv .chips{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px;}
+.mv .chips button{border:1px solid var(--line);background:var(--bg);border-radius:99px;padding:5px 10px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink);}
+.mv ul{list-style:none;margin:0 0 14px;padding:0;max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:12px;}
+.mv li{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border-bottom:1px solid var(--line);font-size:13.5px;}
+.mv li:last-child{border-bottom:0;} .mv li small{display:block;color:var(--ink-soft);font-size:12px;margin-top:2px;}
+.mv li .d{margin-left:auto;white-space:nowrap;font-weight:800;font-size:12.5px;} .mv li .d s{color:var(--ink-soft);font-weight:600;}
+.mv .btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
+.mv .btns button{border:1px solid var(--line);background:var(--bg);border-radius:99px;padding:9px 16px;font:inherit;font-weight:800;cursor:pointer;color:var(--ink);}
+.mv .btns .pri{background:#111;color:#fff;border-color:#111;}
+.mv li input{margin-top:3px;width:17px;height:17px;flex:none;accent-color:#111;}
+.mv .none{padding:12px;color:var(--ink-soft);font-size:13.5px;}
 .ch-x button{border:1px solid var(--line);background:var(--bg-pill);border-radius:99px;padding:6px 11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink);}
 .ch-add{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
 .ch-add button{border:1px dashed var(--ink-soft);background:transparent;border-radius:99px;padding:8px 14px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink);}
@@ -361,6 +378,7 @@ html[data-theme=dark] .ch-photo{background:#3a3016;color:#f3dfa6;border-color:#7
 <div class="toast" id="toast"></div>
 
 <script src="firebase-config.js"></script>
+<script src="date-shift.js?v=1"></script>
 <script>
 /* ============================================================
    WHATSAPP GROUP (per business; FOM only for now). Files and ids keep the old 'channel' name.
@@ -390,7 +408,7 @@ const wa = t => esc(t).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(^|[\s(])
 const TYPES = { giveaway:'Giveaway', promo:'Promo or special', event:'Event', news:'Announcement' };
 const FIELDS = {
   giveaway:[['title','Name','Festive giveaway'],['offer','Prize','A free 1 hour family shoot'],['howTo','How to enter','Join the group, share this message, reply with your name',1],['rules','Rules (short)','Gauteng only. Winner drawn 20 Dec.',1],['link','Link (optional)','']],
-  promo:[['title','Name','Black Friday mini sessions'],['offer','Offer','R400 off any shoot booked this week'],['howTo','How to claim','Book on the website and mention BLACKFRIDAY',1],['rules','Fine print (optional)','',1],['link','Link (optional)','']],
+  promo:[['title','Name','Black Friday mini sessions'],['code','Promo code (optional: the calculator follows these dates)','BLACKFRIDAY'],['offer','Offer','R400 off any shoot booked this week'],['howTo','How to claim','Book on the website and mention BLACKFRIDAY',1],['rules','Fine print (optional)','',1],['link','Link (optional)','']],
   event:[['title','Event','947 Ride Joburg'],['offer','What you are doing','Shooting the finish line',1],['howTo','What people should do','Find your photos on our Instagram on Monday',1],['rules','Details (optional)','',1],['link','Link (optional)','']],
   news:[['title','Announcement','December bookings are open'],['offer','Details','',1],['howTo','What people should do','Book early on the website',1],['rules','More (optional)','',1],['link','Link (optional)','']]
 };
@@ -407,7 +425,7 @@ function drawCamps(){
   $('chCamps').innerHTML = C.length ? C.map((c, i) => {
     const [cl, txt] = campStatus(c), f = FIELDS[c.type] || FIELDS.news;
     return '<div class="ch-camp' + (c.on ? '' : ' off') + '" data-i="' + i + '"><div class="ch-camp-h"><span class="ch-chip camp">' + esc(TYPES[c.type] || 'Other') + '</span><b>' + esc(c.title || 'Untitled') + '</b><span class="ch-st ' + cl + '">' + txt + '</span>' +
-      '<span class="ch-x"><button type="button" data-a="tog">' + (c.on ? 'Pause' : 'Resume') + '</button><button type="button" data-a="del">Remove</button></span></div>' +
+      '<span class="ch-x"><button type="button" data-a="move">📅 Move dates</button><button type="button" data-a="tog">' + (c.on ? 'Pause' : 'Resume') + '</button><button type="button" data-a="del">Remove</button></span></div>' +
       '<div class="ch-grid">' + f.map(([k, lab, ph, big]) => '<div class="ch-f' + (big ? ' w' : '') + '"><span>' + lab + '</span>' + (big ? '<textarea data-k="' + k + '" placeholder="' + esc(ph) + '">' + esc(c[k] || '') + '</textarea>' : '<input data-k="' + k + '" value="' + esc(c[k] || '') + '" placeholder="' + esc(ph) + '">') + '</div>').join('') +
       '<div class="ch-f"><span>Starts</span><input type="date" data-k="start" value="' + esc(c.start || '') + '"></div><div class="ch-f"><span>Ends</span><input type="date" data-k="end" value="' + esc(c.end || '') + '"></div>' +
       (c.type === 'giveaway' ? '<div class="ch-f w"><span>Winner (fill in after the draw)</span><input data-k="winner" value="' + esc(c.winner || '') + '" placeholder="First name, or leave empty"></div>' : '') +
@@ -418,6 +436,7 @@ $('chCamps').addEventListener('input', e => { const b = e.target.closest('[data-
 $('chCamps').addEventListener('click', e => {
   const btn = e.target.closest('[data-a]'), b = e.target.closest('[data-i]'); if(!btn || !b) return;
   const i = +b.dataset.i, c = ST.settings.campaigns[i];
+  if(btn.dataset.a === 'move'){ openMove(i); return; }
   if(btn.dataset.a === 'tog'){ c.on = !c.on; drawCamps(); markDirty(); }
   if(btn.dataset.a === 'del' && confirm('Remove "' + (c.title || 'this') + '"? Messages stop mentioning it after the next refresh.')){ ST.settings.campaigns.splice(i, 1); drawCamps(); markDirty(); }
 });
@@ -427,6 +446,86 @@ $('chAdd').onclick = e => {
   ST.settings.campaigns.unshift({ id:'c' + Date.now().toString(36), type:b.dataset.t, on:true, title:'', offer:'', howTo:'', rules:'', link:'', notes:'', start:t, end: b.dataset.t === 'giveaway' ? addDays(t, 30) : b.dataset.t === 'event' ? t : addDays(t, 7), winner:'' });
   drawCamps(); markDirty(); const f = $('chCamps').querySelector('[data-k=title]'); if(f) f.focus();
 };
+
+/* ---------- Move dates: one change moves a campaign, its linked campaigns, its dated messages and every date written in them ---------- */
+function applyMoved(){
+  if(!PACK || !PACK.messages) return;
+  const M = ST.settings.moved || {};
+  PACK.messages.forEach(m => {
+    if(m._day0 === undefined){ m._day0 = m.day || ''; m._text0 = m.text; }
+    const v = M[m.id];
+    // only while the pack still holds the version we moved (Claude's task copies the move in, then this is a no-op)
+    if(v && (!v.from || v.from === m._day0 || v.day === m._day0)){ m.day = v.day; if(v.text != null) m.text = v.text; }
+  });
+  const dated = PACK.messages.filter(m => m.day && m.keep), rest = PACK.messages.filter(m => !(m.day && m.keep));
+  dated.sort((a, b) => a.day.localeCompare(b.day));
+  PACK.messages = dated.concat(rest);
+}
+const CAMP_TXT = ['title','offer','howTo','rules','notes'];
+function moveScope(i, ns, ne, skip){
+  skip = skip || new Set();
+  const C = ST.settings.campaigns, c = C[i], S = window.FOM_SHIFT;
+  const os = c.start || today(), oe = c.end || os;
+  const P = S.plan(os, oe, ns, ne || ns);
+  // linked: campaigns that start when this one ends (for example the giveaway code that is posted when entries close)
+  const linked = C.map((x, j) => ({ x, j })).filter(o => o.j !== i && o.x.start && o.x.start >= S.addDays(oe, -1) && o.x.start <= S.addDays(oe, 2) && !skip.has(o.x.id));
+  const ids = new Set([c.id].concat(linked.map(o => o.x.id)));
+  const msgs = ((PACK && PACK.messages) || []).filter(m => m.day && ids.has(m.campaign) && P.inWindow(m.day) && !skip.has(m.id));
+  return { P, c, linked, msgs };
+}
+function openMove(i){
+  const c = ST.settings.campaigns[i];
+  if(!window.FOM_SHIFT){ toast('Move dates is still loading, try again'); return; }
+  const bg = document.createElement('div'); bg.className = 'mv-bg';
+  bg.innerHTML = '<div class="mv" role="dialog" aria-label="Move dates"><h3>📅 Move "' + esc(c.title || 'this') + '"</h3>' +
+    '<p class="s">Pick the new dates. Everything tied to it moves too: dated group messages, linked campaigns, the dates written in every text' + (c.code ? ', and the calculator code ' + esc(c.code) : '') + '.</p>' +
+    '<div class="row"><label class="f"><span>New start</span><input type="date" id="mvS" value="' + esc(c.start || today()) + '"></label><label class="f"><span>New end</span><input type="date" id="mvE" value="' + esc(c.end || c.start || today()) + '"></label></div>' +
+    '<div class="chips"><button type="button" data-n="1">+1 day</button><button type="button" data-n="7">+1 week</button><button type="button" data-n="-1">-1 day</button><button type="button" data-n="-7">-1 week</button><button type="button" data-x="7">End +1 week (longer)</button></div>' +
+    '<div id="mvList"></div><div class="btns"><button type="button" id="mvNo">Cancel</button><button type="button" class="pri" id="mvGo">Move everything</button></div></div>';
+  document.body.appendChild(bg);
+  const S = window.FOM_SHIFT, sI = bg.querySelector('#mvS'), eI = bg.querySelector('#mvE');
+  const close = () => bg.remove();
+  bg.addEventListener('click', e => { if(e.target === bg) close(); });
+  bg.querySelector('#mvNo').onclick = close;
+  bg.querySelector('.chips').onclick = e => { const b = e.target.closest('button'); if(!b) return;
+    if(b.dataset.n){ sI.value = S.addDays(sI.value, +b.dataset.n); eI.value = S.addDays(eI.value, +b.dataset.n); }
+    if(b.dataset.x) eI.value = S.addDays(eI.value, +b.dataset.x);
+    draw(); };
+  const skip = new Set();
+  const row = (t, sub, a, b, id) => '<li>' + (id ? '<input type="checkbox" data-id="' + esc(id) + '"' + (skip.has(id) ? '' : ' checked') + ' title="Untick to leave it where it is">' : '') + '<div>' + esc(t) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div><span class="d">' + (a === b ? niceShort(b) : '<s>' + niceShort(a) + '</s> → ' + niceShort(b)) + '</span></li>';
+  function draw(){
+    if(eI.value < sI.value) eI.value = sI.value;
+    const { P, linked, msgs } = moveScope(i, sI.value, eI.value, new Set());
+    const L = [];
+    L.push(row(c.title || 'This campaign', 'Starts', c.start || '', sI.value));
+    if((c.end || '') !== '' ) L.push(row(c.title || 'This campaign', 'Ends', c.end, eI.value));
+    linked.forEach(o => L.push(row(o.x.title || 'Linked campaign', 'Starts when this ends, so it moves too', o.x.start, skip.has(o.x.id) ? o.x.start : P.map(o.x.start), o.x.id)));
+    msgs.forEach(m => L.push(row('💬 ' + (m.title || 'Group message'), 'Group message, dates in the text update too', m.day, skip.has(m.id) ? m.day : P.map(m.day), m.id)));
+    const codes = [c].concat(linked.filter(o => !skip.has(o.x.id)).map(o => o.x)).filter(x => x.code);
+    codes.forEach(x => L.push('<li><div>🏷️ Calculator code ' + esc(x.code) + '<small>Follows the dates of "' + esc(x.title || '') + '"</small></div></li>'));
+    bg.querySelector('#mvList').innerHTML = (!P.ds && !P.de) ? '<div class="none">Pick new dates to see what moves.</div>' : '<ul>' + L.join('') + '</ul>';
+    bg.querySelector('#mvGo').disabled = !P.ds && !P.de;
+  }
+  bg.querySelector('#mvList').addEventListener('change', e => { const id = e.target.dataset.id; if(!id) return; e.target.checked ? skip.delete(id) : skip.add(id); draw(); });
+  sI.oninput = eI.oninput = draw; draw();
+  bg.querySelector('#mvGo').onclick = () => {
+    const { P, linked, msgs } = moveScope(i, sI.value, eI.value, skip), R = t => S.rewrite(t, P);
+    CAMP_TXT.forEach(k => { if(c[k]) c[k] = R(c[k]); });
+    c.start = sI.value; c.end = eI.value;
+    linked.forEach(o => { const x = o.x; CAMP_TXT.forEach(k => { if(x[k]) x[k] = R(x[k]); }); x.start = P.map(x.start); if(x.end && P.inWindow(x.end)) x.end = P.map(x.end); if(x.end && x.end < x.start) x.end = x.start; });
+    if(ST.settings.thisWeek) ST.settings.thisWeek = R(ST.settings.thisWeek);
+    const M = ST.settings.moved = Object.assign({}, ST.settings.moved || {});
+    msgs.forEach(m => {
+      M[m.id] = { from:m._day0 || m.day, day:P.map(m.day), text:R(m.text) };
+      const s = ST.msgs[m.id]; if(s && s.text != null){ s.text = R(s.text); }
+      m.day = M[m.id].day; m.text = M[m.id].text;
+    });
+    // forget moves for messages that are long gone from the pack
+    const live = new Set(((PACK && PACK.messages) || []).map(m => m.id)); Object.keys(M).forEach(k => { if(!live.has(k)) delete M[k]; });
+    applyMoved(); close(); drawCamps(); drawNow(); markDirty(); saveState();
+    toast('Moved ' + (1 + linked.length) + ' campaign' + (linked.length ? 's' : '') + ' and ' + msgs.length + ' message' + (msgs.length === 1 ? '' : 's') + '. Press Save so Claude and the calculator follow.');
+  };
+}
 
 /* ---------- schedule and style ---------- */
 const EVERY = [1, 2, 3, 4, 7, 14];
@@ -472,8 +571,9 @@ function drawNow(){
   requestAnimationFrame(fitPhotos);
   $('chMsgs').innerHTML = PACK.messages.map((m, i) => {
     const my = ST.msgs[m.id] || {}, text = my.text != null ? my.text : m.text, photo = my.photo != null ? my.photo : (m.photo || '');
+    const mv = (ST.settings.moved || {})[m.id];
     const camp = m.campaign && (ST.settings.campaigns.find(c => c.id === m.campaign) || {}).title;
-    const role = m.day ? '<span class="ch-day">' + nice(m.day) + '</span>' : '<span class="ch-chip' + (m.role === 'main' ? ' main' : '') + '">' + (m.role === 'main' ? 'Main' : 'Option ' + (i + 1)) + '</span>';
+    const role = m.day ? '<span class="ch-day">' + nice(m.day) + (mv && mv.from ? ' <small title="Moved with Move dates">(moved from ' + niceShort(mv.from) + ')</small>' : '') + '</span>' : '<span class="ch-chip' + (m.role === 'main' ? ' main' : '') + '">' + (m.role === 'main' ? 'Main' : 'Option ' + (i + 1)) + '</span>';
     return '<div class="ch-msg' + (my.approved ? ' approved' : '') + (my.sentAt ? ' sent' : '') + '" data-id="' + esc(m.id) + '"><div class="ch-top">' + role +
       (camp ? '<span class="ch-chip camp">' + esc(camp) + (m.stage ? ': ' + esc(m.stage) : '') + '</span>' : '') +
       (my.sentAt ? '<span class="ch-chip ok">Sent ' + niceShort(my.sentAt.slice(0, 10)) + '</span>' : my.approved ? '<span class="ch-chip ok">Approved</span>' : '') +
@@ -571,6 +671,7 @@ async function start(db){
   const [snap] = await Promise.all([DOC.get().catch(() => null), loadPack()]);
   const d = snap && snap.exists ? snap.data() : {};
   ST = { settings:Object.assign(DEF(), d.settings || {}), msgs:d.msgs || {}, history:d.history || [] };
+  applyMoved();
   drawSched(); drawCamps(); drawNow(); drawHist();
   const remote = await loadRemoteSettings();
   // Claude can add campaigns straight into channel/settings.json (marked fromClaude): bring them in once, then you Save
@@ -589,7 +690,7 @@ async function start(db){
     if(remote.thisWeek && (!ST.settings.thisWeek || remote.thisWeekForce)) ST.settings.thisWeek = remote.thisWeek;
     if(upd.length && !add.length){ markDirty(); toast('Claude updated: ' + upd.join(', ') + '. Press Save to keep it.'); }
     ST.settings.importedClaude = remote.fromClaude;
-    drawSched(); drawCamps(); drawNow();
+    applyMoved(); drawSched(); drawCamps(); drawNow();
     if(add.length){ markDirty(); toast('Claude added: ' + add.map(c => c.title).join(', ') + '. Press Save to keep it.'); }
   }
   if(!d.settings) setSync(false, 'Not set up yet: press Save');

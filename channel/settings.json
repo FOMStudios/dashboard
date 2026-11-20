@@ -40,7 +40,8 @@
       "start": "2026-11-27",
       "end": "2026-11-30",
       "winner": "",
-      "notes": "Festive gift angle works well: a shoot as a Christmas present. The giveaway is still running on these days, so mention it briefly too."
+      "notes": "Festive gift angle works well: a shoot as a Christmas present. The giveaway is still running on these days, so mention it briefly too.",
+      "code": "FOMBLACKFRIDAY"
     },
     {
       "rules": "Entries close Sat 5 Dec 18:00 SAST. Winners drawn at random and announced by Mon 7 Dec; they must reply within 48 hours. SA residents 18+. No purchase necessary. Prizes have no cash value and must be used by 31 Jan 2027. Not sponsored by or associated with Instagram.",
@@ -68,17 +69,18 @@
       "start": "2026-12-05",
       "id": "code-fomgiveaway10",
       "type": "promo",
-      "title": "Giveaway code FOMGIVEAWAY10"
+      "title": "Giveaway code FOMGIVEAWAY10",
+      "code": "FOMGIVEAWAY10"
     }
   ],
   "refreshRequested": "",
   "updatedAt": "2026-11-19T14:17:37.772Z",
   "importedClaude": "2026-11-19-947-blackfriday",
-  "thisWeekForce": true,
-  "fromClaude": "2026-11-20-giveaway-dates",
+  "fromClaude": "2026-11-20-promo-codes",
   "replace": [
     "giveaway-nov-2026",
     "code-fomgiveaway10",
     "promo-black-friday-2026"
-  ]
+  ],
+  "thisWeekForce": true
 }

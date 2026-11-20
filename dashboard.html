@@ -253,7 +253,7 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 <div class="mascot-corner"><img src="assets/mascot.png" alt="" onerror="this.parentElement.style.display='none'"></div>
 
 <!-- Firebase config only (the SDK is loaded on demand, and only when configured) -->
-<script src="promos.js?v=1"></script>
+<script src="promos.js?v=2"></script>
 <script src="firebase-config.js"></script>
 <script src="health.js"></script>
 <script>
@@ -390,16 +390,17 @@ function cardMeetings(){
 }
 
 /* ---- This week: campaigns, group posts, promo codes and shoots for the next 7 days (FOM; Shot by A shows shoots only) ---- */
-let WEEK = { camps:[], posts:[], sent:{}, note:'' };
+window.addEventListener('fom-promos', () => { try{ safeRender(); }catch(e){} });
+let WEEK = { camps:[], posts:[], sent:{}, note:'', moved:{} };
 function loadWeek(db){
   const SUF = BZ.id === 'sba' ? '_sba' : '';
   fetch('channel/pack' + SUF + '.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(p => { WEEK.posts = (p && p.messages || []).filter(m => m.day); safeRender(); }).catch(() => {});
-  const fromRepo = () => fetch('channel/settings' + SUF + '.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(st => { if(st){ WEEK.camps = st.campaigns || []; WEEK.note = st.thisWeek || ''; safeRender(); } }).catch(() => {});
+  const fromRepo = () => fetch('channel/settings' + SUF + '.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(st => { if(st){ WEEK.camps = st.campaigns || []; WEEK.note = st.thisWeek || ''; WEEK.moved = st.moved || {}; safeRender(); } }).catch(() => {});
   if(!db){ fromRepo(); return; }
   db.collection('settings').doc('channel' + SUF).get().then(d => {
     const x = d.exists ? d.data() : {};
     if(!x.settings) return fromRepo();
-    WEEK.camps = x.settings.campaigns || []; WEEK.note = x.settings.thisWeek || ''; WEEK.sent = x.msgs || {};
+    WEEK.camps = x.settings.campaigns || []; WEEK.note = x.settings.thisWeek || ''; WEEK.moved = x.settings.moved || {}; WEEK.sent = x.msgs || {};
     fromRepo2(x.settings);
     safeRender();
   }).catch(fromRepo);
@@ -426,7 +427,8 @@ function cardWeek(){
     if(p.expires && p.expires >= today && p.expires <= end) rows.push({ d:p.expires, k:1, tag:nice(p.expires), cls:'soon', t:'🏷️ Code ' + code + ' ends', sub:p.label, href:'calculator.html' });
     if(p.starts && p.starts > today && p.starts <= end) rows.push({ d:p.starts, k:1, tag:nice(p.starts), cls:'soon', t:'🏷️ Code ' + code + ' starts', sub:p.label, href:'calculator.html' });
   });
-  WEEK.posts.filter(m => m.day >= today && m.day <= end && !(WEEK.sent[m.id] && WEEK.sent[m.id].sentAt)).forEach(m => rows.push({ d:m.day, k:2, tag:nice(m.day), cls: m.day === today ? 'now' : '', t:'💬 Group post: ' + m.title, sub:'', href:'channel.html' }));
+  const MV = WEEK.moved || {};
+  WEEK.posts.map(m => { const v = MV[m.id]; return v && (!v.from || v.from === m.day) ? Object.assign({}, m, { day:v.day }) : m; }).filter(m => m.day >= today && m.day <= end && !(WEEK.sent[m.id] && WEEK.sent[m.id].sentAt)).forEach(m => rows.push({ d:m.day, k:2, tag:nice(m.day), cls: m.day === today ? 'now' : '', t:'💬 Group post: ' + m.title, sub:'', href:'channel.html' }));
   const H = window.FOM_HEALTH;
   if(H) orders.filter(o => !['Completed','Delivered','Cancelled'].includes(o.status) && H.parseDate(o.shootDate)).forEach(o => { const d = iso(H.parseDate(o.shootDate)); if(d >= today && d <= end) rows.push({ d, k:3, tag:nice(d), cls: d === today ? 'now' : '', t:'📸 Shoot: ' + (o.customer || 'Client'), sub:o.product || '', href:'database.html?open=' + encodeURIComponent(o.id) }); });
   if(!rows.length && !WEEK.note) return '';
