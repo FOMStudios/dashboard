@@ -650,6 +650,7 @@ function renderPanel(fresh){
       <div class="op-g">
       <div class="op-f w"><label for="op_galleryFolder">Gallery folder</label><div class="op-row"><input id="op_galleryFolder" data-i="${i}" data-f="galleryFolder" value="${esc(o.galleryFolder||'')}" placeholder="e.g. ${FOM_BIZ.b.galleryPrefix}jane-smith/" autocomplete="off"><button type="button" class="op-btn${o.galleryCover&&o.galleryCover.n?' pri':''}" data-cover="${i}">&#128444; ${o.galleryCover&&o.galleryCover.n?'Header set':'Header photo'}</button></div></div>
       <div class="op-f"><label for="op_deliverablesReady">Gallery in the portal</label><select id="op_deliverablesReady" data-i="${i}" data-f="deliverablesReady"><option value="false" ${!o.deliverablesReady?'selected':''}>Not ready</option><option value="true" ${o.deliverablesReady?'selected':''}>✓ Ready, show it</option></select></div>
+      <div class="op-f"><label for="op_groupPicksOn">Group photos</label><select id="op_groupPicksOn" data-i="${i}" data-f="groupPicksOn" title="On: they tick, in their portal gallery, which photos everyone on the group link can see"><option value="false" ${!o.groupPicksOn?'selected':''}>I choose them</option><option value="true" ${o.groupPicksOn?'selected':''}>&#128101; They choose (in their gallery)</option></select></div>
       ${F('galleryExpiry','Gallery expiry','type="date"')}
       <div class="op-f w"><label for="op_portalMessage">Message in their portal</label><textarea id="op_portalMessage" data-i="${i}" data-f="portalMessage" placeholder="Shown at the top of their portal">${esc(o.portalMessage||'')}</textarea></div>
       ${F('deliverablesUrl','Backup download link (optional)','placeholder="Usually leave empty" autocomplete="off"','Only shows inside the gallery’s Download all box, for when downloading everything fails. The gallery itself does not need it.',true)}
@@ -670,7 +671,7 @@ onOrders('focusin',()=>{ editingCell=true; });
 onOrders('focusout',e=>{ const box=e.currentTarget; setTimeout(()=>{ if(box.contains(document.activeElement)) return; editingCell=false; if(pendingRender){ pendingRender=false; render(); } else if(box.id==='opBody') render(); }, 0); });
 onOrders('input',e=>{
   const el=e.target, i=el.dataset.i, f=el.dataset.f; if(i===undefined||!f) return;
-  if(f==='status'||f==='payment'||f==='deliverablesReady') return;   // handled on change
+  if(f==='status'||f==='payment'||f==='deliverablesReady'||f==='groupPicksOn') return;   // handled on change
   orders[i][f]=(el.type==='number')?(+el.value||0):el.value;
   if(f==='total'||f==='paid'){ const o=orders[i], out=(+o.total||0)-(+o.paid||0); document.querySelectorAll(`[data-out="${i}"]`).forEach(c=>{ c.textContent=out<=0&&(+o.total||0)>0?(c.tagName==='B'?'Paid in full':'Paid'):(c.tagName==='B'?RZA(out):R0(out)); c.classList.toggle('zero',out<=0); }); recalcFoot(); }
   if(f==='customer') $('opName').textContent=el.value||'New client';
@@ -722,11 +723,12 @@ onOrders('change',e=>{
   if(f==='clientEmail' && e.type==='change'){ const v=el.value.trim().toLowerCase(); if(v!==el.value) el.value=v; }
   // Gallery Folder: tidy what was typed (no bucket name, no leading slash, ends in /)
   if(f==='galleryFolder'){ const v=cleanFolder(el.value); if(v!==el.value) el.value=v; }
-  orders[i][f] = (f==='deliverablesReady') ? (el.value==='true') : el.value;
+  orders[i][f] = (f==='deliverablesReady'||f==='groupPicksOn') ? (el.value==='true') : el.value;
   store.update(orders[i].id);
   if(f==='status'||f==='deliverablesReady'){ if(e.currentTarget.id==='opBody'){ const row=tbody.querySelector(`select[data-i="${i}"][data-f="status"]`); if(row&&f==='status') row.value=el.value; if(f==='deliverablesReady'&&!editingCell) render(); } else if(OPEN_ID) renderPanel(true); }
   if(f==='galleryExpiry' || f==='galleryFolder') syncGalleryMeta(orders[i]);
   if((f==='galleryFolder' && el.value) || (f==='deliverablesReady' && orders[i].deliverablesReady)) checkGalleryFolder(orders[i]);
+  if(f==='groupPicksOn' && window.FOM_GROUP) FOM_GROUP.sync(orders[i]);
 });
 onOrders('click',e=>{ const cv=e.target.closest('[data-cover]'); if(cv){ showCover(orders[+cv.dataset.cover]); return; } const ml=e.target.closest('[data-meetlink]'); if(ml){ linkMeeting(ml.dataset.meetlink, ml.dataset.oid); return; } const fb=e.target.closest('[data-favs]'); if(fb){ showFavs(orders[+fb.dataset.favs]); return; } const wb=e.target.closest('[data-wa]'); if(wb){ openWa(orders[+wb.dataset.wa]); return; } const rm=e.target.dataset.rm; if(rm!==undefined){ const o=orders[+rm]; if(o && confirmDelete(o)){ if(o.id===OPEN_ID) closePanel(); store.remove(o.id); } return; }
   const lb=e.target.closest('[data-login]'); if(lb){ createClientLogin(orders[+lb.dataset.login], lb); return; }
@@ -1223,7 +1225,7 @@ document.getElementById('favScrim').onclick = e => { if(e.target.id === 'favScri
 </script>
 <script src="activity.js?v=2"></script>
 <script src="vendor/qrcode.js"></script>
-<script src="group-link.js?v=1"></script>
+<script src="group-link.js?v=2"></script>
 <script src="app.js?v=8"></script>
 </body>
 </html>

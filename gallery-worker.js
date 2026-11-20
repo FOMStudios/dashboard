@@ -899,7 +899,35 @@ async function gFiles(env, r) {
   out.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
   return out;
 }
-function gPublic(r) { return { title: r.title, biz: r.biz, date: r.date || '', expires: r.expires, mode: r.mode, needPin: !!r.pin, ended: gEnded(r), salesUrl: r.mode === 'paid' ? (r.salesUrl || '') : '' }; }
+// client mode: the organiser approves the photos in her portal; until she does, guests see "coming soon"
+const gSoon = r => !!r.client && !(Array.isArray(r.files) && r.files.length);
+function gPublic(r) { return { title: r.title, biz: r.biz, date: r.date || '', expires: r.expires, mode: r.mode, needPin: !!r.pin, ended: gEnded(r), soon: gSoon(r), salesUrl: r.mode === 'paid' ? (r.salesUrl || '') : '' }; }
+const gPicksKey = order => '_groups/picks/' + String(order).replace(/[^A-Za-z0-9_-]/g, '') + '.json';
+/* the organiser's picks: GET ?order= (the client of that booking, or you), POST {order, picks} (the client, only when you switched it on) */
+async function gPicks(request, env, url, idx, ctx) {
+  const post = request.method === 'POST';
+  let b = {}; if (post) { try { b = await request.json(); } catch (e) {} }
+  const order = String(post ? b.order : url.searchParams.get('order') || '').replace(/[^A-Za-z0-9_-]/g, '');
+  if (!order) return json({ error: 'no booking' }, 400);
+  const u = await verifyUser(request, env); if (!u) return json({ error: 'Please sign in to your portal again.' }, 401);
+  // read the booking with their own sign-in: the Firestore rules only allow the client of this booking (or an admin)
+  const pid = env.FIREBASE_PROJECT_ID || PROJECT;
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/orders/${encodeURIComponent(order)}`, { headers: { Authorization: 'Bearer ' + u.token } });
+  if (!r.ok) return json({ error: 'not allowed' }, 403);
+  const d = (await r.json()).fields || {};
+  const saved = await R2J(env, gPicksKey(order), { picks: [] });
+  if (!post) return json({ ok: true, picks: saved.picks || [], at: saved.at || '', on: !!(d.groupPicksOn && d.groupPicksOn.booleanValue) });
+  if (!(d.groupPicksOn && d.groupPicksOn.booleanValue)) return json({ error: 'Choosing group photos is switched off for this booking.' }, 403);
+  const picks = (Array.isArray(b.picks) ? b.picks : []).map(x => String(x).slice(0, 200)).filter(x => x && !x.includes('..')).slice(0, 3000);
+  const name = (d.customer && d.customer.stringValue) || 'Your client', biz = (d.biz && d.biz.stringValue) === 'sba' ? 'sba' : 'fom';
+  await R2P(env, gPicksKey(order), { picks, at: new Date().toISOString(), by: u.pay.email || '' });
+  let n = 0;
+  for (const s of Object.keys(idx)) if (idx[s].order === order && idx[s].client) { idx[s].files = picks; n++; }
+  if (n) await R2P(env, '_groups/index.json', idx);
+  const msg = { title: (biz === 'sba' ? 'Shot by A: ' : '') + 'Group photos approved 👥', body: String(name).split(' ')[0] + ' approved ' + picks.length + ' photo' + (picks.length === 1 ? '' : 's') + ' for the group' + (n ? '. The group link is updated.' : '. Make the group link on the Database page.'), url: 'database.html', tag: 'fom-gpicks-' + order };
+  if (ctx && ctx.waitUntil) ctx.waitUntil(pushAll(env, msg)); else await pushAll(env, msg);
+  return json({ ok: true, picks: picks.length, links: n });
+}
 async function handleGroup(path, request, env, url, ctx) {
   const idx = await R2J(env, '_groups/index.json', {});
   // ---------- admin ----------
@@ -907,8 +935,9 @@ async function handleGroup(path, request, env, url, ctx) {
     if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
     if (path === '/admin/groups') {
       const order = url.searchParams.get('order') || '';
-      const list = Object.values(idx).filter(r => !order || r.order === order).map(r => Object.assign({}, r, { seen: undefined, ended: gEnded(r) }));
-      return json({ groups: list });
+      const list = Object.values(idx).filter(r => !order || r.order === order).map(r => Object.assign({}, r, { seen: undefined, ended: gEnded(r), soon: gSoon(r) }));
+      const pk = order ? await R2J(env, gPicksKey(order), null) : null;
+      return json({ groups: list, picks: pk ? pk.picks || [] : null, picksAt: pk ? pk.at || '' : '' });
     }
     let b = {}; try { b = await request.json(); } catch (e) {}
     if (b.action === 'delete') { delete idx[b.s]; await R2P(env, '_groups/index.json', idx); return json({ ok: true }); }
@@ -926,11 +955,13 @@ async function handleGroup(path, request, env, url, ctx) {
       title: clean(b.title, 80) || 'Event photos', date: /^\d{4}-\d\d-\d\d$/.test(b.date || '') ? b.date : '',
       files: Array.isArray(b.files) ? b.files.map(x => String(x).slice(0, 200)).slice(0, 3000) : null,
       mode: G_MODES.includes(b.mode) ? b.mode : 'free', pin: b.pin ? String(b.pin) : '', expires: b.expires,
-      on: b.on !== false, salesUrl: /^https:\/\//.test(b.salesUrl || '') ? String(b.salesUrl).slice(0, 300) : (r.salesUrl || '')
+      client: !!b.client, on: b.on !== false, salesUrl: /^https:\/\//.test(b.salesUrl || '') ? String(b.salesUrl).slice(0, 300) : (r.salesUrl || '')
     });
+    if (r.client) { const pk = await R2J(env, gPicksKey(r.order), null); r.files = pk && Array.isArray(pk.picks) ? pk.picks : []; }
     idx[r.s] = r; await R2P(env, '_groups/index.json', idx);
-    return json({ ok: true, group: Object.assign({}, r, { seen: undefined, ended: gEnded(r) }) });
+    return json({ ok: true, group: Object.assign({}, r, { seen: undefined, ended: gEnded(r), soon: gSoon(r) }) });
   }
+  if (path === '/group/picks') return gPicks(request, env, url, idx, ctx);
   // ---------- public ----------
   const s = String(url.searchParams.get('s') || '').replace(/[^a-z0-9]/g, '').slice(0, 12);
   if (path === '/group/info') {
@@ -942,7 +973,7 @@ async function handleGroup(path, request, env, url, ctx) {
     const r = idx[String(b.s || '').replace(/[^a-z0-9]/g, '')];
     if (!r) return json({ error: 'This link is not valid.' }, 404);
     if (gEnded(r)) return json(Object.assign(gPublic(r), { error: 'ended' }), 410);
-    if (r.mode === 'paid') return json(gPublic(r));
+    if (r.mode === 'paid' || gSoon(r)) return json(gPublic(r));
     if (r.pin && (r.badAt || 0) > Date.now() - 3600e3 && (r.bad || 0) >= 30) return json({ error: 'Too many wrong PINs. Try again in an hour.' }, 429);
     if (r.pin && String(b.pin || '') !== r.pin) {
       if ((r.badAt || 0) < Date.now() - 3600e3) r.bad = 0;
@@ -967,7 +998,7 @@ async function handleGroup(path, request, env, url, ctx) {
   }
   if (path === '/group/file') {
     const r = idx[s], n = url.searchParams.get('n') || '';
-    if (!r || gEnded(r) || r.mode === 'paid') return json({ error: 'This gallery has ended.' }, 410);
+    if (!r || gEnded(r) || r.mode === 'paid' || gSoon(r)) return json({ error: 'This gallery has ended.' }, 410);
     if ((url.searchParams.get('k') || '') !== await gSign(env, r)) return json({ error: 'not allowed' }, 403);
     if (!n || n.includes('..') || (Array.isArray(r.files) && !r.files.includes(n))) return json({ error: 'not found' }, 404);
     const kd = kind(n); if (kd !== 'image' && kd !== 'video') return json({ error: 'not found' }, 404);

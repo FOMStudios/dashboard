@@ -39,13 +39,22 @@
       '.gl-stats{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink-soft);margin:6px 0 4px}.gl-stats b{color:var(--ink);font-size:16px;display:block}.gl-warn{background:#fff4e5;color:#7a4b00;border-radius:10px;padding:8px 10px;font-size:12.5px;margin:8px 0}';
     document.head.appendChild(s);
   }
+  var PICKS = {};
+  function first(o){ return String(o.customer || 'The client').split(' ')[0]; }
+  /* the client's "Group photos" switch changed on the Database: bring their group link(s) in line */
+  async function sync(o){
+    try{
+      var res = await api('/admin/groups?order=' + encodeURIComponent(o.id));
+      for(var k = 0; k < (res.groups || []).length; k++){ var g = res.groups[k]; if(!!g.client !== !!o.groupPicksOn) await api('/admin/group', Object.assign({}, g, { client:!!o.groupPicksOn })); }
+    }catch(x){ console.warn('group sync', x); }
+  }
   function qr(url){ try{ var q = qrcode(0, 'M'); q.addData(url); q.make(); return q.createDataURL(6, 2); }catch(x){ return ''; } }
 
   async function open(o){
     css();
     if(!o.galleryFolder){ alert('Set the client\'s Gallery folder first, then make the group link.'); return; }
     var groups = [];
-    try{ groups = (await api('/admin/groups?order=' + encodeURIComponent(o.id))).groups || []; }catch(x){ alert('Could not reach the gallery Worker: ' + x.message); return; }
+    try{ var res = await api('/admin/groups?order=' + encodeURIComponent(o.id)); groups = res.groups || []; PICKS[o.id] = { list:res.picks, at:res.picksAt }; }catch(x){ alert('Could not reach the gallery Worker: ' + x.message); return; }
     if(groups.length) return show(o, groups[groups.length - 1]); else edit(o, null);
   }
 
@@ -55,7 +64,8 @@
     var mode = MODES.filter(function(m){ return m[0] === g.mode; })[0] || MODES[0];
     var late = o.galleryExpiry && g.expires > addDays(o.galleryExpiry, 7);
     var ov = modal('<h3>👥 Group link: ' + e(g.title) + '</h3>' +
-      '<div class="gl-stats"><span><b>' + (g.ended ? (g.on ? 'Ended' : 'Off') : 'Live') + '</b>status</span><span><b>' + nice(g.expires) + '</b>ends</span><span><b>' + (g.views || 0) + '</b>people opened it</span><span><b>' + (g.dls || 0) + '</b>downloads</span><span><b>' + (Array.isArray(g.files) ? g.files.length : 'All') + '</b>photos</span></div>' +
+      '<div class="gl-stats"><span><b>' + (g.ended ? (g.on ? 'Ended' : 'Off') : 'Live') + '</b>status</span><span><b>' + nice(g.expires) + '</b>ends</span><span><b>' + (g.views || 0) + '</b>people opened it</span><span><b>' + (g.dls || 0) + '</b>downloads</span><span><b>' + (g.client ? (g.soon ? 'Waiting' : g.files.length) : (Array.isArray(g.files) ? g.files.length : 'All')) + '</b>' + (g.client ? 'approved by ' + e(first(o)) : 'photos') + '</span></div>' +
+      (g.client && g.soon ? '<div class="gl-warn">' + e(first(o)) + ' has not approved any photos yet, so guests see "Photos coming soon". She ticks them in her portal gallery (👥 Choose what the group sees). It goes live the moment she taps Done, and your phone buzzes.</div>' : '') +
       '<div class="gl-link">' + (qr(url) ? '<img src="' + qr(url) + '" alt="QR code">' : '') + '<div><b>' + e(url) + '</b><div style="font-size:13px;color:var(--ink-soft);margin-top:4px">' + e(mode[1]) + (g.pin ? ' · PIN <b style="color:var(--ink)">' + e(g.pin) + '</b>' : ' · No PIN, anyone with the link') + '</div></div></div>' +
       (late ? '<div class="gl-warn">Heads up: the client\'s gallery folder is deleted 7 days after their own expiry (' + nice(o.galleryExpiry) + '), before this link ends. Push their expiry out, or end the group link sooner.</div>' : '') +
       (g.mode === 'paid' && !g.salesUrl ? '<div class="gl-warn">Last step: build the sale page from these photos. Guests see "Photos coming soon" until then.<div style="margin-top:8px"><a class="op-btn pri" target="_blank" rel="noopener" href="sales.html?group=' + e(g.s) + '">🛒 Build the Photo Sales page</a></div></div>' : '') +
@@ -84,21 +94,24 @@
       '<div class="gl-f"><label>Link ends on</label><input id="glE" type="date" value="' + e(g.expires) + '"><div class="gl-chips"><button type="button" data-d="7">7 days</button><button type="button" data-d="14">14 days</button><button type="button" data-d="30">30 days</button></div></div>' +
       '<div class="gl-f"><label>What guests can do</label><div class="gl-mode" id="glM">' + MODES.map(function(m){ var dis = m[0] === 'paid' && sba(); return '<label class="' + (g.mode === m[0] ? 'on' : '') + (dis ? ' dis' : '') + '"><input type="radio" name="glm" value="' + m[0] + '"' + (g.mode === m[0] ? ' checked' : '') + (dis ? ' disabled' : '') + '><span><b>' + m[1] + '</b><small>' + m[2] + (dis ? ' (FOM only for now)' : '') + '</small></span></label>'; }).join('') + '</div></div>' +
       '<div class="gl-f"><label>PIN</label><div class="gl-pin"><label style="display:flex;gap:8px;align-items:center;font-weight:700;font-size:14px;cursor:pointer"><input type="checkbox" id="glPo" style="width:18px;height:18px"' + (pinOn ? ' checked' : '') + '> Ask for a 4-digit PIN</label><input id="glP" inputmode="numeric" maxlength="4" value="' + e(pinVal) + '"' + (pinOn ? '' : ' disabled') + '></div><small style="color:var(--ink-soft);font-size:12px">Off: anyone with the link can open it.</small></div>' +
-      '<div class="gl-f"><label>Photos the group sees <span id="glN"></span></label><div class="gl-chips" style="margin:0 0 8px"><button type="button" id="glAll">Select all</button><button type="button" id="glNone">Select none</button></div><div class="gl-ph" id="glPh"><div style="grid-column:1/-1;color:var(--ink-soft);font-size:13px;padding:10px">Loading the photos...</div></div></div>' +
+      (o.groupPicksOn ? '<div class="gl-f"><label>Photos the group sees</label><div class="gl-warn" style="background:var(--bg);color:var(--ink)">&#128101; <b>' + e(first(o)) + ' chooses them</b> in her portal gallery (Group photos is set to "They choose" on this client). ' +
+        ((PICKS[o.id] && PICKS[o.id].list && PICKS[o.id].list.length) ? 'She has approved <b>' + PICKS[o.id].list.length + '</b> so far.' : 'Nothing approved yet: guests see "Photos coming soon" until she does.') + ' To pick them yourself instead, set Group photos back to "I choose them".</div></div>'
+      : '<div class="gl-f"><label>Photos the group sees <span id="glN"></span></label><div class="gl-chips" style="margin:0 0 8px"><button type="button" id="glAll">Select all</button><button type="button" id="glNone">Select none</button></div><div class="gl-ph" id="glPh"><div style="grid-column:1/-1;color:var(--ink-soft);font-size:13px;padding:10px">Loading the photos...</div></div></div>') +
       '<div class="lg-err" id="glErr"></div><div class="lg-acts"><button type="button" data-glx>Cancel</button><button type="button" class="lg-go" id="glSave">' + (g.s ? 'Save changes' : 'Make the link') + '</button></div>');
     var $ = function(id){ return ov.querySelector('#' + id); };
     ov.querySelectorAll('[data-d]').forEach(function(b){ b.onclick = function(){ $('glE').value = addDays(today(), +b.dataset.d); }; });
     $('glM').onchange = function(){ ov.querySelectorAll('#glM label').forEach(function(l){ l.classList.toggle('on', l.querySelector('input').checked); }); };
     $('glPo').onchange = function(){ $('glP').disabled = !this.checked; if(this.checked && !/^\d{4}$/.test($('glP').value)) $('glP').value = pin(); };
-    function count(){ $('glN').textContent = '(' + picked.size + ' of ' + files.length + ')'; }
+    var CL = !!o.groupPicksOn;
+    function count(){ if(CL) return; $('glN').textContent = '(' + picked.size + ' of ' + files.length + ')'; }
     function draw(){
       $('glPh').innerHTML = files.length ? files.map(function(f, i){ return '<button type="button" data-p="' + i + '" class="' + (picked.has(f.name) ? '' : 'off') + '" title="' + e(f.name) + '">' + (f.kind === 'image' ? '<img loading="lazy" src="' + e(f.url) + '" alt="">' : '<span class="vid">🎬</span>') + '<i>' + (picked.has(f.name) ? '✓' : '') + '</i></button>'; }).join('') : '<div style="grid-column:1/-1;color:var(--ink-soft);font-size:13px;padding:10px">No photos in ' + e(o.galleryFolder) + ' yet.</div>';
       count();
     }
-    $('glPh').onclick = function(ev){ var b = ev.target.closest('[data-p]'); if(!b) return; var f = files[+b.dataset.p]; if(picked.has(f.name)) picked.delete(f.name); else picked.add(f.name); b.classList.toggle('off', !picked.has(f.name)); b.querySelector('i').textContent = picked.has(f.name) ? '✓' : ''; count(); };
-    $('glAll').onclick = function(){ files.forEach(function(f){ picked.add(f.name); }); draw(); };
-    $('glNone').onclick = function(){ picked.clear(); draw(); };
-    try{
+    if(!CL) $('glPh').onclick = function(ev){ var b = ev.target.closest('[data-p]'); if(!b) return; var f = files[+b.dataset.p]; if(picked.has(f.name)) picked.delete(f.name); else picked.add(f.name); b.classList.toggle('off', !picked.has(f.name)); b.querySelector('i').textContent = picked.has(f.name) ? '✓' : ''; count(); };
+    if(!CL){ $('glAll').onclick = function(){ files.forEach(function(f){ picked.add(f.name); }); draw(); };
+    $('glNone').onclick = function(){ picked.clear(); draw(); }; }
+    if(CL){ picked = new Set(); } else try{
       var j = await (await fetch(W + '/list?g=' + encodeURIComponent(o.galleryFolder))).json();
       files = (j.files || []).filter(function(f){ return f.kind === 'image' || f.kind === 'video'; });
       picked = new Set(Array.isArray(g.files) ? g.files.filter(function(n){ return files.some(function(f){ return f.name === n; }); }) : files.map(function(f){ return f.name; }));
@@ -108,14 +121,14 @@
       var er = $('glErr'), mode = (ov.querySelector('input[name=glm]:checked') || {}).value || 'free', usePin = $('glPo').checked, p = $('glP').value.trim();
       if(usePin && !/^\d{4}$/.test(p)){ er.textContent = 'The PIN must be 4 numbers.'; return; }
       if(!$('glE').value || $('glE').value < today()){ er.textContent = 'Pick an end date from today on.'; return; }
-      if(!picked.size){ er.textContent = 'Pick at least one photo.'; return; }
-      var all = picked.size === files.length;
+      if(!CL && !picked.size){ er.textContent = 'Pick at least one photo.'; return; }
+      var all = !CL && picked.size === files.length;
       this.disabled = true; this.textContent = 'Saving...';
       try{
-        var r = await api('/admin/group', Object.assign({}, g, { biz:sba() ? 'sba' : 'fom', order:o.id, name:o.customer || '', folder:o.galleryFolder, title:$('glT').value.trim() || 'Event photos', date:o.shootDate || g.date || '', expires:$('glE').value, mode:mode, pin:usePin ? p : '', files:all ? null : files.filter(function(f){ return picked.has(f.name); }).map(function(f){ return f.name; }), on:true, salesUrl:mode === 'paid' ? (g.salesUrl || '') : '' }));
+        var r = await api('/admin/group', Object.assign({}, g, { biz:sba() ? 'sba' : 'fom', order:o.id, name:o.customer || '', folder:o.galleryFolder, title:$('glT').value.trim() || 'Event photos', date:o.shootDate || g.date || '', expires:$('glE').value, mode:mode, pin:usePin ? p : '', client:CL, files:CL ? [] : all ? null : files.filter(function(f){ return picked.has(f.name); }).map(function(f){ return f.name; }), on:true, salesUrl:mode === 'paid' ? (g.salesUrl || '') : '' }));
         ov.remove(); show(o, r.group);
       }catch(x){ er.textContent = x.message; this.disabled = false; this.textContent = g.s ? 'Save changes' : 'Make the link'; }
     };
   }
-  window.FOM_GROUP = { open:open };
+  window.FOM_GROUP = { open:open, sync:sync };
 })();
