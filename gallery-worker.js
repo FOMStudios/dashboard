@@ -797,6 +797,70 @@ async function handleBrief(path, request, env, url, ctx) {
   return json({ error: 'not found' }, 404);
 }
 
+/* ============================================================
+   CLIENT PORTAL LOGINS (Database page, admin only)
+   - Remembers the password you set for each client (R2 _logins/<email>.json, private) so the 👁 button can show it.
+   - With the FIREBASE_SA secret (a Firebase service account key, JSON) it can also check if a login exists,
+     create one, and change a password, all without emails. Without it, only remembering works.
+   POST /admin/login {action:'status'|'set'|'save'|'get', email, password}
+   ============================================================ */
+let SA_TOKEN = null;
+const b64urlStr = s => b64url(new TextEncoder().encode(s));
+async function saToken(env) {
+  if (SA_TOKEN && SA_TOKEN.exp > Date.now() + 60e3) return SA_TOKEN.t;
+  let sa; try { sa = JSON.parse(env.FIREBASE_SA); } catch (e) { throw new Error('The FIREBASE_SA secret is not valid JSON. Paste the whole downloaded key file.'); }
+  const now = Math.floor(Date.now() / 1000);
+  const head = b64urlStr(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  const claim = b64urlStr(JSON.stringify({ iss: sa.client_email, scope: 'https://www.googleapis.com/auth/identitytoolkit https://www.googleapis.com/auth/cloud-platform', aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600 }));
+  const pem = String(sa.private_key || '').replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
+  const der = Uint8Array.from(atob(pem), c => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey('pkcs8', der, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(head + '.' + claim));
+  const r = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=' + head + '.' + claim + '.' + b64url(sig) });
+  const j = await r.json().catch(() => ({}));
+  if (!j.access_token) throw new Error('Google did not accept the service account key (' + (j.error_description || j.error || r.status) + ').');
+  SA_TOKEN = { t: j.access_token, exp: Date.now() + (j.expires_in || 3600) * 1000 };
+  return SA_TOKEN.t;
+}
+async function idt(env, path, body) {
+  const pid = env.FIREBASE_PROJECT_ID || PROJECT;
+  const r = await fetch('https://identitytoolkit.googleapis.com/v1/projects/' + pid + path, { method: 'POST', headers: { Authorization: 'Bearer ' + await saToken(env), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error((j.error && j.error.message) || ('Firebase error ' + r.status));
+  return j;
+}
+async function handleLogin(request, env) {
+  if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+  let b = {}; try { b = await request.json(); } catch (e) {}
+  const email = clean(b.email, 120).toLowerCase(), action = clean(b.action, 10);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: 'That email address is not valid.' }, 400);
+  const key = '_logins/' + email.replace(/[^a-z0-9@._+-]/g, '_') + '.json';
+  const sa = !!env.FIREBASE_SA;
+  try {
+    if (action === 'get') { const r = await R2J(env, key, null); return json({ ok: true, password: r ? r.pw : '', at: r ? r.at : '' }); }
+    if (action === 'save') {
+      const pw = String(b.password || '').slice(0, 100); if (pw.length < 6) return json({ error: 'Use at least 6 characters.' }, 400);
+      await R2P(env, key, { pw, at: new Date().toISOString() }); return json({ ok: true });
+    }
+    if (action === 'status') {
+      if (!sa) return json({ ok: true, sa: false });
+      const j = await idt(env, '/accounts:lookup', { email: [email] });
+      const u = (j.users || [])[0], saved = await R2J(env, key, null);
+      return json({ ok: true, sa: true, exists: !!u, saved: !!saved, lastLogin: u && u.lastLoginAt ? new Date(+u.lastLoginAt).toISOString() : '' });
+    }
+    if (action === 'set') {
+      if (!sa) return json({ error: 'nosa' }, 400);
+      const pw = String(b.password || '').slice(0, 100); if (pw.length < 6) return json({ error: 'Use at least 6 characters.' }, 400);
+      const j = await idt(env, '/accounts:lookup', { email: [email] }), u = (j.users || [])[0];
+      if (u) await idt(env, '/accounts:update', { localId: u.localId, password: pw });
+      else await idt(env, '/accounts', { email, password: pw, emailVerified: true });
+      await R2P(env, key, { pw, at: new Date().toISOString() });
+      return json({ ok: true, created: !u });
+    }
+  } catch (e) { return json({ error: e.message || 'Could not do that.' }, 500); }
+  return json({ error: 'not found' }, 404);
+}
+
 export default {
   async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -805,9 +869,10 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const g = normPrefix(url.searchParams.get('g'));
-    if (/^_(notify|push|events|sales|channel|remind|briefs)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
+    if (/^_(notify|push|events|sales|channel|remind|briefs|logins)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
     if (path.startsWith('/sales/')) return handleSales(path, request, env, url);
     if (path === '/admin/remind' && request.method === 'POST') return handleRemind(request, env);
+    if (path === '/admin/login' && request.method === 'POST') return handleLogin(request, env);
     if (path === '/brief/get' || path === '/brief/send' || path === '/admin/brief-new' || path === '/admin/briefs') return handleBrief(path, request, env, url, ctx);
     if (path === '/event') return handleEvent(request, env, ctx);
     if (path === '/t') return handleTrack(request, env, ctx);

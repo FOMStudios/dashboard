@@ -109,6 +109,8 @@ td.rm-col{width:38px;text-align:center;}
 .em-cell{display:flex;flex-direction:column;align-items:flex-start;gap:4px;} .em-cell input{width:100%;}
 .lg-btn{flex:none;font:inherit;font-size:11px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap;}
 .lg-btn.ok{border-color:#1f8a4c;color:#1f8a4c;}
+.lg-eye{margin-left:4px;padding:4px 8px;}
+.lg-pwv{margin-left:6px;font-weight:800;font-size:13px;letter-spacing:.02em;user-select:all;}
 .lg-btn:disabled{opacity:.6;cursor:wait;}
 .lg-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
 .lg-box{background:var(--bg-pill,#fff);color:var(--ink);border-radius:18px;max-width:440px;width:100%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
@@ -116,6 +118,7 @@ td.rm-col{width:38px;text-align:center;}
 .lg-l{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:4px;}
 .lg-pw{display:flex;gap:8px;} .lg-pw input{flex:1;min-width:0;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:17px;font-weight:700;letter-spacing:.02em;background:var(--bg);color:var(--ink);}
 .lg-pw button{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:0 14px;font-size:18px;cursor:pointer;color:var(--ink);}
+.lg-val{padding:10px 0 12px;font-weight:700;font-size:15px;word-break:break-all;}
 .lg-err{color:#b3261e;font-size:13px;min-height:1em;margin-top:8px;}
 .lg-msg{width:100%;box-sizing:border-box;min-height:150px;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink);}
 .lg-acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px;}
@@ -589,7 +592,7 @@ function fixFoot(){
 addEventListener('resize', fixFoot);
 
 /* ---------------- details panel: every field, in sections ---------------- */
-function openPanel(i){ const o=orders[i]; if(!o) return; OPEN_ID=o.id; renderPanel(true); $('op').classList.add('on'); $('opScrim').classList.add('on'); document.body.classList.add('op-open'); markSel(); }
+function openPanel(i){ const o=orders[i]; if(!o) return; OPEN_ID=o.id; renderPanel(true); $('op').classList.add('on'); $('opScrim').classList.add('on'); document.body.classList.add('op-open'); markSel(); lgCheck(o); }
 function closePanel(){ const was=OPEN_ID; OPEN_ID=null; if(was) safeRender(); $('op').classList.remove('on'); $('opScrim').classList.remove('on'); document.body.classList.remove('op-open'); markSel(); }
 function markSel(){ tbody.querySelectorAll('tr.row').forEach(tr=>{ const o=orders[+tr.dataset.open]; tr.classList.toggle('sel', !!o && o.id===OPEN_ID); }); }
 $('opX').onclick=closePanel; $('opScrim').onclick=closePanel;
@@ -616,7 +619,7 @@ function renderPanel(fresh){
       ${F('customer','Name','placeholder="Client name" autocomplete="off"','',true)}
       <div class="op-f"><label for="op_clientPhone">WhatsApp</label><div class="op-row"><input id="op_clientPhone" data-i="${i}" data-f="clientPhone" value="${esc(o.clientPhone||'')}" placeholder="082 123 4567" inputmode="tel" autocomplete="off"><button type="button" class="wa-btn" data-wa="${i}" title="Message on WhatsApp" aria-label="WhatsApp">${WA_SVG}</button></div>${o.waLast&&o.waLast.t?`<span class="hint">Last sent: ${esc(o.waLast.t)}${o.waLast.at?', '+new Date(o.waLast.at).toLocaleDateString('en-ZA',{day:'numeric',month:'short'}):''}</span>`:''}</div>
       <div class="op-f"><label for="op_clientEmail">Email (their portal login)</label><input id="op_clientEmail" data-i="${i}" data-f="clientEmail" value="${esc(o.clientEmail||'')}" placeholder="client@email.com" type="email" autocomplete="off">
-        <div><button type="button" class="lg-btn${o.portalLoginAt?' ok':''}" data-login="${i}" title="${o.portalLoginAt?'Login made '+esc(String(o.portalLoginAt).slice(0,10))+'. Tap to copy their login message':'Create this client\'s portal login with a password you choose'}">${o.portalLoginAt?'✓ Created':'Create login'}</button></div></div>
+        <div><button type="button" class="lg-btn${o.portalLoginAt?' ok':''}" data-login="${i}" title="${o.portalLoginAt?'Login made '+esc(String(o.portalLoginAt).slice(0,10))+'. Tap to copy their login message':'Create this client\'s portal login with a password you choose'}">${o.portalLoginAt?'✓ Created':'Create login'}</button>${o.portalLoginAt?`<button type="button" class="lg-btn ok lg-eye" data-eye="${i}" title="Show their password">👁</button><span class="lg-pwv" hidden></span>`:''}</div></div>
     </div></section>
 
     <section class="op-sec"><h3>Booking</h3><div class="op-g">
@@ -727,6 +730,8 @@ onOrders('change',e=>{
 });
 onOrders('click',e=>{ const cv=e.target.closest('[data-cover]'); if(cv){ showCover(orders[+cv.dataset.cover]); return; } const ml=e.target.closest('[data-meetlink]'); if(ml){ linkMeeting(ml.dataset.meetlink, ml.dataset.oid); return; } const fb=e.target.closest('[data-favs]'); if(fb){ showFavs(orders[+fb.dataset.favs]); return; } const wb=e.target.closest('[data-wa]'); if(wb){ openWa(orders[+wb.dataset.wa]); return; } const rm=e.target.dataset.rm; if(rm!==undefined){ const o=orders[+rm]; if(o && confirmDelete(o)){ if(o.id===OPEN_ID) closePanel(); store.remove(o.id); } return; }
   const lb=e.target.closest('[data-login]'); if(lb){ createClientLogin(orders[+lb.dataset.login], lb); return; }
+  const eb=e.target.closest('[data-eye]'); if(eb){ const sp=eb.nextElementSibling; if(!sp.hidden){ sp.hidden=true; return; } sp.hidden=false; sp.textContent='…';
+    lgApi({action:'get',email:String(orders[+eb.dataset.eye].clientEmail||'').trim().toLowerCase()}).then(j=>{ sp.textContent=j.password||'not saved'; }).catch(()=>{ sp.textContent='could not load'; }); return; }
   const sl=e.target.dataset.signlink;
   if(sl!==undefined){
     const o=orders[+sl];
@@ -739,9 +744,14 @@ onOrders('click',e=>{ const cv=e.target.closest('[data-cover]'); if(cv){ showCov
     else { prompt('Copy this signing link:',link); done(true); }
   }
 });
-/* ---- Create client login: you pick the password, nothing is emailed. Then send them their login on WhatsApp.
-   A second Firebase app (memory only) creates the user, so your admin session is never touched.
-   If the email already has a login, the button just turns to Created (they can use "Forgot password?" on the portal). ---- */
+/* ---- Client portal logins: you pick the password, nothing is emailed, then send it on WhatsApp.
+   The gallery Worker remembers each password (private, admin only) so 👁 can show it later.
+   With the FIREBASE_SA secret on the Worker it also creates logins, changes passwords and checks if a login exists.
+   Without it, a second Firebase app (memory only) creates new logins, and passwords of existing logins cannot be changed here. ---- */
+async function lgApi(body){
+  const r=await fetch(GALLERY_WORKER+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await auth.currentUser.getIdToken()},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({})); if(!r.ok) throw Object.assign(new Error(j.error||('Worker error '+r.status)),{code:j.error}); return j;
+}
 function lgPassword(o){
   const n=String(o.customer||'').trim().split(' ')[0].replace(/[^A-Za-z]/g,'').slice(0,10)||'Client';
   return n.charAt(0).toUpperCase()+n.slice(1).toLowerCase()+String(1000+(crypto.getRandomValues(new Uint32Array(1))[0]%9000));
@@ -755,57 +765,89 @@ function lgModal(html){
   document.body.appendChild(ov); ov.addEventListener('click',e=>{ if(e.target===ov||e.target.closest('[data-lgx]')) ov.remove(); });
   return ov;
 }
-function lgDone(o, email, pw, existed){
-  const ph=String(o.clientPhone||'').replace(/\D/g,'').replace(/^0/,'27'), msg=lgMessage(o,email,existed?'':pw);
-  const ov=lgModal(`<h3>${existed?'Login already there ✓':'Login created ✓'}</h3>
-    <p class="lg-sub">${existed?esc(email)+' already has a portal login, so nothing changed. If they forgot the password, they can tap <b>Forgot password?</b> on the portal.':'Send them their login now. The password is not saved anywhere, so send it before you close this.'}</p>
-    <textarea class="lg-msg" readonly>${esc(msg)}</textarea>
-    <div class="lg-acts">${ph.length>=11?'<a class="lg-go wa" target="_blank" rel="noopener" href="https://wa.me/'+ph+'?text='+encodeURIComponent(msg)+'">Send on WhatsApp</a>':''}<button type="button" class="lg-go" data-lgcopy>Copy message</button><button type="button" data-lgx>Done</button></div>
-    <p class="lg-sub" style="margin-top:10px">Next: send the Booking Confirmation (Email page).</p>`);
-  const cb=ov.querySelector('[data-lgcopy]'); cb.onclick=()=>{ navigator.clipboard.writeText(msg).then(()=>{ cb.textContent='Copied ✓'; },()=>{ prompt('Copy this:',msg); }); };
+function lgErrText(err){
+  const c=err.code||'';
+  return c==='auth/admin-restricted-operation'||c==='auth/operation-not-allowed' ? 'Firebase blocked creating the login. In Firebase Console, Authentication, Settings, User actions, tick "Enable create (sign-up)", then try again.'
+    : c==='auth/weak-password'||/WEAK_PASSWORD/.test(err.message||'') ? 'Firebase says that password is too weak. Make it longer.'
+    : c==='auth/invalid-email' ? 'That email address is not valid.'
+    : c==='auth/too-many-requests' ? 'Firebase is limiting requests. Wait a few minutes and try again.'
+    : 'Could not do that: '+(err.message||c||'unknown error');
 }
-async function createClientLogin(o, btn){
-  if(!o || !auth) return;
-  const email=String(o.clientEmail||'').trim().toLowerCase();
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ alert('Add the client\'s email in the Client Email box first.'); return; }
-  if(o.portalLoginAt){ lgDone(o, email, '', true); return; }
-  const B=FOM_BIZ.b;
-  const ov=lgModal(`<h3>Create ${esc(B.name)} portal login</h3>
-    <p class="lg-sub">For <b>${esc(email)}</b>. Pick their password (at least 6 characters). No email is sent: you send it to them on WhatsApp next.</p>
+/* the panel for a client: their email, the saved password with 👁, change it, send it */
+function lgPanel(o, btn, fresh){
+  const email=String(o.clientEmail||'').trim().toLowerCase(), ph=String(o.clientPhone||'').replace(/\D/g,'').replace(/^0/,'27');
+  const ov=lgModal(`<h3>${fresh?'Login created ✓':'Portal login'}</h3>
+    <p class="lg-sub">${fresh?'Send them their login now.':'Their '+esc(FOM_BIZ.b.name)+' portal login.'}</p>
+    <label class="lg-l">Email</label><div class="lg-val">${esc(email)}</div>
+    <label class="lg-l">Password</label><div class="lg-pw"><input id="lgPw" type="password" readonly placeholder="Loading…" autocomplete="off"><button type="button" id="lgEye" title="Show or hide">👁</button></div>
+    <div class="lg-err" id="lgErr"></div>
+    <div class="lg-acts"><button type="button" id="lgChange">Change password</button>${ph.length>=11?'<button type="button" class="lg-go wa" id="lgWa">Send on WhatsApp</button>':''}<button type="button" class="lg-go" id="lgCopy">Copy message</button><button type="button" data-lgx>Done</button></div>
+    <p class="lg-sub" style="margin-top:10px">${fresh?'Next: send the Booking Confirmation (Email page).':'Forgot it? You can change it here, or they can tap Forgot password? on the portal.'}</p>`);
+  const pw=ov.querySelector('#lgPw'), er=ov.querySelector('#lgErr');
+  ov.querySelector('#lgEye').onclick=()=>{ pw.type=pw.type==='password'?'text':'password'; };
+  const msg=()=>lgMessage(o,email,pw.value);
+  if(ov.querySelector('#lgWa')) ov.querySelector('#lgWa').onclick=()=>window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg()),'_blank');
+  const cb=ov.querySelector('#lgCopy'); cb.onclick=()=>{ navigator.clipboard.writeText(msg()).then(()=>{ cb.textContent='Copied ✓'; },()=>{ prompt('Copy this:',msg()); }); };
+  ov.querySelector('#lgChange').onclick=()=>{ ov.remove(); lgSetPassword(o, btn, true); };
+  if(fresh){ pw.value=fresh; pw.type='text'; }
+  else lgApi({action:'get',email}).then(j=>{ pw.value=j.password||''; if(!j.password) pw.placeholder='Not saved here (set before Nov 2026)'; }).catch(err=>{ pw.placeholder='Could not load'; er.textContent=err.message; });
+}
+/* create the login, or change the password of an existing one */
+function lgSetPassword(o, btn, change){
+  const email=String(o.clientEmail||'').trim().toLowerCase(), B=FOM_BIZ.b;
+  const ov=lgModal(`<h3>${change?'Change password':'Create '+esc(B.name)+' portal login'}</h3>
+    <p class="lg-sub">For <b>${esc(email)}</b>. Pick ${change?'a new':'their'} password (at least 6 characters). No email is sent: you send it to them on WhatsApp next.</p>
     <label class="lg-l">Password</label><div class="lg-pw"><input id="lgPw" value="${esc(lgPassword(o))}" autocomplete="off" spellcheck="false"><button type="button" id="lgNew" title="Make another">↻</button></div>
     <div class="lg-err" id="lgErr"></div>
-    <div class="lg-acts"><button type="button" data-lgx>Cancel</button><button type="button" class="lg-go" id="lgMake">Create login</button></div>`);
+    <div class="lg-acts"><button type="button" data-lgx>Cancel</button><button type="button" class="lg-go" id="lgMake">${change?'Save new password':'Create login'}</button></div>`);
   const inp=ov.querySelector('#lgPw'); inp.focus(); inp.select();
   ov.querySelector('#lgNew').onclick=()=>{ inp.value=lgPassword(o); inp.focus(); inp.select(); };
   ov.querySelector('#lgMake').onclick=async()=>{
     const pw=inp.value.trim(), mk=ov.querySelector('#lgMake'), er=ov.querySelector('#lgErr');
     if(pw.length<6){ er.textContent='Use at least 6 characters.'; inp.focus(); return; }
-    mk.disabled=true; mk.textContent='Creating…'; er.textContent='';
-    const orig=btn.textContent; btn.disabled=true;
-    let existed=false;
+    mk.disabled=true; mk.textContent='Saving…'; er.textContent='';
     try{
-      // Firebase saves login emails in lower case; the portal only finds bookings when the Client Email matches exactly
-      if(o.clientEmail!==email){ o.clientEmail=email; }
-      const sec=firebase.apps.find(a=>a.name==='clientLogin') || firebase.initializeApp(firebaseConfig,'clientLogin');
-      const sa=sec.auth();
-      await sa.setPersistence(firebase.auth.Auth.Persistence.NONE);
-      try{ await sa.createUserWithEmailAndPassword(email,pw); }
-      catch(err){ if(/already|exists/i.test(err.code||'')) existed=true; else throw err; }
-      await sa.signOut().catch(()=>{});
-      o.portalLoginAt=new Date().toISOString(); store.update(o.id);
-      btn.classList.add('ok'); btn.textContent='✓ Created'; btn.disabled=false;
-      ov.remove(); lgDone(o, email, pw, existed);
-    }catch(err){
-      console.warn('Create login:',err); btn.textContent=orig; btn.disabled=false; mk.disabled=false; mk.textContent='Create login';
-      const c=err.code||'';
-      er.textContent = c==='auth/admin-restricted-operation'||c==='auth/operation-not-allowed'
-        ? 'Firebase blocked creating the login. In Firebase Console, Authentication, Settings, User actions, tick "Enable create (sign-up)", then try again.'
-        : c==='auth/weak-password' ? 'Firebase says that password is too weak. Make it longer.'
-        : c==='auth/invalid-email' ? 'That email address is not valid.'
-        : c==='auth/too-many-requests' ? 'Firebase is limiting requests. Wait a few minutes and try again.'
-        : 'Could not create the login: '+(err.message||c||'unknown error');
-    }
+      if(o.clientEmail!==email) o.clientEmail=email;   // Firebase saves login emails in lower case; the portal matches exactly
+      try{ await lgApi({action:'set',email,password:pw}); }
+      catch(err){
+        if(err.code!=='nosa') throw err;
+        // no service account key on the Worker yet: create in the browser, remember the password on the Worker
+        const sec=firebase.apps.find(a=>a.name==='clientLogin') || firebase.initializeApp(firebaseConfig,'clientLogin');
+        const sa=sec.auth(); await sa.setPersistence(firebase.auth.Auth.Persistence.NONE);
+        try{ await sa.createUserWithEmailAndPassword(email,pw); }
+        catch(e2){
+          if(!/already|exists/i.test(e2.code||'')) throw e2;
+          await sa.signOut().catch(()=>{});
+          o.portalLoginAt=o.portalLoginAt||new Date().toISOString(); store.update(o.id); if(btn){ btn.classList.add('ok'); btn.textContent='✓ Created'; }
+          er.innerHTML='This email already has a login, so it is marked Created. To set its password from here, add the FIREBASE_SA key to the gallery Worker (see the deploy checklist). Until then they can tap <b>Forgot password?</b> on the portal.';
+          mk.disabled=false; mk.textContent=change?'Save new password':'Create login'; return;
+        }
+        await sa.signOut().catch(()=>{});
+        await lgApi({action:'save',email,password:pw}).catch(()=>{});
+      }
+      o.portalLoginAt=o.portalLoginAt||new Date().toISOString(); store.update(o.id);
+      if(btn){ btn.classList.add('ok'); btn.textContent='✓ Created'; }
+      ov.remove(); lgPanel(o, btn, pw);
+    }catch(err){ console.warn('Login:',err); er.textContent=lgErrText(err); mk.disabled=false; mk.textContent=change?'Save new password':'Create login'; }
   };
+}
+async function createClientLogin(o, btn){
+  if(!o || !auth) return;
+  const email=String(o.clientEmail||'').trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ alert('Add the client\'s email in the Client Email box first.'); return; }
+  if(o.portalLoginAt){ lgPanel(o, btn); return; }
+  // check first: an email that already has a login just turns to Created
+  const orig=btn.textContent; btn.disabled=true; btn.textContent='Checking…';
+  let st=null; try{ st=await lgApi({action:'status',email}); }catch(err){}
+  btn.disabled=false; btn.textContent=orig;
+  if(st && st.exists){ o.portalLoginAt=new Date().toISOString(); store.update(o.id); btn.classList.add('ok'); btn.textContent='✓ Created'; lgPanel(o, btn); return; }
+  lgSetPassword(o, btn, false);
+}
+/* when an order opens: if its email already has a login (made elsewhere), show Created */
+async function lgCheck(o){
+  if(!o || o.portalLoginAt || !auth || !auth.currentUser) return;
+  const email=String(o.clientEmail||'').trim().toLowerCase(); if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return;
+  try{ const st=await lgApi({action:'status',email}); if(st.exists){ o.portalLoginAt=new Date().toISOString(); store.update(o.id); const b=document.querySelector('#opBody [data-login]'); if(b){ b.classList.add('ok'); b.textContent='✓ Created'; } } }catch(err){}
 }
 
 /* ================= TEST CLIENT =================
