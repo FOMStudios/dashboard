@@ -533,7 +533,7 @@ function pvOneTap(a, o){
   auth.currentUser.getIdToken().then(t=>fetch(GALLERY_WORKER+'/admin/preview-code',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({code})})).catch(()=>{});
   setTimeout(()=>{ a.href=previewUrl(o); },0);
 }
-function previewUrl(o){ const ae=(auth&&auth.currentUser&&auth.currentUser.email)||''; return 'https://www.fomstudios.co.za/client-portal.html?preview=' + encodeURIComponent(o.id) + (FOM_BIZ.isSba ? '&b=sba' : '') + (ae ? '&ae=' + encodeURIComponent(ae) : ''); }   // ae: your admin email, so the portal fills it in (browsers often autofill a client login there)
+function previewUrl(o){ const ae=(auth&&auth.currentUser&&auth.currentUser.email)||''; return 'https://www.fomstudios.co.za/client-portal.html?preview=' + encodeURIComponent(o.id) + (FOM_BIZ.isSba ? '&b=sba' : '') + (ae ? '&ae=' + encodeURIComponent(ae) : '') + '&v=' + Date.now().toString(36); }   // v: always a fresh copy of the portal   // ae: your admin email, so the portal fills it in (browsers often autofill a client login there)
 /* Fix links from the preview checklist: database.html?open=<order id>&f=<field> opens that client and points at the field */
 function deepOpen(){
   if(window.__deepOpen) return;
