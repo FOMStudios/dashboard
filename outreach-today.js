@@ -36,6 +36,12 @@ css.textContent = [
 '.ot-goal{flex:1;min-width:220px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:16px;padding:12px 16px}',
 '.ot-goal b{font-size:22px}.ot-bar{height:8px;border-radius:9px;background:var(--line);margin-top:8px;overflow:hidden}.ot-bar i{display:block;height:100%;background:#1f8a4c;border-radius:9px}',
 '.ot-h{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:18px 2px 8px}',
+'details.ot-sec>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;user-select:none}',
+'details.ot-sec>summary::-webkit-details-marker{display:none}',
+'details.ot-sec>summary .ot-n{background:var(--line);color:var(--ink);border-radius:99px;padding:1px 8px;font-size:12px;letter-spacing:0}',
+'details.ot-sec>summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s;margin-right:6px}',
+'details.ot-sec:not([open])>summary::after{transform:rotate(-45deg)}',
+'details.ot-sec:not([open])>summary{margin-bottom:4px}',
 '.ot-card{background:var(--surface,#fff);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:12px}',
 '.ot-card.done{opacity:.8;background:var(--bg-pill,#f1efe9)}',
 '.ot-row{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}',
@@ -214,15 +220,18 @@ var OT = {
       '<div class="ot-top"><div class="ot-goal"><div class="ot-sub">Today\'s goal</div><b>' + done + ' of ' + DAILY + '</b> contacted<div class="ot-bar"><i style="width:' + pct + '%"></i></div></div>' +
       '<div class="ot-goal"><div class="ot-sub">Said yes · follow-ups due</div><b>' + L.yes.length + ' · ' + L.follow.length + '</b><div class="ot-sub" style="margin-top:6px">' + packLine + '</div></div></div>' +
       '<details class="ot-tpl"><summary>✏️ Edit the first message</summary><p class="ot-sub">Use {company}, {contact}, {opener} (Claude\'s line about that business) and {link} (your website, tracked as outreach on the Traffic page).</p><textarea class="ot-msg" id="otTpl" style="min-height:140px">' + esc(OT.tpl) + '</textarea><div class="ot-btns"><button type="button" class="go" id="otTplSave">Save message</button><button type="button" id="otTplReset">Reset</button></div></details>' +
-      (L.yes.length ? '<div class="ot-h">They said yes: send ideas and a quote</div>' + L.yes.map(function(o){ return OT.yesCard(o); }).join('') : '') +
-      (L.follow.length ? '<div class="ot-h">Follow-ups due</div>' + L.follow.map(function(o){ return OT.card(o, 'follow'); }).join('') : '') +
-      '<div class="ot-h">Contact today' + (L.left < DAILY ? ' (' + L.left + ' left)' : '') + '</div>' +
-      (L.fresh.length ? L.fresh.map(function(o){ return OT.card(o, 'new'); }).join('') : '<div class="ot-empty">' + (L.left ? 'No uncontacted leads left. New ones arrive on Monday, or add your own on the Leads Tracker tab.' : 'Goal reached for today. Well done! 🎉') + '</div>') +
-      (done ? '<div class="ot-h">Done today</div>' + L.done.map(function(o){ return OT.card(o, 'done'); }).join('') : '') +
+      (L.yes.length ? OT.sec('yes', 'They said yes: send ideas and a quote', L.yes.length, L.yes.map(function(o){ return OT.yesCard(o); }).join('')) : '') +
+      (L.follow.length ? OT.sec('follow', 'Follow-ups due', L.follow.length, L.follow.map(function(o){ return OT.card(o, 'follow'); }).join('')) : '') +
+      OT.sec('fresh', 'Contact today' + (L.left < DAILY ? ' (' + L.left + ' left)' : ''), L.fresh.length,
+        L.fresh.length ? L.fresh.map(function(o){ return OT.card(o, 'new'); }).join('') : '<div class="ot-empty">' + (L.left ? 'No uncontacted leads left. New ones arrive on Monday, or add your own on the Leads Tracker tab.' : 'Goal reached for today. Well done! 🎉') + '</div>') +
+      (done ? OT.sec('done', 'Done today', done, L.done.map(function(o){ return OT.card(o, 'done'); }).join('')) : '') +
       OT.libraryHtml();
     $('otTplSave').onclick = function(){ OT.tpl = $('otTpl').value; LSset('fom.ot.tpl' + SUF, OT.tpl); LSset('fom.ot.tplv' + SUF, TPL_VER); OT.saveCfg(); toast('Message saved'); OT.render(); };
     $('otTplReset').onclick = function(){ $('otTpl').value = TPL_DEF; };
   },
+  /* folding sections, remembered on this device (Done today starts folded) */
+  fold: LSget('fom.ot.fold' + SUF, { done:true }),
+  sec: function(k, title, n, body){ return '<details class="ot-sec" data-sec="' + k + '"' + (OT.fold[k] ? '' : ' open') + '><summary class="ot-h">' + esc(title) + (n ? ' <span class="ot-n">' + n + '</span>' : '') + '</summary>' + body + '</details>'; },
   saveCfg: function(){ if(DB) DB.collection('settings').doc(BZ.sid('outreachToday')).set({ json:JSON.stringify({ tpl:OT.tpl, v:TPL_VER }) }, { merge:true }).catch(function(){}); },
   loadCfg: function(){ if(!DB) return; DB.collection('settings').doc(BZ.sid('outreachToday')).get().then(function(d){ var j = d.exists ? JSON.parse(d.data().json || '{}') : {}; if(j.tpl && (j.v || 0) >= TPL_VER){ OT.tpl = j.tpl; LSset('fom.ot.tpl' + SUF, OT.tpl); LSset('fom.ot.tplv' + SUF, TPL_VER); OT.render(); } else { OT.tpl = TPL_DEF; LSset('fom.ot.tpl' + SUF, OT.tpl); LSset('fom.ot.tplv' + SUF, TPL_VER); OT.saveCfg(); OT.render(); } }).catch(function(){}); },
   mark: function(o, via, kind){
@@ -234,6 +243,7 @@ var OT = {
     store.update(o.id); safeRenderLeads();
   }
 };
+$('otBody').addEventListener('toggle', function(e){ var d = e.target; if(!d.dataset || !d.dataset.sec) return; OT.fold[d.dataset.sec] = !d.open; LSset('fom.ot.fold' + SUF, OT.fold); }, true);
 $('otBody').addEventListener('click', function(e){
   var ib = e.target.closest('[data-idea]'), c = e.target.closest('.ot-card'); if(!ib || !c) return;
   var st = OT.yesState[c.dataset.id] = OT.yesState[c.dataset.id] || { picked:[], price:'' }, k = ib.dataset.idea, i = st.picked.indexOf(k);

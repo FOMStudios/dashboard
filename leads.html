@@ -329,6 +329,11 @@ table.leads .l-go{width:28px;color:var(--ink-soft);font-size:20px;text-align:cen
 .op-f textarea{min-height:76px;resize:vertical;line-height:1.45;}
 .op-f input:focus,.op-f select:focus,.op-f textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent);}
 .op-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.wk-h td{padding:0!important;border:0!important;background:transparent!important;}
+.wk-b{width:100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:0;background:var(--bg);border-radius:12px;padding:10px 12px;margin:10px 0 4px;font:inherit;font-weight:800;font-size:13.5px;color:var(--ink);cursor:pointer;text-align:left;}
+.wk-b small{font-weight:600;color:var(--ink-soft);font-size:12.5px;}
+.wk-b i{margin-left:auto;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s;margin-right:4px;}
+.wk-h.shut .wk-b i{transform:rotate(-45deg);}
 .op-btn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:9px 15px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
 .op-btn.pri{border-color:var(--accent);background:var(--accent);color:#fff;}
 .op-btn.wa{border-color:#25D366;background:#25D366;color:#fff;}
@@ -673,10 +678,26 @@ function renderLeads(){
     const q = (leadSearch().value||'').trim().toLowerCase();
     const tbody = leadTbody();
     tbody.innerHTML = '';
+    /* rows grouped by the week they were added (Claude adds a batch every Monday). Older weeks start folded; searching shows everything. */
+    const wkOf = o => { const ms = tsMillis(o.createdAt) || Date.now(), d = new Date(ms); d.setHours(12,0,0,0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.toISOString().slice(0,10); };
+    const wks = {}; leads.forEach(o => { const k = wkOf(o); (wks[k] = wks[k] || []).push(o); });
+    const wkKeys = Object.keys(wks).sort(), latest = wkKeys[wkKeys.length - 1];
+    let WF = {}; try{ WF = JSON.parse(localStorage.getItem('fom.leads.wkopen' + (FOM_BIZ.isSba ? '_sba' : ''))) || {}; }catch(e){}
+    const wkOpen = k => q || (k in WF ? WF[k] : k === latest);
+    let lastWk = null;
 
     leads.forEach((o,i)=>{
         const hay = (o.company+' '+o.contact+' '+o.email+' '+o.location+' '+o.status+' '+o.category+' '+o.comments).toLowerCase();
         if(q && !hay.includes(q)) return;
+        const wk = wkOf(o);
+        if(wk !== lastWk && wkKeys.length > 1){
+            lastWk = wk;
+            const g = wks[wk], cl = g.filter(x=>x.source==='claude').length, todo = g.filter(x=>['Not Emailed','New enquiry'].includes(x.status)).length;
+            const h = document.createElement('tr'); h.className = 'wk-h' + (wkOpen(wk) ? '' : ' shut'); h.dataset.wk = wk;
+            h.innerHTML = `<td colspan="7"><button type="button" class="wk-b" data-wk="${wk}"><span>Added week of ${esc(new Date(wk+'T12:00:00').toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}))}</span><small>${g.length} lead${g.length===1?'':'s'}${cl?' · '+cl+' from Claude':''}${todo?' · '+todo+' not contacted':''}</small><i></i></button></td>`;
+            tbody.appendChild(h);
+        }
+        if(!wkOpen(wk)) return;
         const tr = document.createElement('tr');
         tr.dataset.i = i;
         const web = o.source==='website';
@@ -742,6 +763,7 @@ function renderLeadDashboard(){
         : `<div class="fu-empty">Nothing overdue - nice work staying on top of it.</div>`;
 }
 
+leadTbody().addEventListener('click', e=>{ const b=e.target.closest('.wk-b'); if(!b) return; const key='fom.leads.wkopen'+(FOM_BIZ.isSba?'_sba':''); let WF={}; try{ WF=JSON.parse(localStorage.getItem(key))||{}; }catch(x){} const shut=b.closest('tr').classList.contains('shut'); WF[b.dataset.wk]=shut; try{ localStorage.setItem(key, JSON.stringify(WF)); }catch(x){} renderLeads(); });
 leadTbody().addEventListener('focusin',()=>{editingCell=true;});
 leadTbody().addEventListener('focusout',()=>{ editingCell=false; if(pendingRender){pendingRender=false; renderLeads();} });
 leadTbody().addEventListener('input', e=>{
@@ -1650,7 +1672,7 @@ refreshDeckPreview();
 </script>
 <script src="reel-ideas.js?v=1"></script>
 <script src="brief-link.js?v=1"></script>
-<script src="outreach-today.js?v=9"></script>
+<script src="outreach-today.js?v=10"></script>
 <script src="activity.js?v=2"></script>
 <script src="app.js?v=8"></script>
 </body>
