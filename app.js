@@ -367,3 +367,30 @@ function isOpen(p){ return p.classList.contains('on') || p.classList.contains('s
 dragClose('.fom-sheet', '.grab, .fom-sheet-h', '.fom-x');
 dragClose('.dm', '.dm-head, .dm-grab', '.dm-x');
 })();
+
+/* ---- "New version ready": after Claude pushes a change, GitHub lets browsers keep the old page for up to 10 minutes.
+   This compares the copy the browser kept with a fresh one and offers a refresh (also on the home screen app). ---- */
+(function(){
+  var last = 0, shown = false;
+  async function check(){
+    if(shown || Date.now() - last < 120000 || !window.fetch) return; last = Date.now();
+    try{
+      var u = (location.pathname.split('/').pop() || 'dashboard.html');
+      var kept = await (await fetch(u, { cache:'force-cache' })).text();
+      var fresh = await (await fetch(u, { cache:'reload' })).text();   // also refreshes the browser's copy, so Refresh gets the new one
+      if(kept && fresh && kept !== fresh) bar();
+    }catch(e){}
+  }
+  function bar(){
+    shown = true;
+    var b = document.createElement('div');
+    b.setAttribute('role', 'status');
+    b.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom));z-index:9500;display:flex;gap:12px;align-items:center;background:#111;color:#fff;border-radius:99px;padding:10px 10px 10px 18px;font:600 14px -apple-system,Helvetica,Arial,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:calc(100vw - 24px)';
+    b.innerHTML = '<span>✨ New version ready</span><button type="button" style="border:0;border-radius:99px;padding:8px 16px;font:inherit;font-weight:800;background:#fff;color:#111;cursor:pointer">Refresh</button><button type="button" aria-label="Later" style="border:0;background:none;color:#fff;font-size:18px;cursor:pointer;padding:0 6px">×</button>';
+    b.querySelectorAll('button')[0].onclick = function(){ location.reload(); };
+    b.querySelectorAll('button')[1].onclick = function(){ b.remove(); };
+    document.body.appendChild(b);
+  }
+  setTimeout(check, 4000);
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') check(); });
+})();
