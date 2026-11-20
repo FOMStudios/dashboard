@@ -577,8 +577,17 @@ async function start(db){
   if(remote && remote.fromClaude && remote.fromClaude !== ST.settings.importedClaude){
     const have = new Set(ST.settings.campaigns.map(c => c.id || c.title));
     const add = (remote.campaigns || []).filter(c => !have.has(c.id || c.title));
+    // remote.replace lists campaign ids Claude has changed (new dates etc): overwrite yours, keep your winner and on/off
+    const rep = new Set(remote.replace || []), upd = [];
+    ST.settings.campaigns = ST.settings.campaigns.map(c => {
+      const r = rep.has(c.id) && (remote.campaigns || []).find(x => x.id === c.id);
+      if(!r) return c;
+      upd.push(r.title);
+      return Object.assign({}, c, r, { winner: c.winner || r.winner || '', on: c.on });
+    });
     ST.settings.campaigns = add.concat(ST.settings.campaigns);
-    if(remote.thisWeek && !ST.settings.thisWeek) ST.settings.thisWeek = remote.thisWeek;
+    if(remote.thisWeek && (!ST.settings.thisWeek || remote.thisWeekForce)) ST.settings.thisWeek = remote.thisWeek;
+    if(upd.length && !add.length){ markDirty(); toast('Claude updated: ' + upd.join(', ') + '. Press Save to keep it.'); }
     ST.settings.importedClaude = remote.fromClaude;
     drawSched(); drawCamps(); drawNow();
     if(add.length){ markDirty(); toast('Claude added: ' + add.map(c => c.title).join(', ') + '. Press Save to keep it.'); }

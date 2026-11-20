@@ -406,6 +406,9 @@ function loadWeek(db){
   // campaigns Claude added to the repo copy that are not saved on the WhatsApp Group page yet still show here
   function fromRepo2(mine){ fetch('channel/settings' + SUF + '.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(st => {
     if(!st || !st.fromClaude || st.fromClaude === mine.importedClaude) return;
+    const rep = new Set(st.replace || []);
+    WEEK.camps = WEEK.camps.map(c => { const r = rep.has(c.id) && (st.campaigns || []).find(x => x.id === c.id); return r ? Object.assign({}, c, r, { winner: c.winner || r.winner || '', on: c.on }) : c; });
+    if(st.thisWeekForce && st.thisWeek) WEEK.note = st.thisWeek;
     const have = new Set(WEEK.camps.map(c => c.id || c.title)); (st.campaigns || []).forEach(c => { if(!have.has(c.id || c.title)) WEEK.camps.push(c); }); safeRender();
   }).catch(() => {}); }
 }
