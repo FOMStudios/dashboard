@@ -4,21 +4,21 @@
    FOM_HEALTH.nextFor(o) -> progress and next steps for one order            */
 (function(){
   var DAY = 86400000;
-  var STEPS = [
-    { key:'s1',  who:'client', title:'Client enquiry received' },
+  var STEPS = [   // keep in step with workflow.html (restructured 20 Nov 2026)
+    { key:'s1',  who:'client', title:'Enquiry received' },
     { key:'s4',  who:'me', title:'Create the order on the Database', link:'database.html', label:'Database' },
-    { key:'s5',  who:'me', title:'Upload contract and invoice to Cloudflare R2, paste the links', link:'database.html', label:'Database' },
+    { key:'s5',  who:'me', title:'Upload contract and invoice to R2, paste the links', link:'database.html', label:'Database', auto:function(o){ return !!o.contractUrl; } },
     { key:'s2',  who:'me', title:'Send invoice, contract and signing link', link:'database.html', label:'Copy sign link' },
     { key:'s14', who:'client', title:'Client signs the contract online', auto:function(o){ return !!o.contractSigned; } },
-    { key:'s3',  who:'client', title:'Client pays the deposit' },
-    { key:'s6',  who:'me', title:'Create their Firebase account', link:'https://console.firebase.google.com/', label:'Firebase' },
-    { key:'s7',  who:'me', title:'Send the password reset email', link:'https://console.firebase.google.com/', label:'Firebase' },
-    { key:'s8',  who:'me', title:'Send the confirmation email', link:'email.html', label:'Email' },
+    { key:'s3',  who:'client', title:'Client pays the deposit', auto:function(o){ return (+o.paid || 0) > 0; } },
+    { key:'s6',  who:'me', title:'Create their portal login and send it on WhatsApp', link:'database.html', label:'Create login', auto:function(o){ return !!o.portalLoginAt; } },
+    { key:'s8',  who:'me', title:'Send the Booking Confirmation email', link:'email.html', label:'Email' },
     { key:'s9',  who:'client', title:'Client logs into the portal' },
-    { key:'s10', who:'me', title:'Shoot day completed', link:'database.html', label:'Database' },
-    { key:'s11', who:'me', title:'Upload edits to R2 and set the gallery folder', link:'database.html', label:'Database' },
+    { key:'s10', who:'me', title:'Shoot day done', link:'database.html', label:'Database' },
+    { key:'s11', who:'me', title:'Upload the gallery and set it to Ready', link:'database.html', label:'Database', auto:function(o){ return !!(o.deliverablesReady && o.galleryFolder); } },
     { key:'s12', who:'me', title:'Send the Files Ready email', link:'email.html', label:'Email' },
-    { key:'s13', who:'client', title:'Client downloads their files' }
+    { key:'s13', who:'client', title:'Client downloads their files' },
+    { key:'bal', who:'client', title:'Balance paid in full', link:'database.html', label:'Database', auto:function(o){ return (+o.total || 0) > 0 && (+o.paid || 0) >= (+o.total || 0); } }
   ];
   function done(s, o){ var wf = o.workflow || {}; return !!wf[s.key] || (typeof s.auto === 'function' && !!s.auto(o)); }
   function nextFor(o){
