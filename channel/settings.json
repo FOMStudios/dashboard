@@ -12,68 +12,105 @@
   "never": [],
   "signoff": "FOM STUDIOS 📸",
   "link": "https://www.fomstudios.co.za/?src=wach",
-  "thisWeek": "Mini Shoot giveaway runs Sat 21 Nov to Sat 5 Dec (entries close 18:00). Dated giveaway messages are already written; keep other messages light so the giveaway stays the focus.",
+  "thisWeek": "Mini Shoot giveaway runs Sun 22 Nov to Sun 6 Dec (entries close 18:00). Dated giveaway messages are already written; keep other messages light so the giveaway stays the focus.",
   "campaigns": [
     {
+      "on": true,
+      "id": "event-947-ride-2026",
       "end": "2026-11-23",
-      "winner": "",
+      "type": "event",
       "title": "947 Ride Joburg",
       "link": "https://instagram.com/fom_studios_",
       "notes": "Good luck message before Sunday; on Sunday evening or Monday, point riders to the photos. Do not promise photo sales or prices unless Ishaaq adds them here.",
-      "type": "event",
-      "id": "event-947-ride-2026",
-      "howTo": "Find your photos on our Instagram (@fom_studios_) after the ride, then tag yourself and your riding friends",
       "start": "2026-11-20",
-      "rules": "",
+      "howTo": "Find your photos on our Instagram (@fom_studios_) after the ride, then tag yourself and your riding friends",
       "offer": "FOM Studios is shooting the 947 Ride Joburg on Sunday 22 November",
-      "on": true
+      "winner": "",
+      "rules": ""
     },
     {
-      "end": "2026-11-30",
-      "link": "https://www.fomstudios.co.za/?src=wach",
+      "id": "promo-black-friday-2026",
+      "code": "FOMBLACKFRIDAY",
+      "notes": "Festive gift angle works well: a shoot as a Christmas present. The giveaway is still running on these days, so mention it briefly too.",
       "type": "promo",
+      "offer": "15% off any FOM Studios shoot booked from Fri 27 to Mon 30 November with code FOMBLACKFRIDAY",
+      "link": "https://www.fomstudios.co.za/?src=wach",
+      "rules": "Valid 27 to 30 Nov 2026 only. Cannot be combined with the giveaway code or giveaway prizes.",
       "howTo": "Mention FOMBLACKFRIDAY when booking on 068 690 1120 or with the Book a shoot button on the website",
       "start": "2026-11-27",
-      "rules": "Valid 27 to 30 Nov 2026 only. Cannot be combined with the giveaway code or giveaway prizes.",
-      "offer": "15% off any FOM Studios shoot booked from Fri 27 to Mon 30 November with code FOMBLACKFRIDAY",
-      "title": "Black Friday 15% off",
+      "end": "2026-11-30",
       "on": true,
-      "winner": "",
-      "id": "promo-black-friday-2026",
-      "notes": "Festive gift angle works well: a shoot as a Christmas present. The giveaway is still running on these days, so mention it briefly too.",
-      "code": "FOMBLACKFRIDAY"
+      "title": "Black Friday 15% off",
+      "winner": ""
     },
     {
+      "notes": "Do not reveal the code FOMGIVEAWAY10 before entries close on Sun 6 Dec 18:00. Bookings number: 068 690 1120.",
       "title": "Mini Shoot giveaway",
-      "end": "2026-12-05",
-      "winner": "",
-      "notes": "Do not reveal the code FOMGIVEAWAY10 before entries close on Sat 5 Dec 18:00. Bookings number: 068 690 1120.",
-      "howTo": "On Instagram (@fom_studios_): follow, like the giveaway post and comment tagging 2 friends. Each new comment tagging 2 different friends is another entry. Sharing the post to your Story and tagging us is an optional bonus entry.",
-      "start": "2026-11-21",
-      "rules": "Entries close Sat 5 Dec 18:00 SAST. Winners drawn at random and announced by Mon 7 Dec; they must reply within 48 hours. SA residents 18+. No purchase necessary. Prizes have no cash value and must be used by 31 Jan 2027. Not sponsored by or associated with Instagram.",
+      "rules": "Entries close Sun 6 Dec 18:00 SAST. Winners drawn at random and announced by Tue 8 Dec; they must reply within 48 hours. SA residents 18+. No purchase necessary. Prizes have no cash value and must be used by 31 Jan 2027. Not sponsored by or associated with Instagram.",
       "offer": "Grand prize: 1 free Mini Shoot (R500 value: 20 edited photos or one 30 second reel, 30 minutes of coverage). Runner-up: 20% off a Mini Shoot. Every entrant: 10% off a first booking with code FOMGIVEAWAY10.",
-      "on": true,
+      "howTo": "On Instagram (@fom_studios_): follow, like the giveaway post and comment tagging 2 friends. Each new comment tagging 2 different friends is another entry. Sharing the post to your Story and tagging us is an optional bonus entry.",
+      "start": "2026-11-22",
+      "end": "2026-12-06",
+      "winner": "",
       "id": "giveaway-nov-2026",
-      "type": "giveaway",
-      "link": "https://instagram.com/fom_studios_"
+      "on": true,
+      "link": "https://instagram.com/fom_studios_",
+      "type": "giveaway"
     },
     {
       "id": "code-fomgiveaway10",
-      "end": "2026-12-29",
-      "on": true,
-      "link": "https://www.fomstudios.co.za/?src=wach",
+      "winner": "",
       "title": "Giveaway code FOMGIVEAWAY10",
-      "type": "promo",
-      "notes": "Only mention it after entries close. Reminder post on Tue 22 Dec is already written.",
-      "start": "2026-12-05",
-      "howTo": "Mention FOMGIVEAWAY10 when booking on 068 690 1120 or with the Book a shoot button on the website",
+      "end": "2026-12-29",
       "offer": "10% off a first booking for everyone who entered the giveaway",
       "rules": "Valid until Tue 29 Dec 2026, once per person, first booking only, cannot be combined with other offers.",
-      "winner": "",
+      "start": "2026-12-06",
+      "howTo": "Mention FOMGIVEAWAY10 when booking on 068 690 1120 or with the Book a shoot button on the website",
+      "on": true,
+      "notes": "Only mention it after entries close. Reminder post on Tue 22 Dec is already written.",
+      "type": "promo",
+      "link": "https://www.fomstudios.co.za/?src=wach",
       "code": "FOMGIVEAWAY10"
     }
   ],
   "refreshRequested": "",
-  "updatedAt": "2026-11-20T14:41:54.034Z",
-  "importedClaude": "2026-11-20-promo-codes"
+  "updatedAt": "2026-11-21T09:01:46.682Z",
+  "importedClaude": "2026-11-20-promo-codes",
+  "moved": {
+    "gw-2026-11-21-welcome": {
+      "from": "2026-11-21",
+      "day": "2026-11-22",
+      "text": "*Welcome to the FOM Studios group* 📸\n\nThis is where we share promos, giveaways, shoot availability and behind-the-scenes first.\n\nOur giveaway goes live today: follow @fom_studios_ on Instagram, like the giveaway post and tag 2 friends for a chance to win a *FREE Mini Shoot*. Everyone who enters gets 10% off, and the code is posted here after entries close.\n\nBookings and quotes: message us on 068 690 1120 so nothing gets lost.\n\nFOM Studios 📸"
+    },
+    "gw-2026-11-21-launch": {
+      "from": "2026-11-21",
+      "day": "2026-11-22",
+      "text": "🎁 *The FOM Studios giveaway is LIVE!*\n\nWin a *FREE Mini Shoot* (R500 value), or 20% off one. Everyone who enters also gets *10% off* their first booking.\n\nEnter on Instagram (@fom_studios_): follow, like the giveaway post and tag 2 friends in the comments. Each new comment tagging 2 different friends is another entry.\n\nEntries close *Sunday 6 December at 6PM*. Your 10% code and the winners will be posted right here in this group.\n\nFOM Studios 📸"
+    },
+    "gw-2026-11-25-reminder": {
+      "from": "2026-11-25",
+      "day": "2026-11-26",
+      "text": "⏳ *Giveaway reminder*\n\nEntries are open until *Sunday 6 December at 6PM*.\n\nFollow @fom_studios_, like the giveaway post and tag 2 friends to enter for a FREE Mini Shoot. Every entrant gets 10% off, and the code is posted here after entries close.\n\nFOM Studios 📸"
+    },
+    "gw-2026-12-01-1weekleft": {
+      "from": "2026-12-01",
+      "day": "2026-12-02",
+      "text": "⏳ *4 days left to enter!*\n\nThe FOM Studios giveaway closes *Sunday 6 December at 6PM*.\n\nFollow @fom_studios_, like the giveaway post and tag 2 friends to win a FREE Mini Shoot. More comments with 2 different friends means more entries.\n\nEveryone who enters gets 10% off, and the code is posted here when entries close.\n\nFOM Studios 📸"
+    },
+    "gw-2026-12-05-lastday": {
+      "from": "2026-12-05",
+      "day": "2026-12-06",
+      "text": "*Last day!* Entries close *TODAY at 6PM*.\n\nNot entered yet? Head to @fom_studios_ on Instagram, follow, like and tag 2 friends on the giveaway post.\n\nYour 10% code lands here tonight 👀\n\nFOM Studios 📸"
+    },
+    "gw-2026-12-05-code": {
+      "from": "2026-12-05",
+      "day": "2026-12-06",
+      "text": "*That's a wrap on entries!* 🎉\n\nThank you to everyone who entered. Here is your 10% off code for your first booking:\n\n*FOMGIVEAWAY10*\n\nMessage us on 068 690 1120 or use the Book a shoot button at https://www.fomstudios.co.za/?src=wach and mention the code. Valid until Tuesday 29 December 2026, one use per person, first booking only.\n\nWinners will be announced by Tuesday 8 December. Stay tuned 👀\n\nFOM Studios 📸"
+    },
+    "gw-2026-12-07-winners": {
+      "from": "2026-12-07",
+      "day": "2026-12-08",
+      "text": "🥇 *GRAND PRIZE:* @[handle] has won a FREE Mini Shoot!\n🥈 *RUNNER-UP:* @[handle] wins 20% off a Mini Shoot!\n\nCongratulations! We will be in touch on Instagram DM to arrange your shoot.\n\nThank you to everyone who entered. Your 10% code *FOMGIVEAWAY10* is valid until Tuesday 29 December.\n\nFOM Studios 📸"
+    }
+  }
 }
