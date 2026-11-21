@@ -10,9 +10,9 @@
 'use strict';
 var WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
 var LS = window.localStorage, D = document;
-var STEP = { paid:'s3', portal:'s9', download:'s13', signed:'s14' };   // event -> Workflow step
-var TXT = { signed:'signed the contract', portal:'signed in to the portal', gallery:'opened their gallery', download:'downloaded', favs:'picked favourites', inspo:'added inspiration', enquiry:'sent an enquiry', review:'left a review', paid:'paid by card', meeting:'booked a meeting on the website' };
-var ICON = { signed:'✍️', portal:'🔑', gallery:'🖼️', download:'⬇️', favs:'♥', inspo:'💡', enquiry:'🌐', review:'⭐', paid:'💳', meeting:'📅' };
+var STEP = { paid:'s3', portal:'s9', dlok:'s13', signed:'s14' };   // event -> Workflow step (Downloaded ticks only once every file is saved)
+var TXT = { signed:'signed the contract', portal:'signed in to the portal', gallery:'opened their gallery', download:'started downloading', dlok:'finished downloading', dlstop:'stopped downloading', favs:'picked favourites', inspo:'added inspiration', enquiry:'sent an enquiry', review:'left a review', paid:'paid by card', meeting:'booked a meeting on the website' };
+var ICON = { signed:'✍️', portal:'🔑', gallery:'🖼️', download:'⬇️', dlok:'✅', dlstop:'⚠️', favs:'♥', inspo:'💡', enquiry:'🌐', review:'⭐', paid:'💳', meeting:'📅' };
 var state = { events:[], devices:[], orders:[], ready:false, error:'' }, subs = [];
 function get(k, d){ try{ var v = LS.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } }
 function set(k, v){ try{ LS.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -118,6 +118,14 @@ function ago(ms){ var s = (Date.now() - ms) / 1000; if(s < 60) return 'just now'
 function line(e){ return { icon:ICON[e.t] || '•', name:e.n || 'A client', what:TXT[e.t] || e.t, detail:e.d || '', when:ago(e.at), biz:e.b, t:e.t, o:e.o, at:e.at }; }
 function forOrder(o){ var n = String(o.customer || '').trim().toLowerCase(); return state.events.filter(function(e){ return e.o === o.id || (!e.o && e.t === 'paid' && n && String(e.n || '').trim().toLowerCase() === n); }); }
 
+/* newest download result for a booking: { state:'ok'|'stopped'|'started', text, at } or null */
+function dlStatus(o){
+  var ev = forOrder(o).filter(function(e){ return e.t === 'dlok' || e.t === 'dlstop' || e.t === 'download'; });
+  if(!ev.length) return null;
+  ev.sort(function(a, b){ return b.at - a.at; });
+  var ok = ev.find(function(e){ return e.t === 'dlok'; }), e = ok || ev[0];   // once everything was saved, that stays the answer
+  return { state:e.t === 'dlok' ? 'ok' : e.t === 'dlstop' ? 'stopped' : 'started', text:e.d || '', at:e.at, when:ago(e.at) };
+}
 window.FOM_ACT = { state:state, on:function(f){ subs.push(f); if(state.ready || state.error) f(state); }, refresh:refresh,
-  support:support, enable:enable, disable:disable, test:test, line:line, forOrder:forOrder, STEP:STEP };
+  support:support, enable:enable, disable:disable, test:test, line:line, forOrder:forOrder, dlStatus:dlStatus, STEP:STEP };
 })();

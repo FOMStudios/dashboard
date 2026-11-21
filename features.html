@@ -400,13 +400,13 @@ const F = [
   {a:'clients',i:'✍️',t:'Contracts and e-signing',b:'both',p:'contract.html',d:'Edit clauses, key terms and bank details with version history. Clients sign from a link with no login; the row turns Signed and you get a notification.'},
   {a:'clients',i:'🧮',t:'Price Calculator and invoices',b:'both',p:'calculator.html',d:'Packages, travel, discounts, promo codes (codes follow their campaign dates), PDF invoices with deposit and balance.'},
   {a:'clients',i:'💳',t:'Card payments (Yoco)',b:'fom',p:'calculator.html',d:'Invoices carry Yoco card payment links, and card payments show in your client activity.',why:'Shot by A invoices are EFT only for now. Card payments need her own Yoco account (so money lands in her bank) and her own payment Worker. Ask Claude once she has a Yoco account.'},
-  {a:'clients',i:'✅',t:'Project Workflow',b:'both',p:'workflow.html',d:'Step by step checklist per project. Steps tick themselves when the client signs, signs in, downloads or pays by card.'},
+  {a:'clients',i:'✅',t:'Project Workflow',b:'both',p:'workflow.html',d:'Step by step checklist per project. Steps tick themselves when the client signs, signs in, finishes downloading every file or pays by card.'},
   {a:'clients',i:'✉️',t:'Email templates',b:'both',p:'email.html',d:'Booking Confirmation, Files Ready and Gallery Expiring, branded per business, pointing clients to the password you sent on WhatsApp.'},
   {a:'clients',i:'🤝',t:'Client Meetings',b:'both',p:'meetings.html',d:'Mood board library, live meetings with notes, questions, quote, shot list and follow-ups, client view, mood board links clients heart, and Make invoice.'},
   {a:'clients',i:'📅',t:'Bookings (Book a meeting)',b:'both',p:'bookings.html',d:'Meeting requests from each website\'s Book a meeting page, your available hours, confirm into Client Meetings.'},
   {a:'clients',i:'⭐',t:'Client Reviews',b:'both',p:'reviews.html',d:'Reviews from your own form, feature up to 3 on the website.'},
   // gallery
-  {a:'gallery',i:'🖼',t:'Client gallery',b:'both',p:'database.html',d:'Branded gallery in the client portal: header photo, favourites, downloads (singles or a zip), video stills, an expiry banner and automatic clean-up after expiry.'},
+  {a:'gallery',i:'🖼',t:'Client gallery',b:'both',p:'database.html',d:'Branded gallery in the client portal: header photo, favourites, downloads (singles or a zip; iPhone saves straight to Photos in parts, remembers what is saved and carries on next visit, with a zip option), download tracking (finished or stopped at X of N shows on the client in Database with a WhatsApp nudge), video stills, an expiry banner and automatic clean-up after expiry.'},
   {a:'clients',i:'👁',t:'One-tap Preview as client',b:'both',p:'database.html',d:'Preview as client opens the client\'s portal already signed in as you, read-only, with no password to type.',part:'Needs the FIREBASE_SA key. Until then the portal fills in your admin email and asks for your password.'},
   {a:'gallery',i:'⬆️',t:'Upload files to a gallery',b:'both',p:'database.html',d:'Drop a client\'s whole folder of photos and videos on the Database (Gallery and portal, Upload files). No 100-file limit like Cloudflare, big videos go up in parts, files already there are skipped, failed ones can be retried, then Set gallery to Ready.'},
   {a:'gallery',i:'👥',t:'Group links',b:'both',p:'database.html',d:'One temporary link for everyone at an event: pick the photos, end date, free downloads or view only, optional 4-digit PIN, QR code, views and downloads count, and a Book your own shoot strip for guests.',part:'Watermarked, buy to download is FOM only (it uses Photo Sales).'},
@@ -519,7 +519,7 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
   }catch(e){ console.error('Features init failed:', e.message||e); }
 })();
 </script>
-<script src="activity.js?v=2"></script>
+<script src="activity.js?v=3"></script>
 <script src="app.js?v=10"></script>
 </body>
 </html>
