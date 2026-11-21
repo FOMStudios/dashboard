@@ -612,7 +612,7 @@ function fixFoot(){
 addEventListener('resize', fixFoot);
 
 /* ---------------- details panel: every field, in sections ---------------- */
-function openPanel(i){ const o=orders[i]; if(!o) return; OPEN_ID=o.id; renderPanel(true); $('op').classList.add('on'); $('opScrim').classList.add('on'); document.body.classList.add('op-open'); markSel(); lgCheck(o); }
+function openPanel(i){ const o=orders[i]; if(!o) return; OPEN_ID=o.id; renderPanel(true); $('op').classList.add('on'); $('opScrim').classList.add('on'); document.body.classList.add('op-open'); markSel(); lgCheck(o); if(window.FOM_GROUP) setTimeout(()=>FOM_GROUP.sync(o),1500); }
 function closePanel(){ const was=OPEN_ID; OPEN_ID=null; if(was) safeRender(); $('op').classList.remove('on'); $('opScrim').classList.remove('on'); document.body.classList.remove('op-open'); markSel(); }
 function markSel(){ tbody.querySelectorAll('tr.row').forEach(tr=>{ const o=orders[+tr.dataset.open]; tr.classList.toggle('sel', !!o && o.id===OPEN_ID); }); }
 $('opX').onclick=closePanel; $('opScrim').onclick=closePanel;
@@ -1194,9 +1194,9 @@ function covButtons(ready){
   const o = covO, had = o && o.galleryCover && o.galleryCover.n;
   document.getElementById('covActs').innerHTML = (ready && covSel ? '<button class="btn" type="button" id="covSave">Save header</button>' : '') +
     (had ? '<button class="btn ghost" type="button" id="covClear">Use the business header</button>' : '') + (o && o.galleryCoverPrev && o.galleryCoverPrev.n && !(had && o.galleryCover.n === o.galleryCoverPrev.n) ? '<button class="btn ghost" type="button" id="covBack">&#8617; ' + (had ? 'Previous header' : 'Undo: bring back the last header') + '</button>' : '') + '<button class="btn ghost" type="button" id="covClose">Close</button>';
-  const sv = document.getElementById('covSave'); if(sv) sv.onclick = () => { if(o.galleryCover && o.galleryCover.n) o.galleryCoverPrev = o.galleryCover; o.galleryCover = { n:covSel.n, fx:covSel.fx, fy:covSel.fy }; store.update(o.id); safeRender(); covClose(); };
-  const cl = document.getElementById('covClear'); if(cl) cl.onclick = () => { o.galleryCoverPrev = o.galleryCover; o.galleryCover = null; store.update(o.id); safeRender(); covSel = null; drawCover(); document.getElementById('covSub').textContent = 'Removed. The business header shows for this client. Tap Undo to bring it back.'; };   // stays open so Undo is right there
-  const bk = document.getElementById('covBack'); if(bk) bk.onclick = () => { const cur = o.galleryCover; o.galleryCover = o.galleryCoverPrev; o.galleryCoverPrev = (cur && cur.n) ? cur : o.galleryCoverPrev; store.update(o.id); safeRender(); covSel = Object.assign({}, o.galleryCover); drawCover(); document.getElementById('covSub').textContent = 'Header back for this client.'; };   // undo: swaps back, nothing to upload again
+  const sv = document.getElementById('covSave'); if(sv) sv.onclick = () => { if(o.galleryCover && o.galleryCover.n) o.galleryCoverPrev = o.galleryCover; o.galleryCover = { n:covSel.n, fx:covSel.fx, fy:covSel.fy }; store.update(o.id); safeRender(); covClose(); if(window.FOM_GROUP) FOM_GROUP.sync(o); };
+  const cl = document.getElementById('covClear'); if(cl) cl.onclick = () => { o.galleryCoverPrev = o.galleryCover; o.galleryCover = null; store.update(o.id); safeRender(); if(window.FOM_GROUP) FOM_GROUP.sync(o); covSel = null; drawCover(); document.getElementById('covSub').textContent = 'Removed. The business header shows for this client. Tap Undo to bring it back.'; };   // stays open so Undo is right there
+  const bk = document.getElementById('covBack'); if(bk) bk.onclick = () => { const cur = o.galleryCover; o.galleryCover = o.galleryCoverPrev; o.galleryCoverPrev = (cur && cur.n) ? cur : o.galleryCoverPrev; store.update(o.id); safeRender(); if(window.FOM_GROUP) FOM_GROUP.sync(o); covSel = Object.assign({}, o.galleryCover); drawCover(); document.getElementById('covSub').textContent = 'Header back for this client.'; };   // undo: swaps back, nothing to upload again
   document.getElementById('covClose').onclick = covClose;
 }
 function covClose(){ document.getElementById('covScrim').classList.remove('on'); }
@@ -1271,7 +1271,7 @@ document.getElementById('favScrim').onclick = e => { if(e.target.id === 'favScri
 <script src="activity.js?v=3"></script>
 <script>(function hookDl(){ let n=0; (function go(){ if(window.FOM_ACT){ FOM_ACT.on(()=>{ try{ if(OPEN_ID) renderPanel(); }catch(e){} }); return; } if(++n<40) setTimeout(go,500); })(); })();</script>
 <script src="vendor/qrcode.js"></script>
-<script src="group-link.js?v=2"></script>
+<script src="group-link.js?v=3"></script>
 <script src="gallery-upload.js?v=2"></script>
 <script src="app.js?v=10"></script>
 </body>

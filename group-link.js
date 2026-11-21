@@ -45,7 +45,8 @@
   async function sync(o){
     try{
       var res = await api('/admin/groups?order=' + encodeURIComponent(o.id));
-      for(var k = 0; k < (res.groups || []).length; k++){ var g = res.groups[k]; if(!!g.client !== !!o.groupPicksOn) await api('/admin/group', Object.assign({}, g, { client:!!o.groupPicksOn })); }
+      for(var k = 0; k < (res.groups || []).length; k++){ var g = res.groups[k]; var cv = o.galleryCover && o.galleryCover.n ? o.galleryCover : null, same = JSON.stringify(g.cover ? [g.cover.n, g.cover.fx, g.cover.fy] : null) === JSON.stringify(cv ? [cv.n, isFinite(parseFloat(cv.fx)) ? Math.round(cv.fx) : 50, isFinite(parseFloat(cv.fy)) ? Math.round(cv.fy) : 40] : null);
+        if(!!g.client !== !!o.groupPicksOn || !same) await api('/admin/group', Object.assign({}, g, { client:!!o.groupPicksOn, cover:cv })); }
     }catch(x){ console.warn('group sync', x); }
   }
   function qr(url){ try{ var q = qrcode(0, 'M'); q.addData(url); q.make(); return q.createDataURL(6, 2); }catch(x){ return ''; } }
@@ -125,7 +126,7 @@
       var all = !CL && picked.size === files.length;
       this.disabled = true; this.textContent = 'Saving...';
       try{
-        var r = await api('/admin/group', Object.assign({}, g, { biz:sba() ? 'sba' : 'fom', order:o.id, name:o.customer || '', folder:o.galleryFolder, title:$('glT').value.trim() || 'Event photos', date:o.shootDate || g.date || '', expires:$('glE').value, mode:mode, pin:usePin ? p : '', client:CL, files:CL ? [] : all ? null : files.filter(function(f){ return picked.has(f.name); }).map(function(f){ return f.name; }), on:true, salesUrl:mode === 'paid' ? (g.salesUrl || '') : '' }));
+        var r = await api('/admin/group', Object.assign({}, g, { biz:sba() ? 'sba' : 'fom', order:o.id, name:o.customer || '', folder:o.galleryFolder, cover:o.galleryCover && o.galleryCover.n ? o.galleryCover : null, title:$('glT').value.trim() || 'Event photos', date:o.shootDate || g.date || '', expires:$('glE').value, mode:mode, pin:usePin ? p : '', client:CL, files:CL ? [] : all ? null : files.filter(function(f){ return picked.has(f.name); }).map(function(f){ return f.name; }), on:true, salesUrl:mode === 'paid' ? (g.salesUrl || '') : '' }));
         ov.remove(); show(o, r.group);
       }catch(x){ er.textContent = x.message; this.disabled = false; this.textContent = g.s ? 'Save changes' : 'Make the link'; }
     };

@@ -903,7 +903,8 @@ async function gFiles(env, r) {
 }
 // client mode: the organiser approves the photos in her portal; until she does, guests see "coming soon"
 const gSoon = r => !!r.client && !(Array.isArray(r.files) && r.files.length);
-function gPublic(r) { return { title: r.title, biz: r.biz, date: r.date || '', expires: r.expires, mode: r.mode, needPin: !!r.pin, ended: gEnded(r), soon: gSoon(r), salesUrl: r.mode === 'paid' ? (r.salesUrl || '') : '' }; }
+const gPct = (v, d) => { const n = parseFloat(v); return isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : d; };
+function gPublic(r) { return { cover: r.cover ? { fx: r.cover.fx, fy: r.cover.fy } : null, title: r.title, biz: r.biz, date: r.date || '', expires: r.expires, mode: r.mode, needPin: !!r.pin, ended: gEnded(r), soon: gSoon(r), salesUrl: r.mode === 'paid' ? (r.salesUrl || '') : '' }; }
 const gPicksKey = order => '_groups/picks/' + String(order).replace(/[^A-Za-z0-9_-]/g, '') + '.json';
 /* the organiser's picks: GET ?order= (the client of that booking, or you), POST {order, picks} (the client, only when you switched it on) */
 async function gPicks(request, env, url, idx, ctx) {
@@ -957,6 +958,7 @@ async function handleGroup(path, request, env, url, ctx) {
       title: clean(b.title, 80) || 'Event photos', date: /^\d{4}-\d\d-\d\d$/.test(b.date || '') ? b.date : '',
       files: Array.isArray(b.files) ? b.files.map(x => String(x).slice(0, 200)).slice(0, 3000) : null,
       mode: G_MODES.includes(b.mode) ? b.mode : 'free', pin: b.pin ? String(b.pin) : '', expires: b.expires,
+      cover: b.cover && b.cover.n && !String(b.cover.n).includes('..') ? { n: String(b.cover.n).slice(0, 200), fx: gPct(b.cover.fx, 50), fy: gPct(b.cover.fy, 40) } : null,   // the client's gallery header (Database), so the group page looks the same
       client: !!b.client, on: b.on !== false, salesUrl: /^https:\/\//.test(b.salesUrl || '') ? String(b.salesUrl).slice(0, 300) : (r.salesUrl || '')
     });
     if (r.client) { const pk = await R2J(env, gPicksKey(r.order), null); r.files = pk && Array.isArray(pk.picks) ? pk.picks : []; }
@@ -997,6 +999,11 @@ async function handleGroup(path, request, env, url, ctx) {
     }
     const base = url.origin + '/group/file?s=' + r.s + '&k=' + k + '&n=';
     return json(Object.assign(gPublic(r), { k, files: files.map(f => Object.assign(f, { url: base + encodeURIComponent(f.name) })) }));
+  }
+  if (path === '/group/cover') {   // header photo only (no key needed, it is the page banner); stops once the link ends
+    const r = idx[s]; if (!r || !r.cover || gEnded(r)) return json({ error: 'not found' }, 404);
+    const o = await env.BUCKET.get(r.folder + r.cover.n); if (!o) return json({ error: 'not found' }, 404);
+    return new Response(o.body, { headers: { ...cors, 'Content-Type': (o.httpMetadata && o.httpMetadata.contentType) || 'image/jpeg', 'Cache-Control': 'public, max-age=3600' } });
   }
   if (path === '/group/file') {
     const r = idx[s], n = url.searchParams.get('n') || '';
