@@ -1,359 +1,707 @@
 {
-  "biz": "fom",
-  "generatedAt": "2026-11-19",
-  "leads": [
+ "biz": "fom",
+ "generatedAt": "2026-11-23",
+ "openerStyle": 2,
+ "leads": [
+  {
+   "company": "Gayle Padel Club Raslouw (10by20 Gayle Raslouw)",
+   "category": "Sports Club / Event",
+   "location": "Raslouw, Centurion",
+   "web": "https://www.gaylepadelclub.co.za",
+   "instagram": "",
+   "phone": "",
+   "email": "",
+   "why": "They have a packed week of events, including Glow & Go on 24 Nov, Best of the Best with Gustav Hefer on 25 Nov and the November Rally Royale on 29 Nov, across 4 indoor and 2 outdoor courts.",
+   "opener": "I came across your November Rally Royale tournament this Sunday and the Best of the Best session with Gustav Hefer at your Raslouw club. I'd love to explore the opportunity to capture a short, engaging reel of the Rally Royale that you could use to promote your next tournaments and fill more spots.",
+   "ideas": [
     {
-      "company": "The Marabi Club",
-      "category": "Catering / Events",
-      "location": "Steyn City",
-      "web": "https://marabiclub.com",
-      "instagram": "themarabiclub",
-      "phone": "010 591 2879",
-      "email": "",
-      "why": "Relaunched at Steyn City in October after moving from Maboneng, so the new space needs fresh photos.",
-      "opener": "I came across your move to Steyn City and the jazz evenings at the new space. I'd love to explore the opportunity to capture a short, engaging reel of the venue and one of the jazz nights that you could use to promote the new home and fill your festive season bookings."
+     "title": "Rally Royale tournament recap reel",
+     "pitch": "A fast reel of the 29 Nov Rally Royale showing the indoor glass courts, big rallies and the winners on the day. It gives you ready content to sell the December and January tournaments while the buzz is still there.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
     },
     {
-      "company": "The Bannister Hotel (Veranda rooftop)",
-      "category": "Catering / Events",
-      "location": "Braamfontein",
-      "web": "https://bannisterhotel.co.za",
-      "instagram": "",
-      "phone": "084 771 9303",
-      "email": "events@bannisterhotel.co.za",
-      "why": "Their Veranda rooftop is being promoted for year-end parties of up to 100 guests.",
-      "opener": "I came across the Veranda rooftop being promoted for year-end parties of up to 100 guests. I'd love to explore the opportunity to capture one of your functions on photo and video, giving you real content to help sell next year's bookings."
-    },
-    {
-      "company": "Katy's Palace Bar",
-      "category": "Catering / Events",
-      "location": "Kramerville",
-      "web": "https://katyspalacebar.co.za/",
-      "instagram": "",
-      "phone": "",
-      "email": "",
-      "why": "They are pushing private year-end functions and launches for up to 270 guests.",
-      "opener": "I came across your private year-end functions and launches for up to 270 guests. I'd love to explore the opportunity to capture one of your events, giving you fresh content to promote the venue, and to be a photo and video supplier you can recommend to your clients."
-    },
-    {
-      "company": "LUXX at LXX Sandhurst",
-      "category": "Catering / Events",
-      "location": "Sandhurst",
-      "web": "https://www.luxxvenue.co.za/",
-      "instagram": "",
-      "phone": "",
-      "email": "",
-      "why": "A corporate function and party venue in its busiest season right now.",
-      "opener": "I came across LUXX as one of Sandhurst's year-end function venues. I'd love to explore the opportunity to capture a short, engaging reel at one of your functions this season that you could use to promote the venue and attract more bookings."
-    },
-    {
-      "company": "The Edge at Wanderers",
-      "category": "Catering / Events",
-      "location": "Illovo",
-      "web": "https://theedge.co.za/",
-      "instagram": "",
-      "phone": "",
-      "email": "",
-      "why": "Offers exclusive hire for year-end groups of up to 70, with a cold plunge and sauna room that is unusual to show.",
-      "opener": "I came across The Edge's exclusive year-end hire and the Resilience Room. I'd love to explore the opportunity to capture a short, engaging reel of a group using the space, showing guests exactly what makes it different and helping generate more bookings."
-    },
-    {
-      "company": "Padel Perfect",
-      "category": "Sports Club / Event",
-      "location": "Gallo Manor (Morning Glen Mall)",
-      "web": "",
-      "instagram": "",
-      "phone": "",
-      "email": "info@padelperfect.co.za",
-      "why": "They are running Padel and Prosecco, a Diva ladies Americano and two Racket Rumbles in the next week, some still with open spots.",
-      "opener": "I came across your upcoming Padel & Prosecco and Racket Rumbles events happening this week. I'd love to explore the opportunity to capture a short, engaging reel at one of the events that you could use to promote future sessions and help generate more interest and bookings."
-    },
-    {
-      "company": "Rivonia Padel",
-      "category": "Sports Club / Event",
-      "location": "Morningside Manor",
-      "web": "",
-      "instagram": "",
-      "phone": "076 078 7192",
-      "email": "rivoniapadel@gmail.com",
-      "why": "A single-court club with no website or Instagram listed, so players only find it through the booking app.",
-      "opener": "I came across Rivonia Padel on Playtomic and saw your court in Morningside. I'd love to explore the opportunity to capture a short, engaging reel of the court and a few rallies that you could use to give players a reason to book with you."
-    },
-    {
-      "company": "Club Padel Morningside",
-      "category": "Sports Club / Event",
-      "location": "Morningside, Sandton",
-      "web": "https://clubpadel.co.za/",
-      "instagram": "",
-      "phone": "",
-      "email": "",
-      "why": "Five courts with regular socials like the Ladies Coffee Club, Kholie's Americano and Before Work Social every week.",
-      "opener": "I came across your weekly socials like the Ladies Coffee Club and the Before Work Social. I'd love to explore the opportunity to capture short, engaging reels of these sessions that you could use to keep spots full and grow your community."
-    },
-    {
-      "company": "The Car Barber",
-      "category": "Automotive",
-      "location": "Sunninghill, Sandton",
-      "web": "https://thecarbarber.co.za",
-      "instagram": "",
-      "phone": "078 318 7338",
-      "email": "",
-      "why": "They do ceramic coating and paint correction, work that sells best with before and after video.",
-      "opener": "I came across your Gyeon ceramic coatings and paint correction work. I'd love to explore the opportunity to capture a before and after reel on one of your next cars that you could use to show off the finish and bring in more bookings."
-    },
-    {
-      "company": "Deluxe Shine Kustoms",
-      "category": "Automotive",
-      "location": "Inanda, Sandton",
-      "web": "https://deluxeshinekustoms.co.za",
-      "instagram": "",
-      "phone": "072 384 1576",
-      "email": "",
-      "why": "A detailing business in Inanda with no Instagram linked on its listing, so the work is not being shown.",
-      "opener": "I came across Deluxe Shine Kustoms in Inanda. I'd love to explore the opportunity to capture a short, engaging reel of one of your details that you could use to show people the quality of your finish and help generate more bookings."
-    },
-    {
-      "company": "Onyx Auto SA",
-      "category": "Automotive",
-      "location": "Kyalami, Midrand",
-      "web": "https://onyxautosa.com",
-      "instagram": "",
-      "phone": "069 918 7164",
-      "email": "",
-      "why": "They do wraps, PPF and tinting, which are very visual jobs that sell through reels.",
-      "opener": "I came across your wraps, PPF and tinting work in Kyalami. I'd love to explore the opportunity to capture a reel of a wrap going on from start to finish that you could use to showcase your work and help generate more interest."
-    },
-    {
-      "company": "D2 Customs",
-      "category": "Automotive",
-      "location": "Terenure, Kempton Park",
-      "web": "https://d2customs.co.za/",
-      "instagram": "d2cstms",
-      "phone": "068 506 1298",
-      "email": "info@d2services.co.za",
-      "why": "They offer wraps, PPF, tint and ceramic packages, all jobs that look great on camera.",
-      "opener": "I came across your vinyl wraps, PPF and ceramic packages. I'd love to explore the opportunity to capture a short, engaging reel of your next job that you could use to show the full process and help bring in more work."
-    },
-    {
-      "company": "Bidvest McCarthy Centurion",
-      "category": "Automotive",
-      "location": "Centurion",
-      "web": "https://www.mccarthycenturion.co.za",
-      "instagram": "",
-      "phone": "012 641 3010",
-      "email": "",
-      "why": "A new Stellantis dealership opened this year with six brands, including Leapmotor, which needs launch and stock content.",
-      "opener": "I came across your new Stellantis showroom with Jeep, Peugeot and Leapmotor. I'd love to explore the opportunity to capture short, engaging walkaround reels of your new stock that you could use on your socials to drive more enquiries."
-    },
-    {
-      "company": "Tightline",
-      "category": "Catering / Events",
-      "location": "Sandton Gate",
-      "web": "https://tightline.co.za",
-      "instagram": "",
-      "phone": "",
-      "email": "",
-      "why": "A newly opened seafood restaurant running a king prawn special, which needs good food content.",
-      "opener": "I came across Tightline's recent opening at Sandton Gate and the king prawn special. I'd love to explore the opportunity to capture a short, engaging reel of the dish and the space that you could use to get the word out and fill more tables."
-    },
-    {
-      "company": "Linden Loaves",
-      "category": "Catering / Events",
-      "location": "Darrenwood",
-      "web": "https://lindenloaves.co.za",
-      "instagram": "linden_loaves",
-      "phone": "",
-      "email": "",
-      "why": "Opened their first walk-in bakery shop on 26 October and launched a frozen range.",
-      "opener": "I came across the opening of your new bakery shop and the frozen range. I'd love to explore the opportunity to capture a set of photos and a short reel of the shop and your bread that you could use to promote the new space."
-    },
-    {
-      "company": "Tea & Antique Parkhurst",
-      "category": "Catering / Events",
-      "location": "Parkhurst",
-      "web": "",
-      "instagram": "tea_and_antique",
-      "phone": "071 887 7777",
-      "email": "",
-      "why": "Just opened a third branch on 4th Avenue in Parkhurst.",
-      "opener": "I came across the opening of your new branch on 4th Avenue in Parkhurst. I'd love to explore the opportunity to capture the space and some of your tea service in a short reel that you could use to welcome new guests before they visit."
-    },
-    {
-      "company": "Beijing Opera",
-      "category": "Catering / Events",
-      "location": "Blairgowrie",
-      "web": "",
-      "instagram": "beijingoperajhb",
-      "phone": "082 256 4602",
-      "email": "",
-      "why": "Moved from Braamfontein to a new home in Blairgowrie, open Friday to Sunday.",
-      "opener": "I came across your move to Conrad Drive in Blairgowrie. I'd love to explore the opportunity to capture the new space and a few dishes in a short, engaging reel that you could use to show your regulars and new guests your new home."
-    },
-    {
-      "company": "La Scala by Mastrantonio",
-      "category": "Catering / Events",
-      "location": "Jan Smuts Avenue",
-      "web": "",
-      "instagram": "la_scala_mastrantonio",
-      "phone": "",
-      "email": "",
-      "why": "A newly opened Italian restaurant on Jan Smuts Avenue.",
-      "opener": "I came across the opening of La Scala on Jan Smuts Avenue. I'd love to explore the opportunity to capture a short, engaging reel and photo set of the room and a few plates that you could use to promote the restaurant this festive season."
-    },
-    {
-      "company": "Kolonaki",
-      "category": "Catering / Events",
-      "location": "Waterfall (Polofields Crossing)",
-      "web": "",
-      "instagram": "kolonaki_sa",
-      "phone": "",
-      "email": "",
-      "why": "Expanding with a new spot at Polofields Crossing in Waterfall after Bryanston.",
-      "opener": "I came across your new spot at Polofields Crossing in Waterfall. I'd love to explore the opportunity to capture the new space and your meze in a short, engaging reel that you could use to give the opening a strong start."
-    },
-    {
-      "company": "Scala Melville",
-      "category": "Catering / Events",
-      "location": "Melville",
-      "web": "",
-      "instagram": "scala.za",
-      "phone": "",
-      "email": "",
-      "why": "A newcomer on 4th Avenue in Melville that is still building its audience.",
-      "opener": "I came across Scala's opening on 4th Avenue in Melville. I'd love to explore the opportunity to capture a short, engaging reel of your food and the street vibe that you could use to help more people find you."
-    },
-    {
-      "company": "Vidi Vici",
-      "category": "Catering / Events",
-      "location": "Nelson Mandela Square, Sandton",
-      "web": "",
-      "instagram": "vidivicicafe",
-      "phone": "",
-      "email": "",
-      "why": "A new Belgian chocolate and waffle cafe, a product that looks great on video.",
-      "opener": "I came across Vidi Vici bringing Belgian chocolate and waffles to Nelson Mandela Square. I'd love to explore the opportunity to capture a few slow motion chocolate reels that you could use to draw people in and boost foot traffic."
-    },
-    {
-      "company": "Nina",
-      "category": "Catering / Events",
-      "location": "Craighall (The Woods)",
-      "web": "",
-      "instagram": "nina.jhb",
-      "phone": "",
-      "email": "",
-      "why": "A new neighbourhood spot doing hand-cut pasta and hand-rolled sushi.",
-      "opener": "I came across Nina's opening at The Woods with hand-cut pasta and hand-rolled sushi. I'd love to explore the opportunity to capture a short, engaging reel of the pasta and sushi being made that you could use to promote the restaurant."
-    },
-    {
-      "company": "Pulse99 Coffee",
-      "category": "Catering / Events",
-      "location": "Braamfontein",
-      "web": "",
-      "instagram": "pulse.99coffee",
-      "phone": "",
-      "email": "",
-      "why": "A coffee shop under a year old that is getting press for its JuiceBox drink.",
-      "opener": "I came across your JuiceBox drink at Pulse99. I'd love to explore the opportunity to capture a short, engaging reel of it being made, plus a few photos of the shop, that you could use to grow your following and bring in more customers."
-    },
-    {
-      "company": "Simbali Lodge and Function Venue",
-      "category": "Wedding / Personal",
-      "location": "Pretoria East",
-      "web": "https://simbali.co.za/",
-      "instagram": "",
-      "phone": "072 323 8749",
-      "email": "",
-      "why": "A bushveld wedding venue outside Pretoria East that is pushing a 2026 winter wedding offer.",
-      "opener": "I came across your 2026 winter wedding offer at Simbali. I'd love to explore the opportunity to capture a styled shoot or short video of the venue that you could use to promote those dates and help generate more wedding enquiries."
-    },
-    {
-      "company": "Sunday Shuffle",
-      "category": "Sports Club / Event",
-      "location": "Sandton (Gold's Gym)",
-      "web": "https://www.sundayshuffle.co.za/",
-      "instagram": "sundayshuffle_",
-      "phone": "",
-      "email": "",
-      "why": "Weekly Sunday runs with an After Shuffle coffee social and DJ sets, a very visual community that lives on Instagram.",
-      "opener": "I came across Sunday Shuffle and the After Shuffle coffee social. I'd love to explore the opportunity to capture a short, engaging reel of a Sunday run and the social that you could use to grow the community this summer."
-    },
-    {
-      "company": "Benchwarmers Runners Club",
-      "category": "Sports Club / Event",
-      "location": "Rosebank",
-      "web": "",
-      "instagram": "benchwarmers_runners_club",
-      "phone": "",
-      "email": "",
-      "why": "Their Wednesday runs pull 200 to 300 people with a social after, which is a big group to capture well.",
-      "opener": "I came across your Wednesday runs that now bring out 200 to 300 people. I'd love to explore the opportunity to capture a short, engaging reel and photo set of an evening run and the social after that you could use to keep the crew growing."
-    },
-    {
-      "company": "Braamfie Runners",
-      "category": "Sports Club / Event",
-      "location": "Braamfontein",
-      "web": "https://braamfie.com",
-      "instagram": "braamfierunners",
-      "phone": "",
-      "email": "",
-      "why": "Saturday 6am runs through Braamfontein, a strong city backdrop for content.",
-      "opener": "I came across your Saturday 6am runs through Braamfontein. I'd love to explore the opportunity to capture a short, engaging reel of the crew and the city at sunrise that you could use to attract new runners."
-    },
-    {
-      "company": "The Social Runners",
-      "category": "Sports Club / Event",
-      "location": "Sandton",
-      "web": "",
-      "instagram": "thesocial_runners",
-      "phone": "",
-      "email": "",
-      "why": "Weekly Wednesday evening runs in Sandton, a social club that grows through people sharing photos.",
-      "opener": "I came across your Wednesday evening runs in Sandton. I'd love to explore the opportunity to capture a short, engaging reel and photos people can tag themselves in, helping new runners find the club."
-    },
-    {
-      "company": "Shelflife Running Club",
-      "category": "Sports Club / Event",
-      "location": "Rosebank Mall",
-      "web": "",
-      "instagram": "runshelflife",
-      "phone": "",
-      "email": "",
-      "why": "Runs twice a week from Rosebank Mall, tied to a store, so good content helps both the club and the shop.",
-      "opener": "I came across your Wednesday and Saturday runs from Rosebank Mall. I'd love to explore the opportunity to capture a short, engaging reel of a Saturday run that you could use to promote both the club and the store."
-    },
-    {
-      "company": "Run Tell That (#Letthepeoplerun)",
-      "category": "Sports Club / Event",
-      "location": "Rosebank",
-      "web": "",
-      "instagram": "run_tell_that",
-      "phone": "",
-      "email": "",
-      "why": "They run almost every day of the week in Rosebank, so there is a lot happening that could be shown.",
-      "opener": "I came across Run Tell That's sessions most weekdays in Rosebank. I'd love to explore the opportunity to capture one of your sessions in a short, engaging reel that you could use for your end of year push and to bring in new runners."
-    },
-    {
-      "company": "The Pack Running",
-      "category": "Sports Club / Event",
-      "location": "Rosebank",
-      "web": "",
-      "instagram": "thepackrunning",
-      "phone": "",
-      "email": "",
-      "why": "A women only Saturday run club, where good photos help new women feel welcome to join.",
-      "opener": "I came across The Pack's Saturday 7am runs in Rosebank. I'd love to explore the opportunity to capture some relaxed photos and a short reel of a run that you could use to help more women feel welcome to join."
-    },
-    {
-      "company": "Pirates Road Running Club",
-      "category": "Sports Club / Event",
-      "location": "Greenside",
-      "web": "https://piratesclub.co.za/running",
-      "instagram": "",
-      "phone": "",
-      "email": "",
-      "why": "Tuesday time trials and a Homerun series at Pirates, regular events that suit a recap reel.",
-      "opener": "I came across your Tuesday time trials and the Homerun series at Pirates. I'd love to explore the opportunity to capture a short recap reel and photos of one of the time trials that you could use to engage members and attract new ones."
+     "title": "Pro session with Gustav Hefer",
+     "pitch": "A short reel of the Best of the Best session, focused on coaching moments and player reactions. It shows people the level of coaching at Gayle and helps sell future pro sessions.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
     }
-  ],
-  "openerStyle": 2
+   ]
+  },
+  {
+   "company": "Proactive Padel @ Irene Country Club",
+   "category": "Sports Club / Event",
+   "location": "Irene, Centurion",
+   "web": "https://proactivepadel.com",
+   "instagram": "",
+   "phone": "",
+   "email": "info@proactivepadel.com",
+   "why": "They have upcoming socials, George's Step Up Padel on 30 Nov and Base Camp Social on 5 Dec, and both still showed 0 of 8 spots filled.",
+   "opener": "I came across your Base Camp Social on 5 December and George's Step Up Padel session at your four panoramic courts at Irene Country Club. I'd love to explore the opportunity to capture a short, engaging reel at the Base Camp Social that you could use to fill your next socials and generate more interest and bookings.",
+   "ideas": [
+    {
+     "title": "Base Camp Social highlight reel",
+     "pitch": "A 30 minute shoot at the 5 Dec social, capturing players arriving, game play on the panoramic courts and the social vibe afterwards. It gives you a clear reel to post when you open the next social so spots fill faster.",
+     "get": "1 reel or 20 photos",
+     "pkg": "Mini Shoot R500"
+    },
+    {
+     "title": "Club courts and setting shoot",
+     "pitch": "A two hour photo session showing the four panoramic courts with the Irene Country Club setting, plus action shots of players. These become your go to images for bookings, event posts and club partners.",
+     "get": "30 edited photos",
+     "pkg": "Photography from R800"
+    }
+   ]
+  },
+  {
+   "company": "Padel Quip @ Old Ben's Sports Grounds",
+   "category": "Sports Club / Event",
+   "location": "Rynfield, Benoni",
+   "web": "https://www.padelquip.co.za",
+   "instagram": "",
+   "phone": "083 212 5030",
+   "email": "",
+   "why": "Their booking page shows no upcoming events and no Instagram link, so there is little visual content selling the venue beyond court times.",
+   "opener": "I came across Padel Quip at Old Ben's Sports Grounds in Rynfield and your sponsor branded courts, including the PD Nixon Containers court. I'd love to explore the opportunity to capture a short, engaging reel of your courts in action that you could use to promote the venue and generate more interest and bookings.",
+   "ideas": [
+    {
+     "title": "Evening court action reel",
+     "pitch": "A short reel of a busy evening session on both courts, showing rallies, lighting and the club atmosphere. It gives you strong content for social posts and booking reminders heading into the holidays.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Sponsor court photo set",
+     "pitch": "A photo set featuring play on the sponsor branded courts with clear shots of the branding. You can share these with sponsors to show their exposure and use them to attract new sponsors.",
+     "get": "20 photos",
+     "pkg": "Mini Shoot R500"
+    }
+   ]
+  },
+  {
+   "company": "Techno Padel @ ERPM Golf Club",
+   "category": "Sports Club / Event",
+   "location": "Boksburg West",
+   "web": "https://technopadel.co.za",
+   "instagram": "",
+   "phone": "011 900 1637",
+   "email": "",
+   "why": "They are running Padel, Beer and Rugby on 27 and 28 Nov plus The Fila Showdown on 26 Nov, which are made for social video.",
+   "opener": "I came across your Padel, Beer and Rugby events this weekend and The Fila Showdown at the ERPM Golf Club courts. I'd love to explore the opportunity to capture a short, engaging reel at Padel, Beer and Rugby that you could use to promote future socials and help generate more interest and bookings.",
+   "ideas": [
+    {
+     "title": "Padel, Beer and Rugby reel",
+     "pitch": "A fun reel mixing padel rallies with the rugby and social side of the afternoon at ERPM. It shows exactly why people should come to the next one and is easy to repost before every social.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Fila Showdown match clips",
+     "pitch": "A 30 minute shoot of the Fila Showdown with the best points cut into a short reel. Great for tagging players and the sponsor, which helps the event reach more people.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    }
+   ]
+  },
+  {
+   "company": "Balwin Padel Waterfall City",
+   "category": "Sports Club / Event",
+   "location": "Waterfall City, Midrand",
+   "web": "https://balwinpadel.co.za",
+   "instagram": "",
+   "phone": "",
+   "email": "",
+   "why": "The five court indoor club has Afterwork Rally on 27 Nov, Ladies and Mens tournaments on 28 Nov and Sunday Funday on 29 Nov, a full weekend of events to document.",
+   "opener": "I came across your Afterwork Rally and Sunday Funday events this weekend at your five indoor courts in Waterfall City. I'd love to explore the opportunity to capture a short, engaging reel of your weekend events that you could use to promote your weekly socials and fill more spots.",
+   "ideas": [
+    {
+     "title": "Weekly league and social reels",
+     "pitch": "A weekly reel from your regular events, from Afterwork Rally to Sunday Funday, showing the indoor courts, players and results. Steady weekly content keeps your socials front of mind and helps fill the next week's events.",
+     "get": "1 reel a week",
+     "pkg": "Padel League weekly reels R2500 a week"
+    },
+    {
+     "title": "Sunday Funday photo set",
+     "pitch": "A two hour photo session at Sunday Funday covering game play, groups and the indoor venue. These images work for your website, booking pages and future event posters.",
+     "get": "30 edited photos",
+     "pkg": "Photography from R800"
+    }
+   ]
+  },
+  {
+   "company": "Hazeldean Valley",
+   "category": "Sports Club / Event",
+   "location": "Hazeldean, Pretoria East",
+   "web": "http://hazeldeanvalley.co.za",
+   "instagram": "",
+   "phone": "083 669 8588",
+   "email": "",
+   "why": "They host the Farm Challenge trail run on 16 Dec with 5, 15 and 30 km routes, a dam crossing and Hazeldean Brewery Co. on site.",
+   "opener": "I came across the Farm Challenge trail run happening at Hazeldean Valley Trails on 16 December, with routes up to 30 km past the dam. I'd love to explore the opportunity to capture a short, engaging reel of race day that you could use to promote your next trail events and generate more entries.",
+   "ideas": [
+    {
+     "title": "Farm Challenge race day reel",
+     "pitch": "A reel covering the start, runners on the farm trails and dam, finishers getting medals and the brewery afterwards. It shows new runners what the day feels like and helps drive entries for your next MTB and trail events.",
+     "get": "1 reel plus 15 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Trails and venue video",
+     "pitch": "A short video of the trails, MTB routes and brewery area that you can use all year on your website and socials. It helps sell the venue for riding, running and day visits, not only race days.",
+     "get": "1 video",
+     "pkg": "Videography from R1000"
+    }
+   ]
+  },
+  {
+   "company": "The Leverage Corporation",
+   "category": "Sports Club / Event",
+   "location": "Bryanston, Sandton",
+   "web": "https://www.leveragecorporation.co.za",
+   "instagram": "",
+   "phone": "082 787 3317",
+   "email": "",
+   "why": "They run The Magalies Adventure grand finale on 29 Nov at Galloway Gardens and the Christmas Night Run at Prison Break Market on 4 Dec.",
+   "opener": "I came across The Magalies Adventure grand finale at Galloway Gardens on 29 November and your Christmas Night Run at Prison Break Market on 4 December. I'd love to explore the opportunity to capture a short, engaging reel of the Christmas Night Run that you could use to promote your 2027 events and generate more entries.",
+   "ideas": [
+    {
+     "title": "Christmas Night Run reel",
+     "pitch": "A reel of the 3, 5 and 10 km night runners, festive lights and families at Prison Break Market on 4 Dec. Night run footage stands out on social and is ideal for launching entries for next year's run series.",
+     "get": "1 reel plus 15 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Magalies Adventure finale video",
+     "pitch": "A race day video of the gravel and MTB riders and trail runners at Galloway Gardens for the series finale. You can use it to thank sponsors and open entries for the 2027 series.",
+     "get": "1 video",
+     "pkg": "Videography from R1000"
+    }
+   ]
+  },
+  {
+   "company": "TENROUNDS",
+   "category": "Sports Brand",
+   "location": "Garsfontein, Pretoria East",
+   "web": "https://www.tenrounds.co.za",
+   "instagram": "",
+   "phone": "065 983 4172",
+   "email": "",
+   "why": "They recently added hypertrophy, hybrid and combat conditioning training and push free trials, so they need fresh video showing the new formats.",
+   "opener": "I came across your 30 minute coach led kickboxing and functional sessions and the new hybrid and combat conditioning training you have been introducing. I'd love to explore the opportunity to capture a short, engaging reel of a combat conditioning session that you could use to promote your free trial and generate more sign ups.",
+   "ideas": [
+    {
+     "title": "Combat conditioning session reel",
+     "pitch": "A high energy reel of a full 30 minute session with pads, bags and coaches on the floor. It shows new members exactly what a free trial looks like and gives your membership offers a strong visual.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    },
+    {
+     "title": "New programmes photo and video",
+     "pitch": "Photos and short clips covering the hypertrophy, hybrid and combat streams so each programme has its own content. Useful for your website, ads and the January sign up push.",
+     "get": "2 reels plus 20 photos",
+     "pkg": "Photo and Video from R1500"
+    }
+   ]
+  },
+  {
+   "company": "Cycle Boutique at 44 Stanley",
+   "category": "Sports Brand",
+   "location": "Braamfontein Werf",
+   "web": "",
+   "instagram": "cycle_boutique_",
+   "phone": "063 349 7110",
+   "email": "",
+   "why": "The shop is HQ for the Banditz Bicycle Club and the start point for city group rides, including Girls on Bikes, which makes great festive season content.",
+   "opener": "I came across Cycle Boutique as the home of the Banditz Bicycle Club and the meeting point for the Girls on Bikes city rides. I'd love to explore the opportunity to capture a short, engaging reel of one of your group rides through the city that you could use to promote the rides and bring more riders and customers into the shop.",
+   "ideas": [
+    {
+     "title": "City group ride reel",
+     "pitch": "A reel following a group ride from the shop through Braamfontein and into the city, with riders, bikes and street scenes. It shows what makes your rides special and pulls new riders to the shop.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Workshop and bike showcase",
+     "pitch": "A 30 minute shoot of the workshop and the bikes in store, with mechanics at work. Ideal for festive season gift and service posts.",
+     "get": "20 photos",
+     "pkg": "Mini Shoot R500"
+    }
+   ]
+  },
+  {
+   "company": "Trek Bicycle Johannesburg",
+   "category": "Sports Brand",
+   "location": "Design Quarter, Fourways",
+   "web": "https://www.trekbikes.com/za/en_ZA/retail/johannesburg_fourways/",
+   "instagram": "",
+   "phone": "010 493 0844",
+   "email": "",
+   "why": "Their store page promotes free flat repair and bike care clinics, a natural fit for short how to reels ahead of the December riding season.",
+   "opener": "I came across the free flat repair and bike care clinics you offer at your Design Quarter store in Fourways. I'd love to explore the opportunity to capture a short, engaging reel of one of your clinics that you could use to promote the next clinic and bring more riders into the store over the holidays.",
+   "ideas": [
+    {
+     "title": "Flat repair clinic reel",
+     "pitch": "A reel showing a clinic in action with simple tips riders can follow, filmed in your workshop. Useful tips get saved and shared, and they bring riders to your next clinic and into the store.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    },
+    {
+     "title": "Festive season bike showcase",
+     "pitch": "A two hour photo and video session of new bikes, gear and staff in store at Design Quarter. Great for gift guide posts and in store promotions through December.",
+     "get": "1 reel plus 20 photos",
+     "pkg": "Photo and Video from R1500"
+    }
+   ]
+  },
+  {
+   "company": "Acala",
+   "category": "Catering / Events",
+   "location": "Melville",
+   "web": "https://www.acala.co.za/",
+   "instagram": "acala.za",
+   "phone": "",
+   "email": "",
+   "why": "A new bistro that opened in July 2026 in a former 1920s cinema, still building its following, with a set-course Acala Experience to sell.",
+   "opener": "I came across Acala's new home in a former 1920s cinema on 4th Avenue and your set-course Acala Experience. I'd love to explore the opportunity to capture a short, engaging reel of an Acala Experience evening, from cocktails to the final course, that you could use to promote the set menu and generate more bookings.",
+   "ideas": [
+    {
+     "title": "The Acala Experience Reel",
+     "pitch": "A reel that follows one table through the set-course dinner, with close-ups of each plate and the cinema interior in evening light. It explains the experience in under a minute and makes it easy for followers to book.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Cocktail Bar Mini Shoot",
+     "pitch": "A quick 30 minute shoot of the bar team making signature cocktails. A short reel like this can push early evening and festive drinks traffic.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    }
+   ]
+  },
+  {
+   "company": "Obento Ramen Bar",
+   "category": "Catering / Events",
+   "location": "Parkmore",
+   "web": "https://obento.co.za/",
+   "instagram": "obentoyum",
+   "phone": "",
+   "email": "",
+   "why": "They run special dinners like the Smoke and Salt evening on 18 November and sell frozen meals for delivery, so they keep needing fresh content.",
+   "opener": "I came across your Smoke and Salt dinner at Obento and the slow-cooked broths that put your Parkmore noodle bar on the map. I'd love to explore the opportunity to capture a short, engaging reel of a bowl of ramen being built from broth to toppings that you could use to promote your next special dinner and generate interest and bookings.",
+   "ideas": [
+    {
+     "title": "Bowl Build Ramen Reel",
+     "pitch": "A close-up reel of broth being poured, noodles lifted and toppings placed, filmed at the counter. Short, satisfying food videos like this work well for a small venue where people need to book ahead.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    },
+    {
+     "title": "Special Dinner Event Coverage",
+     "pitch": "Photos and a recap reel at your next themed dinner, showing the dishes and the guests at the counter. The content can then be used to sell seats for the following event.",
+     "get": "1 reel plus 15 photos",
+     "pkg": "Photo and Video from R1500"
+    }
+   ]
+  },
+  {
+   "company": "Pretoria Rugby Club Restaurant",
+   "category": "Catering / Events",
+   "location": "Pretoria",
+   "web": "https://prcr.co.za/",
+   "instagram": "",
+   "phone": "",
+   "email": "",
+   "why": "Opened in mid 2026 overlooking the club fields with a kids play area, ideal for families in the December holidays, and no restaurant Instagram was listed in the coverage.",
+   "opener": "I came across the new Pretoria Rugby Club Restaurant overlooking the rugby fields, with its jungle gym and cycling path for the kids. I'd love to explore the opportunity to capture a short, engaging reel of a family lunch, from burgers and sweet potato fries to kids playing outside, that you could use to promote the venue and bring in more families over the holidays.",
+   "ideas": [
+    {
+     "title": "Family Lunch Holiday Reel",
+     "pitch": "A relaxed reel showing the view over the fields, food arriving and children on the play area while parents eat. It speaks directly to Pretoria parents looking for somewhere easy to go in December.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Menu and Venue Photos",
+     "pitch": "A photo set of the burgers, steaks, salads and fries plus the outdoor seating. These can start a proper restaurant feed and be used on the website and booking pages.",
+     "get": "20 photos",
+     "pkg": "Photography from R800"
+    }
+   ]
+  },
+  {
+   "company": "LVL2 Auto",
+   "category": "Automotive",
+   "location": "Randjespark, Midrand",
+   "web": "https://lvl2.africa/car-detailing-midrand/",
+   "instagram": "lvl2_auto",
+   "phone": "071 231 1605",
+   "email": "info@lvl2.africa",
+   "why": "Their site offers detailing, paint correction, ceramic coating, PPF and wraps but shows no current specials, so before and after content could drive festive bookings.",
+   "opener": "I came across LVL2 Auto's detailing, paint correction and PPF work out of Tillbury Business Park in Midrand. I'd love to explore the opportunity to capture a short, engaging reel of a full paint correction and ceramic coating job, from dull paint to final gloss, that you could use to promote your services and generate more bookings before the holidays.",
+   "ideas": [
+    {
+     "title": "Paint Correction Before and After",
+     "pitch": "A reel that shows the swirl marks under light, the machine polishing and the final reflection shot. It proves the quality of the work in seconds and gives clients a reason to book.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "PPF Install Mini Reel",
+     "pitch": "A 30 minute shoot of film being laid and squeegeed on a bonnet or front bumper. It explains PPF visually for clients who are unsure what they are paying for.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    }
+   ]
+  },
+  {
+   "company": "Elev8 Automotive",
+   "category": "Automotive",
+   "location": "Hoogland, Randburg",
+   "web": "https://www.elev8-auto.co.za/",
+   "instagram": "elev8.automotive",
+   "phone": "010 014 8802",
+   "email": "info@elev8-auto.co.za",
+   "why": "They offer a wide range from PPF and wraps to dealership and mobile services, with no festive offer showing on the site, so there is room for content that sells specific services.",
+   "opener": "I came across Elev8 Automotive at Northlands Retail Park and the range you offer, from PPF and vinyl wraps to dealership and mobile services. I'd love to explore the opportunity to capture a short, engaging reel of a colour change wrap or PPF job in your studio that you could use to promote these services and generate more interest and bookings.",
+   "ideas": [
+    {
+     "title": "Wrap Transformation Reel",
+     "pitch": "A reel showing a car arriving in its original colour, the wrap going on, and a reveal shot outside the studio. Transformation videos are easy to share and show off your installers' skill.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Dealership Services Photo Set",
+     "pitch": "A photo set of your team prepping cars for dealers, including tint, coating and windscreen protection. This gives you material to pitch to more dealerships in the area.",
+     "get": "20 photos",
+     "pkg": "Photography from R800"
+    }
+   ]
+  },
+  {
+   "company": "Shift & Co Customs",
+   "category": "Automotive",
+   "location": "Silverton, Pretoria",
+   "web": "https://shiftandcocustoms.co.za/",
+   "instagram": "",
+   "phone": "076 819 8913",
+   "email": "info@shiftandco-customs.com",
+   "why": "A young styling studio offering wraps, PPF, tint and ceramic coating, with exhaust services marked as coming soon and no Instagram linked on its website.",
+   "opener": "I came across Shift & Co Customs in Silverton and your wrap, PPF, tint and ceramic coating work, with exhaust services coming soon. I'd love to explore the opportunity to capture a short, engaging reel of a wrap or tint job in your workshop that you could use to promote the studio and generate more bookings across Tshwane.",
+   "ideas": [
+    {
+     "title": "Workshop Intro Reel",
+     "pitch": "A reel introducing the studio, the team and a car going through wrap or tint from start to finish. It gives new clients a feel for who you are and why they should drive to Silverton.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Exhaust Launch Teaser",
+     "pitch": "When the exhaust service goes live, a short reel with sound clips of a fitted system can announce it. A launch post like this helps the new service start with bookings.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    }
+   ]
+  },
+  {
+   "company": "TKG Detailing",
+   "category": "Automotive",
+   "location": "Glen Marais, Kempton Park",
+   "web": "https://tkgdetailing.co.za/",
+   "instagram": "",
+   "phone": "083 292 0978",
+   "email": "info@tkgdetailing.co.za",
+   "why": "Their site's Instagram button links nowhere, so they have little visual proof of their detailed work online.",
+   "opener": "I came across TKG Detailing and the way you remove the wheels to properly clean tyres, rims and wheel wells. I'd love to explore the opportunity to capture a short, engaging reel of a deep clean with the wheels off that you could use to promote your detailing packages and generate more bookings.",
+   "ideas": [
+    {
+     "title": "Wheels Off Deep Clean",
+     "pitch": "A reel showing the wheels coming off, the wells being cleaned and the finished car with a fresh wax gloss. It shows a level of care most car washes do not offer.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Detailing Packages Photo Set",
+     "pitch": "Clear before and after photos for each detailing package. These can be added to the website and used to set up an Instagram page.",
+     "get": "20 photos",
+     "pkg": "Photography from R800"
+    }
+   ]
+  },
+  {
+   "company": "Gusheshe Garage",
+   "category": "Automotive",
+   "location": "Beyers Park, Boksburg",
+   "web": "https://gusheshegarage.co.za/",
+   "instagram": "",
+   "phone": "083 714 3042",
+   "email": "",
+   "why": "They offer XPEL PPF, coatings and tyre lettering, but have little content of their own online.",
+   "opener": "I came across Gusheshe Garage in Boksburg and your XPEL PPF and tyre lettering work. I'd love to explore the opportunity to capture a short, engaging reel of a PPF install finished off with tyre lettering that you could use to promote your services and generate more bookings on the East Rand.",
+   "ideas": [
+    {
+     "title": "XPEL Install Reel",
+     "pitch": "A reel of the film being cut, fitted and checked under light, ending on a clean reveal. It explains the value of PPF to East Rand drivers and builds trust in your installs.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Tyre Lettering Mini Shoot",
+     "pitch": "A 30 minute shoot of the tyre lettering going on and the finished wheel. It makes a quick, eye-catching reel that can be promoted as a festive add-on.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    }
+   ]
+  },
+  {
+   "company": "Hotel Sky Sandton",
+   "category": "Corporate",
+   "location": "Sandton",
+   "web": "https://www.hotelsky.co.za",
+   "instagram": "hotelskysa",
+   "phone": "010 880 4449",
+   "email": "reservations.sandton@hotelsky.co.za",
+   "why": "Their events page lists a full December run, including the Naughty & Nice Christmas Show from 3 to 11 Dec and A Sparkling Affair wine dinner on 4 Dec, and both need content to sell the remaining seats.",
+   "opener": "I came across your Naughty & Nice Christmas Show in the Infinity Auditorium and the Sparkling Affair wine pairing dinner at Eclipse coming up in December. I'd love to explore the opportunity to capture a short, engaging reel on opening night of the show that you could use to promote the remaining shows and generate more bookings for your festive dinners.",
+   "ideas": [
+    {
+     "title": "Christmas Show Opening Night",
+     "pitch": "A fast reel from the first show on 3 Dec, with guests arriving, plates going out and the best moments on stage. Posted that same week, it gives people a real reason to book the later December shows.",
+     "get": "1 reel plus 15 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Sparkling Affair Pairing Dinner",
+     "pitch": "Close-up photos of each course beside its paired wine, plus table and atmosphere shots at Eclipse. You can use the set to advertise the Christmas Eve dinner and future pairing nights.",
+     "get": "20 photos",
+     "pkg": "Photography from R800"
+    }
+   ]
+  },
+  {
+   "company": "Le Parc Polofields",
+   "category": "Catering / Events",
+   "location": "Waterfall City, Midrand",
+   "web": "https://www.leparcemporium.com/locations/polofields",
+   "instagram": "leparc_sa",
+   "phone": "010 502 2586",
+   "email": "polofields@leparcemporium.com",
+   "why": "They opened in Waterfall City in July 2026 and launched a Moet & Chandon boules court in November, so the new experience needs content to fill those slots over summer.",
+   "opener": "I came across the new Moet & Chandon Boules Court that just launched in the garden at Le Parc Polofields. I'd love to explore the opportunity to capture a short, engaging reel of a sunset boules session with the courtside basket meals that you could use to promote the court and generate more weekend bookings.",
+   "ideas": [
+    {
+     "title": "Sunset Boules and Bubbles",
+     "pitch": "A 30 to 45 second reel of a group playing boules at golden hour, from the basket meals being unpacked to a toast after a good throw. It shows people exactly what a booking looks like and suits year-end groups and dates.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    },
+    {
+     "title": "Polofields Dinner Service Story",
+     "pitch": "A two hour shoot of the evening dinner service, covering plated dishes, the pastry counter and the garden lit up at night. It gives Waterfall locals a fresh reason to come in for dinner over the festive season.",
+     "get": "1 reel plus 15 photos",
+     "pkg": "Photo and Video from R1500"
+    }
+   ]
+  },
+  {
+   "company": "Toadbury Hall Country Hotel",
+   "category": "Wedding / Personal",
+   "location": "Elandsdrift, Lanseria",
+   "web": "https://toadbury.co.za",
+   "instagram": "toadbury_hall_country_hotel",
+   "phone": "010 593 7523",
+   "email": "enquiries@toadbury.co.za",
+   "why": "Their site is pushing a Black November wedding special that ends 30 Nov, year-end packages that run until 12 Dec, and a Christmas Day buffet, which is a lot to promote in a short window.",
+   "opener": "I came across your Black November wedding special and the year-end function packages you are running until 12 December. I'd love to explore the opportunity to capture a short, engaging reel of a year-end function in your banqueting hall and gardens that you could use to promote the Christmas lunch and generate interest in 2027 weddings.",
+   "ideas": [
+    {
+     "title": "Year-End Function Highlights",
+     "pitch": "A reel filmed at one of your December year-end functions, covering the decor, the food service and guests enjoying the gardens. Companies planning their 2027 functions can see what a Toadbury year-end looks like.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Micro-Wedding Styled Walkthrough",
+     "pitch": "A short styled shoot of your micro-wedding setup, showing the ceremony spot, the table styling and the picnic areas. It gives couples who saw the Black November special a clear picture of what they would be booking.",
+     "get": "20 photos or 1 reel",
+     "pkg": "Mini Shoot R500"
+    }
+   ]
+  },
+  {
+   "company": "Blueberry Hill Hotel",
+   "category": "Wedding / Personal",
+   "location": "Honeydew, Roodepoort",
+   "web": "https://www.blueberryhillhotel.co.za",
+   "instagram": "blueberryhill_hotel",
+   "phone": "010 109 8789",
+   "email": "info@blueberryhillhotel.co.za",
+   "why": "A festive guide lists their Christmas Sky Market on 12 Dec and the hotel runs a Christmas Day lunch, but its own events page only shows one undated event.",
+   "opener": "I came across the Christmas Sky Market you are hosting at Blueberry Hill in December, alongside your festive Christmas Day lunch. I'd love to explore the opportunity to capture a short, engaging reel of the Sky Market evening that you could use to promote your festive events and generate interest in the hotel as a wedding and function venue.",
+   "ideas": [
+    {
+     "title": "Christmas Sky Market Night",
+     "pitch": "A reel of the market from setup to evening, with stalls, food, lights and families walking through. It works for next year's market and also shows off the venue to people planning functions.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Festive Venue Refresh Set",
+     "pitch": "A two hour photo session of the festive table settings, function spaces and rooms, styled for weddings and year-ends. These images can replace older photos on the website and on your events booking page.",
+     "get": "25 photos",
+     "pkg": "Photography from R800"
+    }
+   ]
+  },
+  {
+   "company": "Shokran Wedding & Events Venue",
+   "category": "Wedding / Personal",
+   "location": "Tierpoort, Pretoria East",
+   "web": "https://shokran.co.za",
+   "instagram": "shokraneventsvenue",
+   "phone": "082 335 5659",
+   "email": "info@shokran.co.za",
+   "why": "They host weddings, year-end functions and festivals, including a festive Fijnwyn food and wine market this month, and December is their peak wedding period.",
+   "opener": "I came across the Festive Fijnwyn Food & Wine Market hosted at Shokran this month, along with your year-end function offering. I'd love to explore the opportunity to capture a short, engaging reel of a December function or wedding setup at Shokran that you could use to generate more bookings for 2027 weddings and year-ends.",
+   "ideas": [
+    {
+     "title": "December Wedding Setup Reel",
+     "pitch": "A reel filmed during the hours before a December wedding, showing the ceremony space, the reception styling and the Tierpoort views at sunset. Couples looking for 2027 dates can see the venue at its best.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Year-End Function Showcase",
+     "pitch": "A short photo set of one of your year-end functions, covering the tables, the food and the outdoor spaces. You can use it on your year-end functions page to sell next season early.",
+     "get": "20 photos",
+     "pkg": "Mini Shoot R500"
+    }
+   ]
+  },
+  {
+   "company": "Oude Hout Mountain Lodge",
+   "category": "Wedding / Personal",
+   "location": "Bronberg, Pretoria East",
+   "web": "https://www.oudehout.co.za",
+   "instagram": "",
+   "phone": "072 235 8912",
+   "email": "",
+   "why": "They hire out De Oude Deck and De Dam for year-end functions and weddings, but their website relies on basic photo albums and lists no Instagram account.",
+   "opener": "I came across De Oude Deck and the De Dam space under the trees that you offer for year-end functions and weddings at Oude Hout. I'd love to explore the opportunity to capture a short, engaging reel of the deck and the dam at golden hour that you could use to fill your remaining December dates and generate more wedding bookings.",
+   "ideas": [
+    {
+     "title": "Golden Hour Venue Tour",
+     "pitch": "A reel moving from De Oude Deck with its city views down to De Dam under the trees, filmed in late afternoon light. It answers the main question couples and companies have, which is what the space really looks like.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    },
+    {
+     "title": "Website Photo Refresh",
+     "pitch": "A two hour shoot of the venues, the rooms and the grounds, edited as a consistent set. These can replace the older albums on the site and give you a base for starting Instagram.",
+     "get": "30 photos",
+     "pkg": "Photography from R800"
+    }
+   ]
+  },
+  {
+   "company": "Nine Yards",
+   "category": "Catering / Events",
+   "location": "Parktown North",
+   "web": "https://www.nine-yards.co.za",
+   "instagram": "nineyardsjhb",
+   "phone": "",
+   "email": "info@nine-yards.co.za",
+   "why": "The precinct officially launched in May 2026, is now running evening events such as Nine Yards After Dark, and has many new tenants to promote over the festive season.",
+   "opener": "I came across Nine Yards After Dark and the way the precinct has filled up with new tenants since the official launch earlier this year. I'd love to explore the opportunity to capture a short, engaging reel of a festive evening at Nine Yards that you could use to promote upcoming events and bring more feet through the precinct in December.",
+   "ideas": [
+    {
+     "title": "Nine Yards After Dark Reel",
+     "pitch": "A reel from your next evening event, covering the pop-ups, the food and the gardens lit up after sunset. It turns a one-night event into ongoing content that brings people back for the next one.",
+     "get": "1 reel plus 15 photos",
+     "pkg": "Photo and Video from R1500"
+    },
+    {
+     "title": "Festive Gift Trail",
+     "pitch": "A short reel that walks through several tenants, such as the deli, the gelateria and the design stores, as a Christmas shopping route. It helps every tenant at once and positions Nine Yards as a December destination.",
+     "get": "1 reel",
+     "pkg": "Videography from R1000"
+    }
+   ]
+  },
+  {
+   "company": "Kora Sandton",
+   "category": "Corporate",
+   "location": "The MARC, Sandton",
+   "web": "",
+   "instagram": "korasandton",
+   "phone": "",
+   "email": "",
+   "why": "They launched at The MARC in May 2026 with a wine cellar and views as their main features, a natural choice for small year-end dinners, but they are still building their content.",
+   "opener": "I came across Kora's launch at The MARC earlier this year and the striking wine cellar that sits at the centre of the dining room. I'd love to explore the opportunity to capture a short, engaging reel of a festive dinner service at Kora that you could use to promote year-end group dinners and generate more December bookings.",
+   "ideas": [
+    {
+     "title": "Signature Dishes Reel",
+     "pitch": "A close-up reel of signature plates such as the kudu, the ceviche and the ribeye, cut together with shots of the wine cellar. It gives new diners a reason to book their first visit.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    },
+    {
+     "title": "Year-End Table Experience",
+     "pitch": "A two hour shoot of a styled group table, with wine being poured, sharing plates and the room at dusk. Office teams still planning a December dinner can use it to choose Kora.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Photo and Video from R1500"
+    }
+   ]
+  },
+  {
+   "company": "SA Event Decor",
+   "category": "Catering / Events",
+   "location": "Johannesburg",
+   "web": "https://www.saeventdecor.co.za",
+   "instagram": "",
+   "phone": "083 441 8221",
+   "email": "info@saeventdecor.co.za",
+   "why": "They are in the middle of gala and year-end season and publish written case studies like an empty shell to luxury gala transformation in Sandton, but show no Instagram account.",
+   "opener": "I came across your write-up on turning an empty 1,000 square metre Sandton venue into a luxury gala in six hours. I'd love to explore the opportunity to capture a short, engaging time-lapse reel of one of your December setups that you could use to promote your festive decor and generate more corporate gala bookings.",
+   "ideas": [
+    {
+     "title": "Empty Room Transformation",
+     "pitch": "A time-lapse reel that starts with a bare venue and ends with the finished room and guests arriving. It shows what clients pay for far better than a written case study.",
+     "get": "1 reel plus 10 photos",
+     "pkg": "Videography from R1000"
+    },
+    {
+     "title": "Festive Lighting Hire Showcase",
+     "pitch": "A short shoot of your Christmas and festive lighting pieces set up in a styled corner. You can use it to sell hire stock to venues and companies before the holidays.",
+     "get": "20 photos or 1 reel",
+     "pkg": "Mini Shoot R500"
+    }
+   ]
+  },
+  {
+   "company": "Menlyn Mix",
+   "category": "Corporate",
+   "location": "Lynnwood Glen, Pretoria East",
+   "web": "https://www.menlynmix.co.za",
+   "instagram": "",
+   "phone": "0861 269 846",
+   "email": "",
+   "why": "The apart-hotel launched in 2026 with a rooftop garden, rooftop adventure golf and a business hub, but its website lists no events and no Instagram account.",
+   "opener": "I came across Menlyn Mix's rooftop adventure golf and rooftop garden, and the business hub you offer guests near Menlyn Maine. I'd love to explore the opportunity to capture a short, engaging reel of the rooftop at sunset that you could use to promote the property for small year-end team gatherings and generate more bookings.",
+   "ideas": [
+    {
+     "title": "Rooftop at Sunset",
+     "pitch": "A reel of the rooftop garden and adventure golf at golden hour, with guests playing a round and relaxing by the pool. It shows the difference between Menlyn Mix and a standard business hotel.",
+     "get": "1 reel",
+     "pkg": "Mini Shoot R500"
+    },
+    {
+     "title": "Work and Play Business Stay",
+     "pitch": "A two hour shoot covering the boardroom apartments, the business hub, the gym and the rooftop. Corporate travel bookers get one clear set of images to show the full business and leisure offer.",
+     "get": "1 reel plus 15 photos",
+     "pkg": "Photo and Video from R1500"
+    }
+   ]
+  }
+ ]
 }
