@@ -904,6 +904,31 @@ async function gFiles(env, r) {
 // client mode: the organiser approves the photos in her portal; until she does, guests see "coming soon"
 const gSoon = r => !!r.client && !(Array.isArray(r.files) && r.files.length);
 const gPct = (v, d) => { const n = parseFloat(v); return isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : d; };
+/* ---- edge copies: a whole photo (up to 60 MB) is kept on the Cloudflare server nearest the client
+   (Johannesburg for SA), so the second fetch (viewing, then downloading, or another guest) skips the trip to R2.
+   Only works on a custom domain: on *.workers.dev Cloudflare ignores the cache, so it is skipped there. */
+const EDGE_MAX = 60e6;
+async function edgeObj(env, ctx, url, key) {
+  const on = !/\.workers\.dev$/.test(url.hostname);
+  const ck = new Request('https://edge-cache.fomstudios.co.za/' + encodeURIComponent(key));
+  if (on) { try { const hit = await caches.default.match(ck); if (hit) return { body: hit.body, size: +hit.headers.get('content-length') || 0, type: hit.headers.get('content-type') || 'application/octet-stream', etag: hit.headers.get('etag') || '', hit: true }; } catch (e) {} }
+  const obj = await env.BUCKET.get(key); if (!obj) return null;
+  const type = (obj.httpMetadata && obj.httpMetadata.contentType) || 'application/octet-stream';
+  let body = obj.body;
+  if (on && obj.size <= EDGE_MAX && ctx && ctx.waitUntil) {
+    try {
+      const [a, b] = body.tee(); body = a;
+      ctx.waitUntil(caches.default.put(ck, new Response(b, { headers: { 'Content-Type': type, 'Content-Length': String(obj.size), etag: obj.httpEtag, 'Cache-Control': 'public, max-age=86400' } })).catch(() => {}));
+    } catch (e) {}
+  }
+  return { body, size: obj.size, type, etag: obj.httpEtag, hit: false };
+}
+function edgeResp(o, h) {
+  h.set('Content-Type', o.type); if (o.etag) h.set('etag', o.etag); h.set('Accept-Ranges', 'bytes'); h.set('Content-Length', String(o.size)); h.set('X-Edge', o.hit ? 'hit' : 'miss');
+  h.append('Access-Control-Expose-Headers', 'Content-Length, X-Edge');
+  return new Response(o.body, { headers: h });
+}
+
 function gPublic(r) { return { cover: r.cover ? { fx: r.cover.fx, fy: r.cover.fy } : null, title: r.title, biz: r.biz, date: r.date || '', expires: r.expires, mode: r.mode, needPin: !!r.pin, ended: gEnded(r), soon: gSoon(r), salesUrl: r.mode === 'paid' ? (r.salesUrl || '') : '' }; }
 const gPicksKey = order => '_groups/picks/' + String(order).replace(/[^A-Za-z0-9_-]/g, '') + '.json';
 /* the organiser's picks: GET ?order= (the client of that booking, or you), POST {order, picks} (the client, only when you switched it on) */
@@ -1019,7 +1044,13 @@ async function handleGroup(path, request, env, url, ctx) {
       want = fitRange(want, head.size);
       if (!want) return new Response(null, { status: 416, headers: { ...cors, 'Content-Range': `bytes */${head.size}` } });
     }
-    const obj = want ? await env.BUCKET.get(key, { range: want }) : await env.BUCKET.get(key);
+    if (!want) {
+      const o = await edgeObj(env, ctx, url, key); if (!o) return json({ error: 'not found' }, 404);
+      const h = new Headers(cors); h.set('Cache-Control', 'private, max-age=3600');
+      if (url.searchParams.get('dl') === '1' && r.mode === 'free') h.set('Content-Disposition', `attachment; filename="${n.split('/').pop().replace(/"/g, '')}"`);
+      return edgeResp(o, h);
+    }
+    const obj = await env.BUCKET.get(key, { range: want });
     if (!obj) return json({ error: 'not found' }, 404);
     const h = new Headers(cors); obj.writeHttpMetadata(h); h.set('etag', obj.httpEtag); h.set('Accept-Ranges', 'bytes'); h.set('Cache-Control', 'private, max-age=3600');
     if (url.searchParams.get('dl') === '1' && r.mode === 'free') h.set('Content-Disposition', `attachment; filename="${n.split('/').pop().replace(/"/g, '')}"`);
@@ -1161,7 +1192,15 @@ export default {
         want = fitRange(want, head.size);
         if (!want) return new Response(null, { status: 416, headers: { ...cors, 'Content-Range': `bytes */${head.size}` } });
       }
-      const obj = want ? await env.BUCKET.get(key, { range: want }) : await env.BUCKET.get(key);
+      if (!want) {   // whole file (downloads, the viewer): through the edge copy
+        const o = await edgeObj(env, ctx, url, key);
+        if (!o) return json({ error: 'not found' }, 404);
+        const h = new Headers(cors);
+        h.set('Cache-Control', PUBLIC_FOLDERS.includes(g) ? 'public, max-age=86400' : 'private, max-age=3600');
+        if (url.searchParams.get('dl') === '1') h.set('Content-Disposition', `attachment; filename="${n.replace(/"/g, '')}"`);
+        return edgeResp(o, h);
+      }
+      const obj = await env.BUCKET.get(key, { range: want });
       if (!obj) return json({ error: 'not found' }, 404);
 
       const h = new Headers(cors);
