@@ -1,15 +1,15 @@
 {
   "biz": "fom",
-  "generatedAt": "2026-11-19T18:00:00+02:00",
-  "periodStart": "2026-11-20",
-  "nextRefresh": "2026-11-23",
-  "headline": "The Mini Shoot giveaway: launch Sat 21 Nov, entries close Sat 5 Dec 18:00, winners Mon 7 Dec.",
-  "notes": "Giveaway sequence moved to run Sat 21 Nov to Sat 5 Dec. Messages marked keep stay in every new round until their day has passed.",
+  "generatedAt": "2026-11-23T07:55:00+02:00",
+  "periodStart": "2026-11-23",
+  "nextRefresh": "2026-11-30",
+  "headline": "Black Friday 15% off (Fri 27 to Mon 30 Nov) leads, with the giveaway posts kept and one light festive season option.",
+  "notes": "Used the Black Friday and giveaway campaigns, moved giveaway dates, thisWeek note, trends.json (Black Friday gift angle, Festival of Lights) and confirmed school closing date 9 Dec.",
   "messages": [
     {
       "id": "gw-2026-11-21-welcome",
       "role": "main",
-      "day": "2026-11-22",
+      "day": "2026-11-24",
       "title": "Welcome message (send first, then pin it)",
       "text": "*Welcome to the FOM Studios group* 📸\n\nThis is where we share promos, giveaways, shoot availability and behind-the-scenes first.\n\nOur giveaway goes live today: follow @fom_studios_ on Instagram, like the giveaway post and tag 2 friends for a chance to win a *FREE Mini Shoot*. Everyone who enters gets 10% off, and the code is posted here after entries close.\n\nBookings and quotes: message us on 068 690 1120 so nothing gets lost.\n\nFOM Studios 📸",
       "photo": "",
@@ -21,7 +21,7 @@
     {
       "id": "gw-2026-11-21-launch",
       "role": "option",
-      "day": "2026-11-22",
+      "day": "2026-11-24",
       "title": "Giveaway launch",
       "text": "🎁 *The FOM Studios giveaway is LIVE!*\n\nWin a *FREE Mini Shoot* (R500 value), or 20% off one. Everyone who enters also gets *10% off* their first booking.\n\nEnter on Instagram (@fom_studios_): follow, like the giveaway post and tag 2 friends in the comments. Each new comment tagging 2 different friends is another entry.\n\nEntries close *Sunday 6 December at 6PM*. Your 10% code and the winners will be posted right here in this group.\n\nFOM Studios 📸",
       "photo": "The giveaway picture post (same image as Instagram).",
@@ -33,7 +33,7 @@
     {
       "id": "gw-2026-11-25-reminder",
       "role": "option",
-      "day": "2026-11-26",
+      "day": "2026-11-28",
       "title": "Reminder",
       "text": "⏳ *Giveaway reminder*\n\nEntries are open until *Sunday 6 December at 6PM*.\n\nFollow @fom_studios_, like the giveaway post and tag 2 friends to enter for a FREE Mini Shoot. Every entrant gets 10% off, and the code is posted here after entries close.\n\nFOM Studios 📸",
       "photo": "",
@@ -45,7 +45,7 @@
     {
       "id": "gw-2026-12-01-1weekleft",
       "role": "option",
-      "day": "2026-12-02",
+      "day": "2026-12-04",
       "title": "4 days left",
       "text": "⏳ *4 days left to enter!*\n\nThe FOM Studios giveaway closes *Sunday 6 December at 6PM*.\n\nFollow @fom_studios_, like the giveaway post and tag 2 friends to win a FREE Mini Shoot. More comments with 2 different friends means more entries.\n\nEveryone who enters gets 10% off, and the code is posted here when entries close.\n\nFOM Studios 📸",
       "photo": "",
@@ -101,6 +101,36 @@
       "stage": "Code reminder",
       "why": "Last push for people who entered but have not booked yet.",
       "keep": true
+    },
+    {
+      "id": "2026-11-23-1",
+      "role": "main",
+      "title": "Black Friday 15% off",
+      "text": "*Black Friday: 15% off any FOM Studios shoot* 🎄\n\nBook any shoot from Fri 27 Nov to Mon 30 Nov and get 15% off with the code *FOMBLACKFRIDAY*.\n\nA shoot makes a great Christmas present: family photos, a couple shoot, or a car or sport reel for someone who loves their hobby.\n\nJust mention FOMBLACKFRIDAY when you WhatsApp us on 068 690 1120 or use the Book a shoot button:\nhttps://www.fomstudios.co.za/?src=wach\n\nP.S. The Mini Shoot giveaway on Instagram is still open until Sunday 6 December. The two offers can't be combined.\n\nFOM STUDIOS 📸",
+      "photo": "A warm family or couple shot from your portfolio with good light.",
+      "campaign": "promo-black-friday-2026",
+      "stage": "launch",
+      "why": "Send on the morning of Fri 27 Nov when the Black Friday offer starts."
+    },
+    {
+      "id": "2026-11-23-2",
+      "role": "option",
+      "title": "Black Friday ends Monday",
+      "text": "*Last chance: Black Friday ends tomorrow* ⏳\n\nYou have until Mon 30 Nov to book any FOM Studios shoot with *15% off*. Use the code *FOMBLACKFRIDAY* when you book.\n\nStill looking for a Christmas gift? A shoot is something they will keep for years.\n\nWhatsApp 068 690 1120 or tap Book a shoot:\nhttps://www.fomstudios.co.za/?src=wach\n\nFOM STUDIOS 📸",
+      "photo": "",
+      "campaign": "promo-black-friday-2026",
+      "stage": "last day",
+      "why": "Send on Sun 29 Nov as the final nudge before the offer closes on Monday."
+    },
+    {
+      "id": "2026-11-23-3",
+      "role": "option",
+      "title": "Festive season shoots",
+      "text": "*The festive season is here in Joburg* ✨\n\nThe Festival of Lights at Joburg Zoo opens on Thu 26 Nov, and public schools close on Wed 9 Dec.\n\nIf you want family photos, a couple shoot or your year-end function covered before everyone goes away, now is the time to get a date in.\n\nOur Mini Shoot is R500 for 30 minutes (20 photos or 1 reel), and photography starts from R800.\n\nSee the packages and book here:\nhttps://www.fomstudios.co.za/?src=wach\n\nFOM STUDIOS 📸",
+      "photo": "A festive or golden hour family portrait from your work.",
+      "campaign": "",
+      "stage": "",
+      "why": "Light seasonal post for midweek that keeps the giveaway and Black Friday as the focus."
     }
   ]
 }
