@@ -1,276 +1,277 @@
 {
   "biz": "fom",
-  "generatedAt": "2026-11-19",
-  "weekOf": "2026-11-19",
-  "headline": "Giveaway launch, the 947 Ride, year-end functions and Black Friday.",
+  "generatedAt": "2026-11-23",
+  "weekOf": "2026-11-23",
+  "headline": "Giveaway goes live Tuesday and Black Friday 15% off runs Fri to Mon, with a festive lights tip reel to grow reach.",
   "ideas": [
     {
-      "id": "2026-11-19-1",
-      "day": "2026-11-21",
+      "id": "2026-11-23-1",
+      "day": "2026-11-24",
       "format": "Reel",
       "length": "12 to 15 sec",
       "campaign": "Mini Shoot giveaway",
-      "title": "Giveaway launch: raw vs edit",
-      "why": "Launch day. A raw to final reveal shows what the prize looks like, and the beat drop format is the most copied one right now.",
+      "title": "Giveaway live: 30 minutes, 20 photos",
+      "why": "The giveaway opens today, and showing exactly what the winner gets makes people comment and tag friends right away.",
       "hooks": [
         {
-          "text": "This is what a R500 Mini Shoot looks like... and you can win one for free 👀",
-          "formula": "Raw vs edit + giveaway"
+          "text": "We're giving away a free shoot. Here's what you get.",
+          "formula": "Giveaway reveal"
         },
         {
-          "text": "Wait for the drop. Then go enter, because we're giving this away 🎁",
-          "formula": "Before the drop"
+          "text": "30 minutes. 20 photos. Zero rands.",
+          "formula": "Number stack"
         },
         {
-          "text": "What 30 minutes with FOM Studios gets you",
-          "formula": "Price reveal"
+          "text": "Tag 2 friends and one of you could win this.",
+          "formula": "Direct call to action"
         }
       ],
       "beats": [
         {
           "t": "0 to 1s",
-          "say": "Raw, ungraded clip from a past Mini Shoot. Hook text on screen."
+          "say": "Fast cut of you lifting the camera to your eye, text: FREE Mini Shoot"
         },
         {
           "t": "1 to 6s",
-          "say": "Quick cuts of 3 raw frames, slightly flat, building to the beat."
+          "say": "Timer on screen counting 30 minutes while quick clips from a real Mini Shoot play"
         },
         {
-          "t": "6 to 7s",
-          "say": "Freeze frame, then the beat drop."
-        },
-        {
-          "t": "7 to 12s",
-          "say": "The same frames fully edited, fast cuts on the beat."
-        },
-        {
-          "t": "12 to 15s",
-          "say": "End card: WIN A FREE MINI SHOOT. Follow, like, tag 2 friends. Closes Sat 5 Dec."
-        }
-      ],
-      "onScreen": "Hook line\n\"Raw\" / \"FOM edit\"\nWIN A FREE MINI SHOOT 🎁\nFollow + like + tag 2 friends\nCloses Sat 5 Dec, 6PM",
-      "shots": [
-        "Pick 3 raw clips or photos from one Mini Shoot with good movement",
-        "Export the same 3 fully edited",
-        "A trending beat with a clear drop at about 6 to 7 seconds"
-      ],
-      "keywords": [
-        "Joburg photographer",
-        "Mini Shoot",
-        "giveaway",
-        "photo and video"
-      ],
-      "caption": "We're giving away a FREE Mini Shoot 🎁📸\n\nThis is what 30 minutes with us looks like, raw vs edit. One of you gets it for free.\n\n🥇 Free Mini Shoot (R500 value)\n🥈 20% off a Mini Shoot\n🎁 Everyone who enters gets 10% off\n\nTo enter: follow @fom_studios_, like our giveaway post and tag 2 friends in the comments.\n\nEntries close Saturday 5 Dec at 6PM. Code and winners in our WhatsApp group (link in bio).\n\n#johannesburgphotographer #fomstudios #giveaway"
-    },
-    {
-      "id": "2026-11-19-2",
-      "day": "2026-11-22",
-      "format": "Carousel",
-      "length": "8 to 10 slides",
-      "campaign": "947 Ride Joburg",
-      "title": "947 Ride: find yourself (same evening)",
-      "why": "Thousands of riders look for photos of themselves that evening, and every tag sends the post to new people.",
-      "hooks": [
-        {
-          "text": "Rode the 947 today? Swipe and find yourself 🚴",
-          "formula": "Find yourself"
-        },
-        {
-          "text": "947 Ride Joburg 2026: tag every rider you know",
-          "formula": "Tag challenge"
-        },
-        {
-          "text": "The best moments from the 947 finish line",
-          "formula": "Recap"
-        }
-      ],
-      "beats": [
-        {
-          "t": "Slide 1",
-          "say": "Strongest action photo, hook on it."
-        },
-        {
-          "t": "Slides 2 to 8",
-          "say": "Mix of wide crowd shots and close riders, numbers visible where possible."
-        },
-        {
-          "t": "Slide 9",
-          "say": "\"Found yourself? Tag yourself and your crew.\""
-        },
-        {
-          "t": "Slide 10",
-          "say": "\"Want your club or team shot like this? DM us.\""
-        }
-      ],
-      "onScreen": "Slide 1: Rode the 947 today? Find yourself 👇\nLast slide: Want your club shot like this? DM us",
-      "shots": [
-        "Start and finish line wides",
-        "Riders with numbers visible at a busy corner",
-        "Emotions at the finish: hugs, medals, arms up",
-        "A few club groups in matching kit"
-      ],
-      "keywords": [
-        "947 Ride Joburg",
-        "cycling photographer",
-        "Johannesburg"
-      ],
-      "caption": "947 Ride Joburg 2026 🚴 what a day!\n\nSwipe through and find yourself. Tag yourself and your riding crew so they see it too.\n\nWant proper photos or a reel for your club or team this season? Send us a DM.\n\n#947ridejoburg #cyclingphotography #johannesburg"
-    },
-    {
-      "id": "2026-11-19-3",
-      "day": "2026-11-23",
-      "format": "Reel",
-      "length": "10 to 12 sec",
-      "campaign": "Mini Shoot giveaway",
-      "title": "Giveaway follow-up: shoot loading 0% to 100%",
-      "why": "The loading bar format keeps people watching to the end, and it is the giveaway follow-up Reel from the plan.",
-      "hooks": [
-        {
-          "text": "Shoot loading... 0% 🔄",
-          "formula": "Loading bar"
-        },
-        {
-          "text": "From \"I am not photogenic\" to this in 30 minutes",
-          "formula": "Myth"
-        },
-        {
-          "text": "Win this. Seriously. 🎁",
-          "formula": "Direct"
-        }
-      ],
-      "beats": [
-        {
-          "t": "0 to 2s",
-          "say": "0%: arriving, gear bag, \"Shoot loading\" bar on screen."
-        },
-        {
-          "t": "2 to 5s",
-          "say": "25 to 50%: setting up, first test shots, laughing."
-        },
-        {
-          "t": "5 to 8s",
-          "say": "75%: posing, best moment."
-        },
-        {
-          "t": "8 to 12s",
-          "say": "100%: final edited photo and a short reel clip. End card: WIN THIS. Link in caption."
-        }
-      ],
-      "onScreen": "Shoot loading... 0%\n25%\n50%\n75%\n100% ✅\nWIN A FREE MINI SHOOT 🎁",
-      "shots": [
-        "Behind-the-scenes phone clips from any shoot: arrival, set up, posing",
-        "One final edited image to end on"
-      ],
-      "keywords": [
-        "Mini Shoot",
-        "Joburg photographer",
-        "giveaway"
-      ],
-      "caption": "Win a FREE Mini Shoot 📸🎁\n\nFollow @fom_studios_, like our giveaway post and tag 2 friends to enter. Everyone who enters gets 10% off their first booking.\n\nEntries close Saturday 5 Dec, 6PM SAST. Join our WhatsApp group for your code and the winners: link in bio.\n\nThis promotion is in no way sponsored, endorsed or administered by, or associated with, Instagram.\n\n#fomstudios #johannesburgphotographer #giveaway"
-    },
-    {
-      "id": "2026-11-19-4",
-      "day": "2026-11-25",
-      "format": "Reel",
-      "length": "15 sec",
-      "campaign": "",
-      "title": "Year-end function teaser for venues",
-      "why": "Late November to mid December is peak year-end function season, and venues and caterers want content now.",
-      "hooks": [
-        {
-          "text": "Your year-end function deserves better than blurry phone photos",
-          "formula": "Problem"
-        },
-        {
-          "text": "POV: your staff party actually gets posted on LinkedIn",
-          "formula": "POV"
-        },
-        {
-          "text": "3 shots every year-end function needs",
-          "formula": "Countdown"
-        }
-      ],
-      "beats": [
-        {
-          "t": "0 to 2s",
-          "say": "A blurry, dark phone photo. Hook on screen."
-        },
-        {
-          "t": "2 to 10s",
-          "say": "Clean event clips: table setting, speeches, dance floor, team photo."
+          "t": "6 to 10s",
+          "say": "Photos flick onto screen one after another, counter goes to 20"
         },
         {
           "t": "10 to 15s",
-          "say": "\"Booking December functions now. DM us or WhatsApp 068 690 1120.\""
+          "say": "Say: Follow us, like the giveaway post and tag 2 friends. Closes Sunday 6 December at 6PM."
         }
       ],
-      "onScreen": "Hook\nThe setting ✨\nThe speeches 🎤\nThe team photo 📸\nDecember dates going fast",
+      "onScreen": "FREE Mini Shoot 📸\n30 minutes of coverage\n20 edited photos or 1 reel\nFollow, like, tag 2 friends\nCloses Sun 6 Dec, 6PM",
       "shots": [
-        "Your best event clips from past functions",
-        "One team group photo"
+        "Existing Mini Shoot or portrait footage",
+        "Close up of the camera shutter firing",
+        "Screen record of a gallery of 20 finished photos"
       ],
       "keywords": [
-        "year-end function photographer",
-        "corporate event videographer",
-        "Johannesburg"
+        "Joburg photographer",
+        "photoshoot giveaway",
+        "Johannesburg photoshoot"
       ],
-      "caption": "Year-end functions are here 🥂\n\nGet photos and a short reel your team will actually share. Event coverage from R800, photo and video from R1500.\n\nDecember dates are filling up. DM us or WhatsApp 068 690 1120.\n\n#corporateevents #eventphotographer #johannesburg"
+      "caption": "We're giving away a FREE Mini Shoot in Joburg 🎁\n\nGrand prize: 1 free Mini Shoot (R500 value: 20 edited photos or one 30 second reel, 30 minutes of coverage). Runner-up gets 20% off a Mini Shoot, and every entrant gets 10% off a first booking.\n\nTo enter: follow @fom_studios_, like this post and tag 2 friends in the comments. Each new comment with 2 different friends is another entry. Share to your Story and tag us for a bonus entry.\n\nEntries close Sun 6 Dec at 18:00. Winners announced by Tue 8 Dec. SA residents 18+. Not sponsored by or associated with Instagram.\n\nWho are you tagging? 👇\n\n#joburgphotographer #johannesburg #giveawaysouthafrica"
     },
     {
-      "id": "2026-11-19-5",
-      "day": "2026-11-27",
-      "format": "Carousel",
-      "length": "5 slides",
-      "campaign": "Black Friday 15% off",
-      "title": "Black Friday: the gift that will not end up in a drawer",
-      "why": "Black Friday is when people plan Christmas gifts, and a clear offer with a cut-off date gets saved and sent to partners.",
+      "id": "2026-11-23-2",
+      "day": "2026-11-26",
+      "format": "Reel",
+      "length": "15 to 20 sec",
+      "campaign": "",
+      "title": "3 phone tips for festive light photos",
+      "why": "The Joburg Zoo Festival of Lights opens this week, and a quick useful tip reel is the kind people send to friends before they go, which is the strongest reach signal right now.",
       "hooks": [
         {
-          "text": "The Christmas gift that will not end up in a drawer 🎁",
-          "formula": "Gift"
+          "text": "Your Christmas light photos look blurry? Fix it in 3 taps.",
+          "formula": "Problem and fix"
         },
         {
-          "text": "Black Friday at FOM Studios: 15% off every shoot",
-          "formula": "Offer first"
+          "text": "Stop using flash at the Festival of Lights.",
+          "formula": "Stop doing this"
         },
         {
-          "text": "Send this to the person who is buying your Christmas gift 👀",
+          "text": "Send this to whoever's taking the photos this December.",
           "formula": "Send to a friend"
         }
       ],
       "beats": [
         {
+          "t": "0 to 1s",
+          "say": "Bad blurry, flash-blown photo of festive lights, big red X"
+        },
+        {
+          "t": "1 to 6s",
+          "say": "Tip 1: flash off, tap your subject and slide exposure down a little"
+        },
+        {
+          "t": "6 to 11s",
+          "say": "Tip 2: hold the phone with both hands against your chest or lean on a railing"
+        },
+        {
+          "t": "11 to 16s",
+          "say": "Tip 3: stand your people close to the lights so the glow lights their faces"
+        },
+        {
+          "t": "16 to 20s",
+          "say": "Before and after side by side. Say: Want proper photos? That's what we do in Joburg."
+        }
+      ],
+      "onScreen": "Flash OFF\nTap the face, slide exposure down\nBrace the phone\nStand close to the lights\nSave this for December ✨",
+      "shots": [
+        "Any festive lights in Joburg (a mall display, a street, your own house lights)",
+        "Phone screen recording of the exposure slider",
+        "One before and after pair shot on your phone"
+      ],
+      "keywords": [
+        "Christmas lights photos",
+        "Joburg photographer",
+        "phone photography tips"
+      ],
+      "caption": "Flash off is tip number one, trust us ✨\n\nThree quick fixes for festive light photos on your phone: turn the flash off, tap the face and slide the exposure down, and stand your people close to the lights so the glow does the work.\n\nSend this to the friend who always takes the group photo.\n\nAnd if you'd rather just be in the photos, we're on 068 690 1120 or the website.\n\n#joburgphotographer #christmaslights #phonephotography"
+    },
+    {
+      "id": "2026-11-23-3",
+      "day": "2026-11-27",
+      "format": "Carousel",
+      "length": "6 slides",
+      "campaign": "Black Friday 15% off",
+      "title": "Black Friday: which shoot is yours?",
+      "why": "Black Friday 15% off starts today, and a simple pick your package carousel helps people decide fast before it ends on Monday.",
+      "hooks": [
+        {
+          "text": "15% off any shoot. Which one are you booking?",
+          "formula": "Question with offer"
+        },
+        {
+          "text": "Black Friday, but make it photos.",
+          "formula": "Pattern twist"
+        },
+        {
+          "text": "Swipe to find your shoot. Code on the last slide.",
+          "formula": "Swipe promise"
+        }
+      ],
+      "beats": [
+        {
           "t": "Slide 1",
-          "say": "Hook over a warm couple or family photo."
+          "say": "15% OFF any FOM Studios shoot. Black Friday, 27 to 30 Nov. Swipe to pick yours."
         },
         {
           "t": "Slide 2",
-          "say": "Ideas: couple shoot, family photos, a Mini Shoot with friends."
+          "say": "Mini Shoot R500: 30 minutes, 20 photos or 1 reel. For a quick portrait or a gift."
         },
         {
           "t": "Slide 3",
-          "say": "15% off any shoot booked Fri 27 to Mon 30 Nov with code FOMBLACKFRIDAY."
+          "say": "Photography from R800: 2 hours. For families, events and brands."
         },
         {
           "t": "Slide 4",
-          "say": "Mini Shoot from R500, 30 minutes, 20 photos or a reel."
+          "say": "Videography from R1000. For car reels, sport and events."
         },
         {
           "t": "Slide 5",
-          "say": "\"Send this to someone 😉\" plus how to book."
+          "say": "Photo and Video from R1500. For when you want both."
+        },
+        {
+          "t": "Slide 6",
+          "say": "Use code FOMBLACKFRIDAY when you book on 068 690 1120 or the website. Valid 27 to 30 Nov only."
         }
       ],
-      "onScreen": "Slide 3: 15% OFF\nCode FOMBLACKFRIDAY\nFri 27 to Mon 30 Nov",
+      "onScreen": "Slide 1: 15% OFF any shoot\nSlide 2: Mini Shoot R500\nSlide 3: Photography from R800\nSlide 4: Videography from R1000\nSlide 5: Photo and Video from R1500\nSlide 6: Code FOMBLACKFRIDAY, 27 to 30 Nov",
       "shots": [
-        "Your warmest couple, family or friends photos",
-        "A simple slide design in FOM black and white"
+        "One strong existing photo behind each package slide: portrait, family, car, padel or event"
       ],
       "keywords": [
-        "Christmas gift idea",
-        "photoshoot gift",
-        "Black Friday"
+        "Black Friday photoshoot",
+        "Joburg photographer",
+        "photoshoot deal Johannesburg"
       ],
-      "caption": "Black Friday at FOM Studios 🖤\n\n15% off any shoot you book from Friday 27 to Monday 30 November. Use code FOMBLACKFRIDAY when you book.\n\nA photo session is a gift people actually keep. Couples, families, friends, or a Mini Shoot for someone who deserves it.\n\nSend this to the person buying your Christmas gift 😉\n\nBook: link in bio or WhatsApp 068 690 1120. Cannot be combined with the giveaway code.\n\n#blackfriday #christmasgiftideas #johannesburgphotographer"
+      "caption": "Black Friday is here: 15% off any FOM Studios shoot 📸\n\nBook from Fri 27 to Mon 30 November and use code FOMBLACKFRIDAY. Swipe to see which shoot fits you, from a quick Mini Shoot to full photo and video.\n\nA shoot also makes a cool Christmas gift that won't sit in a drawer.\n\nComment the slide number you'd pick, or book on 068 690 1120 or the website.\n\nValid 27 to 30 Nov only. Can't be combined with the giveaway prizes or code. Our giveaway is still open too, check the pinned post.\n\n#blackfridaysouthafrica #joburgphotographer #photoshoot"
+    },
+    {
+      "id": "2026-11-23-4",
+      "day": "2026-11-28",
+      "format": "Reel",
+      "length": "8 to 12 sec",
+      "campaign": "Mini Shoot giveaway",
+      "title": "Tag your padel partner (and one more)",
+      "why": "Saturday is padel day, and a fun tag your partner reel pushes the giveaway entry rule of tagging 2 friends.",
+      "hooks": [
+        {
+          "text": "Tag the padel partner who always blames you for the point.",
+          "formula": "Tag someone"
+        },
+        {
+          "text": "POV: your padel game finally gets filmed properly.",
+          "formula": "POV"
+        },
+        {
+          "text": "This is how your padel smash should look.",
+          "formula": "Show the result"
+        }
+      ],
+      "beats": [
+        {
+          "t": "0 to 1s",
+          "say": "Slow motion smash at the net, text: Tag your padel partner"
+        },
+        {
+          "t": "1 to 5s",
+          "say": "Quick cuts of rallies, high fives and a funny miss"
+        },
+        {
+          "t": "5 to 9s",
+          "say": "Freeze frame on a great shot, text: Win a FREE Mini Shoot"
+        },
+        {
+          "t": "9 to 12s",
+          "say": "Text: Tag 2 friends on our giveaway post. Closes Sun 6 Dec, 6PM."
+        }
+      ],
+      "onScreen": "Tag your padel partner 🎾\nWin a FREE Mini Shoot\nFollow, like, tag 2 friends\nCloses Sun 6 Dec, 6PM",
+      "shots": [
+        "Existing padel league footage",
+        "Slow motion smash",
+        "One funny miss or celebration"
+      ],
+      "keywords": [
+        "padel Johannesburg",
+        "padel videographer",
+        "Joburg padel"
+      ],
+      "caption": "Tag the padel partner who always blames you 😂🎾\n\nWant your games filmed like this? Our giveaway is still open: win a free Mini Shoot (R500 value: 20 edited photos or one 30 second reel, 30 minutes of coverage).\n\nFollow @fom_studios_, like the giveaway post and tag 2 friends there. Entries close Sun 6 Dec at 18:00.\n\nRunning a padel league? Ask us about weekly reels on 068 690 1120.\n\n#padelsouthafrica #padeljohannesburg #joburgvideographer"
+    },
+    {
+      "id": "2026-11-23-5",
+      "day": "2026-11-29",
+      "format": "Story",
+      "length": "4 frames",
+      "campaign": "Black Friday 15% off",
+      "title": "Black Friday ends tomorrow: story set",
+      "why": "Monday is the last day of the code, so a Sunday story push reaches people who saw the carousel but did not book yet.",
+      "hooks": [
+        {
+          "text": "Last call: 15% off ends tomorrow.",
+          "formula": "Deadline"
+        },
+        {
+          "text": "Still thinking about that shoot?",
+          "formula": "Question"
+        }
+      ],
+      "beats": [
+        {
+          "t": "Frame 1",
+          "say": "Photo from a recent shoot with text: Black Friday 15% off ends tomorrow"
+        },
+        {
+          "t": "Frame 2",
+          "say": "Poll sticker: Which shoot would you book? Mini Shoot or Photo and Video"
+        },
+        {
+          "t": "Frame 3",
+          "say": "Code FOMBLACKFRIDAY with a link sticker to the website. Valid until Mon 30 Nov."
+        },
+        {
+          "t": "Frame 4",
+          "say": "Reshare the giveaway post: still open until Sun 6 Dec, 6PM"
+        }
+      ],
+      "onScreen": "15% off ends tomorrow\nWhich shoot would you book?\nCode FOMBLACKFRIDAY\nGiveaway still open 🎁",
+      "shots": [
+        "Best photo from this month",
+        "Screenshot of the giveaway post to reshare"
+      ],
+      "keywords": [
+        "Joburg photographer",
+        "Black Friday photoshoot"
+      ],
+      "caption": "Black Friday 15% off ends tomorrow, Mon 30 Nov. Use FOMBLACKFRIDAY when you book on 068 690 1120 or the website. Can't be combined with the giveaway.\n\n#joburgphotographer #blackfridaysouthafrica #photoshoot"
     }
   ]
 }
