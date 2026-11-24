@@ -1,5 +1,126 @@
 {
-  "updated": "",
+  "updated": "2026-11-24",
   "note": "Written by the daily Claude blog task (Mondays). The dashboard Blog page shows these as Ideas for this week.",
-  "ideas": []
+  "ideas": [
+    {
+      "biz": "fom",
+      "title": "Year-end function photos in Joburg: how to plan your shoot",
+      "keyword": "year end function photographer Johannesburg",
+      "why": "Corporate and club year-ends peak from late November to mid December, and organisers search for a photographer in the last few weeks.",
+      "when": "Before 11 Dec",
+      "angle": "Show event and party frames from past FOM functions and walk planners through what a 2 hour photo or photo and video booking covers.",
+      "outline": [
+        "Why year-end photos matter for your team and socials",
+        "Photo, video or both: picking the right package",
+        "A simple shot list: arrivals, speeches, awards, dance floor",
+        "Lighting tips for evening venues",
+        "Book your December date"
+      ]
+    },
+    {
+      "biz": "fom",
+      "title": "A photoshoot as a Christmas gift (and Black Friday 15% off)",
+      "keyword": "photoshoot gift voucher Johannesburg",
+      "why": "Black Friday is 27 Nov and FOM runs 15% off shoots booked 27 to 30 Nov, while people hunt for experience gifts before Christmas.",
+      "when": "Before 30 Nov",
+      "angle": "Gift ideas by person (couple, parent, car lover, sporty friend) with a matching package, plus how the Black Friday code works.",
+      "outline": [
+        "Why a shoot beats another gift card",
+        "Which package suits who: Mini Shoot to Photo and Video",
+        "How the FOMBLACKFRIDAY 15% off works (27 to 30 Nov)",
+        "Picking a date later is fine",
+        "How to book or gift it"
+      ]
+    },
+    {
+      "biz": "fom",
+      "title": "Festive market season: product photos and reels for small brands",
+      "keyword": "product photography Johannesburg",
+      "why": "Joburg's festive markets run back to back (KAMERS/Makers Sandton 24 to 29 Nov, Linden Market Festive Edition 28 to 29 Nov, Rosebank Sunday Market 29 Nov), and vendors need fresh content for December sales.",
+      "when": "This week",
+      "angle": "Practical guide for makers and food vendors on getting product shots and a short reel that sell before and after a market weekend.",
+      "outline": [
+        "Why markets are the perfect time for new content",
+        "Product photos vs a short reel: what to get",
+        "Shooting your stall: setup, prep and first customer",
+        "Turning one shoot into a month of posts",
+        "Book a Mini Shoot or product session"
+      ]
+    },
+    {
+      "biz": "fom",
+      "title": "Summer golden hour car shoots around Joburg",
+      "keyword": "car photoshoot Johannesburg",
+      "why": "Long summer evenings give late golden hour light, and car owners, detailers and dealers search for shoots over the December break.",
+      "when": "Evergreen",
+      "angle": "Behind the scenes of an FOM car shoot: timing, locations type, rolling shots and the edit, for owners, detailers and dealers.",
+      "outline": [
+        "Why golden hour makes cars look their best",
+        "Static shots, rollers and detail frames",
+        "Prepping the car before the shoot",
+        "Reels for detailers and dealers",
+        "Book your car shoot"
+      ]
+    },
+    {
+      "biz": "fom",
+      "title": "How much does a photographer cost in Johannesburg?",
+      "keyword": "photographer prices Johannesburg",
+      "why": "Price searches are steady all year and spike when people plan December events and gifts.",
+      "when": "Evergreen",
+      "angle": "Honest breakdown of the real FOM packages (Mini Shoot R500, Photography from R800, Videography from R1000, Photo and Video from R1500) and what changes the price.",
+      "outline": [
+        "What you actually pay for in a shoot",
+        "FOM packages explained",
+        "Photo, video or both: which gives better value",
+        "Questions to ask any photographer before booking",
+        "See prices and book"
+      ]
+    },
+    {
+      "biz": "sba",
+      "title": "Family Christmas photos in Johannesburg: a gentle guide",
+      "keyword": "family photoshoot Johannesburg",
+      "why": "Gauteng schools close on 9 Dec, so families have time for portraits before Christmas and search for a family photographer now.",
+      "when": "Before 20 Dec",
+      "angle": "Amarah's calm, kid-friendly approach to a relaxed family shoot over the holidays, with tips to keep little ones happy.",
+      "outline": [
+        "Why the school holidays are the easiest time",
+        "Keeping kids relaxed on the day",
+        "Morning or late afternoon light",
+        "Ideas for a festive touch without the cheesy props",
+        "Book your family session"
+      ]
+    },
+    {
+      "biz": "sba",
+      "title": "Corporate year-end and wellness day photos with Shot by A",
+      "keyword": "corporate event photographer Johannesburg",
+      "why": "Teams hold year-end and wellness days in late November and early December and need natural people photos for internal comms and socials.",
+      "when": "Before 11 Dec",
+      "angle": "Warm, people-first event coverage: candid team moments, group photos and speeches, told in Amarah's voice.",
+      "outline": [
+        "Why candid team photos matter",
+        "What I capture on the day",
+        "Making group photos quick and painless",
+        "Getting your photos fast for socials",
+        "Book your event"
+      ]
+    },
+    {
+      "biz": "sba",
+      "title": "What to wear for a summer family photoshoot",
+      "keyword": "what to wear family photoshoot",
+      "why": "Outfit questions are one of the most searched topics before any family shoot, and summer heat changes the advice.",
+      "when": "Evergreen",
+      "angle": "Simple, kind outfit tips for summer: colours that work together, comfy fabrics and kids' clothes that move.",
+      "outline": [
+        "Pick a soft colour palette, not matching outfits",
+        "Light fabrics for Joburg heat",
+        "Dressing little ones for comfort",
+        "Shoes, layers and small details",
+        "Ready to book?"
+      ]
+    }
+  ]
 }
