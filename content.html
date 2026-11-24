@@ -133,6 +133,8 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .type-other{background:#efece5;color:#6f6f6d;}
 .idea-card .ic-title{font-size:15.5px;font-weight:700;line-height:1.35;}
 .idea-card .ic-notes{font-size:13px;color:var(--ink-soft);line-height:1.6;white-space:pre-wrap;}
+.idea-card .ic-photos{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
+.idea-card .ic-photos img{height:86px;width:auto;border-radius:8px;flex:0 0 auto;display:block;}
 .idea-card .ic-actions{display:flex;gap:8px;margin-top:6px;}
 .ic-btn{flex:1;border:1px solid var(--line);background:#fff;border-radius:var(--radius-pill);padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink);text-align:center;}
 .ic-btn:hover{background:var(--ink);color:var(--bg-pill);border-color:var(--ink);}
@@ -520,6 +522,7 @@ function renderIdeaBoard(){
             </div>
             <div class="ic-title">${esc(o.title||'Untitled idea')}</div>
             ${o.notes ? `<div class="ic-notes">${esc(o.notes)}</div>` : ''}
+            ${Array.isArray(o.photos) && o.photos.length ? `<div class="ic-photos">${o.photos.slice(0,10).map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
             <div class="ic-actions">
                 ${o.status==='Idea'
                     ? `<button class="ic-btn" data-plan="${esc(o.id)}">→ Move to Planned</button>`

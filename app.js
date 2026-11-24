@@ -49,6 +49,7 @@ var PAGES = [
   {n:'WhatsApp Group', h:'channel.html', e:'💬'},   // group messages written by the scheduled Claude task (channel/pack.json)
   {n:'Content Planner', h:'content.html',   e:'🎬'},
   {n:'Photo Sales',     h:'sales.html',     e:'🛒'},   // event photos people buy (gallery Worker /sales/*, public page photos.html)
+  {n:'Photo Cull',      h:'cull.html',      e:'🎞️'},   // Aftershoot-style culling on the Mac through the FOM Engine (127.0.0.1:7788), then Lightroom
   {n:'Price Calculator',h:'calculator.html',e:'🧮'},
   {n:'Email',           h:'email.html',     e:'✉️'},
   {n:'Contract',        h:'contract.html',  e:'📄'},

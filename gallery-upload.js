@@ -2,7 +2,9 @@
    Uploads a client's final photos and videos straight into their R2 gallery folder through the gallery Worker,
    with no 100-file limit like the Cloudflare dashboard. 3 files at a time; videos over 90 MB go up in 50 MB parts.
    Files already in the folder with the same name and size are skipped, so you can drop the whole folder again after a break.
-   Needs from database.html: auth, FOM_BIZ, store. */
+   Needs from database.html: auth, FOM_BIZ, store.
+   Photo Cull hands over its finals with FOM_UPLOAD.open(order, onFolder, { files:[{ name, size, lazy:() => Promise<File> }], from:'label' }):
+   each file is fetched from the FOM Engine on the Mac only when its turn comes, so hundreds of finals never sit in memory. */
 (function(){
   var W = 'https://fom-gallery.cold-moon-d65c.workers.dev', ONE = 90 * 1024 * 1024, PART = 50 * 1024 * 1024;
   var OK = /\.(jpe?g|png|webp|heic|heif|gif|tiff?|mp4|mov|m4v|webm|avi|mkv|zip|pdf)$/i;
@@ -33,7 +35,7 @@
       '.gu-f input{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid var(--line);border-radius:12px;font:inherit;background:var(--bg);color:var(--ink)}';
     document.head.appendChild(s);
   }
-  function open(o, onFolder){
+  function open(o, onFolder, preset){
     css();
     var B = window.FOM_BIZ && FOM_BIZ.b ? FOM_BIZ.b : {}, pre = B.galleryPrefix || '';
     var folder = o.galleryFolder || (pre + (slug(o.customer) || 'client') + '/deliverables/');
@@ -58,6 +60,12 @@
     d.addEventListener('dragover', function(ev){ ev.preventDefault(); d.classList.add('on'); });
     d.addEventListener('dragleave', function(){ d.classList.remove('on'); });
     d.addEventListener('drop', async function(ev){ ev.preventDefault(); d.classList.remove('on'); go(await dropped(ev.dataTransfer)); });
+    if(preset && preset.files && preset.files.length){
+      var tot = preset.files.reduce(function(a, f){ return a + (f.size || 0); }, 0);
+      $('guDrop').innerHTML = '<b>Upload ' + preset.files.length + ' finals' + (preset.from ? ' from ' + e(preset.from) : '') + '</b>' + mb(tot) + ' · tap to start';
+      $('guDrop').onclick = function(){ go(preset.files.slice()); };
+      $('guDir').parentNode.style.display = 'none';
+    }
     $('guReady').onclick = function(){ o.deliverablesReady = true; store.update(o.id); this.textContent = 'Ready ✓'; this.disabled = true; if(onFolder) onFolder(o); };
 
     async function go(files){
@@ -80,6 +88,10 @@
       function line(n, t, bad){ list.insertAdjacentHTML('afterbegin', '<div' + (bad ? ' class="bad"' : '') + '><span>' + e(n) + '</span><span>' + e(t) + '</span></div>'); }
       paint();
       async function one(f){
+        if(f.lazy){   // handed over by Photo Cull: fetch it from the Mac only now
+          if(have[clean(f.name)] === f.size){ skipped++; sent += f.size; return line(clean(f.name), 'already there'); }
+          f = await f.lazy();
+        }
         var orig = f.size;
         if(conv && /\.png$/i.test(f.name)){
           var jn = clean(f.name.replace(/\.png$/i, '.jpg'));

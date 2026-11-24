@@ -348,7 +348,34 @@ window.FOM_SALES_START = function(auth){
   drawSetup(); loadEvents(); loadCfg(); loadPO(); loadVouchers();
   var q = new URLSearchParams(location.search).get('ev'); if(q) openEvent(q);
   var gq = new URLSearchParams(location.search).get('group'); if(gq) fromGroup(gq);
+  if(new URLSearchParams(location.search).get('from') === 'cull') fromCull();
 };
+/* ---------- Photo Cull handoff (cull.html, "Sell on Photo Sales"): a new sale event from the finals on the Mac ----------
+   cull.html leaves {title, date, folder, names} in localStorage 'fom.cull.sales'; the photos come from the FOM Engine
+   (127.0.0.1:7788) 12 at a time, so a big event never sits in memory. */
+async function fromCull(){
+  var h = null; try{ h = JSON.parse(localStorage.getItem('fom.cull.sales') || 'null'); }catch(e){}
+  if(!h || !h.names || !h.names.length || Date.now() - (h.t || 0) > 3600e3){ toast('Nothing waiting from Photo Cull.'); return; }
+  localStorage.removeItem('fom.cull.sales');
+  var E = 'http://127.0.0.1:7788', key;
+  try{ key = (await (await fetch(E + '/health', { headers:{ 'X-FOM-Engine':'1' } })).json()).key; }catch(e){ toast('The FOM Engine on your Mac is not answering. Start it, then try again from Photo Cull.'); return; }
+  try{
+    await loadEvents();
+    var id = slug(h.title), i = 2; while((EVENTS || []).some(function(e){ return e.id === id; })) id = slug(h.title).slice(0, 30) + '-' + (i++);
+    EV = { id:id, title:h.title, date:h.date || new Date().toLocaleDateString('en-CA', { timeZone:'Africa/Johannesburg' }), place:'', about:'Photos from ' + h.title + '. Tap the ones you love to buy the full-quality download or a print.', numLabel:'', prices:{ photo:50, bundle:150 }, on:false, cover:'', photos:[] };
+    ORDERS = []; SEL.clear(); dirty = true; drawEdit(); await save();
+    history.replaceState(null, '', 'sales.html?ev=' + EV.id);
+    for(var k = 0; k < h.names.length; k += 12){
+      var files = [];
+      for(var j = k; j < Math.min(h.names.length, k + 12); j++){
+        try{ var b = await (await fetch(E + '/cull/file?' + new URLSearchParams({ folder:h.folder, name:h.names[j], k:key }))).blob(); files.push(new File([b], h.names[j].split('/').pop(), { type:b.type || 'image/jpeg' })); }catch(e){ console.warn(h.names[j], e); }
+      }
+      toast('Adding photos ' + (k + 1) + ' to ' + Math.min(h.names.length, k + 12) + ' of ' + h.names.length + '...');
+      await upload(files);
+    }
+    toast('Done. The event is off until you check the prices and switch it on.');
+  }catch(e){ toast('Could not build it from Photo Cull: ' + e.message); }
+}
 /* ---------- a group link set to "Watermarked, buy to download" (Database page): build its sale event from the chosen photos ---------- */
 async function fromGroup(s){
   try{
