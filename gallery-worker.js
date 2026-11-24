@@ -964,6 +964,10 @@ async function handleGroup(path, request, env, url, ctx) {
     if (path === '/admin/groups') {
       const order = url.searchParams.get('order') || '';
       const list = Object.values(idx).filter(r => !order || r.order === order).map(r => Object.assign({}, r, { seen: undefined, ended: gEnded(r), soon: gSoon(r) }));
+      if (order) for (const g of list) {   // who downloaded (names asked before the first download), newest first
+        const pp = await R2J(env, '_groups/people/' + g.s + '.json', {});
+        g.people = Object.values(pp).sort((a, b) => (b.last || '').localeCompare(a.last || '')).slice(0, 300);
+      }
       const pk = order ? await R2J(env, gPicksKey(order), null) : null;
       return json({ groups: list, picks: pk ? pk.picks || [] : null, picksAt: pk ? pk.at || '' : '' });
     }
@@ -1061,7 +1065,18 @@ async function handleGroup(path, request, env, url, ctx) {
     let b = {}; try { b = JSON.parse(await request.text()); } catch (e) {}
     const r = idx[String(b.s || '').replace(/[^a-z0-9]/g, '')];
     if (!r || gEnded(r) || String(b.k || '') !== await gSign(env, r)) return json({ ok: false });
-    r.dls = (r.dls || 0) + Math.max(1, Math.min(500, +b.c || 1)); idx[r.s] = r; await R2P(env, '_groups/index.json', idx);
+    const c = Math.max(1, Math.min(500, +b.c || 1));
+    r.dls = (r.dls || 0) + c;
+    const who = b.g && typeof b.g === 'object' ? b.g : null, id = who ? String(who.id || '').replace(/[^a-z0-9]/gi, '').slice(0, 24) : '';
+    if (id) {   // one line per person (per phone): name, number, device, files saved, times
+      const pk = '_groups/people/' + r.s + '.json', pp = await R2J(env, pk, {}), now = new Date().toISOString();
+      const p = pp[id] || { first: now, files: 0, times: 0 };
+      Object.assign(p, { n: String(who.n || p.n || '').slice(0, 60), p: String(who.p || p.p || '').replace(/[^\d+ ]/g, '').slice(0, 20), dev: String(who.dev || '').slice(0, 20), last: now });
+      p.files += c; p.times += 1; pp[id] = p;
+      if (Object.keys(pp).length <= 2000) await R2P(env, pk, pp);
+      r.ppl = Object.keys(pp).length;
+    }
+    idx[r.s] = r; await R2P(env, '_groups/index.json', idx);
     return json({ ok: true });
   }
   return json({ error: 'not found' }, 404);

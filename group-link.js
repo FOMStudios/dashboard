@@ -36,7 +36,7 @@
       '.gl-ph button.off img{opacity:.28;filter:grayscale(1)}.gl-ph button i{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-style:normal;font-weight:800;display:flex;align-items:center;justify-content:center}.gl-ph button.off i{background:rgba(0,0,0,.35)}' +
       '.gl-ph .vid{display:flex;align-items:center;justify-content:center;height:100%;font-size:24px}' +
       '.gl-link{display:flex;gap:12px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}.gl-link img{width:110px;height:110px;flex:none;background:#fff;border-radius:8px;padding:4px}.gl-link b{word-break:break-all}' +
-      '.gl-stats{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink-soft);margin:6px 0 4px}.gl-stats b{color:var(--ink);font-size:16px;display:block}.gl-warn{background:#fff4e5;color:#7a4b00;border-radius:10px;padding:8px 10px;font-size:12.5px;margin:8px 0}';
+      '.gl-stats{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink-soft);margin:6px 0 4px}.gl-stats b{color:var(--ink);font-size:16px;display:block}.gl-who{margin:8px 0;font-size:13px}.gl-who summary{cursor:pointer;font-weight:700}.gl-wl{display:grid;gap:6px;margin-top:8px;max-height:240px;overflow:auto}.gl-wl div{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline;padding:7px 10px;border-radius:10px;background:var(--surface-2,#f1f0ec)}.gl-wl span{color:var(--ink-soft);font-size:12px}.gl-wl a{margin-left:auto;font-size:12px}.gl-warn{background:#fff4e5;color:#7a4b00;border-radius:10px;padding:8px 10px;font-size:12.5px;margin:8px 0}';
     document.head.appendChild(s);
   }
   var PICKS = {};
@@ -60,12 +60,27 @@
   }
 
   /* ---------- the link: copy, WhatsApp, QR, stats, change, turn off ---------- */
+  function ppl(g){ return Array.isArray(g.people) ? g.people : []; }
+  /* who downloaded: name (asked before their first download), WhatsApp, phone type, files, when */
+  function who(g){
+    var list = ppl(g); if(!list.length && !(g.dls > 0)) return '';
+    var known = list.reduce(function(a, p){ return a + (p.files || 0); }, 0), older = Math.max(0, (g.dls || 0) - known);
+    var ago = function(t){ var m = Math.round((Date.now() - Date.parse(t)) / 60000); return !isFinite(m) ? '' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
+    var wa = function(n){ var d = String(n || '').replace(/\D/g, ''); if(d.charAt(0) === '0') d = '27' + d.slice(1); return d.length > 8 ? d : ''; };
+    return '<details class="gl-who"' + (list.length && list.length <= 12 ? ' open' : '') + '><summary>Who downloaded (' + list.length + ')</summary>' +
+      (list.length ? '<div class="gl-wl">' + list.map(function(p){
+        var w = wa(p.p);
+        return '<div><b>' + e(p.n || 'No name') + '</b><span>' + (p.files || 0) + ' file' + (p.files === 1 ? '' : 's') + (p.dev ? ' · ' + e(p.dev) : '') + ' · ' + ago(p.last) + '</span>' + (w ? '<a target="_blank" rel="noopener" href="https://wa.me/' + w + '">' + e(p.p) + '</a>' : '') + '</div>';
+      }).join('') + '</div>' : '') +
+      (older ? '<div style="font-size:12px;color:var(--ink-soft);margin-top:6px">' + older + ' files were saved before names were asked (24 Nov 2026).</div>' : '') + '</details>';
+  }
   function show(o, g){
     var url = link(g), msg = 'Hi everyone! 📸 The photos from ' + g.title + ' are ready.\n\n' + url + (g.pin ? '\nPIN: ' + g.pin : '') + '\n\nThey are up until ' + nice(g.expires) + (g.mode === 'free' ? ', so download your favourites before then.' : '.') + (g.mode === 'paid' ? ' Tap the ones you love to get the full-quality download or a print.' : '') + '\n\nTag ' + (g.biz === 'sba' ? '@shotbya_photography' : '@fom_studios_') + ' when you post them 🙌';
     var mode = MODES.filter(function(m){ return m[0] === g.mode; })[0] || MODES[0];
     var late = o.galleryExpiry && g.expires > addDays(o.galleryExpiry, 7);
     var ov = modal('<h3>👥 Group link: ' + e(g.title) + '</h3>' +
-      '<div class="gl-stats"><span><b>' + (g.ended ? (g.on ? 'Ended' : 'Off') : 'Live') + '</b>status</span><span><b>' + nice(g.expires) + '</b>ends</span><span><b>' + (g.views || 0) + '</b>people opened it</span><span><b>' + (g.dls || 0) + '</b>downloads</span><span><b>' + (g.client ? (g.soon ? 'Waiting' : g.files.length) : (Array.isArray(g.files) ? g.files.length : 'All')) + '</b>' + (g.client ? 'approved by ' + e(first(o)) : 'photos') + '</span></div>' +
+      '<div class="gl-stats"><span><b>' + (g.ended ? (g.on ? 'Ended' : 'Off') : 'Live') + '</b>status</span><span><b>' + nice(g.expires) + '</b>ends</span><span><b>' + (g.views || 0) + '</b>people opened it</span><span><b>' + ppl(g).length + '</b>' + (ppl(g).length === 1 ? 'person' : 'people') + ' downloaded<small style="display:block;font-size:11.5px">' + (g.dls || 0) + ' files saved</small></span><span><b>' + (g.client ? (g.soon ? 'Waiting' : g.files.length) : (Array.isArray(g.files) ? g.files.length : 'All')) + '</b>' + (g.client ? 'approved by ' + e(first(o)) : 'photos') + '</span></div>' +
+      who(g) +
       (g.client && g.soon ? '<div class="gl-warn">' + e(first(o)) + ' has not approved any photos yet, so guests see "Photos coming soon". She ticks them in her portal gallery (👥 Choose what the group sees). It goes live the moment she taps Done, and your phone buzzes.</div>' : '') +
       '<div class="gl-link">' + (qr(url) ? '<img src="' + qr(url) + '" alt="QR code">' : '') + '<div><b>' + e(url) + '</b><div style="font-size:13px;color:var(--ink-soft);margin-top:4px">' + e(mode[1]) + (g.pin ? ' · PIN <b style="color:var(--ink)">' + e(g.pin) + '</b>' : ' · No PIN, anyone with the link') + '</div></div></div>' +
       (late ? '<div class="gl-warn">Heads up: the client\'s gallery folder is deleted 7 days after their own expiry (' + nice(o.galleryExpiry) + '), before this link ends. Push their expiry out, or end the group link sooner.</div>' : '') +
