@@ -77,6 +77,9 @@ service cloud.firestore {
     match /settings/{id} {               // security, calculator, contract, checklist, outreach, pitchDeck
       allow read, write: if isAdmin();
     }
+    match /blogPosts/{id} {              // Blog page: drafts and published posts for both websites (biz: fom | sba)
+      allow read, write: if isAdmin();
+    }
     match /leads/{id} {
       allow read, write: if isAdmin();
       // Book a shoot form on the FOM website (book-steps.js, Nov 2026): anyone can send an enquiry, only you can read it

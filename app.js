@@ -54,6 +54,7 @@ var PAGES = [
   {n:'Contract',        h:'contract.html',  e:'📄'},
   {n:'Client Reviews',  h:'reviews.html',   e:'⭐'},
   {n:'Website',         h:'website.html',   e:'🌐'},   // edits fomstudios.co.za, or fomstudios.co.za/shotbya in Shot by A mode
+  {n:'Blog',            h:'blog.html',      e:'✍️'},   // blog posts for both websites, with Claude writing help and a Yoast-style checker
   {n:'Photos',          h:'photos.html',    e:'📸'},
   {n:'Advisor',         h:'advisor.html',   e:'🩺'},
   {n:'Features & to-do',h:'features.html',  e:'🧭'},   // what each business dashboard can do and what is outstanding (Settings)

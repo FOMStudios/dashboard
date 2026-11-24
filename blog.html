@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f1f0ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FOM">
+<link rel="manifest" href="manifest.webmanifest">
+<title>FOM Studios | Blog</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="apple-touch-icon" href="assets/fom-icon-180.png">
+<style>
+:root{
+    --bg:#f1f0ec; --bg-pill:#fafaf9; --bg-dark:#2a2b2c; --ink:#2a2b2c; --ink-soft:#6f6f6d;
+    --ink-on-dark:#f1f0ec; --line:#dcdad3; --accent:#02367B; --accent-hover:#022a5f;
+    --accent-on-dark:#5B9AE0; --container:1000px; --gutter:clamp(18px,5vw,56px);
+    --radius-pill:999px; --radius-card:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:60px;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter);}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:10px;}
+
+/* pill header + hamburger */
+.nav-shell{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px var(--gutter) 0;pointer-events:none;}
+nav.pill{pointer-events:auto;max-width:1320px;margin:0 auto;background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-pill);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.nav-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;}
+.nav-toggle span{width:18px;height:2px;background:var(--ink);display:block;border-radius:2px;}
+.brand-mark{font-weight:800;font-size:18px;letter-spacing:.02em;white-space:nowrap;}
+.nav-right{display:flex;align-items:center;gap:18px;}
+nav.pill .nav-links{display:flex;gap:22px;list-style:none;}
+nav.pill .nav-links a{font-size:14px;font-weight:500;color:var(--ink);transition:color .2s;}
+nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
+.nav-cta{border:1px solid var(--ink);border-radius:var(--radius-pill);padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;background:none;}
+.mobile-menu{position:fixed;top:0;left:0;height:100%;width:min(340px,86vw);background:var(--bg-pill);z-index:1100;transform:translateX(-100%);transition:transform .3s;padding:28px;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);overflow-y:auto;}
+.mobile-menu.open{transform:translateX(0);}
+.mobile-menu .close-menu{align-self:flex-end;background:none;border:none;font-size:28px;cursor:pointer;color:var(--ink);line-height:1;margin-bottom:20px;}
+.mobile-menu ul{list-style:none;display:flex;flex-direction:column;}
+.mobile-menu ul li{border-bottom:1px solid var(--line);}
+.mobile-menu ul li a{display:block;padding:18px 4px;font-size:19px;font-weight:600;color:var(--ink);}
+.mobile-menu .menu-media{margin-top:28px;display:flex;align-items:center;justify-content:center;}
+.mobile-menu .menu-media img{width:100%;max-width:140px;height:auto;object-fit:contain;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1050;opacity:0;pointer-events:none;transition:opacity .3s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+/* login gate */
+.login-gate{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:34px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.1);}
+.login-card .brand-mark{font-size:22px;display:block;margin-bottom:4px;}
+.login-card .lg-sub{color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+.login-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);}
+.login-card input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.lg-err{color:#c0392b;font-size:13px;margin-top:8px;min-height:16px;}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--ink-on-dark);border-radius:var(--radius-pill);padding:12px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--accent-hover);}
+.btn.block{width:100%;padding:13px;}
+
+/* page */
+.page{padding-top:108px;}
+.page-head{margin-bottom:24px;}
+.page-head h1{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.01em;}
+.page-head p{color:var(--ink-soft);font-size:14px;margin-top:4px;max-width:60ch;}
+
+/* filter chips */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.filter-chip{
+    border:1px solid var(--line);background:var(--bg-pill);
+    border-radius:var(--radius-pill);padding:8px 16px;
+    font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.2s;
+}
+.filter-chip:hover{border-color:var(--ink);color:var(--ink);}
+.filter-chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg-pill);}
+
+/* empty state */
+.empty-state{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:48px 28px;text-align:center;}
+.empty-state h3{font-size:19px;font-weight:800;margin-bottom:6px;}
+.empty-state p{color:var(--ink-soft);max-width:40ch;margin:0 auto;font-size:14px;}
+
+/* ============================================================
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-dark);color:#fff;padding:12px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000;}
+.toast.show{opacity:1;}
+/* ============================================================
+   WEBSITE TRAFFIC
+   ============================================================ */
+.tr-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
+.tr-live{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;background:var(--bg-pill);border:1px solid var(--line);border-radius:99px;padding:8px 14px;}
+.tr-live i{width:9px;height:9px;border-radius:50%;background:#9a9a96;}
+.tr-live.on i{background:#1f8a4c;box-shadow:0 0 0 0 rgba(31,138,76,.5);animation:trPulse 1.8s infinite;}
+@keyframes trPulse{0%{box-shadow:0 0 0 0 rgba(31,138,76,.45)}70%{box-shadow:0 0 0 9px rgba(31,138,76,0)}100%{box-shadow:0 0 0 0 rgba(31,138,76,0)}}
+.tr-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px;}
+.tr-kpi{background:var(--bg-pill);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;min-width:0;}
+.tr-kpi span{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
+.tr-kpi b{display:block;font-size:28px;font-weight:800;line-height:1.15;margin-top:6px;}
+.tr-kpi small{font-size:12.5px;font-weight:700;color:var(--ink-soft);}
+.tr-kpi small.up{color:#1f8a4c;}.tr-kpi small.down{color:#c0392b;}
+.tr-card{background:var(--bg-pill);border:1px solid var(--line);border-radius:var(--radius-card);padding:20px 20px 18px;margin-bottom:16px;min-width:0;}
+.tr-card h2{font-size:17px;font-weight:800;margin-bottom:4px;}
+.tr-card .tr-sub{font-size:13px;color:var(--ink-soft);margin-bottom:14px;}
+.tr-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.tr-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+.tr-chart{width:100%;height:190px;display:block;}
+.tr-chart .ax{font-size:10.5px;fill:var(--ink-soft);}
+.tr-legend{display:flex;gap:16px;font-size:12.5px;color:var(--ink-soft);margin-top:6px;}
+.tr-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
+.tr-tbl{width:100%;border-collapse:collapse;font-size:14px;}
+.tr-tbl th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;padding:0 6px 8px;}
+.tr-tbl td{padding:9px 6px;border-top:1px solid var(--line);vertical-align:top;}
+.tr-tbl td.n,.tr-tbl th.n{text-align:right;white-space:nowrap;}
+.tr-tbl td small{display:block;color:var(--ink-soft);font-size:12px;}
+.tr-good{color:#1f8a4c;font-weight:800;}
+.tr-bars{display:flex;flex-direction:column;gap:9px;}
+.tr-br{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;font-size:14px;}
+.tr-br .tk{grid-column:1/-1;height:8px;border-radius:99px;background:var(--line);overflow:hidden;}
+.tr-br .tk i{display:block;height:100%;border-radius:99px;background:var(--accent);}
+.tr-br b{font-weight:700;}
+.tr-funnel{display:flex;flex-direction:column;gap:8px;}
+.tr-fs{display:grid;grid-template-columns:150px minmax(0,1fr) 70px;gap:10px;align-items:center;font-size:14px;}
+.tr-fs .tk{height:26px;border-radius:8px;background:var(--line);overflow:hidden;}
+.tr-fs .tk i{display:block;height:100%;background:var(--accent);border-radius:8px;opacity:.85;}
+.tr-fs .n{text-align:right;font-weight:800;}
+.tr-fs .n small{display:block;font-weight:600;color:var(--ink-soft);font-size:11.5px;}
+.tr-heat{display:grid;grid-template-columns:34px repeat(24,minmax(0,1fr));gap:2px;font-size:10.5px;color:var(--ink-soft);}
+.tr-heat i{aspect-ratio:1;border-radius:3px;background:var(--line);}
+.tr-heat span{display:flex;align-items:center;}
+.tr-ins{display:flex;flex-direction:column;gap:10px;}
+.tr-in{display:flex;gap:12px;align-items:flex-start;background:var(--bg);border-radius:14px;padding:12px 14px;font-size:14.5px;line-height:1.45;}
+.tr-in em{font-style:normal;font-size:20px;line-height:1.2;}
+.tr-tg{display:flex;flex-direction:column;gap:2px;}
+.tr-tg label{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer;font-size:14.5px;}
+.tr-tg label:first-child{border-top:0;}
+.tr-tg label small{display:block;color:var(--ink-soft);font-size:12.5px;}
+.tr-sw{position:relative;width:46px;height:28px;flex-shrink:0;}
+.tr-sw input{opacity:0;width:0;height:0;position:absolute;}
+.tr-sw span{position:absolute;inset:0;background:var(--line);border-radius:99px;transition:.2s;}
+.tr-sw span:after{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.tr-sw input:checked+span{background:#1f8a4c;}
+.tr-sw input:checked+span:after{transform:translateX(18px);}
+.tr-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.tr-acts a,.tr-acts button{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:99px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+.tr-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.tr-link{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:11px 14px;cursor:pointer;font-family:inherit;color:var(--ink);min-width:0;}
+.tr-link b{font-size:14.5px;}
+.tr-link code{font-size:12px;color:var(--ink-soft);word-break:break-all;}
+.tr-link.ok{border-color:#1f8a4c;}
+@media(max-width:560px){.tr-links{grid-template-columns:minmax(0,1fr);}}
+.qr-wrap{display:grid;grid-template-columns:260px minmax(0,1fr);gap:22px;align-items:start;}
+.qr-prev{background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px;}
+.qr-prev canvas{width:100%;height:auto;display:block;}
+.qr-opts{display:flex;flex-direction:column;gap:14px;min-width:0;}
+.qr-o>span{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+.qr-o input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-size:16px;font-family:inherit;background:var(--bg);color:var(--ink);}
+.qr-chk{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:600;cursor:pointer;}
+.qr-chk input{width:18px;height:18px;accent-color:var(--accent);}
+.qr-url{font-size:12.5px;color:var(--ink-soft);word-break:break-all;}
+@media(max-width:700px){.qr-wrap{grid-template-columns:minmax(0,1fr);}.qr-prev{max-width:280px;}}
+.tr-msg{background:var(--bg-pill);border:1px dashed var(--line);border-radius:var(--radius-card);padding:28px 22px;text-align:center;color:var(--ink-soft);margin-bottom:16px;}
+.tr-msg b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px;}
+.tr-empty{color:var(--ink-soft);font-size:14px;padding:6px 0;}
+@media(max-width:900px){.tr-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}.tr-grid3{grid-template-columns:minmax(0,1fr);}}
+@media(max-width:700px){.tr-grid2{grid-template-columns:minmax(0,1fr);}.tr-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.tr-kpi b{font-size:24px;}.tr-fs{grid-template-columns:110px minmax(0,1fr) 58px;}.tr-live{margin-left:0;}}
+</style>
+<script>(function(){try{var t=localStorage.getItem("fom.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<script src="brand.js?v=2"></script>
+<script src="session.js"></script>
+<link rel="stylesheet" href="app.css?v=3">
+<style>
+/* ============ BLOG ============ */
+.bl-top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.bl-top .sp{flex:1}
+.bl-btn{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:99px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.bl-btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.bl-btn.ai{background:#5b3fd6;border-color:#5b3fd6;color:#fff}
+.bl-btn.ok{background:#1f8a4c;border-color:#1f8a4c;color:#fff}
+.bl-btn.sm{padding:6px 12px;font-size:12.5px}
+.bl-btn[disabled]{opacity:.5;pointer-events:none}
+.bl-btn[hidden],.bl-tools [hidden]{display:none}
+.bl-setup{background:#fff4e0;color:#5c3d00;border-radius:16px;padding:14px 16px;font-size:14px;line-height:1.55;margin-bottom:16px}
+html[data-theme=dark] .bl-setup{background:#3a2c12;color:#f3dfa6}
+.bl-setup>b{display:block;font-size:15px;margin-bottom:4px}
+.bl-setup ol{margin:6px 0 0 20px}
+.bl-setup details{margin-top:8px}
+.bl-setup summary{cursor:pointer;font-weight:700}
+.bl-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.bl-card{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.bl-card h3{font-size:15.5px;font-weight:800;line-height:1.3}
+.bl-card p{font-size:13.5px;color:var(--ink-soft);line-height:1.45}
+.bl-card .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.bl-chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;border-radius:99px;padding:3px 9px;background:var(--bg-pill);border:1px solid var(--line);color:var(--ink-soft);align-self:flex-start}
+.bl-chip.live{background:#1f8a4c;color:#fff;border-color:#1f8a4c}
+.bl-chip.wr{background:#efeaff;color:#4a32b5;border-color:#d6cdfa}
+.bl-chip.kw{background:#e9f0fb;color:#02367B;border-color:#c9daf3}
+.bl-post{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.bl-post:first-child{border-top:0}
+.bl-post .im{width:72px;height:54px;border-radius:10px;background:var(--bg) center/cover no-repeat;border:1px solid var(--line)}
+.bl-post b{display:block;font-size:15px;line-height:1.3}
+.bl-post small{color:var(--ink-soft);font-size:12.5px}
+.bl-post .r{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.bl-dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;margin-right:4px;background:#9a9a96}
+.bl-dot.g{background:#1f8a4c}.bl-dot.o{background:#e0a100}.bl-dot.r{background:#c0392b}
+/* editor */
+.bl-ed{position:fixed;inset:0;z-index:2500;background:var(--bg);overflow:auto;display:none}
+.bl-ed.on{display:block}
+.bl-ed-bar{position:sticky;top:0;z-index:3;background:var(--bg-pill);border-bottom:1px solid var(--line);padding:10px var(--gutter);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bl-ed-bar .st{font-size:12.5px;color:var(--ink-soft);font-weight:700}
+.bl-ed-bar .sp{flex:1}
+.bl-ed-in{max-width:1320px;margin:0 auto;padding:18px var(--gutter) 80px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px}
+.bl-f{display:block;margin-bottom:12px}
+.bl-f>span{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px}
+.bl-f>span i{font-style:normal;text-transform:none;letter-spacing:0;font-weight:700}
+.bl-f input,.bl-f textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font:15px/1.5 inherit;font-family:inherit;background:var(--bg-pill);color:var(--ink)}
+.bl-f textarea{resize:vertical}
+.bl-f input:focus,.bl-f textarea:focus{outline:2px solid var(--accent);outline-offset:0}
+#bBody{min-height:420px;font-size:15.5px;line-height:1.6}
+.bl-tools{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.bl-tools button{border:1px solid var(--line);background:var(--bg-pill);color:var(--ink);border-radius:8px;padding:5px 10px;font:700 13px inherit;font-family:inherit;cursor:pointer}
+.bl-ph{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.bl-ph .p{background:var(--bg-pill);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.bl-ph .p.cv{outline:3px solid var(--accent)}
+.bl-ph .p .im{aspect-ratio:4/3;background:var(--bg) center/cover no-repeat;position:relative}
+.bl-ph .p .im b{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.65);color:#fff;font-size:11.5px;border-radius:99px;padding:2px 8px}
+.bl-ph .p input{border:0;border-top:1px solid var(--line);padding:7px 8px;font:12.5px inherit;font-family:inherit;background:transparent;color:var(--ink);width:100%}
+.bl-ph .p .a{display:flex;gap:4px;padding:6px;flex-wrap:wrap}
+.bl-ph .p .a button{flex:1;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:4px 6px;font:700 11.5px inherit;font-family:inherit;cursor:pointer;white-space:nowrap}
+.bl-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.bl-box{background:var(--bg-pill);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.bl-box h4{font-size:14px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.bl-chk{list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13.5px;line-height:1.4}
+.bl-chk li{display:flex;gap:8px}
+.bl-chk li .bl-dot{flex-shrink:0;margin-top:4px}
+.bl-score{font-size:12px;font-weight:800;border-radius:99px;padding:3px 9px;color:#fff;margin-left:auto}
+.bl-prev{font-size:15.5px;line-height:1.65;max-height:none}
+.bl-prev h1{font-size:26px;line-height:1.15;margin-bottom:8px;font-weight:800}
+.bl-prev h2{font-size:20px;margin:20px 0 8px;font-weight:800}
+.bl-prev h3{font-size:17px;margin:16px 0 6px}
+.bl-prev p{margin:0 0 12px}
+.bl-prev ul,.bl-prev ol{margin:0 0 12px 20px}
+.bl-prev figure{margin:14px 0}
+.bl-prev figure img{width:100%;border-radius:12px}
+.bl-prev figcaption{font-size:12px;color:var(--ink-soft);text-align:center;margin-top:4px}
+.bl-prev a{color:var(--accent);text-decoration:underline}
+.bl-g{font-size:13px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;color:#202124;font-family:Arial,sans-serif}
+.bl-g .u{color:#1a0dab;font-size:17px;line-height:1.3;margin:2px 0}
+.bl-g .d{color:#4d5156;font-size:13px}
+.bl-g .s{color:#006621;font-size:12px}
+.bl-consent{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;background:#fff8e6;border:1px dashed #e6c35c;border-radius:12px;padding:10px 12px;margin-bottom:12px;color:#5c4400}
+html[data-theme=dark] .bl-consent{background:#3a3016;color:#f3dfa6}
+/* small sheet (photo picker, shoot notes) */
+.bl-sheet{position:fixed;inset:0;z-index:2700;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.bl-sheet>div{background:var(--bg-pill);border-radius:20px;max-width:780px;width:100%;max-height:90vh;overflow:auto;padding:20px}
+.bl-sheet h3{font-size:19px;font-weight:800;margin-bottom:6px}
+.bl-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin:12px 0}
+.bl-pick button{aspect-ratio:1;border:0;border-radius:10px;background:var(--bg) center/cover no-repeat;cursor:pointer;position:relative;outline:0}
+.bl-pick button.on{outline:3px solid var(--accent);outline-offset:-3px}
+.bl-pick button.on:after{content:'✓';position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:13px}
+.bl-busy{position:fixed;inset:0;z-index:2900;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;text-align:center;padding:20px}
+.bl-busy span{display:block;font-size:13px;font-weight:500;opacity:.85;margin-top:6px}
+@media(max-width:980px){.bl-ed-in{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.bl-post{grid-template-columns:56px minmax(0,1fr)}.bl-post .im{width:56px;height:44px}.bl-post .r{grid-column:1/-1;justify-content:flex-start}}
+
+</style>
+</head>
+<body>
+
+<div class="fom-splash" id="authCheck"><div class="in"><b>FOM STUDIOS</b><p>Checking session…</p></div></div>
+<script>setTimeout(function(){var a=document.getElementById("authCheck");if(a)a.style.display="none";},8000);</script>
+
+
+<!-- LOGIN GATE -->
+<div class="login-gate" id="loginGate">
+    <div class="login-card">
+        <span class="brand-mark">FOM STUDIOS</span>
+        <p class="lg-sub">Admin sign in</p>
+        <input type="email" id="lgEmail" placeholder="Email" autocomplete="username">
+        <input type="password" id="lgPass" placeholder="Password" autocomplete="current-password">
+        <button class="btn block" id="lgBtn">Log in</button>
+        <p class="lg-err" id="lgErr"></p>
+    </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <button class="close-menu" id="closeMenu" aria-label="Close">&times;</button>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="database.html">Database</a></li>
+        <li><a href="workflow.html">Workflow</a></li>
+        <li><a href="calculator.html">Calculator</a></li>
+        <li><a href="email.html">Email</a></li>
+        <li><a href="contract.html">Contract</a></li>
+        <li><a href="reviews.html">Reviews</a></li>
+        <li><a href="website.html">Website</a></li>
+    </ul>
+    <div class="menu-media"><img src="assets/mascot.png" alt="FOM Studios mascot"></div>
+</div>
+
+<div class="nav-shell">
+    <nav class="pill">
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span></button>
+        <a href="dashboard.html" class="brand-mark">FOM STUDIOS</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="database.html">Database</a></li>
+                <li><a href="workflow.html">Workflow</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
+                <li><a href="email.html">Email</a></li>
+                <li><a href="contract.html">Contract</a></li>
+                <li><a href="reviews.html">Reviews</a></li>
+                <li><a href="website.html">Website</a></li>
+            </ul>
+            <button class="nav-cta" id="logoutBtn" style="display:none;">Log out</button>
+        </div>
+    </nav>
+</div>
+
+
+<div class="page wrap">
+    <div class="page-head">
+        <span class="eyebrow">Website</span>
+        <h1>Blog</h1>
+        <p id="blIntro">Write posts for your website with help from Claude, check them like Yoast does, and send them live in one tap.</p>
+    </div>
+    <div id="blSetup"></div>
+
+    <section class="tr-card" id="blShootsCard">
+        <h2>📸 Blog about your shoots</h2>
+        <p class="tr-sub">Shoots from the last 3 months that have a gallery and no blog post yet. A real shoot with real photos is the best post you can write.</p>
+        <div class="bl-cards" id="blShoots"></div>
+    </section>
+
+    <section class="tr-card">
+        <h2>🔥 Ideas for this week</h2>
+        <p class="tr-sub" id="blIdeasSub">Claude looks at what's trending and what's coming up in Joburg every Monday, and suggests posts people are searching for.</p>
+        <div class="bl-cards" id="blIdeas"></div>
+    </section>
+
+    <section class="tr-card">
+        <div class="bl-top"><h2 style="margin:0">✍️ Your posts</h2><span class="sp"></span><a class="bl-btn sm" id="blView" target="_blank" rel="noopener">View blog ↗</a><button type="button" class="bl-btn pri" id="blNew">+ New post</button></div>
+        <div id="blPosts"></div>
+    </section>
+</div>
+
+<!-- editor -->
+<div class="bl-ed" id="blEd" role="dialog" aria-modal="true" aria-label="Edit blog post">
+  <div class="bl-ed-bar">
+    <button type="button" class="bl-btn sm" id="eClose">← Back</button>
+    <span class="st" id="eSt">Saved</span>
+    <span class="sp"></span>
+    <button type="button" class="bl-btn sm ai" id="eAI" title="Claude writes the post from your notes and photos">✨ Write it for me</button>
+    <button type="button" class="bl-btn sm ai" id="eFix" title="Claude fixes the red and orange checks without changing your facts">✨ Fix SEO</button>
+    <button type="button" class="bl-btn sm" id="ePrev">👁 Preview page</button>
+    <button type="button" class="bl-btn sm" id="eUnpub" hidden>Take offline</button>
+    <button type="button" class="bl-btn sm pri" id="ePub">🚀 Publish</button>
+  </div>
+  <div class="bl-ed-in">
+    <div>
+      <label class="bl-f"><span>Notes for Claude <i>facts only: what, where, when, highlights</i></span><textarea id="bNotes" rows="3" placeholder="e.g. 947 Cycle Challenge, Sunday 15 Nov, start at Riversands. We shot the Hyde Park Falcons riders at the start and the finish. Super hot day, great vibe."></textarea></label>
+      <label class="bl-f"><span>Focus keyword <i>what people type into Google</i></span><input id="bKw" placeholder="e.g. 947 Cycle Challenge photos"></label>
+      <label class="bl-f"><span>Title <i id="bTitleN"></i></span><input id="bTitle" placeholder="Post title"></label>
+      <label class="bl-f"><span>Web address <i id="bUrl"></i></span><input id="bSlug" placeholder="short-words-with-hyphens"></label>
+      <label class="bl-f"><span>Meta description <i id="bMetaN"></i></span><textarea id="bMeta" rows="2" placeholder="The 1 to 2 lines Google shows under the title"></textarea></label>
+      <label class="bl-f"><span>Intro for the blog list <i>1 to 2 sentences</i></span><textarea id="bEx" rows="2"></textarea></label>
+      <div class="bl-f"><span>Photos <i>first ticked as cover · tap Insert to place it in the text</i></span>
+        <div class="bl-ph" id="bPh"></div>
+        <div class="bl-tools"><button type="button" id="bAddUp">⬆ Upload photos</button><button type="button" id="bAddGal" hidden>🖼 From the shoot gallery</button><input type="file" id="bFile" accept="image/*" multiple hidden></div>
+      </div>
+      <label class="bl-consent" id="bConsentRow" hidden><input type="checkbox" id="bConsent"> <span>The client is happy for these photos to be shared on the blog.</span></label>
+      <div class="bl-f"><span>Post <i id="bWords"></i></span>
+        <div class="bl-tools"><button type="button" data-md="h2">H2 heading</button><button type="button" data-md="b"><b>B</b> bold</button><button type="button" data-md="ul">• list</button><button type="button" data-md="link">🔗 link</button><button type="button" data-md="book">📅 booking link</button></div>
+        <textarea id="bBody" placeholder="Write here. ## makes a heading, **bold**, - a list, [text](/prices.html) a link, [[photo:1]] places photo 1."></textarea>
+      </div>
+    </div>
+    <div class="bl-side">
+      <div class="bl-box"><h4>Google preview</h4><div class="bl-g" id="bG"></div></div>
+      <div class="bl-box"><h4>SEO <span class="bl-score" id="bSeoS"></span></h4><ul class="bl-chk" id="bSeo"></ul></div>
+      <div class="bl-box"><h4>Readability <span class="bl-score" id="bReadS"></span></h4><ul class="bl-chk" id="bRead"></ul></div>
+      <div class="bl-box"><h4>Preview</h4><div class="bl-prev" id="bPrev"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script>
+/* ============================================================
+   BLOG (24 Nov 2026), per business (FOM: fomstudios.co.za/blog/, Shot by A: fomstudios.co.za/shotbya/blog/)
+   Posts: Firestore blogPosts (admin only) { biz, title, keyword, slug, metaDesc, excerpt, body (simple markdown),
+     notes, photos:[{n, alt}], status: draft | writing | live, liveSlug, liveImgs, orderId, shoot, requestId, consent,
+     createdAt, updatedAt, publishedAt }. Photos live in R2 blog/<biz>/<post id>/<n> until published.
+   Publish: the gallery Worker (/admin/blog-publish) commits the page, its photos, the blog list and the sitemap to
+     FOMStudios/portfolio in one go, built from blog/_post.html and blog/_list.html on the site (made by
+     portfolio/_tools/make_blog_templates.py).
+   Writing help: "Write it for me" and "Fix SEO" (/admin/blog-ai, Claude API key on the Worker), "Draft by tomorrow"
+     (/admin/blog-request -> blog/requests.json; the daily Claude task writes blog/drafts.json), weekly ideas in
+     blog/ideas.json (same task, Mondays).
+   ============================================================ */
+const $ = id => document.getElementById(id);
+let toastT; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3200); }
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const BZ = window.FOM_BIZ, BIZ = BZ.id === 'sba' ? 'sba' : 'fom';
+const WORKER = 'https://fom-gallery.cold-moon-d65c.workers.dev';
+const SITE = BIZ === 'sba' ? 'https://www.fomstudios.co.za/shotbya/' : 'https://www.fomstudios.co.za/';
+const PRE = BIZ === 'sba' ? 'shotbya/blog/' : 'blog/';
+const BRAND = BIZ === 'sba' ? 'Shot by A Photography' : 'FOM Studios';
+let AUTH, DB, POSTS = [], ORDERS = [], IDEAS = [], CUR = null, SAVE_T = 0, SETUP = null;
+
+const today = () => { const d = new Date(Date.now() + 2*3600e3); return d.toISOString().slice(0,10); };
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const nice = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || '')); return m ? (+m[3]) + ' ' + MON[+m[2] - 1] + ' ' + m[1] : ''; };
+const slugify = s => String(s||'').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60).replace(/-+$/,'');
+const rid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const noDash = s => String(s||'').replace(/\s*—\s*/g, ', ').replace(/–/g, ' to ');
+async function tok(){ return 'Bearer ' + await AUTH.currentUser.getIdToken(); }
+async function api(path, body){
+  const r = await fetch(WORKER + path, { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:await tok() }, body:JSON.stringify(Object.assign({ biz:BIZ }, body || {})) });
+  const j = await r.json().catch(() => ({}));
+  if(!r.ok) { const e = new Error(j.msg || j.error || ('Error ' + r.status)); e.code = j.error; throw e; }
+  return j;
+}
+function busy(t, sub){ let b = $('blBusy'); if(!t){ if(b) b.remove(); return; } if(!b){ b = document.createElement('div'); b.id = 'blBusy'; b.className = 'bl-busy'; document.body.appendChild(b); } b.innerHTML = esc(t) + (sub ? '<span>' + esc(sub) + '</span>' : ''); }
+const imgDir = p => 'blog/' + BIZ + '/' + p.id + '/';
+const imgUrl = (p, ph) => WORKER + '/file?g=' + encodeURIComponent(imgDir(p)) + '&n=' + encodeURIComponent(ph.n);
+
+/* ---------- simple markdown -> HTML (used for the preview and the live page) ---------- */
+function inline(t){
+  return esc(t)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*(?!\s)(.+?)\*/g, '$1<em>$2</em>')
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, txt, href) => {
+      const h = href.replace(/&amp;/g, '&');
+      if(!/^(https?:\/\/|\/|#|mailto:|tel:)/.test(h) && !/^[\w\-\/.]+(\.html)?([#?].*)?$/.test(h)) return txt;
+      const ext = /^https?:\/\//.test(h) && !/fomstudios\.co\.za/.test(h);
+      const rel = h.replace(/^\/shotbya\//, BIZ === 'sba' ? '' : '/shotbya/').replace(/^\//, BIZ === 'sba' ? '../' : '');
+      return '<a href="' + esc(ext ? h : rel) + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + '>' + txt + '</a>';
+    });
+}
+function md(src, photo){
+  const out = [], lines = String(src || '').replace(/\r/g,'').split('\n'); let para = [], list = null;
+  const flushP = () => { if(para.length){ out.push('<p>' + inline(para.join(' ')) + '</p>'); para = []; } };
+  const flushL = () => { if(list){ out.push('<' + list.t + '>' + list.items.map(i => '<li>' + inline(i) + '</li>').join('') + '</' + list.t + '>'); list = null; } };
+  for(const raw of lines){
+    const l = raw.trim(); let m;
+    if(!l){ flushP(); flushL(); continue; }
+    if((m = /^\[\[photo:(\d+)\]\]$/.exec(l))){ flushP(); flushL(); out.push(photo(+m[1]) || ''); continue; }
+    if((m = /^(#{2,3})\s+(.+)$/.exec(l))){ flushP(); flushL(); out.push('<h' + m[1].length + '>' + inline(m[2]) + '</h' + m[1].length + '>'); continue; }
+    if((m = /^#\s+(.+)$/.exec(l))){ flushP(); flushL(); out.push('<h2>' + inline(m[1]) + '</h2>'); continue; }
+    if((m = /^>\s?(.*)$/.exec(l))){ flushP(); flushL(); out.push('<blockquote>' + inline(m[1]) + '</blockquote>'); continue; }
+    if((m = /^[-*]\s+(.+)$/.exec(l))){ flushP(); if(!list || list.t !== 'ul'){ flushL(); list = { t:'ul', items:[] }; } list.items.push(m[1]); continue; }
+    if((m = /^\d+[.)]\s+(.+)$/.exec(l))){ flushP(); if(!list || list.t !== 'ol'){ flushL(); list = { t:'ol', items:[] }; } list.items.push(m[1]); continue; }
+    flushL(); para.push(l);
+  }
+  flushP(); flushL(); return out.join('\n');
+}
+const plain = s => String(s||'').replace(/\[\[photo:\d+\]\]/g,' ').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1').replace(/[#*>_`]/g,' ');
+const words = s => (plain(s).match(/[A-Za-z0-9À-ɏ'’]+/g) || []);
+const lc = s => String(s||'').toLowerCase();
+
+/* ---------- Yoast-style checks ---------- */
+function checks(p){
+  const seo = [], read = [], kw = lc(p.keyword).trim(), body = p.body || '', w = words(body), wc = w.length;
+  const add = (arr, s, t) => arr.push({ s, t });
+  const has = t => kw && lc(plain(t)).includes(kw);
+  const kwWords = kw ? kw.split(/\s+/).filter(Boolean) : [];
+  const hasAll = t => kw && kwWords.every(x => lc(t).includes(x.replace(/[^a-z0-9]/g,'')));
+  if(!kw) add(seo, 'r', 'Add a focus keyword: the words people would type into Google to find this post.');
+  else {
+    if(kwWords.length > 5) add(seo, 'o', 'Your keyword is long. 2 to 4 words usually rank better.');
+    const tl = (p.title || '').length;
+    add(seo, has(p.title) ? (lc(p.title).indexOf(kw) <= 15 ? 'g' : 'o') : 'r', has(p.title) ? (lc(p.title).indexOf(kw) <= 15 ? 'Keyword is at the start of the title.' : 'Keyword is in the title. Moving it nearer the start helps.') : 'Put the keyword in the title.');
+    const first = (body.split(/\n\s*\n/).find(x => x.trim() && !/^\s*(#|\[\[)/.test(x)) || '');
+    add(seo, has(first) ? 'g' : 'r', has(first) ? 'Keyword is in the first paragraph.' : 'Use the keyword in your first paragraph.');
+    add(seo, has(p.metaDesc) ? 'g' : 'r', has(p.metaDesc) ? 'Keyword is in the meta description.' : 'Use the keyword in the meta description.');
+    add(seo, hasAll(String(p.slug||'').replace(/-/g,'')) || kwWords.every(x => String(p.slug||'').includes(slugify(x))) ? 'g' : 'o', kwWords.every(x => String(p.slug||'').includes(slugify(x))) ? 'Keyword is in the web address.' : 'Put the keyword in the web address.');
+    const subs = body.split('\n').filter(l => /^#{2,3}\s/.test(l.trim()));
+    add(seo, subs.some(has) ? 'g' : subs.length ? 'o' : 'r', subs.some(has) ? 'Keyword is in a subheading.' : 'Use the keyword (or something close) in at least one ## subheading.');
+    let n = 0; const tx = ' ' + lc(plain(body)).replace(/\s+/g,' ') + ' '; let i = -1; while((i = tx.indexOf(kw, i + 1)) >= 0) n++;
+    const den = wc ? n * kwWords.length / wc * 100 : 0;
+    add(seo, den >= 0.5 && den <= 2.5 ? 'g' : den > 2.5 ? 'r' : 'o', 'Keyword used ' + n + ' time' + (n === 1 ? '' : 's') + ' (' + den.toFixed(1) + '%). ' + (den > 2.5 ? 'That is too often and reads spammy.' : den < 0.5 ? 'Use it a few more times, naturally.' : 'Good.'));
+    add(seo, tl >= 35 && tl <= 60 ? 'g' : tl ? 'o' : 'r', tl ? 'Title is ' + tl + ' characters' + (tl > 60 ? ': Google cuts it after about 60.' : tl < 35 ? ': a bit short, add a detail.' : '.') : 'Add a title.');
+  }
+  const ml = (p.metaDesc || '').length;
+  add(seo, ml >= 120 && ml <= 160 ? 'g' : ml ? 'o' : 'r', ml ? 'Meta description is ' + ml + ' characters' + (ml > 160 ? ': too long, Google cuts it.' : ml < 120 ? ': a bit short, aim for 120 to 155.' : '.') : 'Write a meta description (120 to 155 characters).');
+  add(seo, wc >= 600 ? 'g' : wc >= 300 ? 'o' : 'r', wc + ' words. ' + (wc >= 600 ? 'Good length.' : 'Aim for at least 600 words.'));
+  const ph = p.photos || [], noAlt = ph.filter(x => !String(x.alt||'').trim()).length;
+  add(seo, !ph.length ? 'r' : noAlt ? 'o' : (kw && !ph.some(x => lc(x.alt).includes(kw.split(' ')[0])) ? 'o' : 'g'), !ph.length ? 'Add at least one photo.' : noAlt ? noAlt + ' photo' + (noAlt === 1 ? ' has' : 's have') + ' no description (alt text).' : (kw && !ph.some(x => lc(x.alt).includes(kw.split(' ')[0])) ? 'Use the keyword in one photo description.' : 'Photos have descriptions.'));
+  const links = (body.match(/\]\(([^)]+)\)/g) || []), inl = links.filter(l => !/https?:\/\//.test(l) || /fomstudios\.co\.za/.test(l));
+  add(seo, inl.length ? 'g' : 'o', inl.length ? 'Links to your own pages: ' + inl.length + '.' : 'Link to one of your pages (prices, gallery or booking).');
+  if(p.slug && POSTS.some(x => x.id !== p.id && x.slug === p.slug)) add(seo, 'r', 'Another post already uses this web address.');
+  // readability
+  const sents = plain(body).replace(/\n+/g,' ').split(/(?<=[.!?])\s+/).map(s => words(s).length).filter(Boolean);
+  const longS = sents.filter(n => n > 20).length, pct = sents.length ? Math.round(longS / sents.length * 100) : 0;
+  add(read, pct <= 25 ? 'g' : pct <= 35 ? 'o' : 'r', pct + '% of sentences are longer than 20 words. ' + (pct <= 25 ? 'Good.' : 'Split some up (aim for under 25%).'));
+  const paras = body.split(/\n\s*\n/).filter(x => x.trim() && !/^\s*(#|\[\[|-|\d+\.)/.test(x.trim())), bigP = paras.filter(x => words(x).length > 150).length;
+  add(read, bigP ? 'o' : 'g', bigP ? bigP + ' paragraph' + (bigP === 1 ? ' is' : 's are') + ' over 150 words. Break them up.' : 'Paragraphs are a nice length.');
+  let run = 0, maxRun = 0; body.split('\n').forEach(l => { if(/^#{2,3}\s/.test(l.trim())) run = 0; else { run += words(l).length; maxRun = Math.max(maxRun, run); } });
+  add(read, wc < 300 || maxRun <= 300 ? 'g' : 'o', maxRun > 300 && wc >= 300 ? 'One part runs ' + maxRun + ' words without a subheading. Add a ## heading.' : 'Subheadings are well spread.');
+  const dashes = /[—–]/.test([p.title, p.metaDesc, p.excerpt, body].join(' '));
+  add(read, dashes ? 'r' : 'g', dashes ? 'There are long dashes in the text. Publishing removes them.' : 'No long dashes.');
+  const passive = (plain(body).match(/\b(was|were|is|are|been|being|be)\s+\w+ed\b/gi) || []).length, pp = sents.length ? Math.round(passive / sents.length * 100) : 0;
+  add(read, pp <= 10 ? 'g' : 'o', pp <= 10 ? 'Mostly active voice.' : pp + '% passive voice. Say who did what ("we shot", not "was shot").');
+  return { seo, read };
+}
+const scoreOf = arr => { const g = arr.filter(x => x.s === 'g').length, r = arr.filter(x => x.s === 'r').length; return r ? 'r' : g >= arr.length * 0.75 ? 'g' : 'o'; };
+const SCORE = { g:['Good','#1f8a4c'], o:['OK','#e0a100'], r:['Needs work','#c0392b'] };
+
+/* ---------- photos: shrink to 1600 px in the browser, keep in R2 until publish ---------- */
+async function shrinkBlob(blob, max, q){
+  const bmp = await createImageBitmap(blob, { imageOrientation:'from-image' });
+  const s = Math.min(1, max / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
+  c.width = Math.round(bmp.width * s); c.height = Math.round(bmp.height * s);
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0,0,c.width,c.height); x.imageSmoothingQuality = 'high'; x.drawImage(bmp, 0, 0, c.width, c.height); bmp.close && bmp.close();
+  const b = await new Promise(r => c.toBlob(r, 'image/jpeg', q)); c.width = c.height = 0; return b;
+}
+async function addPhoto(p, blob, alt){
+  const small = await shrinkBlob(blob, 1600, 0.82), n = 'p' + rid() + '.jpg';
+  const r = await fetch(WORKER + '/admin/upload?' + new URLSearchParams({ n, f:'blog/' + BIZ + '/' + p.id }), { method:'POST', headers:{ Authorization:await tok(), 'Content-Type':'image/jpeg' }, body:small });
+  if(!r.ok) throw new Error('Photo upload failed (' + r.status + ')');
+  p.photos = (p.photos || []).concat([{ n, alt:alt || '' }]);
+}
+
+/* ---------- page building (live page and preview) ---------- */
+async function template(kind){
+  const r = await fetch(SITE + 'blog/_' + kind + '.html?v=' + Date.now(), { cache:'no-store' });
+  if(!r.ok) throw new Error('Could not load the blog template from the website (' + r.status + ').');
+  return r.text();
+}
+const pageUrl = slug => SITE + 'blog/' + slug + '.html';
+const liveImg = (slug, k) => 'blog/img/' + slug + '-' + (k + 1) + '.jpg';
+function readMins(p){ return Math.max(1, Math.round(words(p.body).length / 200)); }
+function cardHTML(p, img){ return '<a class="bl-card" href="blog/' + esc(p.liveSlug || p.slug) + '.html">' + (img ? '<span class="im"><img src="' + esc(img) + '" alt="' + esc((p.photos[p.cover||0]||{}).alt || p.title) + '" loading="lazy"></span>' : '') + '<span class="tx"><small>' + esc(nice(p.publishedAt || today())) + ' · ' + readMins(p) + ' min read</small><b>' + esc(p.title) + '</b><span>' + esc(p.excerpt || '') + '</span></span></a>'; }
+const coverIdx = p => Math.min(Math.max(0, +p.cover || 0), Math.max(0, (p.photos||[]).length - 1));
+function ctaHTML(){
+  return BIZ === 'sba'
+    ? '<aside class="bl-cta"><h2>Want photos like these?</h2><p>Tell me about your event, birthday or family shoot and I will send you the details.</p><div class="bl-btns"><a class="bl-btn" href="contact.html">Book a shoot</a><a class="bl-btn line" href="https://wa.me/27844456657" target="_blank" rel="noopener">WhatsApp me</a></div></aside>'
+    : '<aside class="bl-cta"><h2>Want frames like these?</h2><p>Tell us about your event, team, car or brand and we will send you a quote.</p><div class="bl-btns"><a class="bl-btn" href="contact.html" data-open-booking>Book a shoot</a><a class="bl-btn line" href="prices.html">See prices</a></div></aside>';
+}
+/* mode 'live': photo paths on the site; 'preview': R2 copies, and a <base> that points at the site */
+function postMain(p, mode){
+  const slug = p.slug, ph = p.photos || [], cv = coverIdx(p);
+  const src = k => mode === 'live' ? liveImg(slug, k) : imgUrl(p, ph[k]);
+  const used = new Set();
+  const fig = k => { const i = k - 1; if(!ph[i]) return ''; used.add(i); return '<figure><img src="' + esc(src(i)) + '" alt="' + esc(noDash(ph[i].alt)) + '" loading="lazy" decoding="async"></figure>'; };
+  let body = md(noDash(p.body), fig);
+  if(ph.length && !used.size && ph.length > 1) body += '\n' + ph.map((x, i) => i === cv ? '' : fig(i + 1)).join('\n');
+  const more = POSTS.filter(x => x.id !== p.id && x.status === 'live').sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt))).slice(0, 3);
+  return '<div class="bl-in"><article>\n<a class="bl-back" href="blog/">&larr; All stories</a>\n<span class="bl-meta">' + esc(nice(p.publishedAt || today())) + ' &middot; ' + readMins(p) + ' min read</span>\n<h1>' + esc(noDash(p.title)) + '</h1>\n' +
+    (p.excerpt ? '<p class="bl-lede">' + esc(noDash(p.excerpt)) + '</p>\n' : '') +
+    (ph[cv] && !used.has(cv) ? '<figure class="bl-cover"><img src="' + esc(src(cv)) + '" alt="' + esc(noDash(ph[cv].alt)) + '" fetchpriority="high" decoding="async"></figure>\n' : '') +
+    '<div class="bl-body">\n' + body + '\n</div>\n' + ctaHTML() + '\n' +
+    (more.length ? '<nav class="bl-more"><h2>More stories</h2><div class="bl-grid">' + more.map(x => cardHTML(x, x.liveImgs && x.liveImgs.length ? x.liveImgs[coverIdx(x)] || x.liveImgs[0] : '')).join('') + '</div></nav>\n' : '') +
+    '</article></div>';
+}
+function postHead(p, mode){
+  const url = pageUrl(p.slug), ph = p.photos || [], cv = coverIdx(p);
+  const img = ph[cv] ? (mode === 'live' ? SITE + liveImg(p.slug, cv) : imgUrl(p, ph[cv])) : (BIZ === 'sba' ? SITE + 'sba-icon-512.png' : SITE + 'assets/hero.jpg');
+  const t = noDash(p.title), title = t.length + BRAND.length + 3 <= 65 ? t + ' | ' + BRAND : t, d = noDash(p.metaDesc);
+  const ld = { '@context':'https://schema.org', '@type':'BlogPosting', headline:t, description:d, image:img, datePublished:p.publishedAt || today(), dateModified:today(),
+    author: BIZ === 'sba' ? { '@type':'Person', name:'Amarah', url:SITE } : { '@type':'Organization', name:'FOM Studios', url:SITE },
+    publisher:{ '@type':'Organization', name:BRAND, logo:{ '@type':'ImageObject', url: BIZ === 'sba' ? SITE + 'sba-icon-512.png' : SITE + 'assets/mascot-head-color.png' } },
+    mainEntityOfPage:url, keywords:p.keyword || undefined };
+  return '<title>' + esc(title) + '</title>\n<meta name="description" content="' + esc(d) + '">\n<link rel="canonical" href="' + esc(url) + '">\n' +
+    '<meta property="og:type" content="article">\n<meta property="og:site_name" content="' + esc(BRAND) + '">\n<meta property="og:title" content="' + esc(t) + '">\n<meta property="og:description" content="' + esc(d) + '">\n<meta property="og:image" content="' + esc(img) + '">\n<meta property="og:url" content="' + esc(url) + '">\n' +
+    '<meta property="article:published_time" content="' + esc(p.publishedAt || today()) + '">\n<meta name="twitter:card" content="summary_large_image">\n<meta name="twitter:title" content="' + esc(t) + '">\n<meta name="twitter:description" content="' + esc(d) + '">\n<meta name="twitter:image" content="' + esc(img) + '">\n' +
+    '<script type="application/ld+json">' + JSON.stringify(ld).replace(/</g, '\\u003c') + '<\/script>';
+}
+function listPage(tpl, live){
+  live = live.slice().sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
+  const head = BIZ === 'sba'
+    ? '<title>Blog | Shot by A Photography</title>\n<meta name="description" content="Stories and tips from Shot by A shoots: events, birthdays, corporate and wellness days, and family portraits in Johannesburg.">\n<link rel="canonical" href="' + SITE + 'blog/">\n<meta property="og:title" content="Blog | Shot by A Photography">\n<meta property="og:url" content="' + SITE + 'blog/">'
+    : '<title>Blog | FOM Studios, Johannesburg Photographer</title>\n<meta name="description" content="Stories, tips and behind the scenes from FOM Studios shoots around Johannesburg: events, sport, cars, portraits and brands.">\n<link rel="canonical" href="' + SITE + 'blog/">\n<meta property="og:title" content="Blog | FOM Studios">\n<meta property="og:url" content="' + SITE + 'blog/">';
+  const top = BIZ === 'sba'
+    ? '<section class="bl-list-head"><span class="label">Blog</span><h1>Stories</h1><p class="bl-lede">Little stories from my shoots, plus tips for yours.</p></section>'
+    : '<section class="bl-list-head"><span class="eyebrow">Blog</span><h1>Stories from our shoots</h1><p class="bl-lede">Behind the scenes, tips and highlights from shoots around Joburg.</p></section>';
+  const grid = live.length ? '<div class="bl-grid">' + live.map(x => cardHTML(x, x.liveImgs && x.liveImgs.length ? x.liveImgs[coverIdx(x)] || x.liveImgs[0] : '')).join('') + '</div>' : '<div class="bl-empty">The first stories are on their way.</div>';
+  return tpl.replace('<!--BLOG:HEAD-->', head).replace('<!--BLOG:MAIN-->', top + '\n' + grid);
+}
+
+/* ---------- saving ---------- */
+function clean(p){ const o = {}; ['biz','title','keyword','slug','metaDesc','excerpt','body','notes','photos','cover','status','liveSlug','liveImgs','orderId','shoot','requestId','consent','createdAt','updatedAt','publishedAt','fromGallery'].forEach(k => { if(p[k] !== undefined) o[k] = p[k]; }); return o; }
+async function save(p, quiet){
+  p.updatedAt = new Date().toISOString();
+  await DB.collection('blogPosts').doc(p.id).set(clean(p));
+  if(!quiet && CUR && CUR.id === p.id) $('eSt').textContent = 'Saved ' + new Date().toLocaleTimeString('en-ZA', { hour:'2-digit', minute:'2-digit' });
+}
+function queueSave(){ if(!CUR) return; $('eSt').textContent = 'Saving…'; clearTimeout(SAVE_T); SAVE_T = setTimeout(() => save(CUR).catch(e => { $('eSt').textContent = 'Not saved: ' + e.message; }), 900); }
+function newPost(extra){ const p = Object.assign({ id: rid(), biz:BIZ, title:'', keyword:'', slug:'', metaDesc:'', excerpt:'', body:'', notes:'', photos:[], cover:0, status:'draft', createdAt:new Date().toISOString() }, extra || {}); POSTS.unshift(p); return p; }
+
+/* ---------- lists ---------- */
+function shootOrders(){
+  const cutoff = new Date(Date.now() - 92 * 864e5).toISOString().slice(0,10), t = today();
+  const done = new Set(POSTS.map(p => p.orderId).filter(Boolean));
+  return ORDERS.filter(o => (o.biz || 'fom') === BIZ && !o.test && o.galleryFolder && o.shootDate && o.shootDate >= cutoff && o.shootDate <= t && !done.has(o.id) && !o.blogPost && !o.blogSkip)
+    .sort((a, b) => String(b.shootDate).localeCompare(String(a.shootDate)));
+}
+function render(){
+  $('blView').href = SITE + 'blog/';
+  const sh = shootOrders();
+  $('blShoots').innerHTML = sh.length ? sh.slice(0, 9).map(o => '<div class="bl-card"><span class="bl-chip">' + esc(nice(o.shootDate)) + '</span><h3>' + esc(o.customer || 'Shoot') + '</h3><p>' + esc(o.product || '') + (o.notes ? ' · ' + esc(String(o.notes).slice(0, 90)) : '') + '</p><div class="acts"><button type="button" class="bl-btn sm pri" data-shoot="' + esc(o.id) + '">✍️ Blog about this</button><button type="button" class="bl-btn sm" data-noshoot="' + esc(o.id) + '">Not this one</button></div></div>').join('')
+    : '<p class="tr-sub" style="margin:0">No new shoots to blog about. Shoots show here once they have a gallery folder.</p>';
+  const ideas = IDEAS.filter(x => (x.biz || 'fom') === BIZ);
+  $('blIdeas').innerHTML = ideas.length ? ideas.map((x, i) => '<div class="bl-card">' + (x.when ? '<span class="bl-chip">' + esc(x.when) + '</span>' : '') + '<h3>' + esc(x.title) + '</h3>' + (x.keyword ? '<span class="bl-chip kw">🔎 ' + esc(x.keyword) + '</span>' : '') + '<p>' + esc(x.why || '') + '</p><div class="acts"><button type="button" class="bl-btn sm ai" data-idea="' + i + '" data-how="ai">✨ Write it now</button><button type="button" class="bl-btn sm" data-idea="' + i + '" data-how="req">🌙 Draft by tomorrow</button><button type="button" class="bl-btn sm" data-idea="' + i + '" data-how="me">Start</button></div></div>').join('')
+    : '<p class="tr-sub" style="margin:0">The first ideas arrive on Monday morning.</p>';
+  const mine = POSTS.filter(p => p.biz === BIZ).sort((a, b) => String(b.updatedAt || b.createdAt).localeCompare(String(a.updatedAt || a.createdAt)));
+  $('blPosts').innerHTML = mine.length ? mine.map(p => { const c = checks(p), s = scoreOf(c.seo.concat(c.read)), ph = (p.photos || [])[coverIdx(p)];
+    return '<div class="bl-post"><span class="im" style="' + (ph ? 'background-image:url(\'' + esc(imgUrl(p, ph)) + '\')' : '') + '"></span><div><b>' + esc(p.title || 'Untitled post') + '</b><small>' +
+      (p.status === 'live' ? '<span class="bl-chip live">Live</span> ' : p.status === 'writing' ? '<span class="bl-chip wr">Claude is writing it, ready by tomorrow</span> ' : '<span class="bl-chip">Draft</span> ') +
+      '<span class="bl-dot ' + s + '"></span>' + SCORE[s][0] + (p.keyword ? ' · ' + esc(p.keyword) : '') + (p.publishedAt ? ' · ' + esc(nice(p.publishedAt)) : '') + '</small></div><div class="r">' +
+      (p.status === 'live' ? '<a class="bl-btn sm" target="_blank" rel="noopener" href="' + esc(pageUrl(p.liveSlug || p.slug)) + '">View ↗</a>' : '') + '<button type="button" class="bl-btn sm pri" data-open="' + esc(p.id) + '">Edit</button><button type="button" class="bl-btn sm" data-del="' + esc(p.id) + '" title="Delete">🗑</button></div></div>'; }).join('')
+    : '<p class="tr-sub" style="margin:0">No posts yet. Start from a shoot or an idea above, or tap New post.</p>';
+}
+
+/* ---------- editor ---------- */
+const F = { bNotes:'notes', bKw:'keyword', bTitle:'title', bSlug:'slug', bMeta:'metaDesc', bEx:'excerpt', bBody:'body' };
+function openEd(p){
+  CUR = p; $('blEd').classList.add('on'); document.body.style.overflow = 'hidden';
+  Object.entries(F).forEach(([id, k]) => { $(id).value = p[k] || ''; });
+  $('bConsent').checked = !!p.consent; $('bAddGal').hidden = !p.orderId;
+  $('eSt').textContent = p.status === 'live' ? 'Live · edits go online when you tap Update' : p.status === 'writing' ? 'Claude is writing this one, it will be here by tomorrow' : 'Draft';
+  paintEd();
+}
+function closeEd(){ if(CUR){ clearTimeout(SAVE_T); save(CUR, true).catch(()=>{}); } CUR = null; $('blEd').classList.remove('on'); document.body.style.overflow = ''; render(); }
+function paintPhotos(){
+  const p = CUR, ph = p.photos || [], cv = coverIdx(p);
+  $('bPh').innerHTML = ph.map((x, i) => '<div class="p' + (i === cv ? ' cv' : '') + '"><div class="im" style="background-image:url(\'' + esc(imgUrl(p, x)) + '\')"><b>' + (i + 1) + (i === cv ? ' · cover' : '') + '</b></div><input data-alt="' + i + '" value="' + esc(x.alt || '') + '" placeholder="Describe the photo (alt text)"><div class="a"><button type="button" data-ins="' + i + '">Insert</button><button type="button" data-cv="' + i + '">Cover</button><button type="button" data-rm="' + i + '">Remove</button></div></div>').join('');
+  $('bConsentRow').hidden = !p.fromGallery;
+}
+function paintEd(){
+  const p = CUR; if(!p) return;
+  const c = checks(p), dot = x => '<li><span class="bl-dot ' + x.s + '"></span><span>' + esc(x.t) + '</span></li>';
+  $('bSeo').innerHTML = c.seo.map(dot).join(''); $('bRead').innerHTML = c.read.map(dot).join('');
+  [['bSeoS', c.seo], ['bReadS', c.read]].forEach(([id, arr]) => { const s = SCORE[scoreOf(arr)]; $(id).textContent = s[0]; $(id).style.background = s[1]; });
+  $('bTitleN').textContent = (p.title || '').length + ' / 60'; $('bMetaN').textContent = (p.metaDesc || '').length + ' / 155';
+  $('bUrl').textContent = (BIZ === 'sba' ? 'fomstudios.co.za/shotbya/blog/' : 'fomstudios.co.za/blog/') + (p.slug || '…') + '.html';
+  $('bWords').textContent = words(p.body).length + ' words · ' + readMins(p) + ' min read';
+  $('bG').innerHTML = '<div class="s">' + esc(SITE.replace('https://', '') + 'blog/' + (p.slug || '')) + '</div><div class="u">' + esc(noDash(p.title) || 'Your title') + '</div><div class="d">' + esc((noDash(p.metaDesc) || 'Your meta description shows here.').slice(0, 160)) + '</div>';
+  $('bPrev').innerHTML = '<h1>' + esc(noDash(p.title)) + '</h1>' + (p.excerpt ? '<p><em>' + esc(noDash(p.excerpt)) + '</em></p>' : '') + md(noDash(p.body), k => { const x = (p.photos || [])[k - 1]; return x ? '<figure><img src="' + esc(imgUrl(p, x)) + '" alt=""><figcaption>' + esc(x.alt || 'Photo ' + k) + '</figcaption></figure>' : '<p style="color:#c0392b">[photo ' + k + ' is missing]</p>'; });
+  $('ePub').textContent = p.status === 'live' ? '🚀 Update live post' : '🚀 Publish';
+  $('eUnpub').hidden = p.status !== 'live';
+  paintPhotos();
+}
+function onField(e){
+  const id = e.target.id, k = F[id]; if(!k || !CUR) return;
+  CUR[k] = e.target.value;
+  if(id === 'bTitle' && (!CUR.slug || CUR._autoSlug) && CUR.status !== 'live'){ CUR.slug = slugify(CUR.title); CUR._autoSlug = true; $('bSlug').value = CUR.slug; }
+  if(id === 'bSlug'){ CUR._autoSlug = false; }
+  paintEd(); queueSave();
+}
+function insertAt(txt){
+  const t = $('bBody'), s = t.selectionStart || t.value.length, e = t.selectionEnd || s;
+  t.value = t.value.slice(0, s) + txt + t.value.slice(e); t.focus(); t.selectionStart = t.selectionEnd = s + txt.length;
+  CUR.body = t.value; paintEd(); queueSave();
+}
+
+/* ---------- writing help ---------- */
+function applyAI(p, r){
+  if(r.title) p.title = r.title; if(r.keyword) p.keyword = r.keyword;
+  if(p.status !== 'live' && (r.slug || r.title)) p.slug = slugify(r.slug || r.title);
+  if(r.metaDesc) p.metaDesc = r.metaDesc; if(r.excerpt) p.excerpt = r.excerpt; if(r.body) p.body = r.body;
+  (r.alts || []).forEach((a, i) => { if(p.photos && p.photos[i] && !String(p.photos[i].alt || '').trim() && a) p.photos[i].alt = String(a); });
+}
+function aiInput(p){
+  const o = p.orderId ? ORDERS.find(x => x.id === p.orderId) : null;
+  return { topic: p.title || (p.shoot && p.shoot.what) || '', keyword: p.keyword, notes: p.notes, shoot: p.shoot || (o ? { what:o.customer, date:o.shootDate, product:o.product } : null), photos: (p.photos || []).map(x => ({ n:x.n, hint:x.alt || '' })) };
+}
+async function writeAI(p){
+  busy('Claude is writing your post…', 'About 20 to 40 seconds. Stay on this page.');
+  try{ const j = await api('/admin/blog-ai', Object.assign({ task:'draft' }, aiInput(p))); applyAI(p, j.post); p.status = p.status === 'live' ? 'live' : 'draft'; await save(p, true); toast('Draft ready. Check the facts, then publish.'); return true; }
+  catch(e){ if(e.code === 'no-key'){ toast('The instant writer is not set up yet. Using "Draft by tomorrow" instead.'); return requestDraft(p); } alert(e.message); return false; }
+  finally{ busy(); }
+}
+async function requestDraft(p){
+  const reqId = 'r' + rid();
+  try{ await api('/admin/blog-request', { request: Object.assign({ id:reqId }, aiInput(p)) }); p.requestId = reqId; p.status = 'writing'; await save(p, true); if(CUR === p) $('eSt').textContent = 'Claude is writing this one, it will be here by tomorrow'; toast('Asked Claude. The draft will be here by tomorrow morning.'); return true; }
+  catch(e){ alert('Could not send the request: ' + e.message); return false; }
+}
+async function fixAI(){
+  const p = CUR, c = checks(p), issues = c.seo.concat(c.read).filter(x => x.s !== 'g').map(x => x.t);
+  if(!issues.length) return toast('Everything is green already.');
+  busy('Claude is fixing the SEO…', 'Your facts stay the same.');
+  try{ const j = await api('/admin/blog-ai', { task:'improve', post:{ title:p.title, keyword:p.keyword, metaDesc:p.metaDesc, body:p.body }, issues }); applyAI(p, j.post); Object.entries(F).forEach(([id, k]) => { $(id).value = p[k] || ''; }); paintEd(); await save(p); toast('Done. Read it through before you publish.'); }
+  catch(e){ alert(e.code === 'no-key' ? 'The instant writer is not set up yet (see the setup box on the Blog page).' : e.message); }
+  finally{ busy(); }
+}
+/* drafts written overnight by the scheduled task */
+async function pullDrafts(){
+  try{
+    const r = await fetch('blog/drafts.json?d=' + Date.now(), { cache:'no-store' }); if(!r.ok) return;
+    const j = await r.json(), list = (j.drafts || []).filter(d => (d.biz || 'fom') === BIZ);
+    for(const p of POSTS.filter(x => x.status === 'writing' && x.requestId)){
+      const d = list.find(x => x.id === p.requestId); if(!d) continue;
+      applyAI(p, d); p.status = 'draft'; await save(p, true); toast('Claude finished your draft: ' + (p.title || 'new post'));
+    }
+  }catch(e){}
+}
+async function loadIdeas(){ try{ const r = await fetch('blog/ideas.json?d=' + Date.now(), { cache:'no-store' }); if(r.ok){ const j = await r.json(); IDEAS = j.ideas || []; if(j.updated) $('blIdeasSub').textContent = 'From Claude\'s weekly look at what\'s trending and coming up (updated ' + nice(j.updated) + '). Every idea comes with a keyword people are searching for.'; } }catch(e){} }
+
+/* ---------- shoot flow: notes + photos from the gallery ---------- */
+async function pickFromGallery(folder, max, already){
+  const r = await fetch(WORKER + '/list?g=' + encodeURIComponent(folder)); const j = await r.json();
+  const imgs = (j.files || []).filter(f => f.kind === 'image');
+  if(!imgs.length){ alert('No photos in this gallery yet.'); return []; }
+  return new Promise(res => {
+    const sel = new Set(), ov = document.createElement('div'); ov.className = 'bl-sheet';
+    ov.innerHTML = '<div><h3>Pick photos for the post</h3><p class="tr-sub">Choose your best ' + max + ' or fewer. The first one you tap becomes the cover.</p><div class="bl-pick">' + imgs.map((f, i) => '<button type="button" data-i="' + i + '" style="background-image:url(\'' + esc(f.th || f.web || f.url) + '\')" aria-label="' + esc(f.name) + '"></button>').join('') + '</div><div class="bl-top"><span class="tr-sub" id="pkN" style="margin:0">0 picked</span><span class="sp"></span><button type="button" class="bl-btn" data-x>Cancel</button><button type="button" class="bl-btn pri" data-ok>Use these</button></div></div>';
+    document.body.appendChild(ov);
+    const order = [];
+    ov.onclick = e => {
+      const b = e.target.closest('[data-i]');
+      if(b){ const i = +b.dataset.i; if(sel.has(i)){ sel.delete(i); order.splice(order.indexOf(i), 1); } else if(sel.size < max){ sel.add(i); order.push(i); } b.classList.toggle('on', sel.has(i)); ov.querySelector('#pkN').textContent = sel.size + ' picked'; return; }
+      if(e.target.closest('[data-x]')){ ov.remove(); res([]); }
+      if(e.target.closest('[data-ok]')){ ov.remove(); res(order.map(i => imgs[i])); }
+    };
+  });
+}
+async function addGalleryPhotos(p, folder){
+  const picks = await pickFromGallery(folder, 10 - (p.photos || []).length);
+  if(!picks.length) return;
+  let k = 0; busy('Preparing photos…', '0 of ' + picks.length);
+  try{ for(const f of picks){ const blob = await (await fetch(f.web || f.url)).blob(); await addPhoto(p, blob, ''); busy('Preparing photos…', (++k) + ' of ' + picks.length); } p.fromGallery = true; await save(p, true); }
+  catch(e){ alert(e.message); }
+  finally{ busy(); }
+}
+async function fromShoot(o){
+  const ov = document.createElement('div'); ov.className = 'bl-sheet';
+  ov.innerHTML = '<div><h3>Blog about ' + esc(o.customer || 'this shoot') + '</h3><p class="tr-sub">A few facts so the post is true and specific. Claude only uses what you write here.</p>' +
+    '<label class="bl-f"><span>What was it?</span><input id="sqWhat" value="' + esc(o.customer || '') + '" placeholder="e.g. 947 Cycle Challenge"></label>' +
+    '<label class="bl-f"><span>Where</span><input id="sqWhere" placeholder="Venue or area"></label>' +
+    '<label class="bl-f"><span>Highlights and facts</span><textarea id="sqNotes" rows="4" placeholder="Who you shot, what happened, the vibe, anything special. Names only if they agreed."></textarea></label>' +
+    '<label class="bl-f"><span>Focus keyword <i>optional, Claude picks one if empty</i></span><input id="sqKw" placeholder="e.g. 947 Cycle Challenge photographer"></label>' +
+    '<div class="bl-top"><span class="sp"></span><button type="button" class="bl-btn" data-x>Cancel</button><button type="button" class="bl-btn" data-go="me">I\'ll write it</button><button type="button" class="bl-btn" data-go="req">🌙 Draft by tomorrow</button><button type="button" class="bl-btn ai" data-go="ai">✨ Write it now</button></div><p class="tr-sub" style="margin:8px 0 0">Next you pick the photos from the gallery.</p></div>';
+  document.body.appendChild(ov);
+  ov.querySelector('#sqNotes').value = [o.product ? 'Shoot: ' + o.product : '', o.shootDate ? 'Date: ' + nice(o.shootDate) : ''].filter(Boolean).join('\n');
+  ov.onclick = async e => {
+    if(e.target.closest('[data-x]')) return ov.remove();
+    const g = e.target.closest('[data-go]'); if(!g) return;
+    const what = ov.querySelector('#sqWhat').value.trim(), where = ov.querySelector('#sqWhere').value.trim(), notes = ov.querySelector('#sqNotes').value.trim(), kw = ov.querySelector('#sqKw').value.trim();
+    ov.remove();
+    const p = newPost({ orderId:o.id, title:what, keyword:kw, notes: [what && 'Shoot: ' + what, where && 'Where: ' + where, notes].filter(Boolean).join('\n'), shoot:{ what, where, date:o.shootDate || '', product:o.product || '' } });
+    await save(p, true);
+    o.blogPost = p.id; DB.collection('orders').doc(o.id).update({ blogPost:p.id }).catch(() => {});   // the Dashboard stops suggesting it
+    await addGalleryPhotos(p, o.galleryFolder);
+    if(g.dataset.go === 'ai') await writeAI(p);
+    else if(g.dataset.go === 'req') await requestDraft(p);
+    render(); if(g.dataset.go !== 'req') openEd(p);
+  };
+}
+
+/* ---------- publish ---------- */
+async function publish(){
+  const p = CUR; if(!p) return;
+  if(p.status === 'writing') return alert('Claude is still writing this one. It will be ready by tomorrow.');
+  const need = [];
+  if(!String(p.title).trim()) need.push('a title'); if(!p.slug) need.push('a web address'); if(words(p.body).length < 120) need.push('at least a short post (120 words)');
+  if(need.length) return alert('Add ' + need.join(', ') + ' first.');
+  if(p.fromGallery && !p.consent) return alert('Tick "The client is happy for these photos to be shared" first.');
+  if(POSTS.some(x => x.id !== p.id && x.slug === p.slug)) return alert('Another post already uses this web address. Change it a little.');
+  const c = checks(p), red = c.seo.concat(c.read).filter(x => x.s === 'r');
+  if(red.length && !confirm(red.length + ' check' + (red.length === 1 ? ' is' : 's are') + ' red:\n\n- ' + red.map(x => x.t).join('\n- ') + '\n\nPublish anyway?')) return;
+  busy(p.status === 'live' ? 'Updating the live post…' : 'Publishing…', 'Sending the page, photos and blog list to your website.');
+  try{
+    p.slug = slugify(p.slug); p.title = noDash(p.title); p.metaDesc = noDash(p.metaDesc); p.excerpt = noDash(p.excerpt); p.body = noDash(p.body);
+    const first = p.status !== 'live'; if(first) p.publishedAt = today();
+    const [tp, tl] = await Promise.all([template('post'), template('list')]);
+    const imgs = (p.photos || []).map((x, k) => ({ path: PRE + 'img/' + p.slug + '-' + (k + 1) + '.jpg', r2: imgDir(p) + x.n }));
+    const was = { status:p.status, liveSlug:p.liveSlug, liveImgs:p.liveImgs };
+    p.liveImgs = imgs.map(x => x.path.slice(PRE.length - 5));   // "blog/img/..." relative to the site base
+    p.liveSlug = p.slug; p.status = 'live';
+    const page = tp.replace('<!--BLOG:HEAD-->', postHead(p, 'live')).replace('<!--BLOG:MAIN-->', postMain(p, 'live'));
+    const list = listPage(tl, POSTS.filter(x => x.status === 'live' && x.biz === BIZ));
+    const remove = [];
+    if(was.liveSlug && was.liveSlug !== p.slug){ remove.push(PRE + was.liveSlug + '.html'); (was.liveImgs || []).forEach(x => remove.push(PRE + x.replace(/^blog\//, ''))); }
+    (was.liveImgs || []).forEach(x => { const full = PRE + x.replace(/^blog\//, ''); if(!imgs.some(y => y.path === full) && !remove.includes(full)) remove.push(full); });
+    try{
+      await api('/admin/blog-publish', { files:[{ path:PRE + p.slug + '.html', text:page }, { path:PRE + 'index.html', text:list }].concat(imgs), remove,
+        sitemap:{ add:[pageUrl(p.slug), SITE + 'blog/'], remove: was.liveSlug && was.liveSlug !== p.slug ? [pageUrl(was.liveSlug)] : [] }, message:(first ? 'Blog: ' : 'Blog update: ') + p.title });
+    }catch(e){ Object.assign(p, was); if(first) delete p.publishedAt; throw e; }
+    await save(p, true); paintEd();
+    toast(first ? 'Published! It shows on your website in about a minute.' : 'Updated. Live in about a minute.');
+    if(first && confirm('Published! 🎉\n\nIt will be live in about a minute at:\n' + pageUrl(p.slug) + '\n\nOpen it now? (If it says not found, wait a minute and refresh.)')) window.open(pageUrl(p.slug), '_blank');
+  }catch(e){ alert('Could not publish: ' + e.message); }
+  finally{ busy(); }
+}
+async function unpublish(p, silent){
+  if(!silent && !confirm('Take "' + p.title + '" off the website? It stays here as a draft.')) return false;
+  busy('Taking it offline…');
+  try{
+    const tl = await template('list');
+    const rest = POSTS.filter(x => x.status === 'live' && x.biz === BIZ && x.id !== p.id);
+    await api('/admin/blog-publish', { files:[{ path:PRE + 'index.html', text:listPage(tl, rest) }], remove:[PRE + p.liveSlug + '.html'].concat((p.liveImgs || []).map(x => PRE + x.replace(/^blog\//, ''))), sitemap:{ remove:[pageUrl(p.liveSlug)] }, message:'Blog: took offline ' + p.title });
+    p.status = 'draft'; p.liveSlug = ''; p.liveImgs = []; await save(p, true); if(CUR === p) paintEd(); render(); toast('Taken offline.'); return true;
+  }catch(e){ alert('Could not take it offline: ' + e.message); return false; }
+  finally{ busy(); }
+}
+async function previewPage(){
+  const p = CUR; busy('Building the preview…');
+  try{
+    const tp = await template('post');
+    const html = tp.replace('<!--BLOG:HEAD-->', postHead(p, 'preview')).replace('<!--BLOG:MAIN-->', postMain(Object.assign({}, p, { slug:p.slug || 'preview' }), 'preview')).replace(/<base href="[^"]*">/, '<base href="' + SITE + '">');
+    const w = window.open(URL.createObjectURL(new Blob([html], { type:'text/html' })), '_blank'); if(!w) alert('Allow pop-ups to see the preview.');
+  }catch(e){ alert(e.message); }
+  finally{ busy(); }
+}
+
+/* ---------- setup status ---------- */
+async function setup(){
+  try{ SETUP = await api('/admin/blog-test', {}); }catch(e){ SETUP = null; }
+  const s = SETUP, parts = [];
+  if(s && !s.site) parts.push('<b>One step before you can publish</b>Your GitHub key (the GH_TOKEN secret) can only write to the dashboard. Let it write to the website too:<ol><li>On GitHub open your profile picture, <b>Settings</b>, <b>Developer settings</b>, <b>Personal access tokens</b>, <b>Fine-grained tokens</b>.</li><li>Open the token you made for the dashboard (the one in GH_TOKEN) and tap <b>Edit</b>.</li><li>Under <b>Repository access</b> keep "Only select repositories" and add <b>portfolio</b> next to dashboard.</li><li>Check <b>Repository permissions, Contents</b> says <b>Read and write</b>. Tap <b>Update</b>. If GitHub asks, approve it under FOMStudios, Settings, Personal access tokens, Pending requests.</li><li>Come back here and refresh. The secret in Cloudflare stays the same.</li></ol>' + (s.msg ? '<p style="margin-top:6px;font-size:12.5px">GitHub says: ' + esc(s.msg) + '</p>' : ''));
+  if(s && !s.ai) parts.push('<details><summary>Optional: switch on "Write it for me" (instant writing)</summary><ol><li>Go to <b>console.anthropic.com</b>, sign in, open <b>Billing</b> and add a small amount of credit (a post costs roughly R1 to R3).</li><li>Open <b>API keys</b>, <b>Create key</b>, name it "FOM blog" and copy it.</li><li>In Cloudflare open <b>Workers</b>, <b>fom-gallery</b>, <b>Settings</b>, <b>Variables and Secrets</b>, <b>Add</b>, type <b>Secret</b>, name <b>ANTHROPIC_API_KEY</b>, paste the key, then <b>Deploy</b>.</li><li>Never paste the key in a chat or in GitHub.</li></ol>Until then, "Draft by tomorrow" uses your daily Claude task and costs nothing extra.</details>');
+  $('blSetup').innerHTML = parts.length ? '<div class="bl-setup">' + parts.join('') + '</div>' : '';
+}
+
+/* ---------- wiring ---------- */
+function wire(){
+  $('blNew').onclick = async () => { const p = newPost(); await save(p, true); openEd(p); };
+  $('eClose').onclick = closeEd;
+  addEventListener('keydown', e => { if(e.key === 'Escape' && CUR && !document.querySelector('.bl-sheet')) closeEd(); });
+  Object.keys(F).forEach(id => $(id).addEventListener('input', onField));
+  $('bConsent').onchange = e => { CUR.consent = e.target.checked; queueSave(); };
+  $('ePub').onclick = publish;
+  $('eUnpub').onclick = () => unpublish(CUR);
+  $('ePrev').onclick = previewPage;
+  $('eFix').onclick = fixAI;
+  $('eAI').onclick = async () => {
+    const p = CUR; if(!String(p.notes).trim() && !String(p.title).trim()) return alert('Write a few notes (what, where, highlights) or a title first, so Claude knows what to write about.');
+    if(String(p.body).trim() && !confirm('Replace the current text with a new draft from Claude?')) return;
+    if(await writeAI(p)){ Object.entries(F).forEach(([id, k]) => { $(id).value = p[k] || ''; }); paintEd(); }
+  };
+  $('bAddUp').onclick = () => $('bFile').click();
+  $('bFile').onchange = async e => {
+    const files = [...e.target.files].slice(0, 10); e.target.value = ''; if(!files.length) return;
+    let k = 0; busy('Preparing photos…', '0 of ' + files.length);
+    try{ for(const f of files){ await addPhoto(CUR, f, ''); busy('Preparing photos…', (++k) + ' of ' + files.length); } await save(CUR); paintEd(); }
+    catch(x){ alert(x.message); } finally{ busy(); }
+  };
+  $('bAddGal').onclick = async () => { const o = ORDERS.find(x => x.id === CUR.orderId); if(o && o.galleryFolder){ await addGalleryPhotos(CUR, o.galleryFolder); paintEd(); } };
+  $('bPh').addEventListener('input', e => { const i = e.target.dataset.alt; if(i == null) return; CUR.photos[+i].alt = e.target.value; const c = checks(CUR); $('bSeo').innerHTML = c.seo.map(x => '<li><span class="bl-dot ' + x.s + '"></span><span>' + esc(x.t) + '</span></li>').join(''); queueSave(); });
+  $('bPh').addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b) return; const p = CUR;
+    if(b.dataset.ins != null) insertAt('\n\n[[photo:' + (+b.dataset.ins + 1) + ']]\n\n');
+    else if(b.dataset.cv != null){ p.cover = +b.dataset.cv; paintEd(); queueSave(); }
+    else if(b.dataset.rm != null){
+      const i = +b.dataset.rm; p.photos.splice(i, 1);
+      p.body = String(p.body).replace(/\[\[photo:(\d+)\]\]\n?/g, (m, n) => +n === i + 1 ? '' : +n > i + 1 ? '[[photo:' + (n - 1) + ']]\n' : m);
+      if(p.cover >= p.photos.length) p.cover = 0; $('bBody').value = p.body; paintEd(); queueSave();
+    }
+  });
+  document.querySelectorAll('[data-md]').forEach(b => b.onclick = () => {
+    const t = $('bBody'), sel = t.value.slice(t.selectionStart, t.selectionEnd), k = b.dataset.md;
+    if(k === 'h2') insertAt('\n\n## ' + (sel || 'Heading') + '\n\n');
+    else if(k === 'b') insertAt('**' + (sel || 'bold text') + '**');
+    else if(k === 'ul') insertAt('\n\n- ' + (sel || 'First point') + '\n- Second point\n\n');
+    else if(k === 'link'){ const u = prompt('Link to (a page like /prices.html, or a full https:// address):', '/'); if(u) insertAt('[' + (sel || 'link text') + '](' + u + ')'); }
+    else if(k === 'book') insertAt(BIZ === 'sba' ? '[book your shoot](/shotbya/contact.html)' : '[book your shoot](/contact.html)');
+  });
+  document.addEventListener('click', async e => {
+    const t = e.target.closest('[data-open],[data-del],[data-shoot],[data-noshoot],[data-idea]'); if(!t) return;
+    if(t.dataset.open){ const p = POSTS.find(x => x.id === t.dataset.open); if(p) openEd(p); }
+    else if(t.dataset.del){
+      const p = POSTS.find(x => x.id === t.dataset.del); if(!p) return;
+      if(!confirm('Delete "' + (p.title || 'this post') + '"' + (p.status === 'live' ? ' and take it off the website' : '') + '? This cannot be undone.')) return;
+      if(p.status === 'live' && !(await unpublish(p, true))) return;
+      await DB.collection('blogPosts').doc(p.id).delete(); POSTS = POSTS.filter(x => x !== p); render(); toast('Deleted.');
+    }
+    else if(t.dataset.shoot){ const o = ORDERS.find(x => x.id === t.dataset.shoot); if(o) fromShoot(o); }
+    else if(t.dataset.noshoot){ const o = ORDERS.find(x => x.id === t.dataset.noshoot); if(o){ o.blogSkip = true; DB.collection('orders').doc(o.id).update({ blogSkip:true }).catch(() => {}); } render(); }
+    else if(t.dataset.idea != null){
+      const x = IDEAS.filter(y => (y.biz || 'fom') === BIZ)[+t.dataset.idea]; if(!x) return;
+      const p = newPost({ title:x.title, keyword:x.keyword || '', notes:[x.why, x.angle, (x.outline || []).length ? 'Outline: ' + x.outline.join('; ') : ''].filter(Boolean).join('\n'), idea:x.title });
+      await save(p, true);
+      if(t.dataset.how === 'ai'){ await writeAI(p); openEd(p); }
+      else if(t.dataset.how === 'req'){ await requestDraft(p); render(); }
+      else openEd(p);
+    }
+  });
+}
+
+async function start(db){
+  DB = db; wire();
+  $('blIntro').textContent = 'Write posts for ' + (BIZ === 'sba' ? 'fomstudios.co.za/shotbya' : 'fomstudios.co.za') + ' with help from Claude, check them like Yoast does, and send them live in one tap.';
+  const [ps, os] = await Promise.all([db.collection('blogPosts').get(), db.collection('orders').get().catch(() => null), loadIdeas()]);
+  POSTS = ps.docs.map(d => Object.assign({ id:d.id }, d.data())).filter(p => (p.biz || 'fom') === BIZ);
+  ORDERS = os ? os.docs.map(d => Object.assign({ id:d.id }, d.data())) : [];
+  render(); setup(); await pullDrafts(); render();
+  const q = new URLSearchParams(location.search).get('shoot'); if(q){ const o = ORDERS.find(x => x.id === q); if(o) fromShoot(o); }
+}
+
+const configured = (typeof firebaseConfig!=='undefined') && firebaseConfig && !String(firebaseConfig.apiKey||'').startsWith('PASTE');
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+(async function init(){
+  if(!configured) return;
+  try{
+    const b='https://www.gstatic.com/firebasejs/10.12.0/';
+    await loadScript(b+'firebase-app-compat.js');
+    await Promise.all([loadScript(b+'firebase-auth-compat.js'), loadScript(b+'firebase-firestore-compat.js')]);
+    try{ firebase.initializeApp(firebaseConfig); }catch(e){}
+    const auth=firebase.auth(), db=firebase.firestore(); AUTH = auth; DB = db;
+    try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+    if(window.FOM_SESSION)FOM_SESSION.attach(auth);
+    const login=()=>{ $('lgErr').textContent=''; auth.signInWithEmailAndPassword($('lgEmail').value.trim(),$('lgPass').value).catch(()=>{ $('lgErr').textContent='Incorrect email or password.'; }); };
+    $('lgBtn').onclick=login; $('lgPass').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+    $('logoutBtn').onclick=()=>auth.signOut();
+    auth.onAuthStateChanged(u=>{
+      $('logoutBtn').style.display=u?'inline-block':'none';
+      if(!u){ $('loginGate').style.display='flex'; return; }
+      db.collection('admins').doc(u.uid).get().then(ad=>{
+        if(!ad.exists){ $('lgErr').textContent='This account does not have admin access.'; auth.signOut(); return; }
+        $('loginGate').style.display='none'; start(db);
+      }).catch(()=>{ $('lgErr').textContent='Could not verify admin access.'; auth.signOut(); });
+    });
+  }catch(e){ console.error('Blog init failed:', e.message||e); }
+})();
+</script>
+<script src="activity.js?v=3"></script>
+<script src="app.js?v=11"></script>
+</body>
+</html>

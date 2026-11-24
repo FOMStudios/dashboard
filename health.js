@@ -57,6 +57,8 @@
         add('Orders', 'bad', who + ': no deposit received, shoot ' + (days === 0 ? 'is today' : 'in ' + plural(days, 'day')), 'Total ' + money(total) + '. Nothing paid yet.', L, 'Database', who);
       else if(active && days != null && days >= 0 && days <= 3 && owing > 0)
         add('Orders', 'warn', who + ': ' + money(owing) + ' still owing before the shoot', 'Shoot ' + (days === 0 ? 'is today' : 'in ' + plural(days, 'day')) + '.', L, 'Database', who);
+      if(shoot && days <= -1 && days >= -21 && o.galleryFolder && !o.blogPost && !o.blogSkip && !o.test)   // Blog page: a real shoot makes the best post
+        add('Website', 'info', 'Blog about ' + (o.customer || 'your last shoot') + '?', 'A post with the photos from this shoot helps you show up on Google. Claude can write it for you.', 'blog.html?shoot=' + encodeURIComponent(o.id || ''), 'Blog', who);
       if(shoot && days < 0 && owing > 0) add('Orders', 'warn', who + ': shoot done, ' + money(owing) + ' still owing', 'Shot ' + plural(-days, 'day') + ' ago. Send a payment reminder.', L, 'Database', who);
       if(shoot && days <= -2 && status === 'Pending') add('Orders', 'warn', who + ': status is still Pending', 'The shoot was ' + plural(-days, 'day') + ' ago. Update the status so the dashboard stays accurate.', L, 'Database', who);
       if(shoot && days <= -14 && !o.galleryFolder && !o.deliverablesReady && active) add('Orders', 'warn', who + ': no gallery yet, ' + plural(-days, 'day') + ' after the shoot', 'Upload the edits and set the Gallery folder.', L, 'Database', who);
