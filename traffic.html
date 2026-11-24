@@ -274,6 +274,8 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
         </div>
         <section class="tr-card"><h2>Busiest times</h2><p class="tr-sub">Page views by day and hour (South African time). Darker is busier: a good guide for when to post.</p><div class="tr-heat" id="trHeat"></div></section>
     </div>
+    <section class="tr-card" id="gscCard"><h2>🔎 Google search</h2><p class="tr-sub">From Google Search Console: what people typed into Google before they found you, and where you rank. Uses the range above (at least 7 days).</p><div id="gscBox"></div></section>
+
     <section class="tr-card"><h2>Tracked links</h2><p class="tr-sub">Use these links instead of the plain website address, so Where they come from shows exactly which link brought each visit. Tap to copy.</p>
         <div class="tr-links" id="trLinks"></div>
         <p class="tr-sub" style="margin:12px 0 0">Already tagged for you: the Website link in your emails (Email) and the booking link in Bookings WhatsApp messages (WhatsApp).</p>
@@ -590,5 +592,13 @@ function loadScript(src){ return new Promise((res,rej)=>{ const s=document.creat
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="activity.js?v=3"></script>
 <script src="app.js?v=12"></script>
+<script src="gsc.js?v=1"></script>
+<script>/* Google search card: waits for the sign-in, follows the range chips */
+(function g(){
+  if(!window.firebase || !firebase.apps || !firebase.apps.length || !firebase.auth().currentUser) return setTimeout(g, 800);
+  const draw = () => FOM_GSC.card(document.getElementById('gscBox'), (window.FOM_BIZ && FOM_BIZ.id === 'sba') ? 'sba' : 'fom', Math.max(7, typeof RANGE === 'number' ? RANGE : 28));
+  draw(); document.querySelectorAll('#trRange [data-r]').forEach(b => b.addEventListener('click', () => setTimeout(draw, 50)));
+})();
+</script>
 </body>
 </html>

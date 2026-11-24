@@ -414,6 +414,7 @@ html[data-theme=dark] .bl-consent{background:#3a3016;color:#f3dfa6}
 
 <div class="toast" id="toast"></div>
 
+<script src="gsc.js?v=1"></script>
 <script src="firebase-config.js"></script>
 <script>
 /* ============================================================
@@ -891,8 +892,25 @@ async function report(days){
     const noEnq = rows.find(x => x.s.visits >= 25 && !x.s.enquired);
     if(noEnq) tips.push('<div class="bl-tip"><span>🤔 <b>' + esc(noEnq.p.title) + '</b> gets readers but no enquiries yet. Add a booking link in the first few paragraphs.</span><button type="button" class="bl-btn sm" data-open="' + esc(noEnq.p.id) + '">Edit</button></div>');
     if(rows[0] && rows[0].s.visits >= 5) tips.push('<div class="bl-tip"><span>🏆 <b>' + esc(rows[0].p.title) + '</b> is your best post. Write another one on a similar topic.</span></div>');
-    el.innerHTML = html + tips.join('');
+    el.innerHTML = html + tips.join('') + '<div id="blGsc"></div>';
+    gscPart(days, live);
   }catch(e){ el.innerHTML = '<p class="tr-sub" style="margin:0">The report could not load (' + esc(e.message) + ').</p>'; }
+}
+/* Google Search Console: which searches find each post, and searches you nearly rank for (ideas) */
+async function gscPart(days, live){
+  const el = $('blGsc'); if(!el || !window.FOM_GSC) return;
+  try{
+    const a = await FOM_GSC.load(BIZ, Math.max(7, days));
+    if(!a.connected){ el.innerHTML = '<div class="bl-tip"><span>🔎 Connect Google Search Console to see what people typed into Google to find each post.</span><a class="bl-btn sm" href="traffic.html#gscCard">Set it up</a></div>'; return; }
+    const per = live.map(p => ({ p, rows:(a.blog || {})[p.liveSlug || p.slug] || [] })).filter(x => x.rows.length);
+    let h = '<h3 style="font-size:15px;font-weight:800;margin:18px 0 6px">🔎 What people Googled to find your posts</h3>';
+    h += per.length ? per.map(x => '<div class="bl-tip"><span><b>' + esc(x.p.title) + '</b><br>' + x.rows.slice(0, 5).map(r => esc(r.q) + ' <small style="color:var(--ink-soft)">(position ' + r.position + ', ' + r.clicks + ' click' + (r.clicks === 1 ? '' : 's') + ')</small>').join(' · ') + '</span></div>').join('')
+      : '<p class="tr-sub" style="margin:0">No Google searches for your posts yet. New posts usually take 1 to 3 weeks to show up.</p>';
+    const ch = (a.chances || []).filter(c => !POSTS.some(p => lc(p.keyword) === lc(c.q)));
+    if(ch.length) h += '<h3 style="font-size:15px;font-weight:800;margin:18px 0 6px">💡 Ideas from your real Google searches</h3><p class="tr-sub" style="margin:0 0 6px">People already see you for these, but too low on Google to click. A post aimed at one can move you up.</p>' +
+      ch.slice(0, 6).map(c => '<div class="bl-tip"><span><b>' + esc(c.q) + '</b> <small style="color:var(--ink-soft)">seen ' + c.impressions + ' times, position ' + c.position + '</small></span><button type="button" class="bl-btn sm pri" data-gscq="' + esc(c.q) + '">Start a post</button></div>').join('');
+    el.innerHTML = h;
+  }catch(e){ el.innerHTML = ''; }
 }
 
 /* ---------- setup status ---------- */
@@ -949,7 +967,8 @@ function wire(){
     else if(k === 'book') insertAt(BIZ === 'sba' ? '[book your shoot](/shotbya/contact.html)' : '[book your shoot](/contact.html)');
   });
   document.addEventListener('click', async e => {
-    const t = e.target.closest('[data-open],[data-del],[data-shoot],[data-noshoot],[data-idea],[data-share],[data-rng]'); if(!t) return;
+    const t = e.target.closest('[data-open],[data-del],[data-shoot],[data-noshoot],[data-idea],[data-share],[data-rng],[data-gscq]'); if(!t) return;
+    if(t.dataset.gscq){ const p = newPost({ keyword:t.dataset.gscq, notes:'People search Google for: ' + t.dataset.gscq + '. Write a helpful post that answers this search.' }); await save(p, true); openEd(p); return; }
     if(t.dataset.rng){ document.querySelectorAll('#blRng button').forEach(b => b.classList.toggle('on', b === t)); return report(+t.dataset.rng); }
     if(t.dataset.share){ const p = POSTS.find(x => x.id === t.dataset.share); if(p) shareSheet(p); return; }
     if(t.dataset.open){ const p = POSTS.find(x => x.id === t.dataset.open); if(p) openEd(p); }

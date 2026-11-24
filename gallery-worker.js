@@ -813,7 +813,7 @@ async function saToken(env) {
   let sa; try { sa = JSON.parse(env.FIREBASE_SA); } catch (e) { throw new Error('The FIREBASE_SA secret is not valid JSON. Paste the whole downloaded key file.'); }
   const now = Math.floor(Date.now() / 1000);
   const head = b64urlStr(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
-  const claim = b64urlStr(JSON.stringify({ iss: sa.client_email, scope: 'https://www.googleapis.com/auth/identitytoolkit https://www.googleapis.com/auth/cloud-platform', aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600 }));
+  const claim = b64urlStr(JSON.stringify({ iss: sa.client_email, scope: 'https://www.googleapis.com/auth/identitytoolkit https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/webmasters.readonly', aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600 }));
   const pem = String(sa.private_key || '').replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
   const der = Uint8Array.from(atob(pem), c => c.charCodeAt(0));
   const key = await crypto.subtle.importKey('pkcs8', der, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
@@ -1173,6 +1173,7 @@ export default {
     if (path === '/admin/channel-save') return handleChannelSave(request, env);
     if (path === '/admin/channel-test') return handleChannelTest(request, env);
     if (path.startsWith('/admin/blog-')) return handleBlog(path, request, env);
+    if (path === '/admin/gsc' || path === '/admin/gsc-verify') return handleGsc(path, request, env, url);
     if (path === '/admin/stats' || path === '/admin/stats-alerts' || path === '/admin/stats-purge') return handleStatsAdmin(path, request, env, url);
     if (path === '/events') return handleEvents(request, env, url);
     if (path.startsWith('/push/')) return handlePush(path, request, env);
@@ -1753,6 +1754,64 @@ async function handleBlog(path, request, env) {
     } catch (e) { return json({ error: String(e.message || e) }, 502); }
   }
   return json({ error: 'not found' }, 404);
+}
+
+/* ============================================================
+   GOOGLE SEARCH CONSOLE (24 Nov 2026), read with the FIREBASE_SA service account
+   Setup: Search Console property for fomstudios.co.za (URL prefix https://www.fomstudios.co.za/ or a Domain property),
+   add the service account email as a user (Restricted is enough), and switch on the "Google Search Console API" in
+   that Google Cloud project. Both businesses share the site: Shot by A = pages under /shotbya/.
+     GET  /admin/gsc?biz=&days=28   -> { connected, email, site, totals, days, queries, pages, blog, chances }
+     POST /admin/gsc-verify {file}  -> puts Google's HTML verification file (googleXXXX.html) on the website
+   ============================================================ */
+let GSC_SITE = null;
+async function gscApi(env, p, body) {
+  const r = await fetch('https://searchconsole.googleapis.com/webmasters/v3' + p, { method: body ? 'POST' : 'GET', headers: Object.assign({ Authorization: 'Bearer ' + await saToken(env) }, body ? { 'Content-Type': 'application/json' } : {}), body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error((j.error && j.error.message) || ('Google error ' + r.status)); e.status = r.status; throw e; }
+  return j;
+}
+async function handleGsc(path, request, env, url) {
+  if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+  let email = ''; try { email = JSON.parse(env.FIREBASE_SA || '{}').client_email || ''; } catch (e) {}
+  let pid = ''; try { pid = JSON.parse(env.FIREBASE_SA || '{}').project_id || ''; } catch (e) {}
+  if (path === '/admin/gsc-verify') {
+    let b = {}; try { b = await request.json(); } catch (e) {}
+    const f = String(b.file || '').trim().replace(/^.*\//, '');
+    if (!/^google[a-z0-9]{8,40}\.html$/i.test(f)) return json({ error: 'That does not look like the Google file name (it starts with google and ends with .html).' }, 400);
+    if (!env.GH_TOKEN) return json({ error: 'No GH_TOKEN secret on the Worker.' }, 503);
+    try { const sha = await ghCommit(env, SITE_REPO, [{ path: f, b64: b64utf8('google-site-verification: ' + f) }], [], 'Google Search Console verification file'); return json({ ok: true, commit: sha, url: 'https://www.fomstudios.co.za/' + f }); }
+    catch (e) { return json({ error: String(e.message || e) }, 502); }
+  }
+  const base = { connected: false, email, project: pid };
+  if (!env.FIREBASE_SA) return json(Object.assign(base, { why: 'nokey' }));
+  try {
+    if (!GSC_SITE) {
+      const l = await gscApi(env, '/sites');
+      const mine = (l.siteEntry || []).filter(x => x.permissionLevel !== 'siteUnverifiedUser').map(x => x.siteUrl);
+      GSC_SITE = mine.find(x => x === 'sc-domain:fomstudios.co.za') || mine.find(x => /^https?:\/\/(www\.)?fomstudios\.co\.za\/$/.test(x)) || null;
+      if (!GSC_SITE) return json(Object.assign(base, { why: 'nosite', sites: (l.siteEntry || []).map(x => x.siteUrl + ' (' + x.permissionLevel + ')') }));
+    }
+    const biz = url.searchParams.get('biz') === 'sba' ? 'sba' : 'fom';
+    const days = Math.max(7, Math.min(480, +url.searchParams.get('days') || 28));
+    const end = new Date(Date.now() - 2 * 864e5), start = new Date(+end - (days - 1) * 864e5), d = x => x.toISOString().slice(0, 10);
+    const flt = { filters: [{ dimension: 'page', operator: biz === 'sba' ? 'contains' : 'notContains', expression: '/shotbya/' }] };
+    const q = (dims, n, extra) => gscApi(env, '/sites/' + encodeURIComponent(GSC_SITE) + '/searchAnalytics/query', Object.assign({ startDate: d(start), endDate: d(end), dimensions: dims, rowLimit: n, dimensionFilterGroups: [extra ? { filters: flt.filters.concat(extra) } : flt] }));
+    const [byDay, byQuery, byPage, byBlog] = await Promise.all([q(['date'], 500), q(['query'], 100), q(['page'], 50), q(['page', 'query'], 500, [{ dimension: 'page', operator: 'contains', expression: '/blog/' }])]);
+    const row = x => ({ clicks: x.clicks || 0, impressions: x.impressions || 0, ctr: Math.round((x.ctr || 0) * 1000) / 10, position: Math.round((x.position || 0) * 10) / 10 });
+    const days2 = (byDay.rows || []).map(x => Object.assign({ day: x.keys[0] }, row(x)));
+    const tot = days2.reduce((a, x) => ({ clicks: a.clicks + x.clicks, impressions: a.impressions + x.impressions, posW: a.posW + x.position * x.impressions }), { clicks: 0, impressions: 0, posW: 0 });
+    const queries = (byQuery.rows || []).map(x => Object.assign({ q: x.keys[0] }, row(x)));
+    const blog = {}; (byBlog.rows || []).forEach(x => { const slug = x.keys[0].replace(/^.*\/blog\//, '').replace(/\.html.*$/, '') || 'index'; (blog[slug] = blog[slug] || []).push(Object.assign({ q: x.keys[1] }, row(x))); });
+    Object.keys(blog).forEach(k => blog[k].sort((a, b) => b.impressions - a.impressions).splice(10));
+    // chances: people see you for these but rarely click (page 1 bottom to page 3), so a post aimed at them could win clicks
+    const chances = queries.filter(x => x.impressions >= 5 && x.position >= 7 && x.position <= 30).sort((a, b) => b.impressions - a.impressions).slice(0, 12);
+    return json({ connected: true, email, site: GSC_SITE, from: d(start), to: d(end), totals: { clicks: tot.clicks, impressions: tot.impressions, ctr: tot.impressions ? Math.round(tot.clicks / tot.impressions * 1000) / 10 : 0, position: tot.impressions ? Math.round(tot.posW / tot.impressions * 10) / 10 : 0 },
+      days: days2, queries: queries.slice(0, 50), pages: (byPage.rows || []).map(x => Object.assign({ page: x.keys[0].replace(/^https?:\/\/[^/]+/, '') }, row(x))), blog, chances });
+  } catch (e) {
+    const m = String(e.message || e);
+    return json(Object.assign(base, { why: /has not been used|disabled|not been enabled/i.test(m) ? 'api' : e.status === 403 ? 'nosite' : 'error', msg: m }));
+  }
 }
 
 async function handleChannelSave(request, env) {
