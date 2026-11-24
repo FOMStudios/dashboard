@@ -178,7 +178,7 @@ const safeName = n => String(n || '').toLowerCase().replace(/[^a-z0-9._-]/g, '-'
 const MAX_UPLOAD = 15 * 1024 * 1024;
 const ADMIN_FOLDERS = ['portfolio', 'deck', 'test-client', 'shotbya/test-client'];   // test-client folders: the dashboard's Test client (Database page)
 const PUBLIC_FOLDERS = ['portfolio/', 'deck/'];
-const adminFolder = f => ADMIN_FOLDERS.includes(f) ? f : 'portfolio';
+const adminFolder = f => ADMIN_FOLDERS.includes(f) || /^blog\/(fom|sba)\/[a-z0-9-]{4,40}$/.test(f || '') ? f : 'portfolio';   // blog/<biz>/<post id>: photos for a blog post
 
 
 /* ============================================================
@@ -885,12 +885,13 @@ async function gSign(env, r) {
   return [...new Uint8Array(sig)].slice(0, 12).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 async function gFiles(env, r) {
-  const out = [], want = Array.isArray(r.files) ? new Set(r.files) : null;
+  const out = [], want = Array.isArray(r.files) ? new Set(r.files) : null, pv = new Set();
   let cursor;
   do {
     const l = await env.BUCKET.list({ prefix: r.folder, cursor, limit: 1000 });
     for (const o of l.objects) {
       const name = o.key.slice(r.folder.length);
+      if (name.startsWith(PV)) { pv.add(name); continue; }
       if (!name || name.endsWith('/') || name === '_gallery.json') continue;
       const k = kind(name); if (k !== 'image' && k !== 'video') continue;
       if (want && !want.has(name)) continue;
@@ -899,6 +900,7 @@ async function gFiles(env, r) {
     cursor = l.truncated ? l.cursor : undefined;
   } while (cursor);
   out.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  for (const f of out) for (const sz of ['th', 'web']) if (pv.has(PV + sz + '/' + f.name + '.jpg')) f[sz] = 1;
   return out;
 }
 // client mode: the organiser approves the photos in her portal; until she does, guests see "coming soon"
@@ -1027,7 +1029,7 @@ async function handleGroup(path, request, env, url, ctx) {
       idx[r.s] = r; await R2P(env, '_groups/index.json', idx);
     }
     const base = url.origin + '/group/file?s=' + r.s + '&k=' + k + '&n=';
-    return json(Object.assign(gPublic(r), { k, files: files.map(f => Object.assign(f, { url: base + encodeURIComponent(f.name) })) }));
+    return json(Object.assign(gPublic(r), { k, files: files.map(f => Object.assign(f, { url: base + encodeURIComponent(f.name) }, f.th ? { th: base + encodeURIComponent(PV + 'th/' + f.name + '.jpg') } : {}, f.web ? { web: base + encodeURIComponent(PV + 'web/' + f.name + '.jpg') } : {})) }));
   }
   if (path === '/group/cover') {   // header photo only (no key needed, it is the page banner); stops once the link ends
     const r = idx[s]; if (!r || !r.cover || gEnded(r)) return json({ error: 'not found' }, 404);
@@ -1038,8 +1040,9 @@ async function handleGroup(path, request, env, url, ctx) {
     const r = idx[s], n = url.searchParams.get('n') || '';
     if (!r || gEnded(r) || r.mode === 'paid' || gSoon(r)) return json({ error: 'This gallery has ended.' }, 410);
     if ((url.searchParams.get('k') || '') !== await gSign(env, r)) return json({ error: 'not allowed' }, 403);
-    if (!n || n.includes('..') || (Array.isArray(r.files) && !r.files.includes(n))) return json({ error: 'not found' }, 404);
-    const kd = kind(n); if (kd !== 'image' && kd !== 'video') return json({ error: 'not found' }, 404);
+    const pm = /^_fom\/(th|web)\/(.+)\.jpg$/.exec(n), base = pm ? pm[2] : n;   // a preview of an allowed photo is allowed
+    if (!n || n.includes('..') || (Array.isArray(r.files) && !r.files.includes(base))) return json({ error: 'not found' }, 404);
+    const kd = kind(base); if (kd !== 'image' && kd !== 'video') return json({ error: 'not found' }, 404);
     const key = r.folder + n, range = request.headers.get('range');
     let want = range ? parseRange(range) : null;
     if (want && !('offset' in want) && !('suffix' in want)) want = null;
@@ -1091,12 +1094,19 @@ async function handleGroup(path, request, env, url, ctx) {
    ============================================================ */
 const gupFolder = f => { f = String(f || '').replace(/^\/+/, ''); return f && f.endsWith('/') && !f.includes('..') && !/^_/.test(f) && !/^(sales|portfolio|deck|channel|content|leads|hq)\//.test(f) ? f : ''; };
 const gupName = n => String(n || '').replace(/[\\/]/g, '-').replace(/[^\w .()+-]/g, '').replace(/^[.\s]+/, '').trim().slice(0, 180);
+const PV = '_fom/';   // inside a gallery folder: previews, never listed as client files
 async function handleGup(path, request, env, url) {
   if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
   const g = gupFolder(url.searchParams.get('g')), n = gupName(url.searchParams.get('n'));
   if (!g) return json({ error: 'Set a gallery folder that ends with / first.' }, 400);
   if (!n) return json({ error: 'bad file name' }, 400);
   const key = g + n, type = (request.headers.get('Content-Type') || 'application/octet-stream').split(';')[0];
+  if (path === '/admin/gup-prev') {   // fast previews made in the dashboard: <folder>_fom/th/<name>.jpg (640 px) and _fom/web/<name>.jpg (2048 px)
+    const sz = url.searchParams.get('s') === 'web' ? 'web' : 'th';
+    const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 8e6) return json({ error: 'bad preview' }, 400);
+    await env.BUCKET.put(g + PV + sz + '/' + n + '.jpg', buf, { httpMetadata: { contentType: 'image/jpeg' } });
+    return json({ ok: true });
+  }
   if (path === '/admin/gup') {
     const obj = await env.BUCKET.put(key, request.body, { httpMetadata: { contentType: type } });
     return json({ ok: true, name: n, size: obj ? obj.size : 0 });
@@ -1162,6 +1172,7 @@ export default {
     if (path === '/t') return handleTrack(request, env, ctx);
     if (path === '/admin/channel-save') return handleChannelSave(request, env);
     if (path === '/admin/channel-test') return handleChannelTest(request, env);
+    if (path.startsWith('/admin/blog-')) return handleBlog(path, request, env);
     if (path === '/admin/stats' || path === '/admin/stats-alerts' || path === '/admin/stats-purge') return handleStatsAdmin(path, request, env, url);
     if (path === '/events') return handleEvents(request, env, url);
     if (path.startsWith('/push/')) return handlePush(path, request, env);
@@ -1171,12 +1182,13 @@ export default {
     // ---- list files in a folder ----
     if (path === '/list') {
       if (!g) return json({ error: 'missing g' }, 400);
-      const out = [];
+      const out = [], pv = new Set();
       let cursor;
       do {
         const r = await env.BUCKET.list({ prefix: g, cursor, limit: 1000 });
         for (const o of r.objects) {
           const name = o.key.slice(g.length);
+          if (name.startsWith(PV)) { pv.add(name); continue; }   // fast previews (th 640 px, web 2048 px)
           if (!name || name.endsWith('/') || name === '_gallery.json') continue;  // skip folder markers + manifest
           out.push({
             name,
@@ -1188,6 +1200,7 @@ export default {
         cursor = r.truncated ? r.cursor : undefined;
       } while (cursor);
       out.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+      for (const f of out) for (const sz of ['th', 'web']) { const pn = PV + sz + '/' + f.name + '.jpg'; if (pv.has(pn)) f[sz] = `${url.origin}/file?g=${encodeURIComponent(g)}&n=${encodeURIComponent(pn)}`; }
       return json({ files: out });
     }
 
@@ -1577,6 +1590,147 @@ async function ghFile(env, path) {
   const j = await r.json();
   return { sha: j.sha, text: decodeURIComponent(escape(atob(String(j.content || '').replace(/\n/g, '')))) };
 }
+
+/* ============================================================
+   BLOG (24 Nov 2026), dashboard blog.html for both websites
+     POST /admin/blog-publish  { biz, files:[{path, text} | {path, r2}], remove:[path], sitemap:{add:[url], remove:[url]}, message }
+        -> ONE commit to FOMStudios/portfolio (GitHub Pages publishes it in about a minute).
+           Paths must sit under blog/ (FOM) or shotbya/blog/ (Shot by A). r2 = a photo in R2 blog/<biz>/<post>/...
+           Needs GH_TOKEN to have Contents read and write on the portfolio repo as well as dashboard.
+     POST /admin/blog-ai       { task:'draft'|'improve', biz, ... } -> Claude writes or improves a post (ANTHROPIC_API_KEY secret,
+                                optional AI_MODEL variable). Returns JSON fields for the editor.
+     POST /admin/blog-request  { biz, request } -> adds to blog/requests.json in the dashboard repo; the daily Claude task
+                                writes the draft into blog/drafts.json by the next morning.
+     POST /admin/blog-test     -> says whether publishing and the instant writer are set up.
+   ============================================================ */
+const SITE_REPO = 'FOMStudios/portfolio';
+const BLOG_VOICE = {
+  fom: 'FOM Studios (Frames Of Motion), a photography and videography studio in Johannesburg run by Ishaaq. Work: events and parties (birthdays, matric dances, corporate functions, year-end events), sports (cycling, padel, running, soccer, swimming, clubs and races), automotive (car shoots, car meets, motorbikes, dealers and detailers), portraits and couples, and product and social media content for businesses across Gauteng. Voice: warm and local, friendly, conversational, a little light humour, sounds like a Joburg creative chatting to a client, not an agency brochure. Words used: shoot, frames, cinematic, the edit, behind the scenes, golden hour, Joburg, Gauteng. Never say: elevate your brand, capturing memories that last a lifetime, stop scrolling, game changer, content is king. Real packages: Mini Shoot R500 (30 minutes, 20 photos or 1 reel); Photography from R800 (2 hours); Videography from R1000; Photo and Video from R1500. Booking: the Book a shoot form on fomstudios.co.za or WhatsApp 068 690 1120. Site pages to link: /prices.html (prices), /gallery.html (more work), /contact.html (book).',
+  sba: 'Shot by A Photography, run by Amarah in Johannesburg (part of the FOM Studios family). People photography: events, birthdays, corporate and wellness days, and family portraits. Voice: warm, personal and gentle, written in the first person as Amarah ("I"), simple and kind, a little playful. Booking: the contact page on fomstudios.co.za/shotbya or WhatsApp 084 445 6657. Site pages to link: /shotbya/gallery.html (more work), /shotbya/contact.html (book).'
+};
+const ghH = env => ({ Authorization: 'Bearer ' + env.GH_TOKEN, 'User-Agent': 'fom-gallery-worker', Accept: 'application/vnd.github+json' });
+async function ghApi(env, repo, p, o) {
+  o = o || {};
+  const r = await fetch('https://api.github.com/repos/' + repo + p, { method: o.method || 'GET', headers: Object.assign(o.body ? { 'Content-Type': 'application/json' } : {}, ghH(env)), body: o.body ? JSON.stringify(o.body) : undefined });
+  const t = await r.text();
+  if (o.soft && r.status === 404) return null;
+  if (!r.ok) throw new Error('GitHub ' + r.status + ' on ' + p.split('?')[0] + ': ' + t.slice(0, 160));
+  return t ? JSON.parse(t) : {};
+}
+const b64utf8 = t => { const u = new TextEncoder().encode(t); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+const b64buf = buf => { const u = new Uint8Array(buf); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+/* one commit with every page, photo and the sitemap, so the site never shows half a post */
+async function ghCommit(env, repo, files, removes, message) {
+  const ref = await ghApi(env, repo, '/git/ref/heads/main'), base = ref.object.sha;
+  const cm = await ghApi(env, repo, '/git/commits/' + base);
+  const tree = [];
+  for (const f of files) { const bl = await ghApi(env, repo, '/git/blobs', { method: 'POST', body: { content: f.b64, encoding: 'base64' } }); tree.push({ path: f.path, mode: '100644', type: 'blob', sha: bl.sha }); }
+  for (const p of removes) { const ex = await ghApi(env, repo, '/contents/' + encodeURI(p) + '?ref=main', { soft: true }); if (ex) tree.push({ path: p, mode: '100644', type: 'blob', sha: null }); }
+  if (!tree.length) return base;
+  const t = await ghApi(env, repo, '/git/trees', { method: 'POST', body: { base_tree: cm.tree.sha, tree } });
+  const c = await ghApi(env, repo, '/git/commits', { method: 'POST', body: { message, tree: t.sha, parents: [base] } });
+  await ghApi(env, repo, '/git/refs/heads/main', { method: 'PATCH', body: { sha: c.sha } });
+  return c.sha;
+}
+function blogJSON(text) {   // pull the JSON object out of Claude's answer and strip long dashes
+  const a = text.indexOf('{'), b = text.lastIndexOf('}');
+  if (a < 0 || b < a) throw new Error('The writer did not return a post. Try again.');
+  const fix = v => typeof v === 'string' ? v.replace(/\s*—\s*/g, ', ').replace(/–/g, ' to ') : Array.isArray(v) ? v.map(fix) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fix(x)])) : v;
+  return fix(JSON.parse(text.slice(a, b + 1)));
+}
+async function handleBlog(path, request, env) {
+  if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
+  let b = {}; try { b = await request.json(); } catch (e) {}
+  const biz = b.biz === 'sba' ? 'sba' : 'fom', pre = biz === 'sba' ? 'shotbya/blog/' : 'blog/';
+
+  if (path === '/admin/blog-test') {
+    const out = { ai: !!env.ANTHROPIC_API_KEY, model: env.AI_MODEL || 'claude-sonnet-5-5', github: !!env.GH_TOKEN, site: false, msg: '' };
+    if (env.GH_TOKEN) {
+      try { const rp = await ghApi(env, SITE_REPO, '', { soft: true }); out.site = !!(rp && rp.permissions && rp.permissions.push); if (!rp) out.msg = 'The GitHub key cannot see FOMStudios/portfolio yet.'; else if (!out.site) out.msg = 'The GitHub key can read FOMStudios/portfolio but not write to it.'; }
+      catch (e) { out.msg = String(e.message || e); }
+    } else out.msg = 'No GH_TOKEN secret on the Worker.';
+    return json(out);
+  }
+
+  if (path === '/admin/blog-publish') {
+    if (!env.GH_TOKEN) return json({ error: 'No GH_TOKEN secret on the Worker.' }, 503);
+    const ok = p => typeof p === 'string' && p.startsWith(pre) && !p.includes('..') && /^[a-z0-9][a-z0-9\-\/]*\.(html|jpg|jpeg|webp|png|json|xml)$/.test(p);
+    const files = [], removes = [];
+    try {
+      for (const f of (b.files || []).slice(0, 80)) {
+        if (!ok(f.path)) return json({ error: 'Not allowed: ' + f.path }, 400);
+        if (typeof f.text === 'string') files.push({ path: f.path, b64: b64utf8(f.text) });
+        else if (typeof f.r2 === 'string' && f.r2.startsWith('blog/' + biz + '/') && !f.r2.includes('..')) {
+          const o = await env.BUCKET.get(f.r2); if (!o) return json({ error: 'Photo missing: ' + f.r2 }, 400);
+          files.push({ path: f.path, b64: b64buf(await o.arrayBuffer()) });
+        }
+      }
+      for (const p of (b.remove || []).slice(0, 80)) if (ok(p)) removes.push(p);
+      const sm = b.sitemap || {}, add = (sm.add || []).filter(u => /^https:\/\/www\.fomstudios\.co\.za\//.test(u)), rem = (sm.remove || []).filter(u => /^https:\/\/www\.fomstudios\.co\.za\//.test(u));
+      if (add.length || rem.length) {
+        const cur = await ghApi(env, SITE_REPO, '/contents/sitemap.xml?ref=main', { soft: true });
+        let xml = cur ? decodeURIComponent(escape(atob(cur.content.replace(/\n/g, '')))) : '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>\n';
+        const today = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 10), q = u => u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        for (const u of rem.concat(add)) xml = xml.replace(new RegExp('\\s*<url>\\s*<loc>' + q(u) + '</loc>[\\s\\S]*?</url>', 'g'), '');
+        for (const u of add) xml = xml.replace('</urlset>', '  <url><loc>' + u + '</loc><lastmod>' + today + '</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>\n</urlset>');
+        files.push({ path: 'sitemap.xml', b64: b64utf8(xml) });
+      }
+      const sha = await ghCommit(env, SITE_REPO, files, removes, String(b.message || 'Blog update from the dashboard').slice(0, 120));
+      return json({ ok: true, commit: sha });
+    } catch (e) {
+      const m = String(e.message || e);
+      return json({ error: /40[34]/.test(m) ? 'GitHub said no. The GH_TOKEN key needs Contents read and write on FOMStudios/portfolio too (see the Blog page setup box). ' + m : m }, 502);
+    }
+  }
+
+  if (path === '/admin/blog-request') {
+    if (!env.GH_TOKEN) return json({ error: 'No GH_TOKEN secret on the Worker.' }, 503);
+    const rq = b.request || {}, id = String(rq.id || '').replace(/[^a-z0-9-]/gi, '').slice(0, 40);
+    if (!id) return json({ error: 'missing id' }, 400);
+    try {
+      const cur = await ghFile(env, 'blog/requests.json');
+      let data = { note: 'Blog drafts asked for on the dashboard Blog page. The daily Claude task writes each pending one into blog/drafts.json and marks it done.', requests: [] };
+      try { if (cur) data = JSON.parse(cur.text); } catch (e) {}
+      data.requests = (data.requests || []).filter(x => x.id !== id && (x.status === 'pending' || Date.parse(x.at || 0) > Date.now() - 30 * 864e5));
+      data.requests.push({ id, biz, at: new Date().toISOString(), status: 'pending', topic: String(rq.topic || '').slice(0, 300), keyword: String(rq.keyword || '').slice(0, 100), notes: String(rq.notes || '').slice(0, 3000),
+        shoot: rq.shoot && typeof rq.shoot === 'object' ? { what: String(rq.shoot.what || '').slice(0, 200), date: String(rq.shoot.date || '').slice(0, 20), where: String(rq.shoot.where || '').slice(0, 200), product: String(rq.shoot.product || '').slice(0, 100) } : null,
+        photos: (rq.photos || []).slice(0, 12).map(p => ({ n: String(p.n || '').slice(0, 120), hint: String(p.hint || '').slice(0, 200) })) });
+      const body = JSON.stringify(data, null, 2) + '\n';
+      const r = await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/blog/requests.json', { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, ghH(env)),
+        body: JSON.stringify({ message: 'Blog draft request from the dashboard', content: b64utf8(body), sha: cur ? cur.sha : undefined, branch: 'main' }) });
+      if (!r.ok) return json({ error: 'GitHub did not accept it (' + r.status + ')' }, 502);
+      return json({ ok: true });
+    } catch (e) { return json({ error: String(e.message || e) }, 502); }
+  }
+
+  if (path === '/admin/blog-ai') {
+    if (!env.ANTHROPIC_API_KEY) return json({ error: 'no-key', msg: 'The instant writer is not set up yet: add an ANTHROPIC_API_KEY secret to the fom-gallery Worker (see the Blog page setup box). You can still tap "Draft by tomorrow".' }, 503);
+    const S = v => String(v == null ? '' : v);
+    const shape = '{"title":"55 to 60 characters max, keyword near the start","keyword":"the focus keyword, 2 to 5 words","slug":"short-url-words-with-hyphens","metaDesc":"120 to 155 characters, includes the keyword, ends with a reason to click","excerpt":"one or two sentences for the blog list","body":"the post in simple markdown","alts":["alt text for photo 1","..."]}';
+    const rules = 'Rules for the body: 600 to 900 words. Start with a short hook paragraph that uses the focus keyword in the first two sentences. Use 3 to 5 "## " subheadings (at least one includes the keyword or a close variant). Short paragraphs of 2 to 4 sentences, sentences mostly under 20 words. Use "- " bullet lists where they help. Place photos with a line that is exactly [[photo:N]] (N = photo number) spread through the post, one per photo given. Link naturally to 1 or 2 of the site pages listed (markdown [text](/page.html)). Finish with a "## " section that invites the reader to book, with a link. Plain, simple South African English. NEVER use em dashes or en dashes. No hashtags, no emojis in headings, no hype words (elevate, unleash, game-changer, unforgettable memories). Never invent facts, names, numbers, prices, dates or quotes that are not in the notes; if a detail is unknown, write around it. Do not name private people unless the notes name them.';
+    let user;
+    if (b.task === 'improve') {
+      const p = b.post || {};
+      user = 'Improve this blog post for SEO and readability without changing the facts or the voice. Fix these issues if you can: ' + S((b.issues || []).join('; ')).slice(0, 1500) + '\n\nKeep every [[photo:N]] line. Current post:\nTitle: ' + S(p.title) + '\nFocus keyword: ' + S(p.keyword) + '\nMeta description: ' + S(p.metaDesc) + '\nBody:\n' + S(p.body).slice(0, 12000) + '\n\n' + rules + '\n\nReply with only this JSON: ' + shape;
+    } else {
+      const sh = b.shoot || {}, ph = (b.photos || []).slice(0, 12);
+      user = 'Write a blog post for the website.\nTopic or working title: ' + S(b.topic).slice(0, 300) + '\nFocus keyword (choose a good local one if empty): ' + S(b.keyword).slice(0, 100) +
+        (sh.what ? '\nThe shoot: ' + S(sh.what) + (sh.date ? ', ' + S(sh.date) : '') + (sh.where ? ', at ' + S(sh.where) : '') + (sh.product ? ' (' + S(sh.product) + ')' : '') : '') +
+        '\nNotes from the photographer (facts you may use):\n' + S(b.notes).slice(0, 3000) +
+        '\nPhotos to place (' + ph.length + '): ' + ph.map((x, i) => (i + 1) + '. ' + S(x.hint || x.n)).join(' | ') +
+        '\n\n' + rules + '\n\nReply with only this JSON: ' + shape;
+    }
+    try {
+      const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+        body: JSON.stringify({ model: env.AI_MODEL || 'claude-sonnet-5-5', max_tokens: 4096, system: 'You write SEO blog posts for this business. ' + BLOG_VOICE[biz] + ' Always reply with one JSON object only.', messages: [{ role: 'user', content: user }] }) });
+      const j = await r.json();
+      if (!r.ok) return json({ error: 'The writer said: ' + ((j.error && j.error.message) || r.status) }, 502);
+      return json({ ok: true, post: blogJSON((j.content || []).map(c => c.text || '').join('')) });
+    } catch (e) { return json({ error: String(e.message || e) }, 502); }
+  }
+  return json({ error: 'not found' }, 404);
+}
+
 async function handleChannelSave(request, env) {
   if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
   if (!env.GH_TOKEN) return json({ error: 'The GitHub link is not set up yet: add the GH_TOKEN secret to the fom-gallery Worker (see the Channel page).' }, 503);

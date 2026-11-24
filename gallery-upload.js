@@ -103,6 +103,7 @@
           delete live[n];
         }
         sent += orig; line(n, f.size !== orig ? mb(orig) + ' → ' + mb(f.size) : mb(f.size));
+        if(window.FOM_PREV){ try{ await FOM_PREV.fromFile(f, g, n); }catch(x){ console.warn('preview', n, x); } }   // fast previews from the file already in memory
       }
       async function worker(){
         while(queue.length && busy){

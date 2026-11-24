@@ -257,7 +257,7 @@ table.orders thead th.sorted .ar{opacity:1;color:var(--accent);}
 .op-btn.pri{border-color:var(--accent);background:var(--accent);color:#fff;}
 .op-btn.red{color:#c0392b;}
 .op-line{font-size:13.5px;color:var(--ink-soft);}
-.dl-st{margin:-4px 0 12px;padding:9px 12px;border-radius:12px;background:var(--surface-2,#f1f0ec);display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;}.dl-st.ok{background:#e8f5ec;color:#1f5c37;}.dl-st.stopped{background:#fff4e0;color:#7a4b00;}.dl-st small{opacity:.75;}
+.pv-line:empty{display:none}.pv-line{margin:-4px 0 12px;padding:9px 12px;border-radius:12px;background:#fff4e0;color:#7a4b00;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13.5px}.pv-line.ok{background:#e8f5ec;color:#1f5c37}.dl-st{margin:-4px 0 12px;padding:9px 12px;border-radius:12px;background:var(--surface-2,#f1f0ec);display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;}.dl-st.ok{background:#e8f5ec;color:#1f5c37;}.dl-st.stopped{background:#fff4e0;color:#7a4b00;}.dl-st small{opacity:.75;}
 .op-line b{color:var(--ink);}
 .op-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;}
 @media(max-width:560px){.op{width:100vw;} .op-g{grid-template-columns:1fr;} .op-body{padding-left:14px;padding-right:14px;}}
@@ -677,6 +677,7 @@ function renderPanel(fresh){
     <section class="op-sec"><h3>Gallery and portal</h3>
       <div class="op-acts" style="margin:0 0 12px"><a class="op-btn pri" href="${previewUrl(o)}" data-pv="${i}" target="_blank" rel="noopener" title="Open ${esc(o.customer||'this client')}'s portal exactly as they see it, read-only">&#128065; Preview as client</a><button type="button" class="op-btn" data-group="${i}" title="One temporary link for everyone at the event (a class, a team), with the photos you pick">&#128101; Group link</button><button type="button" class="op-btn" data-upload="${i}" title="Upload their final photos and videos into the gallery folder (no 100-file limit)">&#11014; Upload files</button></div>
       ${dlLine(o,i)}
+      ${o.galleryFolder?'<div class="pv-line"></div>':''}
       <div class="op-g">
       <div class="op-f w"><label for="op_galleryFolder">Gallery folder</label><div class="op-row"><input id="op_galleryFolder" data-i="${i}" data-f="galleryFolder" value="${esc(o.galleryFolder||'')}" placeholder="e.g. ${FOM_BIZ.b.galleryPrefix}jane-smith/" autocomplete="off"><button type="button" class="op-btn${o.galleryCover&&o.galleryCover.n?' pri':''}" data-cover="${i}">&#128444; ${o.galleryCover&&o.galleryCover.n?'Header set':'Header photo'}</button></div></div>
       <div class="op-f"><label for="op_deliverablesReady">Gallery in the portal</label><select id="op_deliverablesReady" data-i="${i}" data-f="deliverablesReady"><option value="false" ${!o.deliverablesReady?'selected':''}>Not ready</option><option value="true" ${o.deliverablesReady?'selected':''}>✓ Ready, show it</option></select></div>
@@ -692,6 +693,7 @@ function renderPanel(fresh){
 
     <div class="op-foot"><button type="button" class="op-btn red" data-rm="${i}">Delete client</button><button type="button" class="op-btn pri" id="opDone">Done</button></div>`;
   $('opDone').onclick=closePanel;
+  if(window.FOM_PREV && o.galleryFolder) FOM_PREV.mount(body.querySelector('.pv-line'), o.galleryFolder);
   if(fresh) body.scrollTop=0;
 }
 
@@ -1272,7 +1274,8 @@ document.getElementById('favScrim').onclick = e => { if(e.target.id === 'favScri
 <script>(function hookDl(){ let n=0; (function go(){ if(window.FOM_ACT){ FOM_ACT.on(()=>{ try{ if(OPEN_ID) renderPanel(); }catch(e){} }); return; } if(++n<40) setTimeout(go,500); })(); })();</script>
 <script src="vendor/qrcode.js"></script>
 <script src="group-link.js?v=4"></script>
-<script src="gallery-upload.js?v=2"></script>
+<script src="gallery-previews.js?v=1"></script>
+<script src="gallery-upload.js?v=3"></script>
 <script src="app.js?v=10"></script>
 </body>
 </html>
