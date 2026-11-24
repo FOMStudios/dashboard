@@ -1445,6 +1445,20 @@ export class Stats {
     rows.filter(r => r.type === 'click').forEach(r => { const c = ck[r.label] || (ck[r.label] = { label: r.label, n: 0, sids: new Set(), on: {} }); c.n++; c.sids.add(r.sid); c.on[r.path] = (c.on[r.path] || 0) + 1; });
     const clicks = Object.values(ck).map(c => { const top = Object.entries(c.on).sort((a, b) => b[1] - a[1])[0]; return { label: c.label, clicks: c.n, visits: c.sids.size, topPage: top ? pageName(top[0]) : '', enquired: [...c.sids].filter(s => enquired.has(s)).length }; }).sort((a, b) => b.clicks - a.clicks).slice(0, 40);
     const vs = [...visits.values()];
+    // blog (24 Nov 2026): every post, not just the top 30 pages, plus where its readers came from and who enquired after reading
+    const isPost = p => /\/blog\/[a-z0-9][a-z0-9-]*\.html$/.test(p || '');
+    const firstView = new Map(); views.forEach(r => { if (!firstView.has(r.sid)) firstView.set(r.sid, r.path); });
+    const blogSids = new Set(views.filter(r => isPost(r.path) || /\/blog\/(index\.html)?$/.test(r.path)).map(r => r.sid));
+    const blog = {
+      readers: blogSids.size, enquired: [...blogSids].filter(s => enquired.has(s)).length,
+      foundVia: [...firstView.entries()].filter(([, p]) => isPost(p)).length,   // visits that landed on a post first (mostly Google)
+      posts: Object.values(pg).filter(p => isPost(p.path)).map(p => {
+        const src = {}; p.sids.forEach(sid => { const v = visits.get(sid); const k = (v && v.src) || 'Direct'; src[k] = (src[k] || 0) + 1; });
+        return { path: p.path, slug: p.path.replace(/^.*\/blog\//, '').replace(/\.html$/, ''), views: p.views, visits: p.sids.size, avgSecs: p.secN ? Math.round(p.secs / p.secN) : 0, avgScroll: p.scN ? Math.round(p.scroll / p.scN) : 0,
+          enquired: [...p.sids].filter(s2 => enquired.has(s2)).length, landed: [...p.sids].filter(s2 => firstView.get(s2) === p.path).length,
+          sources: Object.entries(src).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, n]) => ({ k, n })) };
+      }).sort((a, b) => b.visits - a.visits)
+    };
     const funnel = {}; rows.filter(r => r.type === 'step').forEach(r => { (funnel[r.label] = funnel[r.label] || new Set()).add(r.sid); });
     const grid = Array.from({ length: 7 }, () => Array(24).fill(0)); views.forEach(r => { grid[r.wd][r.hour]++; });
     const totalSecs = leaves.reduce((s, r) => s + Math.min(r.secs, 1800), 0);
@@ -1454,7 +1468,7 @@ export class Stats {
       biz, from, to,
       totals: { visits: visits.size, views: views.length, enquiries: enquired.size, conversion: visits.size ? Math.round(enquired.size / visits.size * 1000) / 10 : 0, avgSecs: leaves.length ? Math.round(totalSecs / Math.max(1, visits.size)) : 0, pagesPerVisit: visits.size ? Math.round(views.length / visits.size * 10) / 10 : 0 },
       days: Object.entries(days).map(([day, v]) => ({ day, ...v })),
-      pages, clicks,
+      pages, clicks, blog,
       sources: count(vs, v => v.src || 'Direct').map(([k, n]) => ({ k, n })),
       devices: count(vs, v => v.dev || 'Other').map(([k, n]) => ({ k, n })),
       cities: count(vs, v => v.city).slice(0, 12).map(([k, n]) => ({ k, n })),
@@ -1493,6 +1507,16 @@ export class Stats {
         const ch = q.prev && q.prev.visits ? Math.round((q.totals.visits - q.prev.visits) / q.prev.visits * 100) : null;
         if (q.totals.visits || (q.prev && q.prev.visits)) out.push({ biz, kind: 'weekly', title: who + ': your week', body: q.totals.visits + ' visits' + (ch == null ? '' : ' (' + (ch >= 0 ? '+' : '') + ch + '% on last week)') + (q.sources[0] ? ', best source ' + q.sources[0].k : '') + (q.pages[0] ? ', best page ' + q.pages[0].name : '') + ', ' + q.totals.enquiries + ' enquir' + (q.totals.enquiries === 1 ? 'y' : 'ies') + '.' });
       }
+    }
+    // monthly blog report: the 1st at 08:00, last month's readers, enquiries and best post
+    const md = new Date(now + SAST);
+    if (h === 8 && md.getUTCDate() === 1) for (const biz of ['fom', 'sba']) {
+      if (this.alerts(biz).blog === false) continue;
+      const first = new Date(Date.UTC(md.getUTCFullYear(), md.getUTCMonth() - 1, 1)), last = new Date(Date.UTC(md.getUTCFullYear(), md.getUTCMonth(), 0));
+      const q = this.query({ biz, from: first.toISOString().slice(0, 10), to: last.toISOString().slice(0, 10) }), b = q.blog;
+      if (!b || !b.readers) continue;
+      const mon = first.toLocaleDateString('en-ZA', { month: 'long', timeZone: 'UTC' }), best = b.posts[0];
+      out.push({ biz, kind: 'blog', title: (biz === 'sba' ? 'Shot by A' : 'FOM') + ' blog in ' + mon, body: b.readers + ' reader' + (b.readers === 1 ? '' : 's') + ', ' + b.enquired + ' enquir' + (b.enquired === 1 ? 'y' : 'ies') + ' after reading' + (best ? '. Best post: ' + pageName(best.path) + ' (' + best.visits + ')' : '') + '. Open the Blog page for the full report.', url: 'blog.html' });
     }
     if (h === 3) this.sql.exec('DELETE FROM hits WHERE ts < ?', now - 400 * 86400e3);
     return out;
@@ -1570,7 +1594,7 @@ async function handleStatsAdmin(path, request, env, url) {
 }
 async function statsHourly(env) {
   const msgs = await statsCall(env, '/hourly', { now: Date.now() });
-  for (const m of (msgs || [])) await pushAll(env, { title: m.title, body: m.body, url: 'traffic.html?biz=' + m.biz, tag: 'fom-' + m.kind + '-' + m.biz });
+  for (const m of (msgs || [])) await pushAll(env, { title: m.title, body: m.body, url: m.url ? m.url + '?biz=' + m.biz : 'traffic.html?biz=' + m.biz, tag: 'fom-' + m.kind + '-' + m.biz });
 }
 
 /* ============================================================

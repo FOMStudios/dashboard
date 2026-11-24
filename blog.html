@@ -260,6 +260,24 @@ html[data-theme=dark] .bl-consent{background:#3a3016;color:#f3dfa6}
 .bl-pick button{aspect-ratio:1;border:0;border-radius:10px;background:var(--bg) center/cover no-repeat;cursor:pointer;position:relative;outline:0}
 .bl-pick button.on{outline:3px solid var(--accent);outline-offset:-3px}
 .bl-pick button.on:after{content:'✓';position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:13px}
+.bl-rng{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.bl-rng button{border:0;background:transparent;color:var(--ink);padding:7px 12px;font:700 12.5px inherit;font-family:inherit;cursor:pointer}
+.bl-rng button.on{background:var(--ink);color:var(--bg)}
+.bl-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.bl-kpi div{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.bl-kpi b{display:block;font-size:24px;font-weight:800;line-height:1.1}
+.bl-kpi span{font-size:12.5px;color:var(--ink-soft)}
+.bl-tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.bl-tbl th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);padding:6px 8px;border-bottom:1px solid var(--line)}
+.bl-tbl td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.bl-tbl td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bl-tbl tr.best td:first-child b:after{content:' 🏆'}
+.bl-tip{font-size:13.5px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bl-tip span{flex:1;min-width:200px}
+.bl-tblw{overflow-x:auto}
+.bl-share h4{font-size:14.5px;font-weight:800;margin:14px 0 6px}
+.bl-share textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:14px/1.5 inherit;font-family:inherit;background:var(--bg);color:var(--ink);resize:vertical}
+.bl-share .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .bl-busy{position:fixed;inset:0;z-index:2900;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;text-align:center;padding:20px}
 .bl-busy span{display:block;font-size:13px;font-weight:500;opacity:.85;margin-top:6px}
 @media(max-width:980px){.bl-ed-in{grid-template-columns:minmax(0,1fr)}}
@@ -342,6 +360,12 @@ html[data-theme=dark] .bl-consent{background:#3a3016;color:#f3dfa6}
         <div class="bl-cards" id="blIdeas"></div>
     </section>
 
+    <section class="tr-card" id="blRepCard">
+        <div class="bl-top"><h2 style="margin:0">📊 How your posts are doing</h2><span class="sp"></span><span class="bl-rng" id="blRng"><button type="button" data-rng="30" class="on">30 days</button><button type="button" data-rng="90">3 months</button><button type="button" data-rng="365">12 months</button></span></div>
+        <p class="tr-sub">Real visits from the website traffic counter (South Africa only, no bots). "Found you" means the blog post was the first page they opened, usually from Google. You also get this as a phone notification on the 1st of every month.</p>
+        <div id="blRep"><p class="tr-sub" style="margin:0">Loading…</p></div>
+    </section>
+
     <section class="tr-card">
         <div class="bl-top"><h2 style="margin:0">✍️ Your posts</h2><span class="sp"></span><a class="bl-btn sm" id="blView" target="_blank" rel="noopener">View blog ↗</a><button type="button" class="bl-btn pri" id="blNew">+ New post</button></div>
         <div id="blPosts"></div>
@@ -357,6 +381,7 @@ html[data-theme=dark] .bl-consent{background:#3a3016;color:#f3dfa6}
     <button type="button" class="bl-btn sm ai" id="eAI" title="Claude writes the post from your notes and photos">✨ Write it for me</button>
     <button type="button" class="bl-btn sm ai" id="eFix" title="Claude fixes the red and orange checks without changing your facts">✨ Fix SEO</button>
     <button type="button" class="bl-btn sm" id="ePrev">👁 Preview page</button>
+    <button type="button" class="bl-btn sm" id="eShare" hidden>📣 Share</button>
     <button type="button" class="bl-btn sm" id="eUnpub" hidden>Take offline</button>
     <button type="button" class="bl-btn sm pri" id="ePub">🚀 Publish</button>
   </div>
@@ -614,7 +639,7 @@ function render(){
     return '<div class="bl-post"><span class="im" style="' + (ph ? 'background-image:url(\'' + esc(imgUrl(p, ph)) + '\')' : '') + '"></span><div><b>' + esc(p.title || 'Untitled post') + '</b><small>' +
       (p.status === 'live' ? '<span class="bl-chip live">Live</span> ' : p.status === 'writing' ? '<span class="bl-chip wr">Claude is writing it, ready by tomorrow</span> ' : '<span class="bl-chip">Draft</span> ') +
       '<span class="bl-dot ' + s + '"></span>' + SCORE[s][0] + (p.keyword ? ' · ' + esc(p.keyword) : '') + (p.publishedAt ? ' · ' + esc(nice(p.publishedAt)) : '') + '</small></div><div class="r">' +
-      (p.status === 'live' ? '<a class="bl-btn sm" target="_blank" rel="noopener" href="' + esc(pageUrl(p.liveSlug || p.slug)) + '">View ↗</a>' : '') + '<button type="button" class="bl-btn sm pri" data-open="' + esc(p.id) + '">Edit</button><button type="button" class="bl-btn sm" data-del="' + esc(p.id) + '" title="Delete">🗑</button></div></div>'; }).join('')
+      (p.status === 'live' ? '<a class="bl-btn sm" target="_blank" rel="noopener" href="' + esc(pageUrl(p.liveSlug || p.slug)) + '">View ↗</a><button type="button" class="bl-btn sm" data-share="' + esc(p.id) + '">📣 Share</button>' : '') + '<button type="button" class="bl-btn sm pri" data-open="' + esc(p.id) + '">Edit</button><button type="button" class="bl-btn sm" data-del="' + esc(p.id) + '" title="Delete">🗑</button></div></div>'; }).join('')
     : '<p class="tr-sub" style="margin:0">No posts yet. Start from a shoot or an idea above, or tap New post.</p>';
 }
 
@@ -644,7 +669,7 @@ function paintEd(){
   $('bG').innerHTML = '<div class="s">' + esc(SITE.replace('https://', '') + 'blog/' + (p.slug || '')) + '</div><div class="u">' + esc(noDash(p.title) || 'Your title') + '</div><div class="d">' + esc((noDash(p.metaDesc) || 'Your meta description shows here.').slice(0, 160)) + '</div>';
   $('bPrev').innerHTML = '<h1>' + esc(noDash(p.title)) + '</h1>' + (p.excerpt ? '<p><em>' + esc(noDash(p.excerpt)) + '</em></p>' : '') + md(noDash(p.body), k => { const x = (p.photos || [])[k - 1]; return x ? '<figure><img src="' + esc(imgUrl(p, x)) + '" alt=""><figcaption>' + esc(x.alt || 'Photo ' + k) + '</figcaption></figure>' : '<p style="color:#c0392b">[photo ' + k + ' is missing]</p>'; });
   $('ePub').textContent = p.status === 'live' ? '🚀 Update live post' : '🚀 Publish';
-  $('eUnpub').hidden = p.status !== 'live';
+  $('eUnpub').hidden = p.status !== 'live'; $('eShare').hidden = p.status !== 'live';
   paintPhotos();
 }
 function onField(e){
@@ -785,7 +810,7 @@ async function publish(){
     }catch(e){ Object.assign(p, was); if(first) delete p.publishedAt; throw e; }
     await save(p, true); paintEd();
     toast(first ? 'Published! It shows on your website in about a minute.' : 'Updated. Live in about a minute.');
-    if(first && confirm('Published! 🎉\n\nIt will be live in about a minute at:\n' + pageUrl(p.slug) + '\n\nOpen it now? (If it says not found, wait a minute and refresh.)')) window.open(pageUrl(p.slug), '_blank');
+    if(first) shareSheet(p, true);
   }catch(e){ alert('Could not publish: ' + e.message); }
   finally{ busy(); }
 }
@@ -810,6 +835,66 @@ async function previewPage(){
   finally{ busy(); }
 }
 
+/* ---------- share (WhatsApp Group, WhatsApp status, Instagram story) with tracked links ---------- */
+function shareTexts(p){
+  const u = pageUrl(p.liveSlug || p.slug), t = noDash(p.title), ex = noDash(p.excerpt || p.metaDesc || '');
+  const sign = BIZ === 'sba' ? 'Amarah, Shot by A 📷' : 'FOM Studios 📸';
+  return {
+    group: '*New on the blog: ' + t + '*\n\n' + ex + '\n\nHave a read here 👇\n' + u + '?src=wach\n\n' + sign,
+    status: '📝 ' + t + '\n' + u + '?src=wa',
+    story: t + '\n\n' + (BIZ === 'sba' ? 'New story on my blog. Tap the link to read 💛' : 'New on the blog. Tap the link to read 👆'),
+    storyLink: u + '?src=igs',
+    url: u
+  };
+}
+function shareSheet(p, justPublished){
+  const T = shareTexts(p), ph = (p.photos || [])[coverIdx(p)], ov = document.createElement('div'); ov.className = 'bl-sheet';
+  ov.innerHTML = '<div class="bl-share"><h3>' + (justPublished ? 'Published! 🎉 Now share it' : 'Share this post') + '</h3><p class="tr-sub">' + (justPublished ? 'It will be live in about a minute. ' : '') + 'The links carry a tag so the report shows which share brought readers.</p>' +
+    '<h4>WhatsApp Group</h4><textarea rows="7" id="shG">' + esc(T.group) + '</textarea><div class="row"><button type="button" class="bl-btn sm pri" data-cp="shG">Copy</button><a class="bl-btn sm" target="_blank" rel="noopener" id="shGo">Open WhatsApp</a></div>' +
+    '<h4>Instagram story</h4><p class="tr-sub" style="margin:0 0 6px">Post the cover photo as a story, add a <b>Link</b> sticker with the link below, and use this text.</p><textarea rows="3" id="shS">' + esc(T.story) + '</textarea><div class="row"><button type="button" class="bl-btn sm" data-cp="shS">Copy text</button><button type="button" class="bl-btn sm pri" data-cpt="' + esc(T.storyLink) + '">Copy link for the sticker</button>' + (ph ? '<a class="bl-btn sm" href="' + esc(imgUrl(p, ph)) + '&dl=1" target="_blank" rel="noopener">Cover photo ↓</a>' : '') + '</div>' +
+    '<h4>WhatsApp status</h4><textarea rows="2" id="shW">' + esc(T.status) + '</textarea><div class="row"><button type="button" class="bl-btn sm" data-cp="shW">Copy</button></div>' +
+    '<div class="bl-top" style="margin-top:16px"><a class="bl-btn" target="_blank" rel="noopener" href="' + esc(T.url) + '">Open the post ↗</a><span class="sp"></span><button type="button" class="bl-btn pri" data-x>Done</button></div></div>';
+  document.body.appendChild(ov);
+  const go = () => { ov.querySelector('#shGo').href = 'https://wa.me/?text=' + encodeURIComponent(ov.querySelector('#shG').value); };
+  go(); ov.querySelector('#shG').addEventListener('input', go);
+  ov.onclick = async e => {
+    if(e.target === ov || e.target.closest('[data-x]')) return ov.remove();
+    const c = e.target.closest('[data-cp],[data-cpt]'); if(!c) return;
+    const txt = c.dataset.cpt || ov.querySelector('#' + c.dataset.cp).value;
+    try{ await navigator.clipboard.writeText(txt); toast('Copied'); }catch(x){ prompt('Copy this:', txt); }
+  };
+}
+
+/* ---------- report: readers, time, scroll and enquiries per post (from the Traffic counter) ---------- */
+async function report(days){
+  const el = $('blRep'); el.innerHTML = '<p class="tr-sub" style="margin:0">Loading…</p>';
+  try{
+    const to = today(), from = new Date(Date.now() + 2*3600e3 - (days - 1) * 864e5).toISOString().slice(0,10);
+    const r = await fetch(WORKER + '/admin/stats?' + new URLSearchParams({ biz:BIZ, from, to }), { headers:{ Authorization:await tok() } });
+    const j = await r.json(); if(!r.ok) throw new Error(j.error || r.status);
+    const b = j.blog || { readers:0, enquired:0, foundVia:0, posts:[] };
+    const live = POSTS.filter(p => p.status === 'live');
+    const bySlug = {}; b.posts.forEach(x => { bySlug[x.slug] = x; });
+    const rows = live.map(p => ({ p, s: bySlug[p.liveSlug || p.slug] || { visits:0, views:0, avgSecs:0, avgScroll:0, enquired:0, landed:0, sources:[] } })).sort((a, c) => c.s.visits - a.s.visits);
+    if(!live.length){ el.innerHTML = '<p class="tr-sub" style="margin:0">Publish your first post and its readers show here.</p>'; return; }
+    const mins = s => s >= 60 ? Math.floor(s / 60) + 'm ' + (s % 60) + 's' : s + 's';
+    const best = rows[0] && rows[0].s.visits ? rows[0].p.id : '';
+    let html = '<div class="bl-kpi"><div><b>' + b.readers + '</b><span>readers</span></div><div><b>' + b.foundVia + '</b><span>found you through a post</span></div><div><b>' + b.enquired + '</b><span>enquired after reading</span></div><div><b>' + live.length + '</b><span>posts live</span></div></div>' +
+      '<div class="bl-tblw"><table class="bl-tbl"><thead><tr><th>Post</th><th class="n">Readers</th><th class="n">Found you</th><th class="n">Read time</th><th class="n">Scrolled</th><th class="n">Enquired</th><th>From</th></tr></thead><tbody>' +
+      rows.map(x => '<tr' + (x.p.id === best ? ' class="best"' : '') + '><td><b>' + esc(x.p.title) + '</b></td><td class="n">' + x.s.visits + '</td><td class="n">' + (x.s.landed || 0) + '</td><td class="n">' + (x.s.avgSecs ? mins(x.s.avgSecs) : '-') + '</td><td class="n">' + (x.s.avgScroll ? x.s.avgScroll + '%' : '-') + '</td><td class="n">' + x.s.enquired + '</td><td>' + esc((x.s.sources || []).map(y => y.k + ' ' + y.n).join(', ') || '-') + '</td></tr>').join('') + '</tbody></table></div>';
+    // tips
+    const tips = [];
+    const quiet = rows.filter(x => x.s.visits < 3 && x.p.publishedAt && x.p.publishedAt <= new Date(Date.now() - 14 * 864e5).toISOString().slice(0,10));
+    quiet.slice(0, 2).forEach(x => tips.push('<div class="bl-tip"><span>💤 <b>' + esc(x.p.title) + '</b> has had ' + x.s.visits + ' reader' + (x.s.visits === 1 ? '' : 's') + ' so far. Share it again, or tap Fix SEO so Google finds it.</span><button type="button" class="bl-btn sm" data-share="' + esc(x.p.id) + '">📣 Share</button><button type="button" class="bl-btn sm" data-open="' + esc(x.p.id) + '">Edit</button></div>'));
+    const shallow = rows.find(x => x.s.visits >= 10 && x.s.avgScroll && x.s.avgScroll < 45);
+    if(shallow) tips.push('<div class="bl-tip"><span>📉 Most readers stop half way through <b>' + esc(shallow.p.title) + '</b>. Put a strong photo and the booking link higher up.</span><button type="button" class="bl-btn sm" data-open="' + esc(shallow.p.id) + '">Edit</button></div>');
+    const noEnq = rows.find(x => x.s.visits >= 25 && !x.s.enquired);
+    if(noEnq) tips.push('<div class="bl-tip"><span>🤔 <b>' + esc(noEnq.p.title) + '</b> gets readers but no enquiries yet. Add a booking link in the first few paragraphs.</span><button type="button" class="bl-btn sm" data-open="' + esc(noEnq.p.id) + '">Edit</button></div>');
+    if(rows[0] && rows[0].s.visits >= 5) tips.push('<div class="bl-tip"><span>🏆 <b>' + esc(rows[0].p.title) + '</b> is your best post. Write another one on a similar topic.</span></div>');
+    el.innerHTML = html + tips.join('');
+  }catch(e){ el.innerHTML = '<p class="tr-sub" style="margin:0">The report could not load (' + esc(e.message) + ').</p>'; }
+}
+
 /* ---------- setup status ---------- */
 async function setup(){
   try{ SETUP = await api('/admin/blog-test', {}); }catch(e){ SETUP = null; }
@@ -829,6 +914,7 @@ function wire(){
   $('ePub').onclick = publish;
   $('eUnpub').onclick = () => unpublish(CUR);
   $('ePrev').onclick = previewPage;
+  $('eShare').onclick = () => shareSheet(CUR);
   $('eFix').onclick = fixAI;
   $('eAI').onclick = async () => {
     const p = CUR; if(!String(p.notes).trim() && !String(p.title).trim()) return alert('Write a few notes (what, where, highlights) or a title first, so Claude knows what to write about.');
@@ -863,7 +949,9 @@ function wire(){
     else if(k === 'book') insertAt(BIZ === 'sba' ? '[book your shoot](/shotbya/contact.html)' : '[book your shoot](/contact.html)');
   });
   document.addEventListener('click', async e => {
-    const t = e.target.closest('[data-open],[data-del],[data-shoot],[data-noshoot],[data-idea]'); if(!t) return;
+    const t = e.target.closest('[data-open],[data-del],[data-shoot],[data-noshoot],[data-idea],[data-share],[data-rng]'); if(!t) return;
+    if(t.dataset.rng){ document.querySelectorAll('#blRng button').forEach(b => b.classList.toggle('on', b === t)); return report(+t.dataset.rng); }
+    if(t.dataset.share){ const p = POSTS.find(x => x.id === t.dataset.share); if(p) shareSheet(p); return; }
     if(t.dataset.open){ const p = POSTS.find(x => x.id === t.dataset.open); if(p) openEd(p); }
     else if(t.dataset.del){
       const p = POSTS.find(x => x.id === t.dataset.del); if(!p) return;
@@ -890,7 +978,7 @@ async function start(db){
   const [ps, os] = await Promise.all([db.collection('blogPosts').get(), db.collection('orders').get().catch(() => null), loadIdeas()]);
   POSTS = ps.docs.map(d => Object.assign({ id:d.id }, d.data())).filter(p => (p.biz || 'fom') === BIZ);
   ORDERS = os ? os.docs.map(d => Object.assign({ id:d.id }, d.data())) : [];
-  render(); setup(); await pullDrafts(); render();
+  render(); setup(); report(30); await pullDrafts(); render();
   const q = new URLSearchParams(location.search).get('shoot'); if(q){ const o = ORDERS.find(x => x.id === q); if(o) fromShoot(o); }
 }
 
