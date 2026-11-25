@@ -1160,7 +1160,7 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const g = normPrefix(url.searchParams.get('g'));
-    if (/^_(notify|push|events|sales|channel|remind|briefs|logins|groups|preview)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
+    if (/^_(notify|push|events|sales|channel|remind|briefs|logins|groups|preview|stats)\//.test(g)) return json({ error: 'not found' }, 404);   // private records (email throttle, push keys, activity log, photo sales originals and orders)
     if (path.startsWith('/sales/')) return handleSales(path, request, env, url);
     if (path === '/admin/remind' && request.method === 'POST') return handleRemind(request, env);
     if ((path === '/admin/preview-code' || path === '/preview/redeem') && request.method === 'POST') return handlePreview(path, request, env);
@@ -1287,6 +1287,7 @@ export default {
     // hourly: website traffic alerts (spike, daily summary, weekly report)
     if (event.cron === '0 * * * *') {
       if (env.STATS) ctx.waitUntil(statsHourly(env).catch(() => null));
+      ctx.waitUntil(gscCron(env).catch(() => null));   // Google: ranking alerts 09:00, Monday snapshot for blog ideas
       if (env.BUCKET) ctx.waitUntil(channelCheck(env).catch(() => null));   // WhatsApp Group: new messages from the scheduled task
       if (env.BUCKET) ctx.waitUntil(remindCheck(env).catch(() => null));    // lead follow-up reminders set on the Leads page
       return;
@@ -1784,16 +1785,21 @@ async function handleGsc(path, request, env, url) {
     catch (e) { return json({ error: String(e.message || e) }, 502); }
   }
   const base = { connected: false, email, project: pid };
-  if (!env.FIREBASE_SA) return json(Object.assign(base, { why: 'nokey' }));
+  const biz = url.searchParams.get('biz') === 'sba' ? 'sba' : 'fom';
+  const days = Math.max(7, Math.min(480, +url.searchParams.get('days') || 28));
+  return json(await gscData(env, biz, days, base));
+}
+/* the numbers for one business and range (used by the dashboard, the Monday snapshot and the ranking alerts) */
+async function gscData(env, biz, days, base) {
+  base = base || { connected: false };
+  if (!env.FIREBASE_SA) return Object.assign(base, { why: 'nokey' });
   try {
     if (!GSC_SITE) {
       const l = await gscApi(env, '/sites');
       const mine = (l.siteEntry || []).filter(x => x.permissionLevel !== 'siteUnverifiedUser').map(x => x.siteUrl);
       GSC_SITE = mine.find(x => x === 'sc-domain:fomstudios.co.za') || mine.find(x => /^https?:\/\/(www\.)?fomstudios\.co\.za\/$/.test(x)) || null;
-      if (!GSC_SITE) return json(Object.assign(base, { why: 'nosite', sites: (l.siteEntry || []).map(x => x.siteUrl + ' (' + x.permissionLevel + ')') }));
+      if (!GSC_SITE) return Object.assign(base, { why: 'nosite', sites: (l.siteEntry || []).map(x => x.siteUrl + ' (' + x.permissionLevel + ')') });
     }
-    const biz = url.searchParams.get('biz') === 'sba' ? 'sba' : 'fom';
-    const days = Math.max(7, Math.min(480, +url.searchParams.get('days') || 28));
     const end = new Date(Date.now() - 2 * 864e5), start = new Date(+end - (days - 1) * 864e5), d = x => x.toISOString().slice(0, 10);
     const flt = { filters: [{ dimension: 'page', operator: biz === 'sba' ? 'contains' : 'notContains', expression: '/shotbya/' }] };
     const q = (dims, n, extra) => gscApi(env, '/sites/' + encodeURIComponent(GSC_SITE) + '/searchAnalytics/query', Object.assign({ startDate: d(start), endDate: d(end), dimensions: dims, rowLimit: n, dimensionFilterGroups: [extra ? { filters: flt.filters.concat(extra) } : flt] }));
@@ -1806,12 +1812,46 @@ async function handleGsc(path, request, env, url) {
     Object.keys(blog).forEach(k => blog[k].sort((a, b) => b.impressions - a.impressions).splice(10));
     // chances: people see you for these but rarely click (page 1 bottom to page 3), so a post aimed at them could win clicks
     const chances = queries.filter(x => x.impressions >= 5 && x.position >= 7 && x.position <= 30).sort((a, b) => b.impressions - a.impressions).slice(0, 12);
-    return json({ connected: true, email, site: GSC_SITE, from: d(start), to: d(end), totals: { clicks: tot.clicks, impressions: tot.impressions, ctr: tot.impressions ? Math.round(tot.clicks / tot.impressions * 1000) / 10 : 0, position: tot.impressions ? Math.round(tot.posW / tot.impressions * 10) / 10 : 0 },
-      days: days2, queries: queries.slice(0, 50), pages: (byPage.rows || []).map(x => Object.assign({ page: x.keys[0].replace(/^https?:\/\/[^/]+/, '') }, row(x))), blog, chances });
+    return { connected: true, email: base.email, site: GSC_SITE, from: d(start), to: d(end), totals: { clicks: tot.clicks, impressions: tot.impressions, ctr: tot.impressions ? Math.round(tot.clicks / tot.impressions * 1000) / 10 : 0, position: tot.impressions ? Math.round(tot.posW / tot.impressions * 10) / 10 : 0 },
+      days: days2, queries: queries.slice(0, 50), allQueries: queries, pages: (byPage.rows || []).map(x => Object.assign({ page: x.keys[0].replace(/^https?:\/\/[^/]+/, '') }, row(x))), blog, chances };
   } catch (e) {
     const m = String(e.message || e);
-    return json(Object.assign(base, { why: /has not been used|disabled|not been enabled/i.test(m) ? 'api' : e.status === 403 ? 'nosite' : 'error', msg: m }));
+    return Object.assign(base, { why: /has not been used|disabled|not been enabled/i.test(m) ? 'api' : e.status === 403 ? 'nosite' : 'error', msg: m });
   }
+}
+/* hourly cron: 09:00 ranking alerts (a search reaches or leaves page one), Monday 04:00 snapshot for the blog ideas task */
+async function gscCron(env) {
+  if (!env.FIREBASE_SA || !env.BUCKET) return;
+  const now = Date.now(), h = sastHour(now), wd = new Date(now + SAST).getUTCDay();
+  if (h === 4 && wd === 1 && env.GH_TOKEN) {   // blog/search.json in the dashboard repo: real searches for the Monday ideas (no clicks per person, just phrases and totals)
+    const out = { updated: sastDay(now), note: 'Weekly snapshot of Google Search Console (last 28 days) for the blog ideas task. Written by the gallery Worker every Monday 04:00.', biz: {} };
+    for (const biz of ['fom', 'sba']) {
+      const a = await gscData(env, biz, 28); if (!a.connected) continue;
+      out.biz[biz] = { totals: a.totals, top: a.queries.slice(0, 30).map(x => ({ q: x.q, clicks: x.clicks, seen: x.impressions, pos: x.position })), almost: a.chances.map(x => ({ q: x.q, seen: x.impressions, pos: x.position })), blog: Object.fromEntries(Object.entries(a.blog).map(([k, v]) => [k, v.slice(0, 5).map(x => ({ q: x.q, pos: x.position }))])) };
+    }
+    if (Object.keys(out.biz).length) {
+      const cur = await ghFile(env, 'blog/search.json');
+      await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/blog/search.json', { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, ghH(env)),
+        body: JSON.stringify({ message: 'Weekly Google searches for blog ideas', content: b64utf8(JSON.stringify(out, null, 2) + '\n'), sha: cur ? cur.sha : undefined, branch: 'main' }) });
+    }
+  }
+  if (h !== 9) return;
+  const key = '_stats/gsc-pos.json', seen = await R2J(env, key, {}), today = sastDay(now);
+  if (seen._day === today) return;
+  const next = { _day: today };
+  for (const biz of ['fom', 'sba']) {
+    const a = await gscData(env, biz, 7); if (!a.connected) { next[biz] = seen[biz] || {}; continue; }
+    const prev = seen[biz] || {}, cur = {}, up = [], down = [];
+    (a.allQueries || []).filter(x => x.impressions >= 3).forEach(x => { cur[x.q] = x.position; });
+    Object.entries(cur).forEach(([q, p]) => { const o = prev[q]; if (o != null && o > 10 && p <= 10) up.push([q, p]); });
+    Object.entries(prev).forEach(([q, o]) => { const p = cur[q]; if (o <= 10 && (p == null || p > 12)) down.push([q, p]); });
+    next[biz] = Object.assign({}, prev, cur); down.forEach(([q, p]) => { next[biz][q] = p == null ? 99 : p; });   // so a drop is only told once
+    const who = biz === 'sba' ? 'Shot by A' : 'FOM';
+    if (up.length) await pushAll(env, { title: who + ': page one on Google 🎉', body: up.slice(0, 3).map(([q, p]) => '"' + q + '" is now position ' + p).join(', ') + (up.length > 3 ? ' and ' + (up.length - 3) + ' more' : '') + '.', url: 'traffic.html?biz=' + biz, tag: 'fom-gsc-up-' + biz });
+    if (down.length) await pushAll(env, { title: who + ': slipped off page one', body: down.slice(0, 3).map(([q, p]) => '"' + q + '"' + (p == null ? ' is not showing this week' : ' is now position ' + p)).join(', ') + '. A fresh blog post or a small update to that page can help.', url: 'traffic.html?biz=' + biz, tag: 'fom-gsc-down-' + biz });
+    if (!up.length && !down.length) continue;
+  }
+  await env.BUCKET.put(key, JSON.stringify(next));
 }
 
 async function handleChannelSave(request, env) {
