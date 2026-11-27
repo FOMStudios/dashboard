@@ -1248,7 +1248,7 @@ export default {
     }
 
     // ---- admin: upload / delete portfolio photos and pitch deck images ----
-    if (path === '/admin/upload' || path === '/admin/delete') {
+    if (path === '/admin/upload' || path === '/admin/delete' || path === '/admin/rename') {
       if (request.method !== 'POST') return json({ error: 'POST only' }, 405);
       if (!(await verifyAdmin(request, env))) return json({ error: 'not allowed' }, 401);
       if (path === '/admin/upload') {
@@ -1265,6 +1265,15 @@ export default {
       let body = {}; try { body = await request.json(); } catch (e) {}
       const n = safeName(body.n);
       if (!n) return json({ error: 'missing n' }, 400);
+      if (path === '/admin/rename') {   // Photos page: give an uploaded photo a new file name (a copy under the new name)
+        const to = safeName(body.to), dir = adminFolder(body.f || url.searchParams.get('f')) + '/';
+        if (!to || to === n) return json({ error: 'need a new name' }, 400);
+        if (await env.BUCKET.head(dir + to)) return json({ error: 'A photo with that name already exists.' }, 409);
+        const o = await env.BUCKET.get(dir + n); if (!o) return json({ error: 'not found' }, 404);
+        await env.BUCKET.put(dir + to, o.body, { httpMetadata: o.httpMetadata });
+        // the old file is kept: mood boards, lead ideas or a gallery header may still point at it
+        return json({ ok: true, name: to });
+      }
       await env.BUCKET.delete(adminFolder(body.f || url.searchParams.get('f')) + '/' + n);
       return json({ ok: true });
     }

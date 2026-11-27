@@ -157,6 +157,25 @@ nav.pill .nav-links a:hover,nav.pill .nav-links a.active{color:var(--accent);}
 .ph-img{position:relative;aspect-ratio:1/1;background:#e9e7e1;cursor:grab;}
 .ph-img img{width:100%;height:100%;object-fit:cover;display:block;}
 .ph-tags{position:absolute;left:8px;top:8px;display:flex;gap:5px;}
+/* file names (27 Nov 2026): name photos before upload, rename uploaded ones */
+.ph-fn{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);margin:0 0 6px;min-width:0}
+.ph-fn code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px}
+.ph-fn button{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:2px 8px;font:700 11.5px inherit;font-family:inherit;cursor:pointer;flex-shrink:0}
+.nm-ov{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:14px}
+.nm-box{background:var(--bg-pill);border-radius:20px;width:100%;max-width:760px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+.nm-head{padding:18px 20px 10px}
+.nm-head h3{font-size:19px;font-weight:800;margin-bottom:4px}
+.nm-head p{font-size:13.5px;color:var(--ink-soft);line-height:1.45}
+.nm-all{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.nm-all input{flex:1;min-width:200px}
+.nm-list{overflow:auto;padding:4px 20px 10px;display:flex;flex-direction:column;gap:8px}
+.nm-row{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:8px}
+.nm-row img{width:64px;height:64px;object-fit:cover;border-radius:10px;display:block}
+.nm-row small{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nm-box input{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:14.5px inherit;font-family:inherit;background:var(--bg-pill);color:var(--ink)}
+.nm-foot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:12px 20px 18px;border-top:1px solid var(--line)}
+.nm-btn{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:99px;padding:9px 16px;font:700 13.5px inherit;font-family:inherit;cursor:pointer}
+.nm-btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
 .ph-tag{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 8px;background:rgba(42,43,44,.85);color:#fff;}
 .ph-tag.h{background:var(--accent);} .ph-tag.u{background:#1f8a4c;}
 .ph-body{padding:10px;display:flex;flex-direction:column;gap:8px;}
@@ -307,6 +326,7 @@ function render(){
     <div class="ph-img" draggable="true" title="Drag to reorder"><img loading="lazy" src="${esc(url(p))}" alt="">
       <div class="ph-tags">${isR2(p)?'<span class="ph-tag u">Uploaded</span>':''}${p.home&&!p.hide?'<span class="ph-tag h">Home</span>':''}</div></div>
     <div class="ph-body">
+      ${isR2(p)?`<div class="ph-fn" title="File name on your website"><code>${esc(p.src.slice(3))}</code><button type="button" data-a="ren" title="Rename this file">✎ Rename</button></div>`:''}
       <input type="text" data-k="cap" value="${esc(p.cap)}" placeholder="Caption" maxlength="80">
       <div class="ph-row"><select data-k="cat" aria-label="Category">${Object.keys(CATS).map(k=>`<option value="${k}"${p.cat===k?' selected':''}>${CATS[k]}</option>`).join('')}</select>
         <select data-k="size" aria-label="Shape">${Object.keys(SIZES).map(k=>`<option value="${k}"${p.size===k?' selected':''}>${SIZES[k]}</option>`).join('')}</select></div>
@@ -345,19 +365,67 @@ function shrink(file){
     img.src = u;
   });
 }
+/* ---- file names: "car-shoot-sandton-1.jpg" instead of a random code (better for Google and for finding photos) ---- */
+const slug = t => String(t || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/, '');
+const camera = n => /^(img|dsc|dscf|dji|pxl|gopr|_mg|mvimg|photo|image|screenshot|whatsapp image)[\s_-]?\d/i.test(n) || /^\d+$/.test(n) || /^[0-9a-f-]{20,}$/i.test(n);
+const pretty = f => { const b = f.name.replace(/\.[^.]+$/, ''); return camera(b) ? '' : b.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60); };
+function taken(){ return new Set(photos.filter(isR2).map(p => p.src.slice(3))); }
+function uniqueName(base, used){
+  const pre = FOM_BIZ.isSba ? 'sba-' : '', b = slug(base);
+  if(!b) return null;
+  let n = pre + b + '.jpg', k = 2;
+  while(used.has(n)) n = pre + b + '-' + (k++) + '.jpg';
+  used.add(n); return n;
+}
+function nameSheet(files){
+  return new Promise(res => {
+    const urls = files.map(f => URL.createObjectURL(f));
+    const ov = document.createElement('div'); ov.className = 'nm-ov';
+    ov.innerHTML = `<div class="nm-box" role="dialog" aria-modal="true" aria-label="Name your photos"><div class="nm-head"><h3>Name your photo${files.length>1?'s':''}</h3>
+      <p>The name becomes the file name on your website (for example <b>car-shoot-sandton.jpg</b>) and the caption. Good names help Google find your work. Leave one empty to keep a short code.</p>
+      ${files.length>1?`<div class="nm-all"><input id="nmAll" placeholder="One name for all, e.g. Car shoot Sandton"><button type="button" class="nm-btn" id="nmAllGo">Use for all (numbered)</button></div>`:''}</div>
+      <div class="nm-list">${files.map((f,i)=>`<div class="nm-row"><img src="${urls[i]}" alt=""><div><input data-i="${i}" value="${esc(pretty(f))}" placeholder="Name this photo" maxlength="60"><small data-s="${i}"></small></div></div>`).join('')}</div>
+      <div class="nm-foot"><button type="button" class="nm-btn" data-x>Cancel</button><button type="button" class="nm-btn pri" data-ok>Upload ${files.length} photo${files.length>1?'s':''}</button></div></div>`;
+    document.body.appendChild(ov);
+    const ins = [...ov.querySelectorAll('[data-i]')];
+    const show = () => { const used = taken(); ins.forEach(x => { const n = uniqueName(x.value, used); ov.querySelector('[data-s="' + x.dataset.i + '"]').textContent = n ? 'File: ' + n : 'File: a short code (no name)'; }); };
+    show(); ov.addEventListener('input', show);
+    const all = ov.querySelector('#nmAllGo');
+    if(all) all.onclick = () => { const v = ov.querySelector('#nmAll').value.trim(); if(!v) return ov.querySelector('#nmAll').focus(); ins.forEach((x, i) => { x.value = v + ' ' + (i + 1); }); show(); };
+    const done = v => { urls.forEach(u => URL.revokeObjectURL(u)); ov.remove(); res(v); };
+    ov.onclick = e => { if(e.target === ov || e.target.closest('[data-x]')) done(null); else if(e.target.closest('[data-ok]')) done(ins.map(x => x.value.trim())); };
+    setTimeout(() => (ins[0] || {}).focus && ins[0].focus(), 60);
+  });
+}
+async function renamePhoto(p){
+  const cur = p.src.slice(3), base = cur.replace(/^sba-/, '').replace(/\.jpg$/, '').replace(/-/g, ' ');
+  const v = prompt('New name for this photo (it becomes the file name on your website):', base); if(v == null) return;
+  const used = taken(); used.delete(cur); const to = uniqueName(v, used); if(!to) return msg('Type a name with letters or numbers.', true);
+  if(to === cur) return;
+  try{
+    const r = await fetch(WORKER + '/admin/rename', { method:'POST', headers:{ Authorization:'Bearer ' + await token() }, body:JSON.stringify({ n:cur, to }) });
+    const j = await r.json().catch(() => ({}));
+    if(!r.ok){ msg(r.status === 404 && !j.error ? 'Your Worker is not updated yet. Try again in a minute.' : (j.error || 'Could not rename (' + r.status + ').'), true); return; }
+  }catch(e){ msg('Could not reach the Worker.', true); return; }
+  const wasCap = p.cap && slug(p.cap) === slug(base);
+  p.src = 'r2:' + to; if(!p.cap || wasCap) p.cap = v.trim().slice(0, 80);
+  render(); await save(); $('phUp').textContent = 'Renamed to ' + to + '.';
+}
 async function upload(files){
   files = [].filter.call(files, f => /^image\//.test(f.type)); if(!files.length) return;
+  const names = await nameSheet(files); if(!names) return;
+  const used = taken();
   const bar = $('phProg'), fill = bar.firstElementChild; bar.style.display = 'block'; let ok = 0, fail = '';
   for(let i = 0; i < files.length; i++){
     $('phUp').textContent = `Uploading ${i+1} of ${files.length}: ${files[i].name}`; fill.style.width = (i / files.length * 100) + '%';
     try{
       const { blob, w, h } = await shrink(files[i]);
-      const name = (FOM_BIZ.isSba ? 'sba-' : '') + Date.now().toString(36) + Math.random().toString(36).slice(2,6) + '.jpg';
+      const name = uniqueName(names[i], used) || ((FOM_BIZ.isSba ? 'sba-' : '') + Date.now().toString(36) + Math.random().toString(36).slice(2,6) + '.jpg');
       const r = await fetch(WORKER + '/admin/upload?n=' + encodeURIComponent(name), { method:'POST', headers:{ 'Content-Type':'image/jpeg', Authorization:'Bearer ' + await token() }, body:blob });
       if(r.status === 404 || r.status === 405){ fail = 'Your Worker does not have the upload feature yet. Redeploy gallery-worker.js in Cloudflare (see the deploy checklist).'; break; }
       if(r.status === 401){ fail = 'The Worker did not accept your login. Sign out and in again, or check the Worker was redeployed with the latest file.'; break; }
       if(!r.ok){ fail = 'Upload failed (' + r.status + ').'; break; }
-      const ar = w / h; photos.unshift({ id:'u' + name.replace(/\W/g,''), src:'r2:' + name, cap:files[i].name.replace(/\.[^.]+$/, '').replace(/[-_]+/g,' ').slice(0,60), cat:'other', size: ar > 1.4 ? 'wide' : ar < 0.8 ? 'tall' : 'square', alt:'', hide:false, home:false });
+      const ar = w / h; photos.unshift({ id:'u' + name.replace(/\W/g,''), src:'r2:' + name, cap:(names[i] || pretty(files[i])).slice(0,60), alt:names[i] ? names[i].slice(0,160) : '', cat:'other', size: ar > 1.4 ? 'wide' : ar < 0.8 ? 'tall' : 'square', hide:false, home:false });
       ok++;
     }catch(e){ fail = e.message || 'Upload failed.'; break; }
   }
@@ -388,6 +456,7 @@ $('phGrid').addEventListener('click', async e => {
   const b = e.target.closest('[data-a]'), c = e.target.closest('.ph-card'); if(!b || !c || b.disabled) return;
   const id = c.dataset.id, p = byId(id), i = photos.findIndex(x => x.id === id);
   if(b.dataset.a === 'left') move(id, i - 1); else if(b.dataset.a === 'right') move(id, i + 1); else if(b.dataset.a === 'top') move(id, 0);
+  else if(b.dataset.a === 'ren'){ await renamePhoto(p); return; }
   else if(b.dataset.a === 'rm'){
     if(!confirm('Delete this uploaded photo from your website and from R2? This cannot be undone.')) return;
     try{
