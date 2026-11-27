@@ -425,7 +425,7 @@ async function upload(files){
       if(r.status === 404 || r.status === 405){ fail = 'Your Worker does not have the upload feature yet. Redeploy gallery-worker.js in Cloudflare (see the deploy checklist).'; break; }
       if(r.status === 401){ fail = 'The Worker did not accept your login. Sign out and in again, or check the Worker was redeployed with the latest file.'; break; }
       if(!r.ok){ fail = 'Upload failed (' + r.status + ').'; break; }
-      const ar = w / h; photos.unshift({ id:'u' + name.replace(/\W/g,''), src:'r2:' + name, cap:(names[i] || pretty(files[i])).slice(0,60), alt:names[i] ? names[i].slice(0,160) : '', cat:'other', size: ar > 1.4 ? 'wide' : ar < 0.8 ? 'tall' : 'square', hide:false, home:false });
+      const ar = w / h; photos.unshift({ id:'u' + name.replace(/\W/g,''), src:'r2:' + name, cap:(names[i] || pretty(files[i])).slice(0,60), alt:'', cat:'other', size: ar > 1.4 ? 'wide' : ar < 0.8 ? 'tall' : 'square', hide:false, home:false });
       ok++;
     }catch(e){ fail = e.message || 'Upload failed.'; break; }
   }
